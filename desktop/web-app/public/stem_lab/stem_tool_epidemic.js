@@ -2633,12 +2633,12 @@ window.StemLab = window.StemLab || {
                 className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')
               }, reducedMotion ? (particleRunning ? 'Hide static view' : 'Show static view') : (particleRunning ? '\u23F9 Stop' : '\u25B6 Start'))
             ),
-            h('canvas', { role: 'img', 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'),
+            h('canvas', { role: 'img', 'data-a11y-static': 'true', 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'), 'aria-describedby': 'epidemic-particle-status',
               ref: particleRef,
               className: 'w-full rounded-xl border border-slate-400',
               style: { height: '200px', background: 'rgba(15,23,42,0.85)' }
             }),
-            h('p', { 'data-epi-particle-status': 'true', className: 'mt-1 text-[11px] text-slate-600', role: 'status', 'aria-live': particleRunning && !reducedMotion ? 'off' : 'polite' },
+            h('p', { id: 'epidemic-particle-status', 'data-epi-particle-status': 'true', className: 'mt-1 text-[11px] text-slate-600', role: 'status', 'aria-live': particleRunning && !reducedMotion ? 'off' : 'polite' },
               reducedMotion ? 'Static particle view: start it to inspect the initial agent states.' : 'Start the particle simulation to see live agent counts.')
           ),
           // Equations (grade-dependent)

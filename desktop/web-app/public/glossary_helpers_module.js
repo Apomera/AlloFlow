@@ -6,7 +6,7 @@ if (window.AlloModules && window.AlloModules.GlossaryHelpersModule) { console.lo
 // 2026-04-25 using the (args, deps) shim pattern.
 
 const applyAIConfig = (config, deps) => {
-  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
+  const { inputText, selectedLanguages, studentInterests, generatedContent, gradeLevel, leveledTextLanguage, setGradeLevel, setSourceLevel, setSourceTopic, setInputText, setSelectedLanguages, setLeveledTextLanguage, setStudentInterests, setLeveledTextCustomInstructions, setSourceTone, setSourceLength, setSourceVocabulary, setSourceCustomInstructions, setTextFormat, setDokLevel, setVisualStyle, setIncludeSourceCitations, setFullPackTargetGroup, setDifferentiationRange, setTargetStandards, setStandardsInput, setVoiceSpeed, setVoiceVolume, setSelectedVoice, setIsGeneratingEtymology, setGeneratedContent, setHistory, callGemini, warnLog, addToast, t } = deps;
   try { if (window._DEBUG_GLOSSARY) console.log("[GlossaryHelpers] applyAIConfig fired"); } catch(_) {}
     if (!config) return [];
     const changes = [];
@@ -29,6 +29,7 @@ const applyAIConfig = (config, deps) => {
       else if (input.includes('college') || input.includes('univ')) mappedGrade = 'College';
       else if (input.includes('grad')) mappedGrade = 'Graduate Level';
       setGradeLevel(mappedGrade);
+      if (typeof setSourceLevel === 'function') setSourceLevel(mappedGrade);
       changes.push(`Grade Level set to ${mappedGrade}`);
     }
     if (config.topic) {
@@ -62,6 +63,14 @@ const applyAIConfig = (config, deps) => {
     if (config.customInstructions) {
       setLeveledTextCustomInstructions(config.customInstructions);
       changes.push(`Custom Instructions updated`);
+    }
+    if (typeof config.sourceVocabulary === 'string' && config.sourceVocabulary.trim() && typeof setSourceVocabulary === 'function') {
+      setSourceVocabulary(config.sourceVocabulary.trim().slice(0, 900));
+      changes.push('Source vocabulary updated');
+    }
+    if (typeof config.sourceCustomInstructions === 'string' && typeof setSourceCustomInstructions === 'function') {
+      setSourceCustomInstructions(config.sourceCustomInstructions.trim().slice(0, 1400));
+      changes.push('Source instructions updated');
     }
     if (config.tone) {
       setSourceTone(config.tone);
@@ -113,10 +122,16 @@ const applyAIConfig = (config, deps) => {
         setTargetStandards(prev => {
           const arr = Array.isArray(prev) ? prev : [];
           if (arr.includes(std)) return arr;
-          return [...arr, std];
+          return arr.length >= 3 ? arr : [...arr, std];
         });
         changes.push(`Added Standard: ${std}`);
       }
+    }
+    if (Array.isArray(config.targetStandards)) {
+      const standards = config.targetStandards.map(value => String(value || '').trim()).filter((value, index, all) => value && all.indexOf(value) === index).slice(0, 3);
+      setTargetStandards(standards);
+      if (typeof setStandardsInput === 'function') setStandardsInput('');
+      changes.push(standards.length ? `Target Standards: ${standards.join('; ')}` : 'Target Standards cleared');
     }
     if (typeof config.voiceSpeed === 'number' && !Number.isNaN(config.voiceSpeed)) {
       const clampedSpeed = Math.max(0.5, Math.min(2, config.voiceSpeed));

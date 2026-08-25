@@ -1,0 +1,136 @@
+{
+  "case_id": "CASE-PILOT-01",
+  "schema_version": "0.1-draft",
+  "case_status": "draft",
+  "synthetic_only": true,
+  "student_profile": {
+    "synthetic_name": "Jordan Lee",
+    "age_years": 8.8,
+    "grade_band": "elementary",
+    "pronouns": "they/them",
+    "languages": ["English"],
+    "educational_context": "Third-grade student enrolled continuously in the same public elementary school since kindergarten.",
+    "demographic_notes": "No cultural or linguistic interpretation is intended beyond the information explicitly provided in the synthetic sources."
+  },
+  "referral_questions": [
+    "What pattern of academic strengths and needs is shown across records, intervention data, observation, and fictional standardized assessment results?",
+    "Under the supplied study-defined simulation rules, is the evidence consistent with the Supported, Not Supported, or Insufficient Evidence outcome for the fictional SLD-Reading classification?",
+    "Which recommendations are directly linked to documented needs and strengths?"
+  ],
+  "sources": [
+    {
+      "source_id": "P01-S01",
+      "source_type": "referral",
+      "title": "Referral and Educational Records",
+      "content_file": "sources/01_referral_and_records.md",
+      "date_or_period": "Current school year through 2026-03-20",
+      "render_format": "plain_text",
+      "contains_tables": false,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S02",
+      "source_type": "parent_interview",
+      "title": "Family Interview Notes",
+      "content_file": "sources/02_family_interview.md",
+      "date_or_period": "2026-03-12",
+      "render_format": "plain_text",
+      "contains_tables": false,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S03",
+      "source_type": "teacher_interview",
+      "title": "Teacher Interview Notes",
+      "content_file": "sources/03_teacher_interview.md",
+      "date_or_period": "2026-03-13",
+      "render_format": "plain_text",
+      "contains_tables": false,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S04",
+      "source_type": "observation",
+      "title": "Classroom Observation",
+      "content_file": "sources/04_classroom_observation.md",
+      "date_or_period": "2026-03-16",
+      "render_format": "plain_text",
+      "contains_tables": true,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S05",
+      "source_type": "intervention_data",
+      "title": "Reading Intervention and Progress Data",
+      "content_file": "sources/05_intervention_data.md",
+      "date_or_period": "2025-12-01 through 2026-03-06",
+      "render_format": "plain_text",
+      "contains_tables": true,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S06",
+      "source_type": "academic_scores",
+      "title": "Fictional Standardized Assessment Summary",
+      "content_file": "sources/06_assessment_results.md",
+      "date_or_period": "2026-03-17 and 2026-03-18",
+      "render_format": "plain_text",
+      "contains_tables": true,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    },
+    {
+      "source_id": "P01-S07",
+      "source_type": "eligibility_rules",
+      "title": "Study-Defined SLD-Reading Simulation Rules",
+      "content_file": "sources/07_study_defined_rules.md",
+      "date_or_period": "Study protocol version 0.1",
+      "render_format": "plain_text",
+      "contains_tables": false,
+      "contains_deliberate_conflict": false,
+      "contains_deliberate_missingness": false
+    }
+  ],
+  "complexity_features": {
+    "informant_disagreement": false,
+    "temporal_change": true,
+    "deliberate_missingness": false,
+    "numeric_density": "high",
+    "cross_source_synthesis": "high",
+    "language_or_cultural_context": false,
+    "study_defined_eligibility": true,
+    "notes": "Straightforward reading case used to calibrate exact numerical extraction, multi-source integration, and a determinate study-defined conclusion."
+  },
+  "expected_sections": [
+    "reason_for_referral",
+    "background_and_educational_history",
+    "evaluation_procedures",
+    "behavioral_observations",
+    "assessment_results",
+    "integrated_summary",
+    "study_defined_eligibility",
+    "recommendations"
+  ],
+  "eligibility_simulation": {
+    "rule_source_id": "P01-S07",
+    "expected_conclusion": "SUPPORTED for the fictional SLD-Reading simulation, with basic reading and reading fluency identified as the affected areas.",
+    "required_qualifications": [
+      "The conclusion is a study-defined simulation rather than an actual IDEA, state, clinical, or multidisciplinary eligibility determination.",
+      "No single score is sufficient for the conclusion.",
+      "Reading comprehension is an area of relative weakness but does not independently meet the supplied well-below threshold."
+    ]
+  },
+  "validation": {
+    "pii_scan_passed": true,
+    "secure_content_scan_passed": true,
+    "review_status": "not_reviewed",
+    "reviewer_codes": [],
+    "review_notes": "AI-drafted calibration case. Requires independent school-psychology and cultural-fairness review before any NotebookLM run."
+  }
+}
+

@@ -187,9 +187,53 @@ describe('createDraft', () => {
   it('builds a deterministic offline draft without any AI dependency', async () => {
     const svc = mkService();
     const bp = await svc.createDraft({ blueprintId: 'bp-offline', gradeLevel: '3rd Grade', plan: ['analysis', 'glossary'], globalSettings: { theme: 'high-contrast' } });
-    expect(bp.plan.map((r) => r.tool)).toEqual(['analysis', 'glossary']);
+    expect(bp.plan.map((r) => r.tool)).toEqual(['analysis', 'simplified', 'glossary']);
+    expect(bp.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary', adaptedTextPolicy: 'include',
+    });
     expect(bp.audience.gradeLevel).toBe('3rd Grade');
     expect(bp.globalSettings).toMatchObject({ gradeLevel: '3rd Grade', theme: 'high-contrast' });
+  });
+
+  it('keeps adaptation independent from a standard that requires grade-level primary text', async () => {
+    const svc = mkService();
+    const bp = await svc.createDraft({
+      blueprintId: 'bp-complex-primary',
+      standards: 'CCSS.ELA-LITERACY.RI.5.10: Read grade-level complex text independently and proficiently.',
+      plan: ['analysis', 'quiz'],
+    });
+    expect(bp.plan.map((row) => row.tool)).toEqual(['analysis', 'simplified', 'quiz']);
+    expect(bp.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required', adaptedTextPolicy: 'include',
+    });
+  });
+
+  it('respects educator omission and a sourced adaptation prohibition', async () => {
+    const svc = mkService();
+    const omitted = await svc.createDraft({
+      blueprintId: 'bp-omit-adapted',
+      instructionalContext: { adaptedTextPolicy: 'omit', adaptedTextPolicySource: 'educator' },
+      plan: ['analysis', 'simplified', 'quiz'],
+    });
+    expect(omitted.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+    expect(omitted.instructionalContext.adaptedTextPolicy).toBe('omit');
+
+    const prohibited = await svc.createDraft({
+      blueprintId: 'bp-prohibit-adapted',
+      standardsContext: {
+        standards: [{ code: 'SECURE-STIMULUS-1', label: 'Secure stimulus' }],
+        instructionalConstraints: {
+          textAccessExpectation: 'adaptation-prohibited',
+          basis: 'Official secure-assessment administration rule',
+        },
+      },
+      instructionalContext: { adaptedTextPolicy: 'include' },
+      plan: ['analysis', 'simplified', 'quiz'],
+    });
+    expect(prohibited.plan.map((row) => row.tool)).toEqual(['analysis', 'quiz']);
+    expect(prohibited.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required', adaptedTextPolicy: 'prohibited', adaptedTextPolicySource: 'standard',
+    });
   });
 
   it('rejects an AI result that fails the contract (fail closed, no partial value)', async () => {
@@ -209,7 +253,7 @@ describe('revise', () => {
     expect(r.errors).toEqual([]);
     expect(r.ok).toBe(true);
     // requested changes applied…
-    expect(r.value.plan.map((x) => x.tool)).toEqual(['analysis', 'quiz', 'glossary', 'lesson-plan']);
+    expect(r.value.plan.map((x) => x.tool)).toEqual(['analysis', 'simplified', 'quiz', 'glossary', 'lesson-plan']);
     expect(r.value.plan.find((x) => x.tool === 'quiz').directive).toBe('Focus on DOK 3');
     // …everything else untouched…
     expect(r.value.audience).toEqual(bp.audience);
@@ -222,7 +266,7 @@ describe('revise', () => {
     const svc = mkService();
     const bp = await svc.createDraft({ blueprintId: 'bp-rm', plan: ['analysis', 'quiz', 'image', 'lesson-plan'] });
     const r = svc.revise(bp, { removeTools: ['image'] });
-    expect(r.value.plan.map((x) => x.tool)).toEqual(['analysis', 'quiz', 'lesson-plan']);
+    expect(r.value.plan.map((x) => x.tool)).toEqual(['analysis', 'simplified', 'quiz', 'lesson-plan']);
   });
 });
 
@@ -242,9 +286,9 @@ describe('reviseWithAI', () => {
     });
     bp.sourcePolicy = { kind: 'workspace-source', ref: 'source-42' };
     const next = await svc.reviseWithAI(bp, 'add a timeline');
-    expect(seenLegacy.legacy.recommendedResources).toEqual(['analysis', 'lesson-plan']);
+    expect(seenLegacy.legacy.recommendedResources).toEqual(['analysis', 'simplified', 'lesson-plan']);
     expect(seenLegacy.instruction).toBe('add a timeline');
-    expect(next.plan.map((r) => r.tool)).toEqual(['analysis', 'timeline', 'lesson-plan']);
+    expect(next.plan.map((r) => r.tool)).toEqual(['analysis', 'simplified', 'timeline', 'lesson-plan']);
     expect(next.audience.interests).toBe('space exploration');
     expect(next.sourcePolicy).toEqual({ kind: 'workspace-source', ref: 'source-42' });
     expect(next.review.state).toBe('draft');
@@ -312,8 +356,8 @@ describe('approval gate (review-before-execution preserved headlessly)', () => {
     const r = svc.planExecution(approved);
     expect(r.errors).toEqual([]);
     expect(r.ok).toBe(true);
-    expect(r.legacyConfig.recommendedResources).toEqual(['analysis', 'quiz', 'lesson-plan']);
-    expect(r.legacyConfig.resourcePlan.length).toBe(3);
+    expect(r.legacyConfig.recommendedResources).toEqual(['analysis', 'simplified', 'quiz', 'lesson-plan']);
+    expect(r.legacyConfig.resourcePlan.length).toBe(4);
   });
 
   it('planExecution also blocks on missing capabilities when a manifest is supplied', async () => {

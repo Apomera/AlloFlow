@@ -42,6 +42,21 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(html).toContain('Simulation perspective');
     expect(html).toContain('<canvas');
   });
+
+  it('keeps the Beekeeper tutorial in the Beekeeper perspective only', () => {
+    const keeper = render({ viewMode: 'beekeeper', tutorialStep: 0 });
+    const network = render({ viewMode: 'queen', tutorialStep: 0, queen: { active: true, paused: true } });
+    const drone = render({ viewMode: 'drone', tutorialStep: 0, drone: { active: false, difficulty: 'easy' } });
+
+    expect(keeper).toContain('data-beehive-tutorial="true"');
+    expect(keeper).toContain('aria-labelledby="beehive-tutorial-title"');
+    expect(keeper).toContain('aria-describedby="beehive-tutorial-description"');
+    expect(keeper).toContain('Welcome, Beekeeper!');
+    expect(network).not.toContain('data-beehive-tutorial="true"');
+    expect(network).not.toContain('Welcome, Beekeeper!');
+    expect(drone).not.toContain('data-beehive-tutorial="true"');
+    expect(drone).not.toContain('Welcome, Beekeeper!');
+  });
   it('uses a distinct visual identity and visible play-surface affordances in every role', () => {
     const keeper = render({ viewMode: 'beekeeper', day: 12 });
     const queen = render({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
@@ -76,6 +91,9 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('Science Notebook');
     });
     expect(keeper).toContain('data-beehive-active-mode="beekeeper"');
+    expect(keeper).toContain('aria-label="Beekeeper. Manage daily colony health and resources.');
+    expect(keeper).toContain('aria-label="Colony Network. Explore decentralized signals and trade-offs.');
+    expect(keeper).toContain('aria-label="Drone Flight. Practice energy-aware nuptial flight in 3D.');
     expect(keeper).toContain('data-beehive-stage="beekeeper"');
     expect(keeper).toContain('href="#beehive-canvas-wrap"');
     expect(keeper).toContain('data-beehive-focus-panel="playfield"');
@@ -165,7 +183,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('TACTICAL PAUSE');
     expect(queen).toContain('PLACE GUARD POST');
     expect(queen).toContain('data-beehive-coach-action="resume-rts"');
-    expect(queen).toContain('Restart automatic cycles');
+    expect(queen).toContain('Restart automatic colony cycles');
     expect(queen).toContain('Watch the cycle clock and rival pressure restart.');
     expect(drone).toContain('data-beehive-active-mode="drone"');
     expect(drone).toContain('data-beehive-stage="drone-briefing"');
@@ -173,7 +191,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(drone).toContain('id="beehive-drone-playfield"');
     expect(drone).toContain('data-beehive-flight-plan="true"');
     expect(drone).toContain('Preflight route');
-    expect(drone).toContain('Gather boosts');
+    expect(drone).toContain('Pass route markers');
     expect(drone).toContain('Acquire queen');
     expect(drone).toContain('data-beehive-coach-action="start-easy-flight"');
     expect(drone).not.toContain('data-beehive-drone-canvas="true"');
@@ -364,14 +382,14 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(thirtyDay).toContain('excludes random weather');
   });
 
-  it('Queen RTS explains and renders the live rival-hive loop', () => {
+  it('Colony Network explains and renders the live rival-colony loop', () => {
     const briefing = render({ viewMode: 'queen' });
     const active = render({ viewMode: 'queen', queen: { active: true, paused: true, buildMode: 'guard' } });
     const live = render({ viewMode: 'queen', queen: { active: true, paused: false, speed: 2 } });
 
     expect(briefing).toContain('Automatic cycles');
     expect(briefing).toContain('Defeat Thistle Crown');
-    expect(active).toContain('Live RTS strategy status');
+    expect(active).toContain('Live Colony Network status');
     expect(active).toContain('Rival hive');
     expect(active).toContain('Scout Rival');
     expect(active).toContain('Launch Raid');
@@ -400,7 +418,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('Evidence from days 6-7');
     expect(keeper).toContain('Explain it:');
     expect(keeper.indexOf('Evidence from days 6-7')).toBeLessThan(keeper.indexOf('data-beehive-learning-brief="true"'));
-    expect(queen).toContain('RTS strategy brief');
+    expect(queen).toContain('Colony systems brief');
     expect(queen).toContain('Strategic advisor');
     expect(drone).toContain('Flight systems brief');
     expect(drone).toContain('Preflight route');
@@ -413,9 +431,9 @@ describe('beehive — simulation modes render without throwing', () => {
     });
   });
 
-  it('renders actionable RTS and flight debriefs', () => {
+  it('renders actionable Colony Network and flight debriefs', () => {
     const queen = render({ viewMode: 'queen', queen: { active: true, paused: true, result: 'victory', day: 18, score: 240, territory: 72 } });
-    expect(queen).toContain('RTS debrief');
+    expect(queen).toContain('Colony Network debrief');
     expect(queen).toContain('Start rematch');
 
     const drone = render({ viewMode: 'drone', drone: { active: false, lastRun: { score: 180, success: false, maxAlt: 85, distance: 700, nectar: 6, nectarGoal: 10, energyLeft: 12, facts: 4, difficulty: 'normal' } } });
@@ -438,7 +456,7 @@ describe('beehive — simulation modes render without throwing', () => {
     });
     expect(complete).toContain('3 / 3 milestones');
     expect(complete).toContain('Nightshade Wing');
-    expect(complete).toContain('1 RTS win');
+    expect(complete).toContain('1 network win');
     expect(complete).toContain('1 successful flight');
   });
 });

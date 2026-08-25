@@ -2,17 +2,98 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 1174
+Files scanned: 1934
 Defined help keys (help_strings.js): 995
-Referenced help keys (data-help-key attrs): 935
+Referenced help keys (data-help-key attrs): 962
   - With definition: 934
-  - MISSING definition: 1
+  - MISSING definition: 28
 Dead entries (defined but never referenced): 61
 
 --- MISSING help strings (referenced, no definition) ---
-  ai_backend_guided_card_canvas  [3x in 3 file(s)]
-     - desktop/web-app/public/view_misc_modals_module.js
-     - view_misc_modals_module.js
+  adminhub_backup_export  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_backup_restore  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_backup_section  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_connect  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_disconnect  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_save_now  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_section  [16x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_setup_open  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_drive_status  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adminhub_guide_link  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/admin_hub_module.js
+     - .release-memory-palace-20260820/admin_hub_source.jsx
+  adventure_immersive_reading_practice  [6x in 6 file(s)]
+     - AlloFlowANTI.txt
+     - desktop/app-build/view_adventure_module.js
+  adventure_scene_reading_practice  [6x in 6 file(s)]
+     - AlloFlowANTI.txt
+     - desktop/app-build/view_adventure_module.js
+  adventure_setup_chk_reading_practice  [5x in 5 file(s)]
+     - desktop/app-build/view_adventure_module.js
+     - desktop/web-app/build/view_adventure_module.js
+  adventure_setup_chk_typing_pace  [5x in 5 file(s)]
+     - desktop/app-build/view_adventure_module.js
+     - desktop/web-app/build/view_adventure_module.js
+  ae_manual_link  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/desktop/web-app/public/educator_evaluation_module.js
+     - .release-memory-palace-20260820/educator_evaluation_module.js
+  ai_backend_forget_gemini_key  [5x in 5 file(s)]
+     - desktop/app-build/view_misc_modals_module.js
+     - desktop/web-app/build/view_misc_modals_module.js
+  ai_backend_forget_gemini_services_key  [5x in 5 file(s)]
+     - desktop/app-build/view_misc_modals_module.js
+     - desktop/web-app/build/view_misc_modals_module.js
+  ai_backend_gemini_services_key_input  [5x in 5 file(s)]
+     - desktop/app-build/view_misc_modals_module.js
+     - desktop/web-app/build/view_misc_modals_module.js
+  ai_backend_guided_card_canvas  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/desktop/web-app/public/view_misc_modals_module.js
+     - .release-memory-palace-20260820/view_misc_modals_module.js
+  educator_hub_assessment_center_card  [5x in 5 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - desktop/web-app/build/view_educator_hub_modal_module.js
+  educator_hub_research_suite_card  [5x in 5 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - desktop/web-app/build/view_educator_hub_modal_module.js
+  glossary_audio_review  [5x in 5 file(s)]
+     - desktop/app-build/view_glossary_module.js
+     - desktop/web-app/build/view_glossary_module.js
+  glossary_image_style_mode  [5x in 5 file(s)]
+     - desktop/app-build/view_glossary_module.js
+     - desktop/web-app/build/view_glossary_module.js
+  header_return_to_start  [5x in 5 file(s)]
+     - desktop/app-build/view_header_module.js
+     - desktop/web-app/build/view_header_module.js
+  header_voice_configure_gemini  [5x in 5 file(s)]
+     - desktop/app-build/view_header_module.js
+     - desktop/web-app/build/view_header_module.js
+  math_open_studio  [8x in 8 file(s)]
+     - .release-memory-palace-20260820/desktop/web-app/public/view_sidebar_panels_module.js
+     - .release-memory-palace-20260820/view_sidebar_panels_module.js
+  sidebar_ai_setup_notice  [10x in 10 file(s)]
+     - .release-memory-palace-20260820/AlloFlowANTI.txt
+     - .release-memory-palace-20260820/desktop/web-app/public/view_sidebar_panels_module.js
+  simplified_instructional_role  [5x in 5 file(s)]
+     - desktop/app-build/view_simplified_module.js
+     - desktop/web-app/build/view_simplified_module.js
 
 --- DEAD entries (defined but never used) ---
   adventure_custom_instructions
@@ -78,4 +159,13 @@ Dead entries (defined but never referenced): 61
   wizard_url_source
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
-     1  ai
+    10  adminhub
+     4  adventure
+     4  ai
+     2  educator
+     2  glossary
+     2  header
+     1  ae
+     1  math
+     1  sidebar
+     1  simplified

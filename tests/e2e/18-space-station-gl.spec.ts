@@ -99,6 +99,7 @@ const HARNESS = `<!doctype html>
   };
   window.__destroy = function () {
     try { var c = window.__canvas(); if (c && c._issCleanup) c._issCleanup(); } catch (e) {}
+    try { var c = window.__canvas(); if (c && c._issInteriorCleanup) c._issInteriorCleanup(); } catch (e) {}
     try { window.__root && window.__root.unmount(); } catch (e) {}
   };
 </script></body></html>`;
@@ -108,6 +109,19 @@ const SEED = {
   tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0, orbitAlt: 420,
   seenModules: {}, seenHours: {}, mapView: 'overview', mapCutaway: false,
   quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false,
+};
+
+const INTERIOR_SEED = {
+  ...SEED,
+  tab: 'interior', interiorView: '3d', interiorRoom: 'harmony',
+  interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
+  interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
+  interiorGuided: true, interiorNav: { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 },
+  lowGImpulse: 10, lowGResult: null,
+  researchStep: 0, researchFeedback: '', researchErrors: 0,
+  maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {},
+  cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false,
+  cupolaShutters: false, cupolaObservation: '',
 };
 
 let server: Server;
@@ -152,7 +166,8 @@ test.afterAll(async () => {
  */
 async function mount(
   page: import('@playwright/test').Page,
-  opts: { postFX?: boolean; reducedMotion?: boolean } = {},
+  opts: { postFX?: boolean; reducedMotion?: boolean; failThree?: boolean } = {},
+  seed: Record<string, unknown> = SEED,
 ) {
   const reduced = opts.reducedMotion !== false;
   await page.emulateMedia({ reducedMotion: reduced ? 'reduce' : 'no-preference' });
@@ -169,13 +184,19 @@ async function mount(
     };
   });
   await page.goto(`${base}/__harness`);
+  if (opts.failThree) {
+    await page.evaluate(() => {
+      (window as any).THREE = undefined;
+      (window as any).StemLab.ensureThree = () => Promise.reject(new Error('forced WebGL dependency failure'));
+    });
+  }
   if (opts.postFX === false) {
     await page.evaluate(() => { (window as any).AlloPostFXEnabled = false; });
   }
   await page.addScriptTag({ url: '/stem_lab/stem_tool_spacestation.js' });
   await page.waitForFunction(() => !!(window as any).StemLab?._registry?.spaceStation);
-  await page.evaluate((s) => (window as any).__mount(s), SEED);
-  await page.waitForSelector('#wrap canvas', { timeout: 30000 });
+  await page.evaluate((s) => (window as any).__mount(s), seed);
+  await page.waitForSelector('#wrap canvas', { state: opts.failThree ? 'attached' : 'visible', timeout: 30000 });
   if (opts.postFX !== false) {
     // The bloom pipeline is a deliberate graceful upgrade: six post-processing
     // addons load sequentially from a CDN, and the tool renders plain until they
@@ -315,5 +336,132 @@ test.describe('Space Station — real WebGL 3-D map', () => {
       return c ? { init: c._issInit } : null;
     });
     expect(after?.init).toBeFalsy();
+  });
+});
+
+test.describe('Space Station - real WebGL 3-D interior', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => (window as any).__destroy?.()).catch(() => {});
+  });
+
+  test('models push controls, drag-free coasting, handrail reach, and teardown', async ({ page }) => {
+    await mount(page, { postFX: false, reducedMotion: true }, INTERIOR_SEED);
+    await page.waitForFunction(() => {
+      const canvas = (window as any).__canvas?.();
+      return !!(canvas && canvas._issInteriorState && canvas.getAttribute('data-iss-webgl') === 'ready');
+    }, { timeout: 30000 });
+
+    const canvas = page.locator('[data-iss-interior-canvas]');
+    await canvas.focus();
+    await expect(page.locator('.iss-interior-route-map')).toBeVisible();
+    await expect(page.locator('.iss-route-schematic')).toBeVisible();
+    await expect(page.locator('[data-iss-interior-objective]')).toContainText('CURRENT ACTIVITY');
+    await expect(page.locator('[data-iss-interior-next-label]')).toContainText('DESTINY');
+    await expect(page.locator('[data-iss-next-maneuver]')).toBeVisible();
+    await expect(page.locator('[data-iss-interior-mode]')).toHaveText('STATIONARY');
+    const grabButton = page.locator('[data-iss-interior-grab]');
+    expect(await grabButton.evaluate((button) =>
+      ({ disabled: (button as HTMLButtonElement).disabled, tabIndex: (button as HTMLButtonElement).tabIndex }))).toEqual({ disabled: false, tabIndex: 0 });
+    await expect(grabButton).toHaveAttribute('aria-disabled', 'true');
+    const start = await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      return { x: state.position.x, y: state.position.y, z: state.position.z };
+    });
+
+    await page.keyboard.down('w');
+    await page.waitForTimeout(750);
+    await page.keyboard.up('w');
+    await page.waitForTimeout(180);
+    const coasting = await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      return {
+        position: { x: state.position.x, y: state.position.y, z: state.position.z },
+        speed: state.velocity.length(), mode: state.mode,
+      };
+    });
+    expect(Math.hypot(coasting.position.x - start.x, coasting.position.y - start.y, coasting.position.z - start.z)).toBeGreaterThan(0.03);
+    expect(coasting.speed).toBeGreaterThan(0.12);
+    expect(coasting.mode).toContain('COASTING');
+
+    await page.waitForTimeout(320);
+    const later = await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      return {
+        position: { x: state.position.x, y: state.position.y, z: state.position.z },
+        speed: state.velocity.length(),
+      };
+    });
+    expect(Math.hypot(later.position.x - coasting.position.x, later.position.y - coasting.position.y, later.position.z - coasting.position.z)).toBeGreaterThan(0.02);
+    expect(Math.abs(later.speed - coasting.speed)).toBeLessThan(0.015);
+
+    // Space only catches a real handrail within reach. At the module center,
+    // the learner keeps coasting and earns no challenge completion.
+    await grabButton.evaluate((button) => {
+      (button as HTMLButtonElement).focus();
+      (button as HTMLButtonElement).click();
+    });
+    await expect(grabButton).toBeFocused();
+    await page.waitForTimeout(120);
+    const rejected = await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      return { speed: state.velocity.length(), mode: state.mode, railGrabs: state.railGrabs };
+    });
+    expect(rejected.speed).toBeGreaterThan(0.12);
+    expect(rejected.mode).toContain('COASTING');
+    expect(rejected.railGrabs).toBe(0);
+    await expect(page.locator('[data-iss-nav-challenge="rail"]')).not.toHaveClass(/is-complete/);
+    await expect(page.locator('[data-iss-interior-event]')).toContainText('RAIL OUT OF REACH');
+
+    // Move beside the physical Harmony handrail and give the avatar a
+    // controlled 0.21 m/s coast. The catch should now stop motion and score.
+    await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      state.position.set(1.08, -0.99, -12.2);
+      state.velocity.set(0, 0, -0.21);
+      state.mode = 'COASTING // NO DRAG';
+    });
+    await expect(grabButton).toBeEnabled();
+    await expect(grabButton).toHaveAttribute('aria-disabled', 'false');
+    await canvas.focus();
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(120);
+    const stopped = await page.evaluate(() => {
+      const state = (window as any).__canvas()._issInteriorState;
+      return { speed: state.velocity.length(), mode: state.mode, railGrabs: state.railGrabs };
+    });
+    expect(stopped.speed).toBeLessThan(0.001);
+    expect(stopped.mode).toBe('RAIL HOLD');
+    expect(stopped.railGrabs).toBe(1);
+    await expect(page.locator('[data-iss-nav-challenge="rail"]')).toHaveClass(/is-complete/);
+    await expect(page.locator('[data-iss-interior-event]')).toContainText('CONTROLLED RAIL CATCH');
+    expect((await canvas.screenshot()).length).toBeGreaterThan(2000);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+
+    await page.evaluate(() => (window as any).__canvas()._issInteriorCleanup());
+    const cleaned = await page.evaluate(() => {
+      const canvas = (window as any).__canvas();
+      return { init: canvas._issInteriorInit, state: canvas._issInteriorState, cleanup: canvas._issInteriorCleanup };
+    });
+    expect(cleaned).toEqual({ init: false, state: null, cleanup: null });
+  });
+
+  test('shows a usable diagram fallback and shuts down unavailable simulator controls', async ({ page }) => {
+    await mount(page, { postFX: false, reducedMotion: true, failThree: true }, INTERIOR_SEED);
+
+    const shell = page.locator('[data-iss-interior-sim]');
+    const canvas = page.locator('[data-iss-interior-canvas]');
+    const fallback = page.locator('[data-iss-interior-fallback]');
+    const controls = page.locator('.iss-interior-controls');
+    const controlButtons = controls.locator('button');
+
+    await expect(shell).toHaveAttribute('data-iss-webgl-state', 'unavailable');
+    await expect(canvas).toHaveAttribute('data-iss-webgl', 'unavailable');
+    await expect(canvas).toBeHidden();
+    await expect(fallback).toBeVisible();
+    await expect(fallback).toContainText('3-D view is unavailable');
+    await expect(controls).toBeHidden();
+    expect(await controlButtons.count()).toBeGreaterThan(0);
+    expect(await controlButtons.evaluateAll((buttons) => buttons.every((button) => (button as HTMLButtonElement).disabled))).toBe(true);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 });

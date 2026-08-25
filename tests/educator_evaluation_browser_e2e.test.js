@@ -54,6 +54,16 @@ describe('Educator Evaluation — browser e2e', () => {
     await page.waitForTimeout(250);
   };
 
+  const confirmReviewedAction = async (page, confirmLabel) => {
+    const dialog = page.locator('[role="dialog"]', { has: page.locator('#ae-action-review-title') });
+    await dialog.waitFor({ state: 'visible', timeout: 10000 });
+    const confirm = dialog.getByRole('button', { name: confirmLabel, exact: true });
+    expect(await confirm.isDisabled()).toBe(true);
+    await dialog.locator('input[type="checkbox"]').check();
+    await confirm.click();
+    await dialog.waitFor({ state: 'detached', timeout: 10000 });
+  };
+
   it('boots the sample workspace with zero console or page errors', async () => {
     const { page, errors } = await openWorkspace();
     await selectTeacher(page, 'Teacher 03 · T-03');
@@ -203,6 +213,7 @@ describe('Educator Evaluation — browser e2e', () => {
     await firstDomain.locator('input[type="checkbox"]').first().check();
     await page.getByText('I reviewed the evidence and removed student-identifying information.', { exact: true }).locator('..').locator('input[type="checkbox"]').check();
     await page.getByRole('button', { name: 'Publish evidence to teacher', exact: true }).click();
+    await confirmReviewedAction(page, 'Publish formal evidence');
 
     await page.getByRole('button', { name: 'Continue as Fictional educator', exact: true }).click();
     await page.getByLabel('Reflection / self-assessment', { exact: true }).fill('The sentence frame increased participation. Next time I will model one stronger counterexample before group work.');
@@ -217,12 +228,14 @@ describe('Educator Evaluation — browser e2e', () => {
       await observationRationales.nth(index).fill('Fictional evidence and conference record support this human-selected practice rating.');
     }
     await page.getByRole('button', { name: 'Sign evaluator assessment', exact: true }).click();
+    await confirmReviewedAction(page, 'Sign assessment');
 
     await page.getByRole('button', { name: 'Continue as Fictional educator', exact: true }).click();
     await page.getByText('I received this record and had an opportunity to discuss it. I understand acknowledgment does not mean agreement.', { exact: true }).locator('..').locator('input[type="checkbox"]').check();
     await page.getByRole('button', { name: 'Acknowledge receipt', exact: true }).click();
     await page.getByRole('button', { name: 'Continue as Evaluator', exact: true }).click();
     await page.getByRole('button', { name: 'Finalize formal observation', exact: true }).click();
+    await confirmReviewedAction(page, 'Finalize observation');
     await page.getByRole('button', { name: 'Continue to annual rating preview', exact: true }).click();
 
     const annual = page.locator('#ae-annual-rating-composer');
@@ -234,11 +247,18 @@ describe('Educator Evaluation — browser e2e', () => {
     // practice-only and shows none. Either is valid; the rehearsal must complete.
     expect(annualMeasureCount).toBeGreaterThanOrEqual(0);
     for (let index = 0; index < annualMeasureCount; index += 1) await annualMeasures.nth(index).fill(String(2.4 + (index * 0.1)));
+    const annualCards = annual.locator('.ae-rating-card');
+    for (let index = 0; index < 4; index += 1) {
+      const card = annualCards.nth(index);
+      await card.locator('textarea').fill('Fictional cycle evidence supports this human-selected annual domain judgment.');
+      await card.locator('fieldset input[type="checkbox"]').first().check();
+    }
     // The confirmation wording follows the profile: PA names PEERS, Maine names
     // the district-authorized PEPG process.
     await annual.getByText(/I confirm the official (final rating form|summative rating)/)
       .locator('..').locator('input[type="checkbox"]').check();
-    await annual.getByRole('button', { name: 'Record final release', exact: true }).click();
+    await annual.getByRole('button', { name: 'Review final release', exact: true }).click();
+    await confirmReviewedAction(page, 'Confirm final release');
     expect(await page.getByText('Rehearsal complete', { exact: true }).count()).toBeGreaterThan(0);
 
     await page.getByRole('button', { name: 'Review completed fictional cycle', exact: true }).click();

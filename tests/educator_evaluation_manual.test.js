@@ -271,7 +271,7 @@ describe('educator evaluation user manual', () => {
     expect(SOURCE).toMatch(/t\("educator_evaluation\.start_rehearsal_with_m2qc5g", 'Start rehearsal with '\) \+ teacher\.name/);
     for (const phrase of ['Practice one complete fictional evaluation', 'Full-cycle rehearsal coach',
       'Continue as Fictional educator', 'Continue as Evaluator',
-      'Record final release', 'Review completed fictional cycle', 'Rehearsal complete']) {
+      'Review final release', 'Review completed fictional cycle', 'Rehearsal complete']) {
       expect(MANUAL).toContain(phrase);
       expect(SOURCE).toContain(phrase);
     }

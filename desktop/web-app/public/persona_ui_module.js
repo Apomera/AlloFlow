@@ -1,7 +1,7 @@
 (function() {
 'use strict';
   // WCAG 2.2 AA: Accessibility CSS
-  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }"; document.head.appendChild(_s); }
+  if (!document.getElementById("persona-ui-module-a11y")) { var _s = document.createElement("style"); _s.id = "persona-ui-module-a11y"; _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }"; document.head.appendChild(_s); }
 if (window.AlloModules && window.AlloModules.PersonaUIModule) { console.log('[CDN] PersonaUIModule already loaded, skipping'); return; }
 // persona_ui_source.jsx — InteractiveBlueprintCard, HarmonyMeter, CharacterColumn
 // Extracted from AlloFlowANTI.txt for CDN modularization
@@ -150,7 +150,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -184,7 +184,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -313,10 +313,12 @@ const InteractiveBlueprintCard = React.memo(({
     setItems(getPlanItems(config));
   }, [config]);
   const syncChanges = newItems => {
-    setItems(newItems);
+    const existingTextContext = config?.instructionalContext || {};
+    const acceptedItems = existingTextContext.adaptedTextPolicy === 'prohibited' ? newItems.filter(item => item && item.type !== 'simplified') : newItems;
+    setItems(acceptedItems);
     // Carry the row identity back into the config. Without this every teacher
     // edit re-derived positional ids and broke the plan<->resource binding.
-    const resourcePlan = newItems.map(i => ({
+    const resourcePlan = acceptedItems.map(i => ({
       tool: i.type,
       directive: i.directive || "",
       uiId: i.id,
@@ -346,6 +348,12 @@ const InteractiveBlueprintCard = React.memo(({
     }, {});
     const newConfig = {
       ...config,
+      instructionalContext: {
+        ...existingTextContext,
+        adaptedTextPolicy: existingTextContext.adaptedTextPolicy === 'prohibited' ? 'prohibited' : resourcePlan.some(row => row.tool === 'simplified') ? 'include' : 'omit',
+        adaptedTextPolicySource: existingTextContext.adaptedTextPolicy === 'prohibited' ? 'standard' : 'educator',
+        textAccessReason: existingTextContext.adaptedTextPolicy === 'prohibited' ? 'sourced-adaptation-prohibition' : 'educator-choice'
+      },
       resourcePlan,
       recommendedResources: resourcePlan.map(i => i.tool),
       toolDirectives
@@ -381,6 +389,7 @@ const InteractiveBlueprintCard = React.memo(({
     }) || `Moved plan step to position ${nextIndex + 1}.`);
   };
   const handleTypeChange = (index, newType) => {
+    if (newType === 'simplified' && config?.instructionalContext?.adaptedTextPolicy === 'prohibited') return;
     const newItems = [...items];
     newItems[index].type = newType;
     // A resource-type change is a new instructional designation. Do not carry
@@ -423,11 +432,12 @@ const InteractiveBlueprintCard = React.memo(({
     syncChanges(newItems);
   };
   const handleAddStep = () => {
+    const defaultType = config?.instructionalContext?.adaptedTextPolicy === 'prohibited' ? 'glossary' : 'simplified';
     const newItem = {
       id: `new-${Date.now()}`,
-      type: 'simplified',
+      type: defaultType,
       directive: 'New step...',
-      instructionalText: getPlanInstructionalText('simplified', null)
+      instructionalText: getPlanInstructionalText(defaultType, null)
     };
     syncChanges([...items, newItem]);
   };
@@ -455,7 +465,7 @@ const InteractiveBlueprintCard = React.memo(({
       label: t('sidebar.tool_analysis') || 'Analysis'
     }, {
       value: 'simplified',
-      label: t('sidebar.tool_simplified') || 'Simplified Text'
+      label: t('sidebar.tool_simplified') || 'Adapted Text'
     }, {
       value: 'glossary',
       label: t('sidebar.tool_glossary') || 'Glossary'
@@ -523,6 +533,9 @@ const InteractiveBlueprintCard = React.memo(({
   const toggleDesc = id => setOpenDescIds(prev => prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
   const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row => row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
   const blueprintSettings = config?.globalSettings || {};
+  const blueprintTextContext = config?.instructionalContext || {};
+  const blueprintAdaptedPolicy = blueprintTextContext.adaptedTextPolicy || (items.some(item => item && item.type === 'simplified') ? 'include' : 'omit');
+  const blueprintPrimaryAccess = blueprintTextContext.primaryTextAccess || 'available';
   const blueprintVariants = items.flatMap(item => Array.isArray(item.generationVariants) ? item.generationVariants : []);
   const blueprintMatrixModuleReady = (() => {
     try {
@@ -650,6 +663,13 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.audience') || 'Audience', ":"), ' ', blueprintGrades.length ? blueprintGrades.join(', ') : blueprintSettings.gradeLevel || config?.instructionalContext?.instructionalGrade || t('fullpack.current_grade') || 'Current grade', ' · ', /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
   }, t('blueprint.output_languages') || 'Output languages', ":"), ' ', (blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', ')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-1",
+    "data-testid": "bp-text-access-summary"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.primary_text_access') || 'Source text', ":"), ' ', blueprintPrimaryAccess === 'required' ? t('blueprint.primary_text_required') || 'required primary text' : t('blueprint.primary_text_available') || 'available as the primary reference', ' Â· ', /*#__PURE__*/React.createElement("span", {
+    className: "font-semibold"
+  }, t('blueprint.adapted_text') || 'Adapted Text', ":"), ' ', blueprintAdaptedPolicy === 'include' ? t('blueprint.adapted_included') || 'included as a supplemental companion' : blueprintAdaptedPolicy === 'prohibited' ? t('blueprint.adapted_prohibited') || 'not included because a sourced standard prohibits adaptation' : t('blueprint.adapted_omitted') || 'omitted by educator choice'), /*#__PURE__*/React.createElement("div", {
     className: "mt-0.5"
   }, blueprintMatrixUnavailable ? t('blueprint.matrix_unavailable_summary') || 'Exact call, reuse, and audience-version counts are unavailable; Blueprint will not generate until the planner is ready.' : blueprintMatrixReady ? `${blueprintExpectedCalls} ${t('blueprint.new_generations') || 'new generations'} · ${blueprintReuseCount} ${t('blueprint.reused_outputs') || 'existing outputs reused'}` : t('blueprint.matrix_refresh_pending') || 'The exact reuse and variant matrix will be refreshed before generation because this plan was edited.'), blueprintSettings.translationMode && /*#__PURE__*/React.createElement("div", {
     className: "mt-0.5",
@@ -764,7 +784,8 @@ const InteractiveBlueprintCard = React.memo(({
     className: "w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
   }, toolOptions.map(opt => /*#__PURE__*/React.createElement("option", {
     key: opt.value,
-    value: opt.value
+    value: opt.value,
+    disabled: opt.value === 'simplified' && blueprintAdaptedPolicy === 'prohibited'
   }, opt.label))), getToolDesc(item.type) && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[10px] leading-snug text-slate-600",
     "aria-live": "polite"
@@ -1120,7 +1141,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {

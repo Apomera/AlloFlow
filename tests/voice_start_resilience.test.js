@@ -96,6 +96,86 @@ describe('a hanging on-device probe cannot leave the mic closed', () => {
   });
 });
 
+describe('shared recognizer startup unwinds honestly', () => {
+  const makeVoiceService = (recognizerFactory) => {
+    const release = vi.fn(() => true);
+    return {
+      release,
+      service: {
+        acquireVoiceSession: vi.fn(() => ({
+          update: vi.fn(() => true),
+          isActive: vi.fn(() => true),
+          release,
+        })),
+        createHandsFreeRecognizer: vi.fn(recognizerFactory),
+      },
+    };
+  };
+
+  it.each([
+    ['returns false', () => ({ start: vi.fn(() => false) })],
+    ['returns no recognizer', () => null],
+  ])('clears active UI and releases its lease when the provider %s', (_label, factory) => {
+    const setVoiceActive = vi.fn();
+    const { service, release } = makeVoiceService(factory);
+    const loop = AC.createVoiceLoop(
+      () => ({ t: (key, fallback) => fallback, addToast: vi.fn(), setVoiceActive }),
+      { voiceService: service },
+    );
+
+    expect(loop.start()).toBe(false);
+    expect(loop.isActive()).toBe(false);
+    expect(loop.getState().speaking).toBe(false);
+    expect(setVoiceActive).toHaveBeenLastCalledWith(false);
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('contains a provider exception and remains restartable', () => {
+    const setVoiceActive = vi.fn();
+    let attempt = 0;
+    const recognizer = { start: vi.fn(() => true), abort: vi.fn() };
+    const { service, release } = makeVoiceService(() => {
+      attempt += 1;
+      if (attempt === 1) throw new Error('provider exploded');
+      return recognizer;
+    });
+    const loop = AC.createVoiceLoop(
+      () => ({ t: (key, fallback) => fallback, addToast: vi.fn(), setVoiceActive }),
+      { voiceService: service },
+    );
+
+    expect(() => loop.start()).not.toThrow();
+    expect(loop.isActive()).toBe(false);
+    expect(release).toHaveBeenCalledTimes(1);
+    expect(loop.start(), 'a failed optimistic start cannot poison the next attempt').toBe(true);
+    expect(loop.isActive()).toBe(true);
+    loop.stop();
+  });
+
+  it('does not create an orphan spoken acknowledgement after full teardown', () => {
+    const previousSpeech = window.speechSynthesis;
+    const previousUtterance = window.SpeechSynthesisUtterance;
+    const speak = vi.fn();
+    window.speechSynthesis = { speak, cancel: vi.fn(), getVoices: vi.fn(() => []) };
+    window.SpeechSynthesisUtterance = function FakeUtterance(text) { this.text = text; };
+    const { service } = makeVoiceService(() => ({ start: vi.fn(() => true), abort: vi.fn() }));
+    const loop = AC.createVoiceLoop(
+      () => ({ t: (key, fallback) => fallback, addToast: vi.fn(), setVoiceActive: vi.fn() }),
+      { voiceService: service },
+    );
+    try {
+      expect(loop.start()).toBe(true);
+      speak.mockClear();
+      loop.stop();
+      expect(speak, 'the stopped loop no longer owns a skippable audio surface').not.toHaveBeenCalled();
+      expect(loop.getState()).toMatchObject({ active: false, speaking: false });
+    } finally {
+      window.speechSynthesis = previousSpeech;
+      window.SpeechSynthesisUtterance = previousUtterance;
+    }
+  });
+});
+
 describe('desktop Whisper continuous-turn parity', () => {
   it.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'])('%s finalizes speech on a natural pause', (file) => {
     const source = readFileSync(file, 'utf8');

@@ -69,7 +69,156 @@
   // COMPILED COMPONENTS
   // ═══════════════════════════════════════════════════════════════
 
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech", disableAnimations = false }) => {
+const ALLOBOT_BUBBLE_CSS = `
+  .allobot-speech-bubble {
+      --allobot-bubble-bg: #FFFFFF;
+      --allobot-bubble-text: #312E81;
+      --allobot-bubble-border: #E0E7FF;
+      --allobot-bubble-accent: #4338CA;
+      --allobot-bubble-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      position: absolute;
+      box-sizing: border-box;
+      z-index: 50;
+      width: max-content;
+      max-width: min(200px, calc(100vw - 24px));
+      padding: 12px 16px;
+      border: 1px solid var(--allobot-bubble-border);
+      border-radius: 16px;
+      background: var(--allobot-bubble-bg);
+      color: var(--allobot-bubble-text);
+      box-shadow: var(--allobot-bubble-shadow);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+      transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-theme="dark"] {
+      --allobot-bubble-bg: #0F172A;
+      --allobot-bubble-text: #F8FAFC;
+      --allobot-bubble-border: #64748B;
+      --allobot-bubble-accent: #C7D2FE;
+      --allobot-bubble-shadow: 0 14px 32px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  .allobot-speech-bubble[data-allobot-bubble-theme="contrast"] {
+      --allobot-bubble-bg: #FFFFFF;
+      --allobot-bubble-text: #000000;
+      --allobot-bubble-border: #000000;
+      --allobot-bubble-accent: #000000;
+      --allobot-bubble-shadow: 4px 4px 0 #000000;
+      border-width: 2px;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"] { border-radius: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-state="visible"] {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+  }
+  .allobot-speech-bubble[data-allobot-bubble-motion="static"] { transition: none; }
+  .allobot-speech-bubble[data-allobot-bubble-placement="top-right"] {
+      inset: auto 0 100% auto;
+      margin: 0 0 16px;
+      transform-origin: bottom right;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="top-left"] {
+      inset: auto auto 100% 0;
+      margin: 0 0 16px;
+      transform-origin: bottom left;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="bottom-right"] {
+      inset: 100% 0 auto auto;
+      margin: 16px 0 0;
+      transform-origin: top right;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="bottom-left"] {
+      inset: 100% auto auto 0;
+      margin: 16px 0 0;
+      transform-origin: top left;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"][data-allobot-bubble-placement="top-right"] {
+      right: 48px;
+      margin-bottom: 4px;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"][data-allobot-bubble-placement="top-left"] {
+      left: 48px;
+      margin-bottom: 4px;
+  }
+  .allobot-bubble-live {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+  }
+  .allobot-bubble-text { display: block; }
+  .allobot-bubble-read-more {
+      display: inline-flex;
+      min-height: 24px;
+      align-items: center;
+      margin-top: 4px;
+      padding: 0 4px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--allobot-bubble-accent);
+      font-size: 11px;
+      font-weight: 900;
+      text-decoration: underline;
+      cursor: pointer;
+      pointer-events: auto;
+  }
+  .allobot-bubble-read-more:focus-visible {
+      outline: 2px solid var(--allobot-bubble-accent);
+      outline-offset: 2px;
+  }
+  .allobot-speech-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow="top-right"],
+  .allobot-speech-arrow[data-allobot-speech-arrow="top-left"] {
+      top: 100%;
+      border-top: 8px solid var(--allobot-bubble-bg);
+      border-bottom: 0;
+      filter: drop-shadow(0 1px 0 var(--allobot-bubble-border));
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow="bottom-right"],
+  .allobot-speech-arrow[data-allobot-speech-arrow="bottom-left"] {
+      bottom: 100%;
+      border-top: 0;
+      border-bottom: 8px solid var(--allobot-bubble-bg);
+      filter: drop-shadow(0 -1px 0 var(--allobot-bubble-border));
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow$="right"] { right: 24px; }
+  .allobot-speech-arrow[data-allobot-speech-arrow$="left"] { left: 24px; }
+  .allobot-thought-dot {
+      position: absolute;
+      box-sizing: border-box;
+      border: 1px solid var(--allobot-bubble-border);
+      border-radius: 9999px;
+      background: var(--allobot-bubble-bg);
+  }
+  .allobot-thought-dot[data-allobot-thought-dot="large"] { width: 12px; height: 12px; }
+  .allobot-thought-dot[data-allobot-thought-dot="small"] { width: 6px; height: 6px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="top"] .allobot-thought-dot[data-allobot-thought-dot="large"] { bottom: -16px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="top"] .allobot-thought-dot[data-allobot-thought-dot="small"] { bottom: -28px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="bottom"] .allobot-thought-dot[data-allobot-thought-dot="large"] { top: -16px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="bottom"] .allobot-thought-dot[data-allobot-thought-dot="small"] { top: -28px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="right"] .allobot-thought-dot[data-allobot-thought-dot="large"] { right: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="right"] .allobot-thought-dot[data-allobot-thought-dot="small"] { right: 20px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="large"] { left: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="small"] { left: 20px; }
+`;
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = "speech", disableAnimations = false, theme = "light" }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState("top-right");
@@ -155,16 +304,19 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
     "bottom-left": "bottom-full left-6 border-b-[8px] border-x-[6px] border-t-0 border-b-white border-x-transparent"
   };
   const renderThoughtTrail = () => {
-    const isTop = placement.includes("top");
-    const isRight = placement.includes("right");
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: `absolute w-3 h-3 bg-white border border-indigo-100 rounded-full ${isTop ? "-bottom-4" : "-top-4"} ${isRight ? "right-8" : "left-8"}` }), /* @__PURE__ */ React.createElement("div", { className: `absolute w-1.5 h-1.5 bg-white border border-indigo-100 rounded-full ${isTop ? "-bottom-7" : "-top-7"} ${isRight ? "right-5" : "left-5"}` }));
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "data-allobot-thought-dot": "large", className: "allobot-thought-dot" }), /* @__PURE__ */ React.createElement("div", { "data-allobot-thought-dot": "small", className: "allobot-thought-dot" }));
   };
-  return /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, ALLOBOT_BUBBLE_CSS), /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: bubbleRef,
+      "data-allobot-bubble": variant,
+      "data-allobot-bubble-theme": theme,
+      "data-allobot-bubble-placement": placement,
+      "data-allobot-bubble-state": isVisible ? "visible" : "hidden",
+      "data-allobot-bubble-motion": disableAnimations ? "static" : "animated",
       className: `
-            absolute ${posClasses[placement]}
+            allobot-speech-bubble absolute ${posClasses[placement]}
             bg-white text-indigo-900 text-xs font-bold px-4 py-3
             shadow-xl border border-indigo-100
             transition-all motion-reduce:transition-none duration-300 ease-out
@@ -173,8 +325,8 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
             ${isVisible ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2"}
         `
     },
-    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, isVisible ? text : ""),
-    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, displayedText),
+    /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only allobot-bubble-live" }, isVisible ? text : ""),
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "allobot-bubble-text" }, displayedText),
     isVisible && isTruncated && displayedText.length === text?.length && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -183,16 +335,208 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
           e.stopPropagation();
           if (onReadMore) onReadMore();
         },
-        className: "mt-1 inline-flex min-h-6 items-center px-1 text-[11px] font-black text-indigo-700 hover:text-indigo-900 underline cursor-pointer pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+        className: "allobot-bubble-read-more mt-1 inline-flex min-h-6 items-center px-1 text-[11px] font-black text-indigo-700 hover:text-indigo-900 underline cursor-pointer pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
       },
       t("common.read_more")
     ),
-    variant === "speech" ? /* @__PURE__ */ React.createElement("div", { className: `absolute w-0 h-0 ${arrowClasses[placement]}` }) : renderThoughtTrail()
-  );
+    variant === "speech" ? /* @__PURE__ */ React.createElement("div", { "data-allobot-speech-arrow": placement, className: `allobot-speech-arrow absolute w-0 h-0 ${arrowClasses[placement]}` }) : renderThoughtTrail()
+  ));
 });
+const ALLOBOT_EFFECTS_CSS = `
+  .allobot-effect-layer {
+      pointer-events: none;
+      user-select: none;
+  }
+  .allobot-landing-dust {
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      z-index: -1;
+      width: 96px;
+      height: 48px;
+      overflow: visible;
+      transform: translateX(-50%);
+  }
+  .allobot-dust-cloud {
+      position: absolute;
+      left: 50%;
+      border-radius: 9999px;
+      will-change: transform, opacity;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="left"],
+  .allobot-dust-cloud[data-allobot-dust-cloud="right"] {
+      bottom: 8px;
+      width: 32px;
+      height: 32px;
+      margin-left: -16px;
+      background: radial-gradient(circle, rgba(203, 213, 225, 0.72) 0%, rgba(226, 232, 240, 0.42) 48%, rgba(248, 250, 252, 0) 74%);
+      filter: blur(5px);
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="left"] {
+      animation: allobot-effect-dust-left 0.6s ease-out forwards;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="right"] {
+      animation: allobot-effect-dust-right 0.6s ease-out forwards;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="puff"] {
+      bottom: 4px;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.92) 0%, rgba(226, 232, 240, 0.52) 55%, rgba(255, 255, 255, 0) 76%);
+      filter: blur(3px);
+      animation: allobot-effect-dust-puff 0.8s ease-out forwards;
+  }
+  @keyframes allobot-effect-dust-left {
+      0% { transform: translateX(0) scale(0.5); opacity: 0.68; }
+      100% { transform: translateX(-32px) translateY(-6px) scale(1.55); opacity: 0; }
+  }
+  @keyframes allobot-effect-dust-right {
+      0% { transform: translateX(0) scale(0.5); opacity: 0.68; }
+      100% { transform: translateX(32px) translateY(-6px) scale(1.55); opacity: 0; }
+  }
+  @keyframes allobot-effect-dust-puff {
+      0% { transform: translateY(0) scale(0.45); opacity: 0.9; }
+      100% { transform: translateY(-16px) scale(2.1); opacity: 0; }
+  }
+  .allobot-jetpack-particles {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: visible;
+  }
+  .allobot-jetpack-particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 9999px;
+      background: #F59E0B;
+      box-shadow: 0 0 7px rgba(251, 191, 36, 0.75);
+      filter: blur(2px);
+      animation-name: allobot-effect-jetpack-smoke;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+      will-change: transform, opacity, filter;
+  }
+  @keyframes allobot-effect-jetpack-smoke {
+      0% {
+          transform: translate(0, 0) scale(0.45);
+          background: #F59E0B;
+          box-shadow: 0 0 8px rgba(251, 191, 36, 0.82);
+          filter: blur(1px);
+          opacity: 0.95;
+      }
+      38% {
+          background: #FBBF24;
+          box-shadow: 0 0 4px rgba(251, 191, 36, 0.42);
+          opacity: 0.72;
+      }
+      100% {
+          transform: translate(var(--drift), 100px) scale(2.5);
+          background: #E2E8F0;
+          box-shadow: none;
+          filter: blur(5px);
+          opacity: 0;
+      }
+  }
+  .allobot-reaction-bubble {
+      position: absolute;
+      top: -4px;
+      right: 50%;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 2px solid rgba(129, 140, 248, 0.68);
+      border-radius: 9999px;
+      background: radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.99), rgba(238, 242, 255, 0.95) 62%, rgba(199, 210, 254, 0.92));
+      box-shadow: 0 8px 18px rgba(49, 46, 129, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      font-size: 34px;
+      line-height: 1;
+      isolation: isolate;
+      filter: saturate(1.08);
+      animation: allobot-effect-float-reaction 1.5s ease-out forwards;
+      will-change: transform, opacity;
+  }
+  .allobot-reaction-bubble::before {
+      content: '';
+      position: absolute;
+      inset: -7px;
+      z-index: -1;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(165, 180, 252, 0.38), rgba(165, 180, 252, 0));
+  }
+  .allobot-reaction-bubble::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  }
+  @keyframes allobot-effect-float-reaction {
+      0% { transform: translate(50%, 0) scale(0.5) rotate(-5deg); opacity: 0; }
+      18% { transform: translate(50%, -30px) scale(1.14) rotate(4deg); opacity: 1; }
+      38% { transform: translate(50%, -42px) scale(1) rotate(-2deg); opacity: 1; }
+      100% { transform: translate(50%, -104px) scale(0.92) rotate(3deg); opacity: 0; }
+  }
+  .allobot-confetti-burst {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: -1;
+      width: 0;
+      height: 0;
+      overflow: visible;
+  }
+  .allobot-confetti-burst::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(129, 140, 248, 0.72);
+      border-radius: 9999px;
+      animation: allobot-effect-confetti-ring 0.55s ease-out forwards;
+  }
+  .allobot-confetti-particle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: allobot-effect-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: transform, opacity;
+  }
+  .allobot-confetti-particle[data-allobot-confetti-shape="round"] { border-radius: 9999px; }
+  .allobot-confetti-particle[data-allobot-confetti-shape="square"] { border-radius: 2px; }
+  .allobot-confetti-particle[data-allobot-confetti-shape="dash"] { border-radius: 9999px; }
+  @keyframes allobot-effect-confetti-ring {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; }
+  }
+  @keyframes allobot-effect-confetti {
+      0% { transform: translate(-50%, -50%) scale(0.55) rotate(0deg); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.18) rotate(var(--spin)); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+      .allobot-dust-cloud,
+      .allobot-jetpack-particle,
+      .allobot-reaction-bubble,
+      .allobot-confetti-burst::before,
+      .allobot-confetti-particle {
+          animation-duration: 1ms !important;
+          animation-delay: 0ms !important;
+      }
+  }
+`;
+const AlloEffectStyles = () => /* @__PURE__ */ React.createElement("style", { "data-allobot-effect-styles": "true" }, ALLOBOT_EFFECTS_CSS);
 const LandingDust = ({ active }) => {
   if (!active) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center items-end w-24 h-12 pointer-events-none z-[-1]" }, /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-left" }), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-right" }), /* @__PURE__ */ React.createElement("div", { className: "absolute bottom-1 w-6 h-6 bg-white/60 rounded-full blur-sm animate-dust-puff" }));
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AlloEffectStyles, null), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", "data-allobot-effect": "landing-dust", className: "allobot-effect-layer allobot-landing-dust" }, /* @__PURE__ */ React.createElement("div", { "data-allobot-dust-cloud": "left", className: "allobot-dust-cloud" }), /* @__PURE__ */ React.createElement("div", { "data-allobot-dust-cloud": "right", className: "allobot-dust-cloud" }), /* @__PURE__ */ React.createElement("div", { "data-allobot-dust-cloud": "puff", className: "allobot-dust-cloud" })));
 };
 const JetpackParticles = ({ active }) => {
   const [particles, setParticles] = useState([]);
@@ -221,29 +565,41 @@ const JetpackParticles = ({ active }) => {
       return () => clearTimeout(timer);
     }
   }, [particles, active]);
-  return /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none z-0" }, particles.map((p) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AlloEffectStyles, null), /* @__PURE__ */ React.createElement(
     "div",
     {
-      key: p.id,
-      className: "absolute w-3 h-3 rounded-full blur-[2px] animate-jetpack-smoke",
-      style: {
-        left: p.side === "left" ? `calc(20% + ${p.offset}px)` : `calc(80% + ${p.offset}px)`,
-        top: "82%",
-        "--drift": `${p.drift}px`,
-        animationDuration: `${p.speed}s`
-      },
-      onAnimationEnd: () => setParticles((prev) => prev.filter((item) => item.id !== p.id))
-    }
-  )));
+      "aria-hidden": "true",
+      "data-allobot-effect": "jetpack-particles",
+      "data-allobot-effect-state": active ? "active" : "idle",
+      className: "allobot-effect-layer allobot-jetpack-particles"
+    },
+    particles.map((p) => /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        key: p.id,
+        "data-allobot-jetpack-side": p.side,
+        className: "allobot-jetpack-particle",
+        style: {
+          left: p.side === "left" ? `calc(20% + ${p.offset}px)` : `calc(80% + ${p.offset}px)`,
+          top: "82%",
+          "--drift": `${p.drift}px`,
+          animationDuration: `${p.speed}s`
+        },
+        onAnimationEnd: () => setParticles((prev) => prev.filter((item) => item.id !== p.id))
+      }
+    ))
+  ));
 };
-const ReactionBubble = ({ emoji, onComplete }) => /* @__PURE__ */ React.createElement(
+const ReactionBubble = ({ emoji, onComplete }) => /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AlloEffectStyles, null), /* @__PURE__ */ React.createElement(
   "div",
   {
-    className: "absolute top-0 right-1/2 translate-x-1/2 text-4xl animate-float-reaction pointer-events-none select-none z-50 filter drop-shadow-md",
+    "aria-hidden": "true",
+    "data-allobot-effect": "reaction-bubble",
+    className: "allobot-effect-layer allobot-reaction-bubble",
     onAnimationEnd: onComplete
   },
   emoji
-);
+));
 const BotConfettiBurst = ({ onComplete }) => {
   const calledRef = useRef(false);
   const handleEnd = () => {
@@ -258,24 +614,28 @@ const BotConfettiBurst = ({ onComplete }) => {
     dist: 80 + Math.random() * 50,
     color: ["#FCD34D", "#F87171", "#60A5FA", "#34D399", "#A78BFA", "#F472B6"][Math.floor(Math.random() * 6)],
     size: 4 + Math.random() * 4,
-    delay: Math.random() * 0.1
+    delay: Math.random() * 0.1,
+    shape: ["round", "square", "dash"][i % 3],
+    spin: (i % 2 === 0 ? 1 : -1) * (360 + Math.random() * 360)
   })), []);
-  return /* @__PURE__ */ React.createElement("div", { className: "absolute top-1/2 left-1/2 w-0 h-0 z-[-1] pointer-events-none" }, particles.map((p, i) => /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(AlloEffectStyles, null), /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", "data-allobot-effect": "confetti-burst", className: "allobot-effect-layer allobot-confetti-burst" }, particles.map((p, i) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: p.id,
-      className: "absolute rounded-full animate-bot-confetti",
+      "data-allobot-confetti-shape": p.shape,
+      className: "allobot-confetti-particle",
       style: {
         backgroundColor: p.color,
-        width: p.size,
-        height: p.size,
+        width: p.shape === "dash" ? p.size * 1.8 : p.size,
+        height: p.shape === "dash" ? p.size * 0.58 : p.size,
         "--tx": `${Math.cos(p.angle * Math.PI / 180) * p.dist}px`,
         "--ty": `${Math.sin(p.angle * Math.PI / 180) * p.dist}px`,
+        "--spin": `${p.spin}deg`,
         animationDelay: `${p.delay}s`
       },
       onAnimationEnd: i === 0 ? handleEnd : void 0
     }
-  )));
+  ))));
 };
 const MIC_METER_BARS = 5;
 const AlloMicMeter = React.memo(({ active, motionDisabled, placement = "below" }) => {
@@ -1114,15 +1474,91 @@ const alloBotGenerationFamily = (generationType, activeView) => {
   const view = String(activeView || "").trim().toLowerCase();
   return ALLOBOT_GENERATION_FAMILY_BY_TYPE[explicit] || ALLOBOT_GENERATION_FAMILY_BY_TYPE[view] || "generic";
 };
+const ALLOBOT_SIDE_ACCESSORY_SIDE = Object.freeze({
+  microscope: "left",
+  historian: "left",
+  "teacher-stack": "left",
+  "persona-masks": "left",
+  "sentence-frames": "right",
+  "outline-doc": "left",
+  "sticky-notes": "left",
+  "anchor-easel": "left",
+  "behavior-watch": "left",
+  "choice-fan": "left",
+  "alignment-target": "left",
+  "wayfinder-sign": "left",
+  "question-cards": "left",
+  "test-prep-kit": "left",
+  "source-inbox": "left",
+  "progress-orbit": "left",
+  "maze-scroll": "left",
+  "resource-folder": "left",
+  "math-tools": "left",
+  gear: "left",
+  "game-pad": "left"
+});
+const ALLOBOT_SIDE_ACCESSORY_ACCENT = Object.freeze({
+  microscope: "#22D3EE",
+  historian: "#F59E0B",
+  "teacher-stack": "#EF4444",
+  "persona-masks": "#A78BFA",
+  "sentence-frames": "#EC4899",
+  "outline-doc": "#6366F1",
+  "sticky-notes": "#FACC15",
+  "anchor-easel": "#22C55E",
+  "behavior-watch": "#06B6D4",
+  "choice-fan": "#8B5CF6",
+  "alignment-target": "#F43F5E",
+  "wayfinder-sign": "#F59E0B",
+  "question-cards": "#A855F7",
+  "test-prep-kit": "#F59E0B",
+  "source-inbox": "#3B82F6",
+  "progress-orbit": "#10B981",
+  "maze-scroll": "#F97316",
+  "resource-folder": "#EAB308",
+  "math-tools": "#3B82F6",
+  gear: "#94A3B8",
+  "game-pad": "#EC4899"
+});
+const ALLOBOT_SIDE_ACCESSORY_SCALE = Object.freeze({
+  microscope: 1,
+  historian: 1.06,
+  "teacher-stack": 1.05,
+  "persona-masks": 1.02,
+  "sentence-frames": 1,
+  "outline-doc": 1.04,
+  "sticky-notes": 1.05,
+  "anchor-easel": 1,
+  "behavior-watch": 1.1,
+  "choice-fan": 1.04,
+  "alignment-target": 1.05,
+  "wayfinder-sign": 1,
+  "question-cards": 1.03,
+  "test-prep-kit": 1.05,
+  "source-inbox": 1.06,
+  "progress-orbit": 1.05,
+  "maze-scroll": 1.04,
+  "resource-folder": 1.06,
+  "math-tools": 1.03,
+  gear: 1.1,
+  "game-pad": 1.1
+});
+const ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE = Object.freeze({
+  "persona-masks": 6,
+  "sentence-frames": 10,
+  "choice-fan": 2
+});
+const ALLOBOT_AVATAR_WIDTH = 64;
+const ALLOBOT_PROP_SAFE_GUTTER = 46;
 const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = "light", colorOverlay = "none", onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = "", generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 18e4 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
-  const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none";
+  const satelliteBase = coarsePointer ? "inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none allobot-satellite-control" : "inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none allobot-satellite-control";
   const satellitePos = {
-    tl: coarsePointer ? "absolute -top-2.5 -left-2.5" : "absolute -top-2 -left-2",
-    tr: coarsePointer ? "absolute -top-2.5 -right-2.5" : "absolute -top-2 -right-2",
-    bl: coarsePointer ? "absolute -bottom-2.5 -left-2.5" : "absolute -bottom-1 -left-2",
-    br: coarsePointer ? "absolute -bottom-2.5 -right-2.5" : "absolute -bottom-1 -right-2"
+    tl: coarsePointer ? "absolute -top-2.5 -left-2.5 allobot-satellite--tl" : "absolute -top-2 -left-2 allobot-satellite--tl",
+    tr: coarsePointer ? "absolute -top-2.5 -right-2.5 allobot-satellite--tr" : "absolute -top-2 -right-2 allobot-satellite--tr",
+    bl: coarsePointer ? "absolute -bottom-2.5 -left-2.5 allobot-satellite--bl" : "absolute -bottom-1 -left-2 allobot-satellite--bl",
+    br: coarsePointer ? "absolute -bottom-2.5 -right-2.5 allobot-satellite--br" : "absolute -bottom-1 -right-2 allobot-satellite--br"
   };
   const stopTouch = (e) => e.stopPropagation();
   const satelliteIconSize = coarsePointer ? 16 : 12;
@@ -1135,6 +1571,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
       return { x: 24, y: 20 };
     }
   });
+  const [viewportWidth, setViewportWidth] = useState(() => {
+    try {
+      return typeof window !== "undefined" ? window.innerWidth : 1024;
+    } catch (e) {
+      return 1024;
+    }
+  });
+  useEffect(() => {
+    if (typeof window === "undefined") return void 0;
+    const syncViewportWidth = () => setViewportWidth(window.innerWidth || 1024);
+    syncViewportWidth();
+    window.addEventListener("resize", syncViewportWidth);
+    return () => window.removeEventListener("resize", syncViewportWidth);
+  }, []);
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState("");
   const [isHovered, setIsHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
@@ -1276,6 +1726,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   const [idleAnimation, setIdleAnimation] = useState(null);
   const [internalMood, setInternalMood] = useState(null);
   const effectiveMood = internalMood || mood;
+  const svgPaintPrefix = `allobot-${React.useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const svgPaintIds = {
+    body: `${svgPaintPrefix}-body-${effectiveMood}`,
+    rim: `${svgPaintPrefix}-rim`,
+    hologram: `${svgPaintPrefix}-hologram`,
+    beam: `${svgPaintPrefix}-beam`,
+    visor: `${svgPaintPrefix}-visor`,
+    groundShadow: `${svgPaintPrefix}-ground-shadow`,
+    heldItem: `${svgPaintPrefix}-held-item`,
+    accessories: `${svgPaintPrefix}-accessories`
+  };
   const generationProgressCurrent = Number(generationProgress?.current);
   const generationProgressTotal = Number(generationProgress?.total);
   const generationProgressFraction = Number.isFinite(generationProgressCurrent) && Number.isFinite(generationProgressTotal) && generationProgressTotal > 0 ? Math.min(1, Math.max(0, generationProgressCurrent / generationProgressTotal)) : null;
@@ -1387,6 +1848,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     if (isFlightActive || isSleeping) return null;
     switch (activeView) {
       case "math":
+        return "calculator";
+      case "math-fluency-maze":
         return "calculator";
       case "adventure":
         return "map";
@@ -2619,8 +3082,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         ...base,
         gradFrom: "#FACC15",
         gradTo: "#CA8A04",
-        eye: "#000000",
-        mouth: "#000000",
+        eye: "#FFFFFF",
+        mouth: "#FACC15",
         glow: "#FFFFFF",
         screenBg: "#000000",
         antenna: "#FACC15",
@@ -2674,6 +3137,30 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }, 200);
     return () => clearTimeout(t2);
   }, [targetAccessory, displayedAccessory, motionDisabled, isSleeping]);
+  const accessoryPreferredSide = ALLOBOT_SIDE_ACCESSORY_SIDE[effectiveAccessory] || null;
+  const botLeftRoom = Math.max(0, viewportWidth - position.x - ALLOBOT_AVATAR_WIDTH);
+  const botRightRoom = Math.max(0, position.x);
+  let accessoryRenderSide = accessoryPreferredSide;
+  if (accessoryPreferredSide === "left" && botLeftRoom < ALLOBOT_PROP_SAFE_GUTTER && botRightRoom > botLeftRoom) {
+    accessoryRenderSide = "right";
+  } else if (accessoryPreferredSide === "right" && botRightRoom < ALLOBOT_PROP_SAFE_GUTTER && botLeftRoom > botRightRoom) {
+    accessoryRenderSide = "left";
+  }
+  const accessoryShiftX = !accessoryPreferredSide || accessoryRenderSide === accessoryPreferredSide ? 0 : accessoryPreferredSide === "left" ? 124 : -100;
+  const accessoryGapNudge = ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE[effectiveAccessory] || 0;
+  const accessoryTranslateX = accessoryShiftX + (accessoryRenderSide === "left" ? -accessoryGapNudge : accessoryRenderSide === "right" ? accessoryGapNudge : 0);
+  const accessoryAccent = ALLOBOT_SIDE_ACCESSORY_ACCENT[effectiveAccessory] || colors.glow;
+  const accessoryScale = ALLOBOT_SIDE_ACCESSORY_SCALE[effectiveAccessory] || 1;
+  const accessoryDepthFilter = !accessoryRenderSide ? void 0 : theme === "contrast" ? "drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #FFF)" : theme === "dark" ? "drop-shadow(0 1.4px 1.4px rgba(0,0,0,0.72)) drop-shadow(0 0 0.8px rgba(255,255,255,0.22))" : "drop-shadow(0 1.3px 1.2px rgba(15,23,42,0.28))";
+  const propGazeX = accessoryRenderSide === "left" ? -1.6 : accessoryRenderSide === "right" ? 1.6 : 0;
+  const propGazeY = accessoryRenderSide ? 0.55 : 0;
+  const resolvedGazeX = Math.max(-3.2, Math.min(3.2, eyePosition.x + propGazeX));
+  const resolvedGazeY = Math.max(-2.2, Math.min(2.2, eyePosition.y + propGazeY));
+  const leftHandX = accessoryRenderSide === "left" ? 6.5 : 10;
+  const leftHandY = accessoryRenderSide === "left" ? 63.5 : 65;
+  const rightHandX = accessoryRenderSide === "right" ? 93.5 : 90;
+  const rightHandY = accessoryRenderSide === "right" ? 63.5 : 65;
+  const heldItemRenderSide = heldItem && accessoryRenderSide === "right" ? "left" : "right";
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case "happy":
@@ -2713,7 +3200,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
     }
   };
-  const trailFilter = isFlightActive ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)` : "none";
+  const avatarDepthFilter = theme === "contrast" ? "drop-shadow(0 2px 0 #000000)" : theme === "dark" ? "drop-shadow(0 2px 3px rgba(0,0,0,0.70)) drop-shadow(0 0 1px rgba(255,255,255,0.16))" : "drop-shadow(0 2px 3px rgba(15,23,42,0.28))";
+  const trailFilter = isFlightActive ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)` : avatarDepthFilter;
   const renderHologramContent = () => {
     const generationFamily = alloBotGenerationFamily(generationType, activeView);
     switch (generationFamily) {
@@ -2792,6 +3280,78 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
     }
   };
   return /* @__PURE__ */ React.createElement("aside", { "aria-label": t("bot.assistant_landmark") || "AlloBot assistant" }, /* @__PURE__ */ React.createElement("p", { id: "allobot-move-instructions", className: "sr-only" }, t("bot.move_instructions") || "Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step."), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, keyboardMoveStatus), /* @__PURE__ */ React.createElement("style", null, `
+        /* Orbit controls own their essential geometry and state colors so the
+           external Allobot module remains polished in desktop/embedded hosts
+           that do not provide the app's Tailwind bundle. Tailwind utilities
+           remain on the elements as progressive enhancement. */
+        .allobot-satellite-control {
+            position: absolute;
+            box-sizing: border-box;
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border: 2px solid #E0E7FF;
+            border-radius: 9999px;
+            background: #FFFFFF;
+            color: #6366F1;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+            opacity: 0;
+            transform: scale(0.75);
+            transform-origin: center;
+            transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+            appearance: none;
+            cursor: pointer;
+            z-index: 50;
+        }
+        .allobot-satellite--tl { top: -8px; left: -8px; }
+        .allobot-satellite--tr { top: -8px; right: -8px; }
+        .allobot-satellite--bl { bottom: -4px; left: -8px; }
+        .allobot-satellite--br { bottom: -4px; right: -8px; }
+        .group:hover .allobot-satellite-control,
+        .group:focus-within .allobot-satellite-control,
+        .allobot-satellite-control:focus-visible { opacity: 1; }
+        .allobot-satellite-control:hover,
+        .allobot-satellite-control:focus-visible { transform: scale(1); }
+        .allobot-satellite-control[data-allobot-satellite-kind="hide"] {
+            background: #E2E8F0;
+            color: #475569;
+            border-color: #FFFFFF;
+        }
+        .allobot-satellite-control[data-allobot-satellite-kind="hide"]:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        .allobot-satellite-control[data-allobot-satellite-state="muted"] {
+            background: #F1F5F9;
+            color: #475569;
+            border-color: #CBD5E1;
+        }
+        .allobot-satellite-control[data-allobot-satellite-state="listening"] {
+            background: #B91C1C;
+            color: #FFFFFF;
+            border-color: #F87171;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 10px rgba(15, 23, 42, 0.2);
+        }
+        @media (hover: none), (pointer: coarse) {
+            .allobot-satellite-control {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                padding: 8px;
+                opacity: 1;
+                transform: scale(1);
+            }
+            .allobot-satellite--tl { top: -10px; left: -10px; }
+            .allobot-satellite--tr { top: -10px; right: -10px; }
+            .allobot-satellite--bl { bottom: -10px; left: -10px; }
+            .allobot-satellite--br { bottom: -10px; right: -10px; }
+        }
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
@@ -2940,8 +3500,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
         }
         .animate-bot-breathe { animation: bot-breathe 3s ease-in-out infinite; }
         @keyframes shadow-pulse {
-            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
-            50% { transform: translateY(8px) scale(0.6); opacity: 0.05; }
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
+            50% { transform: translateY(8px) scale(0.6); opacity: 0.3; }
         }
         .animate-shadow-pulse { animation: shadow-pulse 3s ease-in-out infinite; transform-origin: 50px 90px; }
         @keyframes zzz-float {
@@ -3044,6 +3604,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
    transforms (these classes live on INNER wrapper groups). Named animate-* so
    they are auto-disabled by the app reduce-motion toggle (.reduce-motion
    [class*="animate-"]) and OS prefers-reduced-motion (block below). */
+@keyframes allobotAccessoryArriveLeft { 0% { transform: translateX(-5px) scale(0.96); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+@keyframes allobotAccessoryArriveRight { 0% { transform: translateX(5px) scale(0.96); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+.animate-allobot-accessory-arrive-left { transform-box: fill-box; transform-origin: center; animation: allobotAccessoryArriveLeft 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
+.animate-allobot-accessory-arrive-right { transform-box: fill-box; transform-origin: center; animation: allobotAccessoryArriveRight 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 @keyframes allobotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
 @keyframes allobotPerk { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-2.5px); } }
 @keyframes allobotTwinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
@@ -3055,6 +3619,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
 @keyframes allobotSway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
 .animate-allobot-tick { transform-box: fill-box; transform-origin: center bottom; animation: allobotTick 6s steps(12) infinite; }
 .animate-allobot-sway { transform-box: fill-box; transform-origin: center bottom; animation: allobotSway 3.5s ease-in-out infinite; }
+/* Context micro-interactions: one quiet visual verb per learning prop. */
+@keyframes allobotStopwatchHand { to { transform: rotate(360deg); } }
+@keyframes allobotInboxDrop { 0%, 72%, 100% { transform: translateY(0); opacity: 1; } 82% { transform: translateY(2px); opacity: 0.55; } 90% { transform: translateY(-1px); opacity: 1; } }
+@keyframes allobotProgressPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.92); opacity: 0.72; } }
+@keyframes allobotMazeFlag { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(4deg); } }
+@keyframes allobotFolderPage { 0%, 72%, 100% { transform: translateY(0); } 84% { transform: translateY(-2px); } 92% { transform: translateY(-0.5px); } }
+.animate-allobot-stopwatch-hand { transform-box: view-box; transform-origin: 0px 4px; animation: allobotStopwatchHand 8s steps(12) infinite; }
+.animate-allobot-inbox-drop { animation: allobotInboxDrop 3.4s ease-in-out infinite; }
+.animate-allobot-progress-pulse { transform-box: fill-box; transform-origin: center; animation: allobotProgressPulse 2.8s ease-in-out infinite; }
+.animate-allobot-maze-flag { transform-box: fill-box; transform-origin: left bottom; animation: allobotMazeFlag 4.2s ease-in-out infinite; }
+.animate-allobot-folder-page { animation: allobotFolderPage 4s ease-in-out infinite; }
 /* State-reactive: accessory "works" while generating, then a one-shot pop when done.
    Targets the animate-allobot-* wrappers, so the reduce-motion [class*="animate-"]
    override below still wins and disables these too. */
@@ -3189,7 +3764,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           onTyping: handleTypingState,
           soundEnabled: soundEnabled && !isSleeping,
           variant: effectiveMood === "thinking" && !isTalking ? "thought" : "speech",
-          disableAnimations: motionDisabled
+          disableAnimations: motionDisabled,
+          theme
         }
       ),
       !motionDisabled && reactions.map((r) => /* @__PURE__ */ React.createElement(
@@ -3210,7 +3786,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
       /* @__PURE__ */ React.createElement(
         "div",
         {
-          className: `relative drop-shadow-2xl ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`,
+          "data-allobot-depth": theme,
+          className: `relative ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`,
           style: {
             filter: trailFilter,
             transition: motionDisabled ? "none" : "filter 0.3s ease"
@@ -3223,6 +3800,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "button",
           {
             "data-help-key": "bot_sleep_btn",
+            "data-allobot-satellite-kind": "hide",
             type: "button",
             onClick: (e) => {
               e.preventDefault();
@@ -3240,6 +3818,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "button",
           {
             "data-help-key": "bot_settings_btn",
+            "data-allobot-satellite-kind": "settings",
             type: "button",
             onClick: (e) => {
               e.preventDefault();
@@ -3258,6 +3837,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "button",
           {
             "data-help-key": "bot_mute_btn",
+            "data-allobot-satellite-kind": "sound",
+            "data-allobot-satellite-state": !soundEnabled ? "muted" : "enabled",
             type: "button",
             onClick: (e) => {
               e.preventDefault();
@@ -3276,6 +3857,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "button",
           {
             "data-help-key": "bot_mic_btn",
+            "data-allobot-satellite-kind": "mic",
+            "data-allobot-satellite-state": isListening ? "listening" : "idle",
             type: "button",
             onClick: (e) => {
               e.preventDefault();
@@ -3314,15 +3897,36 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           }
         ),
         /* @__PURE__ */ React.createElement("svg", { width: "64", height: "64", viewBox: "0 0 100 100", fill: "none", xmlns: "http://www.w3.org/2000/svg", className: "select-none overflow-visible", "aria-hidden": "true" }, activeView === "image" && !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement("g", { transform: "translate(110, 30) scale(0.85) rotate(8)", className: "animate-in fade-in zoom-in-95 duration-500", opacity: "0.95" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "38", y: "5", width: "4", height: "55", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "22", y: "8", width: "4", height: "52", rx: "2", fill: "#78350F", transform: "rotate(-4 24 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "12", width: "45", height: "32", rx: "3", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "15", width: "39", height: "26", rx: "2", fill: "#FEFCE8", stroke: "#E5E7EB", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "24", r: "4", fill: "#60A5FA", opacity: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "22", r: "3", fill: "#F472B6", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "36", cy: "32", r: "3", fill: "#34D399", opacity: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "22", cy: "33", rx: "5", ry: "3", fill: "#FCD34D", opacity: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "42", width: "50", height: "4", rx: "2", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.5" })), !isFlightActive && !isDragging && /* @__PURE__ */ React.createElement(
-          "ellipse",
+          "g",
           {
-            cx: "50",
-            cy: "90",
-            rx: "18",
-            ry: "4",
-            fill: "#000",
-            className: isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"
-          }
+            "data-allobot-ground-shadow": theme,
+            className: isSleeping || motionDisabled ? void 0 : "animate-shadow-pulse"
+          },
+          /* @__PURE__ */ React.createElement(
+            "ellipse",
+            {
+              "data-allobot-shadow-layer": "ambient",
+              cx: "50",
+              cy: "90",
+              rx: "21",
+              ry: "4.8",
+              fill: "#0F172A",
+              opacity: theme === "contrast" ? "0.28" : theme === "dark" ? "0.24" : "0.16",
+              filter: theme === "contrast" ? void 0 : `url(#${svgPaintIds.groundShadow})`
+            }
+          ),
+          /* @__PURE__ */ React.createElement(
+            "ellipse",
+            {
+              "data-allobot-shadow-layer": "contact",
+              cx: "50",
+              cy: "89.5",
+              rx: "12",
+              ry: "1.8",
+              fill: theme === "contrast" ? "#000000" : "#020617",
+              opacity: theme === "contrast" ? "0.58" : theme === "dark" ? "0.42" : "0.30"
+            }
+          )
         ), /* @__PURE__ */ React.createElement("rect", { x: "25", y: "42", width: "50", height: "8", rx: "2", fill: colors.jetpackStroke }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "6", fill: "#06B6D4", stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "46", r: "3", fill: "#67E8F9", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("path", { d: "M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M10 46 H30 M10 60 H30", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z", fill: colors.jetpackFill, stroke: colors.jetpackStroke, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M70 46 H90 M70 60 H90", stroke: colors.jetpackStroke, strokeWidth: "1", fill: "none", opacity: "0.6" }), isFlightActive && /* @__PURE__ */ React.createElement("g", { className: "animate-jetpack-flame" }, /* @__PURE__ */ React.createElement("path", { d: "M14 78 Q20 100 26 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M17 78 Q20 90 23 78 Z", fill: "#FEF3C7" }), /* @__PURE__ */ React.createElement("path", { d: "M74 78 Q80 100 86 78 Z", fill: "#F59E0B" }), /* @__PURE__ */ React.createElement("path", { d: "M77 78 Q80 90 83 78 Z", fill: "#FEF3C7" })), isFlightActive && /* @__PURE__ */ React.createElement("g", { transform: "translate(-10, 0)", className: "animate-fade-in", style: { opacity: 0.6 } }, /* @__PURE__ */ React.createElement("rect", { x: "-20", y: "20", width: "30", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.4s", animationDelay: "0s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-10", y: "50", width: "40", height: "1", rx: "0.5", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.6s", animationDelay: "0.2s" } }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "80", width: "25", height: "2", rx: "1", fill: "white", className: "animate-wind-streak", style: { animationDuration: "0.5s", animationDelay: "0.1s" } })), effectiveMood === "thinking" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: `animate-allobot-generation-enter${generationMotionPaused ? " allobot-generation-paused" : ""}` }, /* @__PURE__ */ React.createElement("g", { "data-allo-generation-family": alloBotGenerationFamily(generationType, activeView), "data-allo-generation-stage": generationStage || "working", "data-allo-generation-phase": generationAnimationPhase, className: "animate-pulse motion-reduce:animate-none", style: { animationDuration: "2s" } }, /* @__PURE__ */ React.createElement(
           "circle",
           {
@@ -3343,7 +3947,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "path",
           {
             d: "M 20 -50 L 80 -50 L 54 5 L 46 5 Z",
-            fill: "url(#hologram-beam)",
+            fill: `url(#${svgPaintIds.beam})`,
             style: { mixBlendMode: "screen", pointerEvents: "none" },
             opacity: "0.6"
           },
@@ -3367,6 +3971,16 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               "--start-deg": `${wobbleState.deg}deg`
             }
           },
+          theme === "contrast" && /* @__PURE__ */ React.createElement(
+            "path",
+            {
+              d: "M50 15V5",
+              stroke: "#000000",
+              strokeWidth: "7",
+              strokeLinecap: "round",
+              "data-allobot-antenna-outline": "true"
+            }
+          ),
           /* @__PURE__ */ React.createElement("path", { d: "M50 15V5", stroke: colors.antenna, strokeWidth: "4", strokeLinecap: "round" }),
           antennaAction === "signal" && !motionDisabled && !isSleeping && effectiveMood !== "thinking" && /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "5", r: "10", stroke: colors.antenna, strokeWidth: "2", fill: "none", className: "animate-signal-wave" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "5", r: "10", stroke: colors.antenna, strokeWidth: "2", fill: "none", className: "animate-signal-wave", style: STYLE_ANIMATION_DELAY_HALF }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "5", r: "10", stroke: colors.antenna, strokeWidth: "2", fill: "none", className: "animate-signal-wave", style: { animationDelay: "1.0s" } })),
           /* @__PURE__ */ React.createElement(
@@ -3376,6 +3990,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               cy: "5",
               r: "5",
               fill: isSleeping ? "#64748B" : "#FACC15",
+              stroke: theme === "contrast" ? "#000000" : "none",
+              strokeWidth: theme === "contrast" ? "2" : "0",
+              "data-allobot-antenna-light": theme,
               className: effectiveMood === "thinking" && !motionDisabled && !isSleeping ? "animate-ping" : !motionDisabled && isTalking ? "animate-pulse motion-reduce:animate-none" : isSleeping ? "" : antennaAction === "bounce" ? "animate-antenna-tri-bounce" : ""
             }
           )
@@ -3383,49 +4000,90 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           "path",
           {
             d: "M 35 40 L 15 5 L 85 5 L 65 40 Z",
-            fill: "url(#hologram-gradient)",
+            fill: `url(#${svgPaintIds.hologram})`,
             opacity: "0.6"
           }
-        ), /* @__PURE__ */ React.createElement("path", { d: "M 15 10 L 85 10", stroke: "#22D3EE", strokeWidth: "1", opacity: "0.4" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "d", values: "M 15 10 L 85 10; M 35 35 L 65 35; M 15 10 L 85 10", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.4; 0.1; 0.4", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "55", r: "35", fill: `url(#bodyGradient-${effectiveMood})` }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "55", r: "35", fill: "url(#rimLightGradient)" }), activeView === "faq" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: "animate-bounce motion-reduce:animate-none", style: { animationDuration: "2.5s" } }, /* @__PURE__ */ React.createElement("text", { x: "50", y: "10", fontSize: "24", fill: "#F59E0B", stroke: "#B45309", strokeWidth: "1", textAnchor: "middle", fontWeight: "bold", style: { filter: "drop-shadow(0px 2px 2px rgba(0,0,0,0.3))" } }, "?")), /* @__PURE__ */ React.createElement("g", { style: { transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: motionDisabled ? "none" : "transform 0.1s ease-out" } }, /* @__PURE__ */ React.createElement(
-          "rect",
+        ), /* @__PURE__ */ React.createElement("path", { d: "M 15 10 L 85 10", stroke: "#22D3EE", strokeWidth: "1", opacity: "0.4" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "d", values: "M 15 10 L 85 10; M 35 35 L 65 35; M 15 10 L 85 10", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.4; 0.1; 0.4", dur: motionDisabled ? "indefinite" : "2s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement(
+          "circle",
           {
-            x: "20",
-            y: "30",
-            width: "60",
-            height: "36",
-            rx: "14",
-            fill: isTalking ? "#312E81" : colors.screenBg,
-            className: "transition-colors duration-200"
+            cx: "50",
+            cy: "55",
+            r: "35",
+            fill: `url(#${svgPaintIds.body})`,
+            stroke: theme === "contrast" ? "#000000" : "none",
+            strokeWidth: theme === "contrast" ? "2.5" : "0",
+            "data-allobot-shell": theme
+          }
+        ), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "55", r: "35", fill: `url(#${svgPaintIds.rim})` }), accessoryRenderSide && /* @__PURE__ */ React.createElement("g", { "data-allobot-accessory-reflection": accessoryRenderSide, pointerEvents: "none" }, /* @__PURE__ */ React.createElement(
+          "ellipse",
+          {
+            cx: accessoryRenderSide === "left" ? 32 : 68,
+            cy: "55",
+            rx: "18",
+            ry: "26",
+            fill: accessoryAccent,
+            opacity: theme === "contrast" ? "0.16" : "0.11"
           }
         ), /* @__PURE__ */ React.createElement(
           "path",
           {
-            d: "M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36",
-            fill: "none",
-            stroke: "url(#visorReflect)",
-            strokeWidth: "3",
+            d: accessoryRenderSide === "left" ? "M30 28 Q15 39 15 57 Q16 74 29 82" : "M70 28 Q85 39 85 57 Q84 74 71 82",
+            stroke: accessoryAccent,
+            strokeWidth: "2.6",
             strokeLinecap: "round",
-            opacity: "0.9"
-          }
-        ), /* @__PURE__ */ React.createElement(
-          "rect",
-          {
-            x: "20",
-            y: "30",
-            width: "60",
-            height: "36",
-            rx: "14",
             fill: "none",
-            stroke: isTalking ? "#6366F1" : "rgba(255,255,255,0.15)",
-            strokeWidth: "2"
+            opacity: theme === "contrast" ? "0.55" : "0.34"
           }
-        )), /* @__PURE__ */ React.createElement(
+        )), activeView === "faq" && !isSleeping && !motionDisabled && /* @__PURE__ */ React.createElement("g", { className: "animate-bounce motion-reduce:animate-none", style: { animationDuration: "2.5s" } }, /* @__PURE__ */ React.createElement("text", { x: "50", y: "10", fontSize: "24", fill: "#F59E0B", stroke: "#B45309", strokeWidth: "1", textAnchor: "middle", fontWeight: "bold", style: { filter: "drop-shadow(0px 2px 2px rgba(0,0,0,0.3))" } }, "?")), /* @__PURE__ */ React.createElement(
+          "g",
+          {
+            "data-allobot-visor": theme,
+            style: { transform: `translate(${visorPosition.x + propGazeX * 0.3}px, ${visorPosition.y + propGazeY * 0.3}px)`, transition: motionDisabled ? "none" : "transform 0.1s ease-out" }
+          },
+          /* @__PURE__ */ React.createElement(
+            "rect",
+            {
+              x: "20",
+              y: "30",
+              width: "60",
+              height: "36",
+              rx: "14",
+              fill: theme === "contrast" ? colors.screenBg : isTalking ? "#312E81" : colors.screenBg,
+              className: "transition-colors duration-200"
+            }
+          ),
+          /* @__PURE__ */ React.createElement(
+            "path",
+            {
+              d: "M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36",
+              fill: "none",
+              stroke: `url(#${svgPaintIds.visor})`,
+              strokeWidth: "3",
+              strokeLinecap: "round",
+              opacity: "0.9"
+            }
+          ),
+          /* @__PURE__ */ React.createElement(
+            "rect",
+            {
+              x: "20",
+              y: "30",
+              width: "60",
+              height: "36",
+              rx: "14",
+              fill: "none",
+              stroke: theme === "contrast" ? colors.glow : isTalking ? "#6366F1" : "rgba(255,255,255,0.15)",
+              strokeWidth: theme === "contrast" ? "3" : "2"
+            }
+          )
+        ), /* @__PURE__ */ React.createElement(
           "g",
           {
             className: !motionDisabled && !isSleeping && !isDragging ? isTalking ? "animate-gesture-left" : "animate-float-hands" : "",
             style: { animationDelay: isTalking ? "0s" : "0.2s" }
           },
-          /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "65", r: "6.5", fill: colors.gradFrom, stroke: colors.jetpackStroke, strokeWidth: "1.5" }),
+          /* @__PURE__ */ React.createElement("circle", { cx: leftHandX, cy: leftHandY, r: "6.5", fill: colors.gradFrom, stroke: theme === "contrast" ? "#000000" : colors.jetpackStroke, strokeWidth: theme === "contrast" ? "2" : "1.5", "data-allobot-hand": "left", style: { transition: motionDisabled ? "none" : "cx 180ms ease, cy 180ms ease" } }),
+          /* @__PURE__ */ React.createElement("circle", { cx: leftHandX - 2, cy: leftHandY - 2, r: "1.35", fill: "#FFFFFF", opacity: theme === "contrast" ? "0.9" : "0.55", pointerEvents: "none" }),
           activeView === "image" && !isSleeping && /* @__PURE__ */ React.createElement("g", { transform: "translate(10, 65) rotate(15)" }, /* @__PURE__ */ React.createElement(
             "path",
             {
@@ -3471,29 +4129,22 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             className: !motionDisabled && !isSleeping && !isDragging ? isTalking ? "animate-gesture-right" : "animate-float-hands" : "",
             style: { animationDelay: isTalking ? "0s" : "0.5s" }
           },
-          /* @__PURE__ */ React.createElement("circle", { cx: "90", cy: "65", r: "6.5", fill: colors.gradFrom, stroke: colors.jetpackStroke, strokeWidth: "1.5" })
+          /* @__PURE__ */ React.createElement("circle", { cx: rightHandX, cy: rightHandY, r: "6.5", fill: colors.gradFrom, stroke: theme === "contrast" ? "#000000" : colors.jetpackStroke, strokeWidth: theme === "contrast" ? "2" : "1.5", "data-allobot-hand": "right", style: { transition: motionDisabled ? "none" : "cx 180ms ease, cy 180ms ease" } }),
+          /* @__PURE__ */ React.createElement("circle", { cx: rightHandX - 2, cy: rightHandY - 2, r: "1.35", fill: "#FFFFFF", opacity: theme === "contrast" ? "0.9" : "0.55", pointerEvents: "none" })
         ), heldItem && !isSleeping && !isDragging && /* @__PURE__ */ React.createElement(
           "g",
           {
-            id: "held-item",
+            id: svgPaintIds.heldItem,
+            "data-allobot-held-item": "true",
+            "data-held-item-side": heldItemRenderSide,
             className: `animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : ""}`,
             style: {
               transformOrigin: "90px 65px",
               transform: isMoving ? `rotate(${propRotation}deg)` : void 0
             }
           },
-          heldItem === "pointer" && /* @__PURE__ */ React.createElement("g", { className: "animate-tap-pointer" }, /* @__PURE__ */ React.createElement("line", { x1: "90", y1: "65", x2: "115", y2: "25", stroke: "#D4A373", strokeWidth: "3", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "115", cy: "25", r: "4", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "0.5" })),
-          heldItem === "pencil" && activeView !== "quiz" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 65) rotate(45)" }, /* @__PURE__ */ React.createElement("path", { d: "M -3 -15 L 3 -15 L 3 10 L -3 10 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M -3 -15 L 3 -15 L 0 -22 Z", fill: "#FCD34D" }), /* @__PURE__ */ React.createElement("path", { d: "M -1 -19 L 1 -19 L 0 -22 Z", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "-3", y: "10", width: "6", height: "4", rx: "1", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "-3", y: "8", width: "6", height: "2", fill: "#9CA3AF" })),
-          heldItem === "calculator" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 45) rotate(-10)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "18", height: "24", rx: "2", fill: "#1F2937", stroke: "#374151", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "3", width: "14", height: "6", fill: "#D1FAE5" }), /* @__PURE__ */ React.createElement("g", { fill: "#6B7280" }, /* @__PURE__ */ React.createElement("circle", { cx: "4.5", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "13.5", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "4.5", cy: "18", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "18", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "13.5", cy: "18", r: "1.5", fill: "#EF4444" }))),
-          heldItem === "map" && /* @__PURE__ */ React.createElement("g", { transform: "translate(85, 43) rotate(5)" }, /* @__PURE__ */ React.createElement("path", { d: "M0 2 C 5 0, 15 0, 22 2 L 22 26 C 15 24, 5 24, 0 26 Z", fill: "#FEF3C7", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M2 2 C 6 1, 16 1, 20 2", stroke: "#D97706", strokeWidth: "0.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M2 26 C 6 25, 16 25, 20 26", stroke: "#D97706", strokeWidth: "0.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M12 9 L18 15 M18 9 L12 15", stroke: "#EF4444", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M4 20 Q 8 14 12 15", stroke: "#92400E", strokeWidth: "1.5", strokeDasharray: "2 1", fill: "none" })),
-          heldItem === "clipboard" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 50) rotate(-5)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "18", height: "22", fill: "#9CA3AF", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "2", width: "14", height: "18", fill: "white" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "5", x2: "14", y2: "5", stroke: "#CBD5E1", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "9", x2: "14", y2: "9", stroke: "#CBD5E1", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "13", x2: "14", y2: "13", stroke: "#CBD5E1", strokeWidth: "1" })),
-          heldItem === "hourglass" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 45)" }, /* @__PURE__ */ React.createElement("path", { d: "M0 0 L14 0 L7 10 L0 0 Z", fill: "#93C5FD", stroke: "#3B82F6", strokeWidth: "1", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M0 20 L14 20 L7 10 L0 20 Z", fill: "#93C5FD", stroke: "#3B82F6", strokeWidth: "1", opacity: "0.6" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "2", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "18", width: "14", height: "2", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("circle", { cx: "7", cy: "15", r: "1.5", fill: "#FCD34D" })),
-          heldItem === "magnifying-glass" && /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M90 65 L102 53", stroke: "#374151", strokeWidth: "4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "106", cy: "49", r: "14", stroke: "#94A3B8", strokeWidth: "3", fill: "rgba(255, 255, 255, 0.1)" }), /* @__PURE__ */ React.createElement("circle", { cx: "106", cy: "49", r: "12", fill: "rgba(147, 197, 253, 0.3)" }), /* @__PURE__ */ React.createElement("path", { d: "M100 45 Q 104 41 110 45", stroke: "white", strokeWidth: "2", strokeLinecap: "round", opacity: "0.7" })),
-          heldItem === "book" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 45) rotate(-10)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "24", height: "32", rx: "2", fill: "#4B5563", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "2", width: "20", height: "28", rx: "1", fill: "#F8FAFC" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "8", x2: "19", y2: "8", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "14", x2: "19", y2: "14", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "20", x2: "19", y2: "20", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "15", y2: "26", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" })),
-          heldItem === "globe" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 45)" }, /* @__PURE__ */ React.createElement("path", { d: "M10 22 L10 26 M5 26 L15 26", stroke: "#4B5563", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "12", r: "10", fill: "#3B82F6" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 Q 7 5 12 8 T 18 12", stroke: "#10B981", strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M5 16 Q 10 18 15 14", stroke: "#10B981", strokeWidth: "2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "12", r: "10", stroke: "#1D4ED8", strokeWidth: "1", fill: "none", opacity: "0.3" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "10", cy: "12", rx: "4", ry: "10", stroke: "#1D4ED8", strokeWidth: "1", fill: "none", opacity: "0.3" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "12", x2: "20", y2: "12", stroke: "#1D4ED8", strokeWidth: "1", opacity: "0.3" })),
-          heldItem === "wand" && /* @__PURE__ */ React.createElement("g", { transform: "translate(82, 44) rotate(10)" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "8", width: "4", height: "24", fill: "#1F2937", rx: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M10 0 L12 6 L18 6 L13 10 L15 16 L10 12 L5 16 L7 10 L2 6 L8 6 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#FCD34D", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "2", r: "1", fill: "#FCD34D", className: "animate-pulse motion-reduce:animate-none", style: { animationDelay: "0.2s" } })),
-          (heldItem === "paintbrush" || activeView === "image") && /* @__PURE__ */ React.createElement("g", { transform: "translate(92, 63) rotate(45)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "4", height: "26", rx: "1", fill: "#D4A373", stroke: "#A16207", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "-0.5", y: "-8", width: "5", height: "8", fill: "#94A3B8", stroke: "#475569", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M0 -8 L-1 -16 Q 2 -20 5 -16 L 4 -8 Z", fill: "#FCD34D", stroke: "#D97706", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "-18", r: "2.5", fill: "#3B82F6", className: "animate-pulse motion-reduce:animate-none" }))
-        ), /* @__PURE__ */ React.createElement("g", { style: { transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: motionDisabled ? "none" : "transform 0.1s ease-out" } }, isSleeping ? /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-500" }, /* @__PURE__ */ React.createElement("path", { d: "M34 49 Q39 53 44 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M56 49 Q61 53 66 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" })) : /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
+          /* @__PURE__ */ React.createElement("g", { transform: heldItemRenderSide === "left" ? "translate(100 0) scale(-1 1)" : void 0 }, heldItem === "pointer" && /* @__PURE__ */ React.createElement("g", { className: "animate-tap-pointer" }, /* @__PURE__ */ React.createElement("line", { x1: "90", y1: "65", x2: "115", y2: "25", stroke: "#D4A373", strokeWidth: "3", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "115", cy: "25", r: "4", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "0.5" })), heldItem === "pencil" && activeView !== "quiz" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 65) rotate(45)" }, /* @__PURE__ */ React.createElement("path", { d: "M -3 -15 L 3 -15 L 3 10 L -3 10 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M -3 -15 L 3 -15 L 0 -22 Z", fill: "#FCD34D" }), /* @__PURE__ */ React.createElement("path", { d: "M -1 -19 L 1 -19 L 0 -22 Z", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "-3", y: "10", width: "6", height: "4", rx: "1", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "-3", y: "8", width: "6", height: "2", fill: "#9CA3AF" })), heldItem === "calculator" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 45) rotate(-10)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "18", height: "24", rx: "2", fill: "#1F2937", stroke: "#374151", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "3", width: "14", height: "6", fill: "#D1FAE5" }), /* @__PURE__ */ React.createElement("g", { fill: "#6B7280" }, /* @__PURE__ */ React.createElement("circle", { cx: "4.5", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "13.5", cy: "14", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "4.5", cy: "18", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "18", r: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "13.5", cy: "18", r: "1.5", fill: "#EF4444" }))), heldItem === "map" && /* @__PURE__ */ React.createElement("g", { transform: "translate(85, 43) rotate(5)" }, /* @__PURE__ */ React.createElement("path", { d: "M0 2 C 5 0, 15 0, 22 2 L 22 26 C 15 24, 5 24, 0 26 Z", fill: "#FEF3C7", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M2 2 C 6 1, 16 1, 20 2", stroke: "#D97706", strokeWidth: "0.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M2 26 C 6 25, 16 25, 20 26", stroke: "#D97706", strokeWidth: "0.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M12 9 L18 15 M18 9 L12 15", stroke: "#EF4444", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M4 20 Q 8 14 12 15", stroke: "#92400E", strokeWidth: "1.5", strokeDasharray: "2 1", fill: "none" })), heldItem === "clipboard" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 50) rotate(-5)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "18", height: "22", fill: "#9CA3AF", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "2", width: "14", height: "18", fill: "white" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "5", x2: "14", y2: "5", stroke: "#CBD5E1", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "9", x2: "14", y2: "9", stroke: "#CBD5E1", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "4", y1: "13", x2: "14", y2: "13", stroke: "#CBD5E1", strokeWidth: "1" })), heldItem === "hourglass" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 45)" }, /* @__PURE__ */ React.createElement("path", { d: "M0 0 L14 0 L7 10 L0 0 Z", fill: "#93C5FD", stroke: "#3B82F6", strokeWidth: "1", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M0 20 L14 20 L7 10 L0 20 Z", fill: "#93C5FD", stroke: "#3B82F6", strokeWidth: "1", opacity: "0.6" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "2", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "18", width: "14", height: "2", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("circle", { cx: "7", cy: "15", r: "1.5", fill: "#FCD34D" })), heldItem === "magnifying-glass" && /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M90 65 L102 53", stroke: "#374151", strokeWidth: "4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "106", cy: "49", r: "14", stroke: "#94A3B8", strokeWidth: "3", fill: "rgba(255, 255, 255, 0.1)" }), /* @__PURE__ */ React.createElement("circle", { cx: "106", cy: "49", r: "12", fill: "rgba(147, 197, 253, 0.3)" }), /* @__PURE__ */ React.createElement("path", { d: "M100 45 Q 104 41 110 45", stroke: "white", strokeWidth: "2", strokeLinecap: "round", opacity: "0.7" })), heldItem === "book" && /* @__PURE__ */ React.createElement("g", { transform: "translate(90, 45) rotate(-10)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "24", height: "32", rx: "2", fill: "#4B5563", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "2", width: "20", height: "28", rx: "1", fill: "#F8FAFC" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "8", x2: "19", y2: "8", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "14", x2: "19", y2: "14", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "20", x2: "19", y2: "20", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "15", y2: "26", stroke: "#94A3B8", strokeWidth: "1.5", strokeLinecap: "round" })), heldItem === "globe" && /* @__PURE__ */ React.createElement("g", { transform: "translate(88, 45)" }, /* @__PURE__ */ React.createElement("path", { d: "M10 22 L10 26 M5 26 L15 26", stroke: "#4B5563", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "12", r: "10", fill: "#3B82F6" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10 Q 7 5 12 8 T 18 12", stroke: "#10B981", strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M5 16 Q 10 18 15 14", stroke: "#10B981", strokeWidth: "2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "10", cy: "12", r: "10", stroke: "#1D4ED8", strokeWidth: "1", fill: "none", opacity: "0.3" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "10", cy: "12", rx: "4", ry: "10", stroke: "#1D4ED8", strokeWidth: "1", fill: "none", opacity: "0.3" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "12", x2: "20", y2: "12", stroke: "#1D4ED8", strokeWidth: "1", opacity: "0.3" })), heldItem === "wand" && /* @__PURE__ */ React.createElement("g", { transform: "translate(82, 44) rotate(10)" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "8", width: "4", height: "24", fill: "#1F2937", rx: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M10 0 L12 6 L18 6 L13 10 L15 16 L10 12 L5 16 L7 10 L2 6 L8 6 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#FCD34D", className: "animate-pulse motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "2", r: "1", fill: "#FCD34D", className: "animate-pulse motion-reduce:animate-none", style: { animationDelay: "0.2s" } })), (heldItem === "paintbrush" || activeView === "image") && /* @__PURE__ */ React.createElement("g", { transform: "translate(92, 63) rotate(45)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "4", height: "26", rx: "1", fill: "#D4A373", stroke: "#A16207", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("rect", { x: "-0.5", y: "-8", width: "5", height: "8", fill: "#94A3B8", stroke: "#475569", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M0 -8 L-1 -16 Q 2 -20 5 -16 L 4 -8 Z", fill: "#FCD34D", stroke: "#D97706", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "-18", r: "2.5", fill: "#3B82F6", className: "animate-pulse motion-reduce:animate-none" })))
+        ), isSleeping ? /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-500" }, /* @__PURE__ */ React.createElement("path", { d: "M34 49 Q39 53 44 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M56 49 Q61 53 66 49", stroke: colors.eye, strokeWidth: "3", fill: "none", strokeLinecap: "round" })) : /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement(
           "ellipse",
           {
             cx: "38",
@@ -3514,57 +4165,108 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
           }
         ), /* @__PURE__ */ React.createElement(
-          "ellipse",
+          "g",
           {
-            cx: "40",
-            cy: 48 - 2 * blinkScale,
-            rx: "2.5",
-            ry: 2.5 * blinkScale,
-            fill: "white",
-            opacity: "0.8",
-            className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-          }
-        ), /* @__PURE__ */ React.createElement(
-          "ellipse",
-          {
-            cx: "64",
-            cy: 48 - 2 * blinkScale,
-            rx: "2.5",
-            ry: 2.5 * blinkScale,
-            fill: "white",
-            opacity: "0.8",
-            className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-          }
+            "data-allobot-prop-gaze": accessoryRenderSide || "center",
+            style: { transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? "none" : "transform 0.1s ease-out" }
+          },
+          /* @__PURE__ */ React.createElement("ellipse", { cx: "38", cy: "48", rx: "2.5", ry: Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale, fill: colors.screenBg, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+          /* @__PURE__ */ React.createElement("ellipse", { cx: "62", cy: "48", rx: "2.5", ry: Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale, fill: colors.screenBg, className: "transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" }),
+          /* @__PURE__ */ React.createElement("circle", { cx: "37.2", cy: "47.1", r: 0.75 * blinkScale, fill: "white", opacity: "0.9" }),
+          /* @__PURE__ */ React.createElement("circle", { cx: "61.2", cy: "47.1", r: 0.75 * blinkScale, fill: "white", opacity: "0.9" })
         )), /* @__PURE__ */ React.createElement(
           "path",
           {
             d: getMouthPath(),
             stroke: colors.mouth,
-            strokeWidth: "2",
+            strokeWidth: theme === "contrast" ? "2.5" : "2",
             strokeLinecap: "round",
             strokeLinejoin: "round",
             fill: "none",
             className: "mouth-transition"
           }
-        ), !isSleeping && effectiveMood !== "idle" && /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-300" }, effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 39 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M33 39 Q38 41 43 43", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 42 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M57 42 Q62 39 67 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M57 43 Q62 41 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M57 39 Q62 37 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }))), effectiveAccessory && /* @__PURE__ */ React.createElement("g", { id: "accessories", className: `${accExiting ? "allobot-exiting " : ""}${effectiveMood === "thinking" ? "allobot-thinking" : accPop ? "allobot-pop" : ""}`.trim() || void 0 }, effectiveAccessory === "grad-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "1.2s" } }, /* @__PURE__ */ React.createElement("path", { d: "M32 30 Q50 36 68 30 V 22 H 32 V 30 Z", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("path", { d: "M15 22 L50 8 L85 22 L50 36 Z", fill: "#111827", stroke: "#374151", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M50 22 L82 22 L82 42", stroke: "#F59E0B", strokeWidth: "2", fill: "none", className: "drop-shadow-sm" }), /* @__PURE__ */ React.createElement("circle", { cx: "82", cy: "42", r: "2.5", fill: "#F59E0B" }))), effectiveAccessory === "explorer-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "3.3s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "22", rx: "38", ry: "10", fill: "#D2B48C", stroke: "#8B4513", strokeWidth: "1.5", transform: "rotate(-5 50 22)" }), /* @__PURE__ */ React.createElement("path", { d: "M32 22 L35 4 Q50 0 65 4 L68 22 Z", fill: "#D2B48C", stroke: "#8B4513", strokeWidth: "1.5", transform: "rotate(-5 50 22)" }), /* @__PURE__ */ React.createElement("path", { d: "M32 19 Q50 23 68 19", stroke: "#3E2723", strokeWidth: "4", fill: "none", transform: "rotate(-5 50 22)" }))), effectiveAccessory === "magnifying-glass" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right" }, /* @__PURE__ */ React.createElement("path", { d: "M72 78 L84 58", stroke: "#374151", strokeWidth: "4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "84", cy: "58", r: "14", stroke: "#94A3B8", strokeWidth: "3", fill: "rgba(255, 255, 255, 0.1)" }), /* @__PURE__ */ React.createElement("circle", { cx: "84", cy: "58", r: "12", fill: "rgba(147, 197, 253, 0.3)" }), /* @__PURE__ */ React.createElement("path", { d: "M78 54 Q 82 50 88 54", stroke: "white", strokeWidth: "2", strokeLinecap: "round", opacity: "0.7" })), effectiveAccessory === "artist" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "5.1s" } }, /* @__PURE__ */ React.createElement(
-          "path",
+        ), !isSleeping && effectiveMood !== "idle" && /* @__PURE__ */ React.createElement("g", { className: "transition-all motion-reduce:transition-none duration-300" }, effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 39 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M33 39 Q38 41 43 43", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M33 42 Q38 42 43 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "happy" && /* @__PURE__ */ React.createElement("path", { d: "M57 42 Q62 39 67 42", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "sad" && /* @__PURE__ */ React.createElement("path", { d: "M57 43 Q62 41 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" }), effectiveMood === "thinking" && /* @__PURE__ */ React.createElement("path", { d: "M57 39 Q62 37 67 39", stroke: colors.eye, strokeWidth: "2", fill: "none", strokeLinecap: "round" })), effectiveAccessory && /* @__PURE__ */ React.createElement(
+          "g",
           {
-            d: "M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27",
-            fill: "#374151",
-            stroke: "#1F2937",
-            strokeWidth: "1.5",
-            transform: "rotate(-10 50 20)"
-          }
-        ), /* @__PURE__ */ React.createElement(
-          "path",
-          {
-            d: "M 58 4 L 62 0",
-            stroke: "#374151",
-            strokeWidth: "3",
-            strokeLinecap: "round",
-            transform: "rotate(-10 50 20)"
-          }
-        ))), effectiveAccessory === "hard-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M25 26 Q25 6 50 4 Q75 6 75 26 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z", fill: "#D97706", stroke: "#B45309", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M38 8 Q50 5 62 8", stroke: "#FCD34D", strokeWidth: "2", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "5", fill: "#374151", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "3", fill: "#FEF3C7", opacity: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "7", fill: "#FEF3C7", opacity: "0.15" })), effectiveAccessory === "sleep-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52", fill: "#6366F1", stroke: "#4F46E5", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q50 12 65 18", stroke: "#818CF8", strokeWidth: "2.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M40 12 Q52 7 64 14", stroke: "#818CF8", strokeWidth: "2", fill: "none", opacity: "0.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "6", fill: "#C4B5FD", stroke: "#A78BFA", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "50", r: "2", fill: "white", opacity: "0.4" }), /* @__PURE__ */ React.createElement("path", { d: "M28 24 Q50 28 72 22", stroke: "#4338CA", strokeWidth: "2.5", fill: "none" })), effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 8)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: motionDisabled ? "indefinite" : "3s", repeatCount: "indefinite" }))), effectiveAccessory === "historian" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-22, 38)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "48", rx: "18", ry: "3", fill: "#7C2D12", opacity: "0.25" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-14 6 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "-4", y: "14", width: "20", height: "26", rx: "1", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "20", x2: "12", y2: "20", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "24", x2: "12", y2: "24", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "28", x2: "10", y2: "28", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "32", x2: "12", y2: "32", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "36", x2: "9", y2: "36", stroke: "#78350F", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "12", width: "20", height: "26", rx: "1", fill: "#FFFBEB", stroke: "#7C2D12", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "20", cy: "16", r: "2", fill: "#DC2626", stroke: "#7F1D1D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M19 15 L21 15 M20 14 L20 16", stroke: "#FECACA", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "22", x2: "17", y2: "22", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "18", y2: "26", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "30", x2: "15", y2: "30", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "34", x2: "17", y2: "34", stroke: "#7C2D12", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(14 22 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "14", width: "20", height: "26", rx: "1", fill: "#FED7AA", stroke: "#9A3412", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "28", y2: "20", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "28", y2: "24", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "28", x2: "26", y2: "28", stroke: "#9A3412", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 22 8 Q 30 -2 34 -10", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z", fill: "#0F172A", stroke: "#1F2937", strokeWidth: "0.5", opacity: "0.85" }, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", values: "0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8", dur: motionDisabled ? "indefinite" : "6s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("circle", { cx: "22", cy: "9", r: "1.4", fill: "#1E40AF" }))), effectiveAccessory === "teacher-stack" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-20, 34)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "3.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "40", width: "34", height: "11", rx: "1.5", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "45", x2: "24", y2: "45", stroke: "#B45309", strokeWidth: "0.7", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "30", width: "32", height: "11", rx: "1.5", fill: "#34D399", stroke: "#047857", strokeWidth: "1.2", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "35", x2: "26", y2: "35", stroke: "#047857", strokeWidth: "0.7", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "20", width: "32", height: "11", rx: "1.5", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "25", x2: "25", y2: "25", stroke: "#1D4ED8", strokeWidth: "0.7", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(17, 9)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z", fill: "#B91C1C", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 L 0 -2", stroke: "#7C2D12", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z", fill: "#22C55E", stroke: "#15803D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-2.5", cy: "8", rx: "1.8", ry: "3", fill: "#fff", opacity: "0.45", transform: "rotate(-20 -2.5 8)" })))), effectiveAccessory === "scholar-specs" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.0s" } }, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 47 48 Q 50 45 53 48", stroke: "#1F2937", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 29 47 Q 24 45 22 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 71 47 Q 76 45 78 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(-26, 56)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 28 0 L 28 18 L 0 18 Z", fill: "#FFFBEB", stroke: "#78350F", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 14 0 L 14 18", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "4", x2: "11", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "7", x2: "12", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "10", x2: "10", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "13", x2: "11", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "4", x2: "25", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "7", x2: "24", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "10", x2: "25", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "13", x2: "23", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M -2 0 L 30 0 L 30 -2 L -2 -2 Z", fill: "#7C2D12", stroke: "#451A03", strokeWidth: "0.8" })))), effectiveAccessory === "librarian-kit" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.8s" } }, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "8.5", fill: "rgba(219, 234, 254, 0.22)", stroke: "#334155", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "8.5", fill: "rgba(219, 234, 254, 0.22)", stroke: "#334155", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M46.5 48 Q50 45 53.5 48", stroke: "#334155", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M29.5 48 Q23 49 20 54", stroke: "#334155", strokeWidth: "1.1", fill: "none", strokeLinecap: "round", opacity: "0.85" }), /* @__PURE__ */ React.createElement("path", { d: "M70.5 48 Q77 49 80 54", stroke: "#334155", strokeWidth: "1.1", fill: "none", strokeLinecap: "round", opacity: "0.85" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35.5", cy: "45.5", rx: "2.2", ry: "1.2", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59.5", cy: "45.5", rx: "2.2", ry: "1.2", fill: "white", opacity: "0.55" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(70, 58) rotate(-7)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "26", height: "20", rx: "2", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "6", height: "20", rx: "1.5", fill: "#6366F1", stroke: "#4338CA", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "6", x2: "22", y2: "6", stroke: colors.accInk, strokeWidth: "1", opacity: "0.65" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "10", x2: "20", y2: "10", stroke: colors.accInk, strokeWidth: "1", opacity: "0.45" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "14", x2: "22", y2: "14", stroke: colors.accInk, strokeWidth: "1", opacity: "0.45" }), /* @__PURE__ */ React.createElement("path", { d: "M18 0 L22 0 L22 8 L20 6 L18 8 Z", fill: "#F59E0B", stroke: "#B45309", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(-27, 56) rotate(5)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "30", height: "22", rx: "2", fill: "#FFFBEB", stroke: "#92400E", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "30", height: "6", rx: "2", fill: "#FDE68A", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "6", cy: "13", r: "2.2", fill: "#A78BFA", stroke: "#6D28D9", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "11", x2: "25", y2: "11", stroke: "#92400E", strokeWidth: "0.9", opacity: "0.65" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "15", x2: "23", y2: "15", stroke: "#92400E", strokeWidth: "0.9", opacity: "0.45" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "19", x2: "25", y2: "19", stroke: "#92400E", strokeWidth: "0.8", opacity: "0.35" })), /* @__PURE__ */ React.createElement("path", { d: "M36 76 Q50 84 64 76", stroke: "#FDE68A", strokeWidth: "3", fill: "none", strokeLinecap: "round", opacity: "0.95" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "80", r: "2.5", fill: "#F59E0B", stroke: "#92400E", strokeWidth: "0.8" }))), effectiveAccessory === "thinking-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z", fill: "#7C3AED", stroke: "#5B21B6", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 50 30 72 26", stroke: "#4C1D95", strokeWidth: "2", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "6", rx: "4", ry: "2", fill: "#A78BFA", opacity: "0.5" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(50, 0)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "-4", rx: "5", ry: "6", fill: "#FEF08A", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-1.5", cy: "-6", rx: "1.5", ry: "2", fill: "#FFFBEB", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "1", width: "5", height: "2", rx: "0.5", fill: "#94A3B8" }), /* @__PURE__ */ React.createElement("rect", { x: "-2", y: "3", width: "4", height: "1.5", rx: "0.5", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-4", r: "9", fill: "#FEF08A", opacity: "0.18" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.32;0.1", dur: motionDisabled ? "indefinite" : "2.4s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "r", values: "8;11;8", dur: motionDisabled ? "indefinite" : "2.4s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "0.4", transform: "translate(70 -8)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 50 -2", to: "360 50 -2", dur: motionDisabled ? "indefinite" : "9s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.6 L 0.5 -0.5 L 1.6 0 L 0.5 0.5 L 0 1.6 L -0.5 0.5 L -1.6 0 L -0.5 -0.5 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.4", transform: "translate(74 -2)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "120 50 -2", to: "480 50 -2", dur: motionDisabled ? "indefinite" : "11s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.4 L 0.45 -0.45 L 1.4 0 L 0.45 0.45 L 0 1.4 L -0.45 0.45 L -1.4 0 L -0.45 -0.45 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.4", transform: "translate(72 4)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "240 50 -2", to: "600 50 -2", dur: motionDisabled ? "indefinite" : "8s", repeatCount: "indefinite" }))), effectiveAccessory === "sorting-cubes" && /* @__PURE__ */ React.createElement("g", { "data-accessory-placement": "head-and-side", "data-accessory-name": "Sort-of-a-Hat" }, /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "2.4s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "26", rx: "28", ry: "5", fill: "#312E81", stroke: "#1E1B4B", strokeWidth: "1.2", transform: "rotate(-2 50 26)" }), /* @__PURE__ */ React.createElement("path", { d: "M27 24 Q30 16 39 12 Q44 4 41 -7 Q52 -4 58 7 Q69 11 72 24 Q50 29 27 24 Z", fill: "#7C3AED", stroke: "#4C1D95", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M31 21 Q50 26 69 21", stroke: "#FBBF24", strokeWidth: "3.2", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M43 8 L50 4 L55 10 L50 15 L42 13 Z", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.7", transform: "rotate(-8 49 10)" }), /* @__PURE__ */ React.createElement("text", { x: "48.5", y: "12", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: "#F5F3FF", textAnchor: "middle" }, "A"), /* @__PURE__ */ React.createElement("circle", { cx: "61", cy: "16", r: "4", fill: "#34D399", stroke: "#065F46", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("text", { x: "61", y: "18", fontFamily: "Arial", fontSize: "5.5", fontWeight: "bold", fill: "#052E16", textAnchor: "middle" }, "B"), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q38 14 41 18 Q39 21 36 23", stroke: "#F9A8D4", strokeWidth: "1.1", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "35.5", cy: "24", r: "0.8", fill: "#F9A8D4" }))), /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 32)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.1s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "17", cy: "49", rx: "17", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(3 33) rotate(-6)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#3B82F6", stroke: "#1E3A8A", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#60A5FA", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#DBEAFE", opacity: "0.7" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(14 22) rotate(8)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#4ADE80", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 3 7 L 6 10 L 11 4", stroke: "#DCFCE7", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(5 8) rotate(-4)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "13", height: "13", rx: "1.5", fill: "#EF4444", stroke: "#7F1D1D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 13 0 L 13 13", stroke: "#FCA5A5", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 4 4 L 9 9 M 9 4 L 4 9", stroke: "#FEE2E2", strokeWidth: "1.4", strokeLinecap: "round" }))))), effectiveAccessory === "clarity-crown" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "4.2s" } }, /* @__PURE__ */ React.createElement("path", { d: "M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M 22 28 Q 50 32 78 28", stroke: "#92400E", strokeWidth: "1.6", fill: "none" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(35 17)" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "2.2", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "-3", y1: "0", x2: "-2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-3", x2: "0", y2: "-2", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "3", x2: "0", y2: "2", stroke: "#92400E", strokeWidth: "0.5" })), /* @__PURE__ */ React.createElement("path", { d: "M 42 8 Q 40 12 42 18 Q 44 12 42 8 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "15", rx: "2.5", ry: "3.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "50", y1: "11", x2: "50", y2: "18", stroke: "#14532D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "65", cy: "17", r: "2.2", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }))), effectiveAccessory === "deerstalker" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "0s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "25", rx: "33", ry: "6.5", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("path", { d: "M19 23 Q11 25 14 35 Q21 35 25 28 Z", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: "M81 23 Q89 25 86 35 Q79 35 75 28 Z", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: "M25 25 Q23 5 50 4 Q77 5 75 25 Z", fill: "#A6968A", stroke: "#5C4D40", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M50 4 L50 25", stroke: "#5C4D40", strokeWidth: "0.8", opacity: "0.45" }), /* @__PURE__ */ React.createElement("path", { d: "M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z", fill: "#7A6B5D", stroke: "#5C4D40", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("g", { fill: "#5C4D40", opacity: "0.5" }, /* @__PURE__ */ React.createElement("circle", { cx: "42", cy: "14", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "10", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "58", cy: "14", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "46", cy: "19", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "54", cy: "19", r: "1" })))), effectiveAccessory === "persona-masks" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-24, 40)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-sway", style: { animationDelay: "0s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "46", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-8 8 26)" }, /* @__PURE__ */ React.createElement("path", { d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("path", { d: "M3 16 Q6 13 9 16 M15 16 Q18 13 21 16", stroke: "#7C2D12", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M6 27 Q12 33 18 27", stroke: "#7C2D12", strokeWidth: "1.6", fill: "none", strokeLinecap: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(16, 2) rotate(8 12 26)" }, /* @__PURE__ */ React.createElement("path", { d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("path", { d: "M3 17 Q6 20 9 17 M15 17 Q18 20 21 17", stroke: "#1E3A8A", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M6 32 Q12 27 18 32", stroke: "#1E3A8A", strokeWidth: "1.6", fill: "none", strokeLinecap: "round" })))), effectiveAccessory === "sentence-frames" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500", transform: "translate(76, 36)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.7s" } }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "40", height: "30", rx: "2.5", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "4", width: "32", height: "22", rx: "1", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "0.8", opacity: "0.6" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "8", width: "9", height: "5", rx: "1", fill: "#60A5FA" }), /* @__PURE__ */ React.createElement("line", { x1: "18", y1: "13", x2: "27", y2: "13", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "29", y: "8", width: "5", height: "5", rx: "1", fill: "#34D399" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "20", x2: "14", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "16", y: "16", width: "9", height: "5", rx: "1", fill: "#F472B6" }), /* @__PURE__ */ React.createElement("line", { x1: "27", y1: "20", x2: "34", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }))), effectiveAccessory === "outline-doc" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 32)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.4s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "50", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "6", width: "34", height: "42", rx: "2", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("text", { x: "6", y: "15", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: colors.accInk }, "I."), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "13", x2: "32", y2: "13", stroke: colors.accInk, strokeWidth: "1.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "20", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "31", y2: "20", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "26", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "26", x2: "29", y2: "26", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }), /* @__PURE__ */ React.createElement("text", { x: "6", y: "36", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: colors.accInk }, "II."), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "34", x2: "32", y2: "34", stroke: colors.accInk, strokeWidth: "1.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "41", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "41", x2: "30", y2: "41", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }))), effectiveAccessory === "sticky-notes" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 34)", "data-accessory-placement": "side-left" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "48", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-8 13 23)" }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "12", width: "24", height: "22", rx: "1", fill: "#FDE047", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M20 34 L26 34 L26 28 Z", fill: "#FACC15" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "19", x2: "22", y2: "19", stroke: "#A16207", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "24", x2: "19", y2: "24", stroke: "#A16207", strokeWidth: "1" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(7 24 16)" }, /* @__PURE__ */ React.createElement("rect", { x: "13", y: "5", width: "23", height: "22", rx: "1", fill: "#5EEAD4", stroke: "#0D9488", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M30 27 L36 27 L36 21 Z", fill: "#2DD4BF" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "12", x2: "32", y2: "12", stroke: "#0F766E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "17", x2: "29", y2: "17", stroke: "#0F766E", strokeWidth: "1" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-3 20 35)" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "25", width: "24", height: "20", rx: "1", fill: "#FDA4AF", stroke: "#E11D48", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M26 45 L32 45 L32 39 Z", fill: "#FB7185" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "31", x2: "28", y2: "31", stroke: "#BE123C", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "36", x2: "25", y2: "36", stroke: "#BE123C", strokeWidth: "1" })))), effectiveAccessory === "anchor-easel" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 18)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.1s" } }, /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "20", x2: "-2", y2: "62", stroke: "#92400E", strokeWidth: "2.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "30", y1: "20", x2: "38", y2: "62", stroke: "#92400E", strokeWidth: "2.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "22", y1: "22", x2: "26", y2: "62", stroke: "#78350F", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "32", rx: "1.5", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "8", rx: "1.5", fill: "#4338CA" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "20", x2: "31", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "25", x2: "28", y2: "25", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M5 31 L9 34 L15 28", stroke: "#22C55E", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "19", y1: "31", x2: "31", y2: "31", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }))), effectiveAccessory === "behavior-watch" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 42)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.8s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "42", rx: "15", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(15, 24)" }, /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "-15", width: "5", height: "5", rx: "1.2", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "-5", y: "-17.5", width: "10", height: "3", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "13", fill: "#E2E8F0", stroke: "#334155", strokeWidth: "2.2" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "10", fill: "#F8FAFC", stroke: "#94A3B8", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("g", { stroke: "#94A3B8", strokeWidth: "0.8" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-9", x2: "0", y2: "-7.5" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "0", x2: "7.5", y2: "0" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "9", x2: "0", y2: "7.5" }), /* @__PURE__ */ React.createElement("line", { x1: "-9", y1: "0", x2: "-7.5", y2: "0" })), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-tick" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "0", y2: "-7", stroke: "#DC2626", strokeWidth: "1.5", strokeLinecap: "round" })), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "4.5", y2: "3", stroke: "#334155", strokeWidth: "1.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "1.3", fill: "#334155" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(26, 30)", stroke: "#16A34A", strokeWidth: "1.4", strokeLinecap: "round" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "0", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "3", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "0", x2: "6", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "-2", y1: "6", x2: "8", y2: "2" })))), effectiveAccessory === "bard-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "4.5s" } }, /* @__PURE__ */ React.createElement("path", { d: "M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z", fill: "#0D9488", stroke: "#0F766E", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M22 24 Q50 30 78 24", stroke: "#FCD34D", strokeWidth: "3", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "13", rx: "4", ry: "2", fill: "#2DD4BF", opacity: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "21", r: "2.6", fill: "#FCD34D", stroke: "#A16207", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-sway" }, /* @__PURE__ */ React.createElement("path", { d: "M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M34 11 Q29 1 25 -8", stroke: "#FBCFE8", strokeWidth: "1", fill: "none", opacity: "0.85" })))), effectiveAccessory === "math-tools" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 32)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "48", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M2 46 L2 20 L30 46 Z", fill: "#93C5FD", stroke: "#1D4ED8", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "26", x2: "6", y2: "26", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "32", x2: "6", y2: "32", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "38", x2: "6", y2: "38", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: "M8 22 A 13 13 0 0 1 34 22 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M11 22 A 10 10 0 0 1 31 22", fill: "#FFFBEB", stroke: "#B45309", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("circle", { cx: "21", cy: "22", r: "1.4", fill: "#B45309" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "21", y2: "11", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "13", y2: "15", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "29", y2: "15", stroke: "#B45309", strokeWidth: "0.7" }))), effectiveAccessory === "gear" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-21, 38)", "data-accessory-placement": "side-left" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "51", rx: "17", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(18, 28)" }, /* @__PURE__ */ React.createElement("g", { fill: "#B0B8C4", stroke: "#475569", strokeWidth: "1.1" }, /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "-15", width: "5", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "9", width: "5", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "-2.5", width: "6", height: "5", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "9", y: "-2.5", width: "6", height: "5", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-12", y: "-12", width: "5", height: "6", rx: "1", transform: "rotate(45 -9.5 -9)" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "6", width: "5", height: "6", rx: "1", transform: "rotate(45 9.5 9)" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "-12", width: "5", height: "6", rx: "1", transform: "rotate(-45 9.5 -9)" }), /* @__PURE__ */ React.createElement("rect", { x: "-12", y: "6", width: "5", height: "6", rx: "1", transform: "rotate(-45 -9.5 9)" })), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "11", fill: "#CBD5E1", stroke: "#475569", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "4.5", fill: "#0f172a", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "-3", cy: "-3", r: "1.6", fill: "#fff", opacity: "0.5" })))), effectiveAccessory === "game-pad" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-32, 40)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.1s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "19", cy: "34", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z", fill: "#5B6472", stroke: "#1F2937", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "21", width: "9", height: "3", rx: "1", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "10", y: "18", width: "3", height: "9", rx: "1", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("circle", { cx: "26", cy: "20", r: "2.3", fill: "#F472B6", stroke: "#9D174D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "31", cy: "24", r: "2.3", fill: "#34D399", stroke: "#065F46", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "21", cy: "25", r: "2.3", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.6" })))), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("radialGradient", { id: `bodyGradient-${effectiveMood}`, cx: "35%", cy: "35%", r: "65%", fx: "30%", fy: "30%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: colors.gradFrom }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: colors.gradTo })), /* @__PURE__ */ React.createElement("radialGradient", { id: "rimLightGradient", cx: "70%", cy: "70%", r: "70%" }, /* @__PURE__ */ React.createElement("stop", { offset: "82%", stopColor: "#fff", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: "0.4" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-gradient", x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#22D3EE", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "20%", stopColor: "#22D3EE", stopOpacity: "0.1" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#22D3EE", stopOpacity: "0.6" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "visorReflect", x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "white", stopOpacity: "0.4" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "white", stopOpacity: "0" })), /* @__PURE__ */ React.createElement("linearGradient", { id: "hologram-beam", x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#06B6D4", stopOpacity: "0.6" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#06B6D4", stopOpacity: "0" }))))
+            id: svgPaintIds.accessories,
+            "data-allobot-accessories": "true",
+            "data-accessory-side": accessoryRenderSide || "center",
+            "data-accessory-preferred-side": accessoryPreferredSide || "center",
+            className: `${accExiting ? "allobot-exiting " : ""}${effectiveMood === "thinking" ? "allobot-thinking" : accPop ? "allobot-pop" : ""}`.trim() || void 0
+          },
+          /* @__PURE__ */ React.createElement("g", { transform: accessoryTranslateX ? `translate(${accessoryTranslateX} 0)` : void 0 }, /* @__PURE__ */ React.createElement(
+            "g",
+            {
+              key: `${effectiveAccessory}-${accessoryRenderSide || "center"}`,
+              className: !motionDisabled && accessoryRenderSide ? `animate-allobot-accessory-arrive-${accessoryRenderSide}` : void 0
+            },
+            /* @__PURE__ */ React.createElement(
+              "g",
+              {
+                "data-accessory-scale": accessoryScale,
+                style: accessoryRenderSide ? {
+                  transform: `scale(${accessoryScale})`,
+                  transformBox: "fill-box",
+                  transformOrigin: accessoryRenderSide === "left" ? "right center" : "left center",
+                  filter: accessoryDepthFilter
+                } : void 0
+              },
+              effectiveAccessory === "grad-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "1.2s" } }, /* @__PURE__ */ React.createElement("path", { d: "M32 30 Q50 36 68 30 V 22 H 32 V 30 Z", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("path", { d: "M15 22 L50 8 L85 22 L50 36 Z", fill: "#111827", stroke: "#374151", strokeWidth: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M50 22 L82 22 L82 42", stroke: "#F59E0B", strokeWidth: "2", fill: "none", className: "drop-shadow-sm" }), /* @__PURE__ */ React.createElement("circle", { cx: "82", cy: "42", r: "2.5", fill: "#F59E0B" }))),
+              effectiveAccessory === "explorer-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "3.3s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "22", rx: "38", ry: "10", fill: "#D2B48C", stroke: "#8B4513", strokeWidth: "1.5", transform: "rotate(-5 50 22)" }), /* @__PURE__ */ React.createElement("path", { d: "M32 22 L35 4 Q50 0 65 4 L68 22 Z", fill: "#D2B48C", stroke: "#8B4513", strokeWidth: "1.5", transform: "rotate(-5 50 22)" }), /* @__PURE__ */ React.createElement("path", { d: "M32 19 Q50 23 68 19", stroke: "#3E2723", strokeWidth: "4", fill: "none", transform: "rotate(-5 50 22)" }))),
+              effectiveAccessory === "magnifying-glass" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-bottom-2 duration-500 origin-bottom-right" }, /* @__PURE__ */ React.createElement("path", { d: "M72 78 L84 58", stroke: "#374151", strokeWidth: "4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "84", cy: "58", r: "14", stroke: "#94A3B8", strokeWidth: "3", fill: "rgba(255, 255, 255, 0.1)" }), /* @__PURE__ */ React.createElement("circle", { cx: "84", cy: "58", r: "12", fill: "rgba(147, 197, 253, 0.3)" }), /* @__PURE__ */ React.createElement("path", { d: "M78 54 Q 82 50 88 54", stroke: "white", strokeWidth: "2", strokeLinecap: "round", opacity: "0.7" })),
+              effectiveAccessory === "artist" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "5.1s" } }, /* @__PURE__ */ React.createElement(
+                "path",
+                {
+                  d: "M 25 28 Q 15 28 15 20 Q 15 5 45 2 Q 85 -2 90 10 Q 95 22 80 26 Q 70 29 55 27",
+                  fill: "#374151",
+                  stroke: "#1F2937",
+                  strokeWidth: "1.5",
+                  transform: "rotate(-10 50 20)"
+                }
+              ), /* @__PURE__ */ React.createElement(
+                "path",
+                {
+                  d: "M 58 4 L 62 0",
+                  stroke: "#374151",
+                  strokeWidth: "3",
+                  strokeLinecap: "round",
+                  transform: "rotate(-10 50 20)"
+                }
+              ))),
+              effectiveAccessory === "hard-hat" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M25 26 Q25 6 50 4 Q75 6 75 26 Z", fill: "#F59E0B", stroke: "#D97706", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M18 26 Q50 32 82 26 Q80 28 50 33 Q20 28 18 26 Z", fill: "#D97706", stroke: "#B45309", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M38 8 Q50 5 62 8", stroke: "#FCD34D", strokeWidth: "2", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "5", fill: "#374151", stroke: "#1F2937", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "3", fill: "#FEF3C7", opacity: "0.9" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "18", r: "7", fill: "#FEF3C7", opacity: "0.15" })),
+              effectiveAccessory === "sleep-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M30 24 Q28 12 40 6 Q55 0 70 10 Q85 22 80 40 Q78 48 74 52", fill: "#6366F1", stroke: "#4F46E5", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q50 12 65 18", stroke: "#818CF8", strokeWidth: "2.5", fill: "none", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M40 12 Q52 7 64 14", stroke: "#818CF8", strokeWidth: "2", fill: "none", opacity: "0.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "74", cy: "52", r: "6", fill: "#C4B5FD", stroke: "#A78BFA", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "50", r: "2", fill: "white", opacity: "0.4" }), /* @__PURE__ */ React.createElement("path", { d: "M28 24 Q50 28 72 22", stroke: "#4338CA", strokeWidth: "2.5", fill: "none" })),
+              effectiveAccessory === "microscope" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 8)", "data-accessory-placement": "side-left", "data-accessory-name": "Microscope" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "8", cy: "82", rx: "14", ry: "4", fill: "#334155" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "78", width: "12", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "6", y: "38", width: "4", height: "42", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("path", { d: "M8 40 Q8 32 16 28", stroke: "#64748B", strokeWidth: "4", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "22", width: "6", height: "18", rx: "2", fill: "#94A3B8", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "11", y: "18", width: "10", height: "6", rx: "2", fill: "#334155" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "18", rx: "5", ry: "2", fill: "#1e293b" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "17", rx: "2", ry: "1", fill: "white", opacity: "0.3" }), /* @__PURE__ */ React.createElement("rect", { x: "14", y: "40", width: "4", height: "5", rx: "1", fill: "#334155" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "3", fill: "#93c5fd", opacity: "0.5", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "48", width: "22", height: "3", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "8", y: "47", width: "12", height: "2", rx: "0.5", fill: "rgba(219, 234, 254, 0.6)", stroke: "#93c5fd", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "3", fill: "#64748B", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "2", cy: "52", r: "1.5", fill: "#94a3b8" }), /* @__PURE__ */ React.createElement("circle", { cx: "16", cy: "46", r: "6", fill: "rgba(147, 197, 253, 0.15)" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.25;0.1", dur: motionDisabled ? "indefinite" : "3s", repeatCount: "indefinite" }))),
+              effectiveAccessory === "historian" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-22, 38)", "data-accessory-placement": "side-left", "data-accessory-name": "History Sources" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "48", rx: "18", ry: "3", fill: "#7C2D12", opacity: "0.25" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-14 6 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "-4", y: "14", width: "20", height: "26", rx: "1", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "20", x2: "12", y2: "20", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "24", x2: "12", y2: "24", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "28", x2: "10", y2: "28", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "32", x2: "12", y2: "32", stroke: "#78350F", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "36", x2: "9", y2: "36", stroke: "#78350F", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("rect", { x: "4", y: "12", width: "20", height: "26", rx: "1", fill: "#FFFBEB", stroke: "#7C2D12", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "20", cy: "16", r: "2", fill: "#DC2626", stroke: "#7F1D1D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M19 15 L21 15 M20 14 L20 16", stroke: "#FECACA", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "22", x2: "17", y2: "22", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "26", x2: "18", y2: "26", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "30", x2: "15", y2: "30", stroke: "#7C2D12", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "34", x2: "17", y2: "34", stroke: "#7C2D12", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(14 22 32)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "14", width: "20", height: "26", rx: "1", fill: "#FED7AA", stroke: "#9A3412", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "28", y2: "20", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "28", y2: "24", stroke: "#9A3412", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "28", x2: "26", y2: "28", stroke: "#9A3412", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 22 8 Q 30 -2 34 -10", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z", fill: "#0F172A", stroke: "#1F2937", strokeWidth: "0.5", opacity: "0.85" }, /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", values: "0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8", dur: motionDisabled ? "indefinite" : "6s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("circle", { cx: "22", cy: "9", r: "1.4", fill: "#1E40AF" }))),
+              effectiveAccessory === "teacher-stack" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-20, 34)", "data-accessory-placement": "side-left", "data-accessory-name": "Teacher Resource Stack" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "3.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "16", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "40", width: "34", height: "11", rx: "1.5", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "45", x2: "24", y2: "45", stroke: "#B45309", strokeWidth: "0.7", transform: "rotate(-3 17 45)" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "30", width: "32", height: "11", rx: "1.5", fill: "#34D399", stroke: "#047857", strokeWidth: "1.2", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "35", x2: "26", y2: "35", stroke: "#047857", strokeWidth: "0.7", transform: "rotate(2 18 35)" }), /* @__PURE__ */ React.createElement("rect", { x: "1", y: "20", width: "32", height: "11", rx: "1.5", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "25", x2: "25", y2: "25", stroke: "#1D4ED8", strokeWidth: "0.7", transform: "rotate(-2 17 25)" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(17, 9)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 3 C -7 3 -9 9 -6 14 C -4 17 -2 18 0 17 C 2 18 4 17 6 14 C 9 9 7 3 0 3 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 Q -1 6 0 7 Q 1 6 0 4 Z", fill: "#B91C1C", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 4 L 0 -2", stroke: "#7C2D12", strokeWidth: "1.6", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 -1 Q 6 -4 8 1 Q 3 2 0 -1 Z", fill: "#22C55E", stroke: "#15803D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-2.5", cy: "8", rx: "1.8", ry: "3", fill: "#fff", opacity: "0.45", transform: "rotate(-20 -2.5 8)" })))),
+              effectiveAccessory === "scholar-specs" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.0s" } }, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "9", fill: "rgba(219, 234, 254, 0.25)", stroke: "#1F2937", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 47 48 Q 50 45 53 48", stroke: "#1F2937", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 29 47 Q 24 45 22 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M 71 47 Q 76 45 78 47", stroke: "#1F2937", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59", cy: "46", rx: "2.5", ry: "1.4", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(-26, 56)" }, /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 28 0 L 28 18 L 0 18 Z", fill: "#FFFBEB", stroke: "#78350F", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 14 0 L 14 18", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "4", x2: "11", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "7", x2: "12", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "10", x2: "10", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "13", x2: "11", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "4", x2: "25", y2: "4", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "7", x2: "24", y2: "7", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "10", x2: "25", y2: "10", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "13", x2: "23", y2: "13", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M -2 0 L 30 0 L 30 -2 L -2 -2 Z", fill: "#7C2D12", stroke: "#451A03", strokeWidth: "0.8" })))),
+              effectiveAccessory === "librarian-kit" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.8s" } }, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "48", r: "8.5", fill: "rgba(219, 234, 254, 0.22)", stroke: "#334155", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "62", cy: "48", r: "8.5", fill: "rgba(219, 234, 254, 0.22)", stroke: "#334155", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M46.5 48 Q50 45 53.5 48", stroke: "#334155", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M29.5 48 Q23 49 20 54", stroke: "#334155", strokeWidth: "1.1", fill: "none", strokeLinecap: "round", opacity: "0.85" }), /* @__PURE__ */ React.createElement("path", { d: "M70.5 48 Q77 49 80 54", stroke: "#334155", strokeWidth: "1.1", fill: "none", strokeLinecap: "round", opacity: "0.85" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "35.5", cy: "45.5", rx: "2.2", ry: "1.2", fill: "white", opacity: "0.55" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "59.5", cy: "45.5", rx: "2.2", ry: "1.2", fill: "white", opacity: "0.55" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(70, 58) rotate(-7)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "26", height: "20", rx: "2", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "6", height: "20", rx: "1.5", fill: "#6366F1", stroke: "#4338CA", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "6", x2: "22", y2: "6", stroke: colors.accInk, strokeWidth: "1", opacity: "0.65" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "10", x2: "20", y2: "10", stroke: colors.accInk, strokeWidth: "1", opacity: "0.45" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "14", x2: "22", y2: "14", stroke: colors.accInk, strokeWidth: "1", opacity: "0.45" }), /* @__PURE__ */ React.createElement("path", { d: "M18 0 L22 0 L22 8 L20 6 L18 8 Z", fill: "#F59E0B", stroke: "#B45309", strokeWidth: "0.6" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(-27, 56) rotate(5)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "30", height: "22", rx: "2", fill: "#FFFBEB", stroke: "#92400E", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "30", height: "6", rx: "2", fill: "#FDE68A", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("circle", { cx: "6", cy: "13", r: "2.2", fill: "#A78BFA", stroke: "#6D28D9", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "11", x2: "25", y2: "11", stroke: "#92400E", strokeWidth: "0.9", opacity: "0.65" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "15", x2: "23", y2: "15", stroke: "#92400E", strokeWidth: "0.9", opacity: "0.45" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "19", x2: "25", y2: "19", stroke: "#92400E", strokeWidth: "0.8", opacity: "0.35" })), /* @__PURE__ */ React.createElement("path", { d: "M36 76 Q50 84 64 76", stroke: "#FDE68A", strokeWidth: "3", fill: "none", strokeLinecap: "round", opacity: "0.95" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "80", r: "2.5", fill: "#F59E0B", stroke: "#92400E", strokeWidth: "0.8" }))),
+              effectiveAccessory === "thinking-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z", fill: "#7C3AED", stroke: "#5B21B6", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 28 26 Q 50 30 72 26", stroke: "#4C1D95", strokeWidth: "2", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "6", rx: "4", ry: "2", fill: "#A78BFA", opacity: "0.5" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(50, 0)" }, /* @__PURE__ */ React.createElement("ellipse", { cx: "0", cy: "-4", rx: "5", ry: "6", fill: "#FEF08A", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "-1.5", cy: "-6", rx: "1.5", ry: "2", fill: "#FFFBEB", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "1", width: "5", height: "2", rx: "0.5", fill: "#94A3B8" }), /* @__PURE__ */ React.createElement("rect", { x: "-2", y: "3", width: "4", height: "1.5", rx: "0.5", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "-4", r: "9", fill: "#FEF08A", opacity: "0.18" }, /* @__PURE__ */ React.createElement("animate", { attributeName: "opacity", values: "0.1;0.32;0.1", dur: motionDisabled ? "indefinite" : "2.4s", repeatCount: "indefinite" }), /* @__PURE__ */ React.createElement("animate", { attributeName: "r", values: "8;11;8", dur: motionDisabled ? "indefinite" : "2.4s", repeatCount: "indefinite" }))), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z", fill: "#FBBF24", stroke: "#D97706", strokeWidth: "0.4", transform: "translate(70 -8)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "0 50 -2", to: "360 50 -2", dur: motionDisabled ? "indefinite" : "9s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.6 L 0.5 -0.5 L 1.6 0 L 0.5 0.5 L 0 1.6 L -0.5 0.5 L -1.6 0 L -0.5 -0.5 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.4", transform: "translate(74 -2)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "120 50 -2", to: "480 50 -2", dur: motionDisabled ? "indefinite" : "11s", repeatCount: "indefinite" })), /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("g", null, /* @__PURE__ */ React.createElement("path", { d: "M 0 -1.4 L 0.45 -0.45 L 1.4 0 L 0.45 0.45 L 0 1.4 L -0.45 0.45 L -1.4 0 L -0.45 -0.45 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.4", transform: "translate(72 4)" })), /* @__PURE__ */ React.createElement("animateTransform", { attributeName: "transform", type: "rotate", from: "240 50 -2", to: "600 50 -2", dur: motionDisabled ? "indefinite" : "8s", repeatCount: "indefinite" }))),
+              effectiveAccessory === "sorting-cubes" && /* @__PURE__ */ React.createElement("g", { "data-accessory-placement": "head-and-side", "data-accessory-name": "Sort-of-a-Hat" }, /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "2.4s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "26", rx: "28", ry: "5", fill: "#312E81", stroke: "#1E1B4B", strokeWidth: "1.2", transform: "rotate(-2 50 26)" }), /* @__PURE__ */ React.createElement("path", { d: "M27 24 Q30 16 39 12 Q44 4 41 -7 Q52 -4 58 7 Q69 11 72 24 Q50 29 27 24 Z", fill: "#7C3AED", stroke: "#4C1D95", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M31 21 Q50 26 69 21", stroke: "#FBBF24", strokeWidth: "3.2", fill: "none" }), /* @__PURE__ */ React.createElement("path", { d: "M43 8 L50 4 L55 10 L50 15 L42 13 Z", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.7", transform: "rotate(-8 49 10)" }), /* @__PURE__ */ React.createElement("text", { x: "48.5", y: "12", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: "#F5F3FF", textAnchor: "middle" }, "A"), /* @__PURE__ */ React.createElement("circle", { cx: "61", cy: "16", r: "4", fill: "#34D399", stroke: "#065F46", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("text", { x: "61", y: "18", fontFamily: "Arial", fontSize: "5.5", fontWeight: "bold", fill: "#052E16", textAnchor: "middle" }, "B"), /* @__PURE__ */ React.createElement("path", { d: "M35 18 Q38 14 41 18 Q39 21 36 23", stroke: "#F9A8D4", strokeWidth: "1.1", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "35.5", cy: "24", r: "0.8", fill: "#F9A8D4" }))), /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 32)" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.1s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "17", cy: "49", rx: "17", ry: "3", fill: "#1F2937", opacity: "0.18" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(3 33) rotate(-6)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#3B82F6", stroke: "#1E3A8A", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#60A5FA", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "4", cy: "4", r: "1", fill: "#DBEAFE", opacity: "0.7" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(14 22) rotate(8)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "14", height: "14", rx: "1.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 14 0 L 14 14", stroke: "#4ADE80", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 3 7 L 6 10 L 11 4", stroke: "#DCFCE7", strokeWidth: "1.5", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(5 8) rotate(-4)" }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "13", height: "13", rx: "1.5", fill: "#EF4444", stroke: "#7F1D1D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M 0 0 L 13 0 L 13 13", stroke: "#FCA5A5", strokeWidth: "1", fill: "none", opacity: "0.6" }), /* @__PURE__ */ React.createElement("path", { d: "M 4 4 L 9 9 M 9 4 L 4 9", stroke: "#FEE2E2", strokeWidth: "1.4", strokeLinecap: "round" }))))),
+              effectiveAccessory === "clarity-crown" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "4.2s" } }, /* @__PURE__ */ React.createElement("path", { d: "M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M 22 28 Q 50 32 78 28", stroke: "#92400E", strokeWidth: "1.6", fill: "none" }), /* @__PURE__ */ React.createElement("circle", { cx: "28", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(35 17)" }, /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "2.2", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.4" }), /* @__PURE__ */ React.createElement("line", { x1: "-3", y1: "0", x2: "-2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "2", y2: "0", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-3", x2: "0", y2: "-2", stroke: "#92400E", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "3", x2: "0", y2: "2", stroke: "#92400E", strokeWidth: "0.5" })), /* @__PURE__ */ React.createElement("path", { d: "M 42 8 Q 40 12 42 18 Q 44 12 42 8 Z", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "15", rx: "2.5", ry: "3.5", fill: "#22C55E", stroke: "#14532D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("line", { x1: "50", y1: "11", x2: "50", y2: "18", stroke: "#14532D", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "65", cy: "17", r: "2.2", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "72", cy: "13", r: "2.4", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "0.6" }))),
+              effectiveAccessory === "deerstalker" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "0s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "25", rx: "33", ry: "6.5", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("path", { d: "M19 23 Q11 25 14 35 Q21 35 25 28 Z", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: "M81 23 Q89 25 86 35 Q79 35 75 28 Z", fill: "#8C7A6B", stroke: "#5C4D40", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: "M25 25 Q23 5 50 4 Q77 5 75 25 Z", fill: "#A6968A", stroke: "#5C4D40", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M50 4 L50 25", stroke: "#5C4D40", strokeWidth: "0.8", opacity: "0.45" }), /* @__PURE__ */ React.createElement("path", { d: "M40 25 Q50 31 60 25 L58 22 Q50 25 42 22 Z", fill: "#7A6B5D", stroke: "#5C4D40", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("g", { fill: "#5C4D40", opacity: "0.5" }, /* @__PURE__ */ React.createElement("circle", { cx: "42", cy: "14", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "50", cy: "10", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "58", cy: "14", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "46", cy: "19", r: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "54", cy: "19", r: "1" })))),
+              effectiveAccessory === "persona-masks" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-24, 40)", "data-accessory-placement": "side-left", "data-accessory-name": "Persona Masks" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-sway", style: { animationDelay: "0s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "14", cy: "46", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-8 8 26)" }, /* @__PURE__ */ React.createElement("path", { d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("path", { d: "M3 16 Q6 13 9 16 M15 16 Q18 13 21 16", stroke: "#7C2D12", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M6 27 Q12 33 18 27", stroke: "#7C2D12", strokeWidth: "1.6", fill: "none", strokeLinecap: "round" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(16, 2) rotate(8 12 26)" }, /* @__PURE__ */ React.createElement("path", { d: "M-2 18 Q-2 40 12 40 Q26 40 26 18 Q26 6 12 6 Q-2 6 -2 18 Z", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("path", { d: "M3 17 Q6 20 9 17 M15 17 Q18 20 21 17", stroke: "#1E3A8A", strokeWidth: "1.2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M6 32 Q12 27 18 32", stroke: "#1E3A8A", strokeWidth: "1.6", fill: "none", strokeLinecap: "round" })))),
+              effectiveAccessory === "sentence-frames" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-500", transform: "translate(76, 36)", "data-accessory-placement": "side-right", "data-accessory-name": "Sentence Frames" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.7s" } }, /* @__PURE__ */ React.createElement("rect", { x: "0", y: "0", width: "40", height: "30", rx: "2.5", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "2" }), /* @__PURE__ */ React.createElement("rect", { x: "4", y: "4", width: "32", height: "22", rx: "1", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "0.8", opacity: "0.6" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "8", width: "9", height: "5", rx: "1", fill: "#60A5FA" }), /* @__PURE__ */ React.createElement("line", { x1: "18", y1: "13", x2: "27", y2: "13", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "29", y: "8", width: "5", height: "5", rx: "1", fill: "#34D399" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "20", x2: "14", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }), /* @__PURE__ */ React.createElement("rect", { x: "16", y: "16", width: "9", height: "5", rx: "1", fill: "#F472B6" }), /* @__PURE__ */ React.createElement("line", { x1: "27", y1: "20", x2: "34", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.7" }))),
+              effectiveAccessory === "outline-doc" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 32)", "data-accessory-placement": "side-left", "data-accessory-name": "Outline Document" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.4s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "50", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "6", width: "34", height: "42", rx: "2", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("text", { x: "6", y: "15", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: colors.accInk }, "I."), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "13", x2: "32", y2: "13", stroke: colors.accInk, strokeWidth: "1.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "20", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "20", x2: "31", y2: "20", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "26", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "26", x2: "29", y2: "26", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }), /* @__PURE__ */ React.createElement("text", { x: "6", y: "36", fontFamily: "Arial", fontSize: "6", fontWeight: "bold", fill: colors.accInk }, "II."), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "34", x2: "32", y2: "34", stroke: colors.accInk, strokeWidth: "1.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "41", r: "1.1", fill: colors.accInk, opacity: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "41", x2: "30", y2: "41", stroke: colors.accInk, strokeWidth: "1.2", opacity: "0.45" }))),
+              effectiveAccessory === "sticky-notes" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 34)", "data-accessory-placement": "side-left" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "48", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-8 13 23)" }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "12", width: "24", height: "22", rx: "1", fill: "#FDE047", stroke: "#CA8A04", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M20 34 L26 34 L26 28 Z", fill: "#FACC15" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "19", x2: "22", y2: "19", stroke: "#A16207", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "24", x2: "19", y2: "24", stroke: "#A16207", strokeWidth: "1" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(7 24 16)" }, /* @__PURE__ */ React.createElement("rect", { x: "13", y: "5", width: "23", height: "22", rx: "1", fill: "#5EEAD4", stroke: "#0D9488", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M30 27 L36 27 L36 21 Z", fill: "#2DD4BF" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "12", x2: "32", y2: "12", stroke: "#0F766E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "17", x2: "29", y2: "17", stroke: "#0F766E", strokeWidth: "1" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-3 20 35)" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "25", width: "24", height: "20", rx: "1", fill: "#FDA4AF", stroke: "#E11D48", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M26 45 L32 45 L32 39 Z", fill: "#FB7185" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "31", x2: "28", y2: "31", stroke: "#BE123C", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "12", y1: "36", x2: "25", y2: "36", stroke: "#BE123C", strokeWidth: "1" })))),
+              effectiveAccessory === "anchor-easel" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 18)", "data-accessory-placement": "side-left", "data-accessory-name": "Anchor Chart Easel" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.1s" } }, /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "20", x2: "-2", y2: "62", stroke: "#92400E", strokeWidth: "2.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "30", y1: "20", x2: "38", y2: "62", stroke: "#92400E", strokeWidth: "2.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "22", y1: "22", x2: "26", y2: "62", stroke: "#78350F", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "32", rx: "1.5", fill: colors.accPaper, stroke: colors.accInk, strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "8", rx: "1.5", fill: "#4338CA" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "20", x2: "31", y2: "20", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }), /* @__PURE__ */ React.createElement("line", { x1: "5", y1: "25", x2: "28", y2: "25", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }), /* @__PURE__ */ React.createElement("path", { d: "M5 31 L9 34 L15 28", stroke: "#22C55E", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "19", y1: "31", x2: "31", y2: "31", stroke: colors.accInk, strokeWidth: "1.4", opacity: "0.5" }))),
+              effectiveAccessory === "behavior-watch" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-28, 42)", "data-accessory-placement": "side-left", "data-accessory-name": "Behavior Timer" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.8s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "15", cy: "42", rx: "15", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(15, 24)" }, /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "-15", width: "5", height: "5", rx: "1.2", fill: "#475569" }), /* @__PURE__ */ React.createElement("rect", { x: "-5", y: "-17.5", width: "10", height: "3", rx: "1", fill: "#64748B" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "13", fill: "#E2E8F0", stroke: "#334155", strokeWidth: "2.2" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "10", fill: "#F8FAFC", stroke: "#94A3B8", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("g", { stroke: "#94A3B8", strokeWidth: "0.8" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "-9", x2: "0", y2: "-7.5" }), /* @__PURE__ */ React.createElement("line", { x1: "9", y1: "0", x2: "7.5", y2: "0" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "9", x2: "0", y2: "7.5" }), /* @__PURE__ */ React.createElement("line", { x1: "-9", y1: "0", x2: "-7.5", y2: "0" })), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-tick" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "0", y2: "-7", stroke: "#DC2626", strokeWidth: "1.5", strokeLinecap: "round" })), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "4.5", y2: "3", stroke: "#334155", strokeWidth: "1.4", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "1.3", fill: "#334155" })), /* @__PURE__ */ React.createElement("g", { transform: "translate(26, 30)", stroke: "#16A34A", strokeWidth: "1.4", strokeLinecap: "round" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "0", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "3", y1: "0", x2: "3", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "6", y1: "0", x2: "6", y2: "8" }), /* @__PURE__ */ React.createElement("line", { x1: "-2", y1: "6", x2: "8", y2: "2" })))),
+              effectiveAccessory === "bard-cap" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "4.5s" } }, /* @__PURE__ */ React.createElement("path", { d: "M22 26 Q20 12 50 8 Q80 12 78 26 Q50 30 22 26 Z", fill: "#0D9488", stroke: "#0F766E", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M22 24 Q50 30 78 24", stroke: "#FCD34D", strokeWidth: "3", fill: "none" }), /* @__PURE__ */ React.createElement("ellipse", { cx: "50", cy: "13", rx: "4", ry: "2", fill: "#2DD4BF", opacity: "0.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "38", cy: "21", r: "2.6", fill: "#FCD34D", stroke: "#A16207", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-sway" }, /* @__PURE__ */ React.createElement("path", { d: "M38 19 Q29 3 23 -12 Q34 0 41 12 Q41 16 38 19 Z", fill: "#F472B6", stroke: "#BE185D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M34 11 Q29 1 25 -8", stroke: "#FBCFE8", strokeWidth: "1", fill: "none", opacity: "0.85" })))),
+              effectiveAccessory === "phoneme-headset" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-top-2 duration-700 origin-center", "data-accessory-placement": "head-and-ears", "data-accessory-name": "Phoneme Phones" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-perk", style: { animationDelay: "1.8s" } }, /* @__PURE__ */ React.createElement("path", { d: "M18 52 C18 19 29 5 50 5 C71 5 82 19 82 52", stroke: "#4F46E5", strokeWidth: "5", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M23 42 C23 18 33 10 50 10 C67 10 77 18 77 42", stroke: "#A5B4FC", strokeWidth: "2", fill: "none", opacity: "0.85" }), /* @__PURE__ */ React.createElement("rect", { x: "13", y: "42", width: "15", height: "24", rx: "7", fill: "#6366F1", stroke: "#312E81", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "17", y: "46", width: "7", height: "16", rx: "3.5", fill: "#C7D2FE", stroke: "#4338CA", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("rect", { x: "72", y: "42", width: "15", height: "24", rx: "7", fill: "#6366F1", stroke: "#312E81", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "76", y: "46", width: "7", height: "16", rx: "3.5", fill: "#C7D2FE", stroke: "#4338CA", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: "M80 61 Q83 71 70 72", stroke: "#312E81", strokeWidth: "2", fill: "none", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "68", cy: "72", r: "2.4", fill: "#F472B6", stroke: "#9D174D", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(50 3)" }, /* @__PURE__ */ React.createElement("rect", { x: "-11", y: "-5", width: "22", height: "12", rx: "6", fill: "#FDF2F8", stroke: "#BE185D", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("text", { x: "0", y: "3", fontFamily: "Arial", fontSize: "7", fontWeight: "bold", fill: "#9D174D", textAnchor: "middle" }, "/m/")), /* @__PURE__ */ React.createElement("path", { d: "M89 47 Q94 51 89 55 M92 43 Q101 51 92 59", stroke: "#22D3EE", strokeWidth: "1.5", fill: "none", strokeLinecap: "round" }))),
+              effectiveAccessory === "choice-fan" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 34)", "data-accessory-placement": "side-left", "data-accessory-name": "UDL Choice Fan" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.3s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "50", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-17 14 43)" }, /* @__PURE__ */ React.createElement("rect", { x: "2", y: "8", width: "22", height: "38", rx: "3", fill: "#DBEAFE", stroke: "#1D4ED8", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("circle", { cx: "13", cy: "20", r: "6", fill: "#60A5FA", stroke: "#1E40AF", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("text", { x: "13", y: "23", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#172554", textAnchor: "middle" }, "R"), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "32", x2: "19", y2: "32", stroke: "#1D4ED8", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "37", x2: "17", y2: "37", stroke: "#1D4ED8", strokeWidth: "1.2" })), /* @__PURE__ */ React.createElement("g", { transform: "rotate(2 20 42)" }, /* @__PURE__ */ React.createElement("rect", { x: "9", y: "5", width: "22", height: "40", rx: "3", fill: "#FEF3C7", stroke: "#B45309", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("path", { d: "M20 13 L22 18 L27 18 L23 21 L25 26 L20 23 L15 26 L17 21 L13 18 L18 18 Z", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("text", { x: "20", y: "37", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#78350F", textAnchor: "middle" }, "E")), /* @__PURE__ */ React.createElement("g", { transform: "rotate(18 25 43)" }, /* @__PURE__ */ React.createElement("rect", { x: "15", y: "9", width: "22", height: "38", rx: "3", fill: "#D1FAE5", stroke: "#047857", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("path", { d: "M21 23 L25 27 L33 17", stroke: "#059669", strokeWidth: "2.4", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("text", { x: "26", y: "39", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#064E3B", textAnchor: "middle" }, "A")), /* @__PURE__ */ React.createElement("circle", { cx: "19", cy: "45", r: "3", fill: "#475569", stroke: "#1F2937", strokeWidth: "0.8" }))),
+              effectiveAccessory === "alignment-target" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 31)", "data-accessory-placement": "side-left", "data-accessory-name": "Alignment Target" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.2s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("line", { x1: "7", y1: "43", x2: "2", y2: "52", stroke: "#475569", strokeWidth: "2.2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "29", y1: "43", x2: "34", y2: "52", stroke: "#475569", strokeWidth: "2.2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "25", r: "19", fill: "#F8FAFC", stroke: "#334155", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "25", r: "14", fill: "#CCFBF1", stroke: "#0F766E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "25", r: "8", fill: "#5EEAD4", stroke: "#0F766E", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "25", r: "3", fill: "#0F766E" }), /* @__PURE__ */ React.createElement("path", { d: "M4 38 L9 43 L17 34", stroke: "#22C55E", strokeWidth: "2.2", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-13 25 16)" }, /* @__PURE__ */ React.createElement("line", { x1: "18", y1: "25", x2: "34", y2: "8", stroke: "#F97316", strokeWidth: "2", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M34 8 L31 15 L37 13 Z", fill: "#FB923C", stroke: "#C2410C", strokeWidth: "0.7" })))),
+              effectiveAccessory === "wayfinder-sign" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 27)", "data-accessory-placement": "side-left", "data-accessory-name": "Next-Step Signpost" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.7s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "58", rx: "17", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "16", y: "10", width: "4", height: "48", rx: "1.5", fill: "#92400E", stroke: "#78350F", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: "M2 12 H27 L35 19 L27 26 H2 Z", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("text", { x: "17", y: "22", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#172554", textAnchor: "middle" }, "1"), /* @__PURE__ */ React.createElement("path", { d: "M34 29 H10 L2 36 L10 43 H34 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("text", { x: "19", y: "39", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#78350F", textAnchor: "middle" }, "2"), /* @__PURE__ */ React.createElement("circle", { cx: "18", cy: "8", r: "4", fill: "#34D399", stroke: "#047857", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M16 8 L18 10 L22 6", stroke: "#ECFDF5", strokeWidth: "1.3", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }))),
+              effectiveAccessory === "question-cards" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 34)", "data-accessory-placement": "side-left", "data-accessory-name": "Curiosity Cards" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "3.1s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "49", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "rotate(-9 14 27)" }, /* @__PURE__ */ React.createElement("rect", { x: "1", y: "9", width: "25", height: "36", rx: "3", fill: "#FCE7F3", stroke: "#BE185D", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("text", { x: "13.5", y: "33", fontFamily: "Arial", fontSize: "22", fontWeight: "bold", fill: "#BE185D", textAnchor: "middle" }, "?")), /* @__PURE__ */ React.createElement("g", { transform: "rotate(8 24 25)" }, /* @__PURE__ */ React.createElement("rect", { x: "12", y: "5", width: "25", height: "36", rx: "3", fill: "#EDE9FE", stroke: "#6D28D9", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("circle", { cx: "24.5", cy: "18", r: "5", fill: "#A78BFA", stroke: "#5B21B6", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("text", { x: "24.5", y: "21", fontFamily: "Arial", fontSize: "8", fontWeight: "bold", fill: "#3B0764", textAnchor: "middle" }, "?"), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "29", x2: "32", y2: "29", stroke: "#6D28D9", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("line", { x1: "17", y1: "34", x2: "29", y2: "34", stroke: "#6D28D9", strokeWidth: "1.2" })))),
+              effectiveAccessory === "test-prep-kit" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 30)", "data-accessory-placement": "side-left", "data-accessory-name": "Ready, Set, Prep Kit" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.6s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "53", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "2", y: "11", width: "29", height: "38", rx: "3", fill: "#FFFBEB", stroke: "#92400E", strokeWidth: "1.3", transform: "rotate(-4 16 30)" }), /* @__PURE__ */ React.createElement("rect", { x: "5", y: "7", width: "29", height: "39", rx: "3", fill: "#EEF2FF", stroke: "#4338CA", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "5", y: "7", width: "29", height: "10", rx: "3", fill: "#6366F1" }), /* @__PURE__ */ React.createElement("text", { x: "19.5", y: "14", fontFamily: "Arial", fontSize: "5.5", fontWeight: "bold", fill: "#FFFFFF", textAnchor: "middle" }, "PREP"), /* @__PURE__ */ React.createElement("circle", { cx: "11", cy: "24", r: "2", fill: "none", stroke: "#4F46E5", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "24", x2: "29", y2: "24", stroke: "#4F46E5", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "11", cy: "31", r: "2", fill: "none", stroke: "#4F46E5", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("line", { x1: "16", y1: "31", x2: "27", y2: "31", stroke: "#4F46E5", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("path", { d: "M9 39 L12 42 L17 36", stroke: "#16A34A", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(31 10)" }, /* @__PURE__ */ React.createElement("rect", { x: "-2", y: "-5", width: "4", height: "4", rx: "1", fill: "#475569" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "4", r: "9", fill: "#F8FAFC", stroke: "#334155", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-stopwatch-hand" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "4", x2: "0", y2: "-2", stroke: "#DC2626", strokeWidth: "1.3", strokeLinecap: "round" }), /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "4", x2: "4", y2: "6", stroke: "#334155", strokeWidth: "1.2", strokeLinecap: "round" })), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "4", r: "1.2", fill: "#334155" })))),
+              effectiveAccessory === "source-inbox" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 31)", "data-accessory-placement": "side-left", "data-accessory-name": "Source Inbox" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.0s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "4", width: "26", height: "31", rx: "2", fill: "#FFFFFF", stroke: "#475569", strokeWidth: "1.2", transform: "rotate(5 20 19)" }), /* @__PURE__ */ React.createElement("rect", { x: "3", y: "7", width: "27", height: "31", rx: "2", fill: "#F8FAFC", stroke: "#334155", strokeWidth: "1.3", transform: "rotate(-4 16 22)" }), /* @__PURE__ */ React.createElement("line", { x1: "8", y1: "15", x2: "25", y2: "15", stroke: "#6366F1", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: "8", y1: "21", x2: "23", y2: "21", stroke: "#94A3B8", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("line", { x1: "8", y1: "27", x2: "26", y2: "27", stroke: "#94A3B8", strokeWidth: "1.2" }), /* @__PURE__ */ React.createElement("path", { d: "M1 31 H11 L15 37 H24 L28 31 H36 L33 49 H4 Z", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "1.4", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("path", { d: "M18 3 V14 M14 10 L18 14 L22 10", stroke: "#2563EB", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round", className: "animate-allobot-inbox-drop" }))),
+              effectiveAccessory === "progress-orbit" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 32)", "data-accessory-placement": "side-left", "data-accessory-name": "Progress Pulse" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.3s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "51", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "42", rx: "4", fill: "#F8FAFC", stroke: "#334155", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "0", y: "6", width: "36", height: "9", rx: "4", fill: "#0F766E" }), /* @__PURE__ */ React.createElement("circle", { cx: "7", cy: "10.5", r: "1.5", fill: "#99F6E4" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "10.5", r: "1.5", fill: "#5EEAD4" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "27", r: "8", fill: "none", stroke: "#CCFBF1", strokeWidth: "4" }), /* @__PURE__ */ React.createElement("path", { d: "M12 19 A8 8 0 1 1 5.5 31.5", fill: "none", stroke: "#14B8A6", strokeWidth: "4", strokeLinecap: "round", className: "animate-allobot-progress-pulse" }), /* @__PURE__ */ React.createElement("path", { d: "M23 39 V29 H28 V39 M29 39 V22 H34 V39", fill: "#60A5FA", stroke: "#1D4ED8", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: "M7 40 L10 43 L16 36", stroke: "#22C55E", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" }))),
+              effectiveAccessory === "maze-scroll" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 31)", "data-accessory-placement": "side-left", "data-accessory-name": "Fluency Maze Map" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.6s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "52", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M3 8 Q7 5 11 8 H31 Q35 5 38 9 V45 Q34 48 30 45 H10 Q6 49 2 45 Z", fill: "#FEF3C7", stroke: "#92400E", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M8 14 H31 V20 H15 V26 H29 V33 H10 V40 H33", stroke: "#B45309", strokeWidth: "2", fill: "none", strokeLinecap: "square", strokeLinejoin: "round" }), /* @__PURE__ */ React.createElement("circle", { cx: "8", cy: "14", r: "2.5", fill: "#3B82F6", stroke: "#1E40AF", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(31 35)" }, /* @__PURE__ */ React.createElement("line", { x1: "0", y1: "0", x2: "0", y2: "-13", stroke: "#475569", strokeWidth: "1.5" }), /* @__PURE__ */ React.createElement("path", { d: "M0 -13 H8 L5 -9 L8 -5 H0 Z", fill: "#EF4444", stroke: "#991B1B", strokeWidth: "0.7", className: "animate-allobot-maze-flag" })), /* @__PURE__ */ React.createElement("path", { d: "M2 12 Q6 15 10 12 M31 43 Q35 46 38 43", stroke: "#FDE68A", strokeWidth: "3", fill: "none" }))),
+              effectiveAccessory === "resource-folder" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-31, 34)", "data-accessory-placement": "side-left", "data-accessory-name": "Resource Review Folder" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "2.9s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "48", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M2 13 H15 L19 18 H35 V44 H2 Z", fill: "#FCD34D", stroke: "#92400E", strokeWidth: "1.3" }), /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-folder-page" }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "10", width: "23", height: "30", rx: "2", fill: "#FFFFFF", stroke: "#475569", strokeWidth: "1.2", transform: "rotate(4 19 25)" }), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "18", x2: "27", y2: "18", stroke: "#6366F1", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: "13", y1: "24", x2: "26", y2: "24", stroke: "#94A3B8", strokeWidth: "1.1" }), /* @__PURE__ */ React.createElement("path", { d: "M13 31 L16 34 L22 27", stroke: "#16A34A", strokeWidth: "1.8", fill: "none", strokeLinecap: "round", strokeLinejoin: "round" })), /* @__PURE__ */ React.createElement("path", { d: "M1 25 H36 L31 47 H6 Z", fill: "#FDE68A", stroke: "#92400E", strokeWidth: "1.4", strokeLinejoin: "round" }))),
+              effectiveAccessory === "math-tools" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-30, 32)", "data-accessory-placement": "side-left", "data-accessory-name": "Math Tools" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "0.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "48", rx: "16", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M2 46 L2 20 L30 46 Z", fill: "#93C5FD", stroke: "#1D4ED8", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "26", x2: "6", y2: "26", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "32", x2: "6", y2: "32", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("line", { x1: "2", y1: "38", x2: "6", y2: "38", stroke: "#1E3A8A", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("path", { d: "M8 22 A 13 13 0 0 1 34 22 Z", fill: "#FCD34D", stroke: "#B45309", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("path", { d: "M11 22 A 10 10 0 0 1 31 22", fill: "#FFFBEB", stroke: "#B45309", strokeWidth: "0.8" }), /* @__PURE__ */ React.createElement("circle", { cx: "21", cy: "22", r: "1.4", fill: "#B45309" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "21", y2: "11", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "13", y2: "15", stroke: "#B45309", strokeWidth: "0.7" }), /* @__PURE__ */ React.createElement("line", { x1: "21", y1: "22", x2: "29", y2: "15", stroke: "#B45309", strokeWidth: "0.7" }))),
+              effectiveAccessory === "gear" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-21, 38)", "data-accessory-placement": "side-left" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.5s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "18", cy: "51", rx: "17", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("g", { transform: "translate(18, 28)" }, /* @__PURE__ */ React.createElement("g", { fill: "#B0B8C4", stroke: "#475569", strokeWidth: "1.1" }, /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "-15", width: "5", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-2.5", y: "9", width: "5", height: "6", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-15", y: "-2.5", width: "6", height: "5", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "9", y: "-2.5", width: "6", height: "5", rx: "1" }), /* @__PURE__ */ React.createElement("rect", { x: "-12", y: "-12", width: "5", height: "6", rx: "1", transform: "rotate(45 -9.5 -9)" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "6", width: "5", height: "6", rx: "1", transform: "rotate(45 9.5 9)" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "-12", width: "5", height: "6", rx: "1", transform: "rotate(-45 9.5 -9)" }), /* @__PURE__ */ React.createElement("rect", { x: "-12", y: "6", width: "5", height: "6", rx: "1", transform: "rotate(-45 -9.5 9)" })), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "11", fill: "#CBD5E1", stroke: "#475569", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("circle", { cx: "0", cy: "0", r: "4.5", fill: "#0f172a", stroke: "#475569", strokeWidth: "1" }), /* @__PURE__ */ React.createElement("circle", { cx: "-3", cy: "-3", r: "1.6", fill: "#fff", opacity: "0.5" })))),
+              effectiveAccessory === "game-pad" && /* @__PURE__ */ React.createElement("g", { className: "animate-in fade-in slide-in-from-left-3 duration-500", transform: "translate(-32, 40)", "data-accessory-placement": "side-left", "data-accessory-name": "STEM Game Pad" }, /* @__PURE__ */ React.createElement("g", { className: "animate-allobot-float", style: { animationDelay: "1.1s" } }, /* @__PURE__ */ React.createElement("ellipse", { cx: "19", cy: "34", rx: "18", ry: "3", fill: "#1F2937", opacity: "0.16" }), /* @__PURE__ */ React.createElement("path", { d: "M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z", fill: "#5B6472", stroke: "#1F2937", strokeWidth: "1.4" }), /* @__PURE__ */ React.createElement("rect", { x: "7", y: "21", width: "9", height: "3", rx: "1", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("rect", { x: "10", y: "18", width: "3", height: "9", rx: "1", fill: "#1F2937" }), /* @__PURE__ */ React.createElement("circle", { cx: "26", cy: "20", r: "2.3", fill: "#F472B6", stroke: "#9D174D", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "31", cy: "24", r: "2.3", fill: "#34D399", stroke: "#065F46", strokeWidth: "0.6" }), /* @__PURE__ */ React.createElement("circle", { cx: "21", cy: "25", r: "2.3", fill: "#FBBF24", stroke: "#92400E", strokeWidth: "0.6" })))
+            )
+          ))
+        ), /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement("radialGradient", { id: svgPaintIds.body, cx: "35%", cy: "35%", r: "65%", fx: "30%", fy: "30%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: colors.gradFrom }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: colors.gradTo })), /* @__PURE__ */ React.createElement("radialGradient", { id: svgPaintIds.rim, cx: "70%", cy: "70%", r: "70%" }, /* @__PURE__ */ React.createElement("stop", { offset: "82%", stopColor: "#fff", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#fff", stopOpacity: "0.4" })), /* @__PURE__ */ React.createElement("linearGradient", { id: svgPaintIds.hologram, x1: "0", y1: "0", x2: "0", y2: "1" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#22D3EE", stopOpacity: "0" }), /* @__PURE__ */ React.createElement("stop", { offset: "20%", stopColor: "#22D3EE", stopOpacity: "0.1" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#22D3EE", stopOpacity: "0.6" })), /* @__PURE__ */ React.createElement("linearGradient", { id: svgPaintIds.visor, x1: "0%", y1: "0%", x2: "100%", y2: "100%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "white", stopOpacity: "0.4" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "white", stopOpacity: "0" })), /* @__PURE__ */ React.createElement("linearGradient", { id: svgPaintIds.beam, x1: "0%", y1: "100%", x2: "0%", y2: "0%" }, /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "#06B6D4", stopOpacity: "0.6" }), /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "#06B6D4", stopOpacity: "0" })), /* @__PURE__ */ React.createElement("filter", { id: svgPaintIds.groundShadow, x: "-35%", y: "-150%", width: "170%", height: "400%", colorInterpolationFilters: "sRGB" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "2.4" }))))
       )
     )
   ));

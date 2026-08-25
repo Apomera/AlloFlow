@@ -14,6 +14,7 @@ describe('MCPB release workflow triggers', () => {
   it('runs when the hardened MCP regression suites change', () => {
     for (const path of [
       'tests/mcp_remediation_stdio_smoke.test.js',
+      'tests/mcp_agent_bridge_e2e.test.js',
       'tests/desktop_mcp_durable_jobs.test.js',
       'tests/desktop_mcp_residual_hardening.test.js',
       'tests/desktop_mcp_runtime_build_drift.test.js',
@@ -50,6 +51,7 @@ describe('MCPB release workflow triggers', () => {
       'tests/mcp_verifier_packaging_hardening.test.js',
       'tests/mcp_call_cli.test.js',
       'tests/mcpb_release_workflow.test.js',
+      'tests/mcp_agent_bridge_e2e.test.js',
     ]) {
       expect(workflow.indexOf(path, testStep)).toBeLessThan(buildStep);
     }

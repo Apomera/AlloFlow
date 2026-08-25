@@ -392,6 +392,24 @@ describe('Heat lab renders', () => {
     expect(html).toMatch(/order-of-magnitude accurate for teaching/i);
   });
 
+  it('preserves the calorimetry estimate comparison and offers accuracy-independent reflection', () => {
+    const initial = renderTool('heatLab', {});
+    expect(initial).toContain('data-heat-estimation-challenge="true"');
+    expect(initial).toContain('Your temperature estimate');
+    expect(initial).toMatch(/disabled=""[^>]*>Compare estimate with model|Compare estimate with model<\/button>/);
+
+    const resumed = renderTool('heatLab', { _heatLab: {
+      mixEstimateResult: { estimated: 45, actual: 28, absoluteError: 17, percentError: 60.7, withinTwo: false },
+      mixEstimateRevision: 'revised',
+      mixEstimateReflection: 'The energy model gives a much lower temperature.',
+      mixEstimateReflectionComplete: false
+    } });
+    expect(resumed).toContain('data-heat-estimation-reflection="true"');
+    expect(resumed).toContain('Estimate: 45.0 °C · Model: 28.0 °C');
+    expect(resumed).toContain('Reflection credit is still fully available.');
+    expect(resumed).toContain('Save evidence reflection');
+  });
+
   it('provides concise live results and phone-width slider layouts', () => {
     const html = renderTool('heatLab', { _heatLab: { thickness: 10, energyIn: 200 } });
     expect(html).toMatch(/aria-controls=.ht-insulation-status./);

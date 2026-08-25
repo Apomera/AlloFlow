@@ -398,4 +398,5 @@ module.exports = {
   computeBuildInputFingerprint,
   readPublishedFingerprint,
   shouldFingerprintPath,
+  stageDesktopAppBuild,
 };

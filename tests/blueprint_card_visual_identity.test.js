@@ -162,7 +162,7 @@ describe('station-style registry guardrails', () => {
     // handleAutoFillToggle seeds the flow but never opens the panel, and
     // showUDLGuide defaults false — both front doors must open it themselves.
     expect(src).toContain('const [showUDLGuide, setShowUDLGuide] = useState(false)');
-    const doors = src.match(/handleAutoFillToggle\(\{ target: \{ checked: true \} \}\)/g) || [];
+    const doors = src.match(/handleAutoFillToggle\(\{ target: \{ checked: true \} \}(?:, p \|\| \{\})?\)/g) || [];
     expect(doors.length).toBeGreaterThanOrEqual(2);
     expect((src.match(/setShowUDLGuide\(true\)/g) || []).length).toBeGreaterThanOrEqual(2);
   });

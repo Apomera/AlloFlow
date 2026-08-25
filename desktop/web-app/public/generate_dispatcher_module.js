@@ -2138,12 +2138,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             instructionalGrade: effectiveGrade,
             fallbackGrade: gradeLevel || effectiveGrade,
             standardsContext: _activeStandardsContext,
+            standardsInput: standardsInput || targetStandards,
             primaryTextPolicy: configOverride.primaryTextPolicy || 'preserve-primary'
         })
         : (configOverride.instructionalContext || {
             schemaVersion: 1,
             instructionalGrade: effectiveGrade,
             primaryTextPolicy: 'preserve-primary',
+            primaryTextAccess: 'available',
+            adaptedTextPolicy: 'include',
+            adaptedTextPolicySource: 'workflow-default',
+            textAccessReason: 'default-access-companion',
             standardsContext: _activeStandardsContext || null
         });
     const effectiveOutlineType = configOverride.outlineType || outlineType;

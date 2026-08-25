@@ -205,6 +205,7 @@ describe('Live Polling host dialog accessibility', () => {
 
   it('uses a near-fullscreen command center and opens a privacy-safe student activity view', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const sendToStudents = vi.fn(async () => ({ sent: 1, failed: 0 }));
     const now = Date.now();
     host = document.createElement('div');
     document.body.appendChild(host);
@@ -222,10 +223,11 @@ describe('Live Polling host dialog accessibility', () => {
             wsProgress: { correct: 7, total: 8, done: false, at: now - 10000 },
           },
         },
-        resources: [],
+        resources: [{ id: 'r-follow', title: 'Follow-up Sort' }],
+        onSendToStudents: sendToStudents,
         sessionGroups: { g1: { name: 'Indigo Crew' } },
         activitySnapshots: [{
-          family: 'polling', kind: 'free_text', phase: 'collecting', updatedAt: now - 12000,
+          activityId: 'poll:eye-1', family: 'polling', kind: 'free_text', phase: 'collecting', startedAt: now - 15000, updatedAt: now - 12000,
           audienceUids: ['u1'], participantStatus: { u1: 'working' },
           prompt: 'PRIVATE SENTINEL MUST NOT RENDER', response: 'PRIVATE ANSWER MUST NOT RENDER',
         }],
@@ -237,9 +239,26 @@ describe('Live Polling host dialog accessibility', () => {
     expect(commandCenter.style.maxWidth).toBe('1480px');
     expect(commandCenter.style.width).toBe('calc(100vw - 1rem)');
     expect(commandCenter.style.height).toBe('calc(100dvh - 1rem)');
+    expect(commandCenter.hasAttribute('data-live-command-center')).toBe(true);
+    expect(commandCenter.querySelector('.live-command-center-body')).not.toBeNull();
+    expect(commandCenter.querySelector('.live-command-center-students')).not.toBeNull();
+    expect(commandCenter.querySelector('.live-command-center-workspace')).not.toBeNull();
     expect(commandCenter.textContent).toContain('Progress and engagement signals');
     expect(commandCenter.textContent).toContain('7/8 completed');
     expect(commandCenter.textContent).toContain('Active signal');
+    const activeSignalFilter = commandCenter.querySelector('button[aria-label^="Active signal:"]');
+    expect(activeSignalFilter).not.toBeNull();
+    expect(activeSignalFilter.getAttribute('aria-pressed')).toBe('false');
+
+    const selection = commandCenter.querySelector('input[aria-label^="Select Ari Rivera for bulk support actions"]');
+    expect(selection).not.toBeNull();
+    click(selection);
+    expect(commandCenter.textContent).toContain('1 selected');
+    const resourceSelect = commandCenter.querySelector('select[aria-label="Choose a resource for selected students"]');
+    setSelectValue(resourceSelect, 'r-follow');
+    const assignResource = Array.from(commandCenter.querySelectorAll('button')).find((button) => button.textContent === 'Assign resource');
+    await act(async () => { click(assignResource); await Promise.resolve(); });
+    expect(sendToStudents).toHaveBeenCalledWith(['u1'], 'r-follow');
 
     const eyeButton = commandCenter.querySelector('button[aria-label^="Open activity view for Ari Rivera"]');
     expect(eyeButton).not.toBeNull();

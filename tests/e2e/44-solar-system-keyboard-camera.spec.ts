@@ -42,13 +42,16 @@ const harness = new GlHarness({
     window.__canvasA11y = function () {
       var c = document.querySelector('canvas.solar3d-canvas');
       if (!c) return null;
-      var id = c.getAttribute('aria-describedby');
-      var el = id && document.getElementById(id);
+      var ids = (c.getAttribute('aria-describedby') || '').trim().split(/\\s+/).filter(Boolean);
+      var describedText = ids.map(function (id) {
+        var el = document.getElementById(id);
+        return el ? el.textContent.trim() : '';
+      }).filter(Boolean).join(' ');
       return {
         role: c.getAttribute('role'),
         tabIndex: c.tabIndex,
         keyshortcuts: c.getAttribute('aria-keyshortcuts') || '',
-        describedText: el ? el.textContent.trim() : null,
+        describedText: describedText || null,
       };
     };
     window.__blur = function () {

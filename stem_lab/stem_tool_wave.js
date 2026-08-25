@@ -104,9 +104,9 @@ window.StemLab = window.StemLab || {
             }});
           });
         }
-        // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
-        // placeholder stays readable in light, dark and high-contrast.
-        return h('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.wave.loading', 'Loading Wave Simulator…'));
+        // This transient state owns a stable AA pair because dark theme tokens
+        // can otherwise resolve to light ink over the host's white tool card.
+        return h('div', { className: 'p-8 text-center', style: { color: '#475569', backgroundColor: '#ffffff' } }, __alloT('stem.wave.loading', 'Loading Wave Simulator…'));
       }
       var __waveMainView = (function() {
 const d = labToolData.wave;
@@ -2065,6 +2065,35 @@ const d = labToolData.wave;
 
             // Wave type buttons (free + spectrum — spectrum analyzes the selected
             // waveform, so students need to switch types there to explore timbre)
+
+            React.createElement("div", {
+              className: "mb-3 rounded-xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-slate-50 p-3 shadow-sm",
+              "data-wave-live-summary": "true",
+              role: "group",
+              "aria-label": __alloT('stem.wave.aria_live_measurements', 'Live wave measurements'),
+              style: { borderColor: waveViewMeta.accent + '55' }
+            },
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                React.createElement("div", null,
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-slate-500" }, __alloT('stem.wave.live_measurements_label', 'Live measurements')),
+                  React.createElement("div", { className: "mt-0.5 text-xs font-black text-slate-900" }, waveViewMeta.label + " • " + waveViewMeta.chip)
+                ),
+                React.createElement("span", { className: "rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-wide", style: { borderColor: waveViewMeta.accent + '66', background: waveViewMeta.accent + '15', color: waveViewMeta.accent } }, d.paused ? __alloT('stem.wave.live_paused', 'Paused') : __alloT('stem.wave.live_running', 'Running'))
+              ),
+              React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6" }, [
+                [__alloT('stem.wave.live_waveform', 'Waveform'), activeWaveType, 'text-cyan-700'],
+                [__alloT('stem.wave.live_amplitude', 'Amplitude'), displayAmp, 'text-sky-700'],
+                [__alloT('stem.wave.live_frequency', 'Frequency'), displayFreq + ' Hz', 'text-indigo-700'],
+                [__alloT('stem.wave.live_period', 'Period'), displayPeriod.toFixed(2) + ' s', 'text-violet-700'],
+                [__alloT('stem.wave.live_wavelength', 'Wavelength'), displayWavelength.toFixed(1) + ' m', 'text-emerald-700'],
+                [__alloT('stem.wave.live_medium_speed', 'Medium speed'), displayMediumSpeed + ' m/s', 'text-amber-700']
+              ].map(function (item) {
+                return React.createElement("div", { key: item[0], className: "rounded-lg border border-slate-200 bg-white px-2.5 py-2" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-500" }, item[0]),
+                  React.createElement("div", { className: "mt-0.5 truncate font-mono text-sm font-black " + item[2] }, String(item[1]))
+                );
+              }))
+            ),
 
             (waveMode === 'free' || waveMode === 'spectrum') && React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" },
 

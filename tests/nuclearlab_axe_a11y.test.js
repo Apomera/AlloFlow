@@ -82,6 +82,17 @@ const SURFACES = [
   ['index collapsed, on a route', { nkOpen: false, nkPath: 'safe' }],
   ['index open, on a route', { nkOpen: true, nkPath: 'me' }],
   ['topic index empty result', { nkQuery: 'zzzz' }],
+  ['evidence challenge feedback', {
+    evidenceIndex: 0,
+    evidenceChoices: { 'reactor-bomb': 'supported' },
+    evidenceChecked: { 'reactor-bomb': true },
+  }],
+  ['evidence challenge complete', {
+    evidenceIndex: 4,
+    evidenceChoices: { 'short-count': 'uncertain' },
+    evidenceChecked: { 'short-count': true },
+    evidenceMastered: ['reactor-bomb', 'inverse-square', 'low-dose-zero', 'neutron-layers', 'short-count'],
+  }],
 ];
 
 async function auditState(state, ctx) {
@@ -311,7 +322,7 @@ describe('nuclearLab — the index folds without stranding anyone', () => {
     // The same guarantee inside a route: folding must not cost the reader the
     // steps the route is made of.
     const html = renderTool('nuclearLab', { _nuclearLab: { nkOpen: false, nkPath: 'know' } });
-    for (const id of ['detect', 'dating', 'chain']) {
+    for (const id of ['detect', 'dating', 'chain', 'evidence']) {
       expect(html, id + ' unreachable while folded').toContain('id="nksec-' + id + '"');
     }
   });

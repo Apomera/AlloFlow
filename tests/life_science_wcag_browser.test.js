@@ -80,6 +80,84 @@ const CASES = [
   { name: 'ecosystem overview', file: 'stem_lab/stem_tool_ecosystem.js', id: 'ecosystem', state: { ecosystem: {} } },
   { name: 'epidemic simulator overview', file: 'stem_lab/stem_tool_epidemic.js', id: 'epidemicSim', state: { epidemicSim: {} } },
   { name: 'evolution lab overview', file: 'stem_lab/stem_tool_evolab.js', id: 'evoLab', state: { evoLab: {} } },
+  {
+    name: 'evolution Capstone evidence notebook',
+    file: 'stem_lab/stem_tool_evolab.js',
+    id: 'evoLab',
+    state: {
+      evoLab: {
+        view: 'capstone',
+        evoCapstone: {
+          step: 2,
+          scenarioId: 'island',
+          scenarioTitle: 'The Stranded Island Population',
+          predictions: [
+            'Allele frequencies will drift in this small population.',
+            'Repeated lineages will finish at different frequencies.',
+            'The founder sample begins with limited diversity.'
+          ],
+          reflections: ['', '', ''],
+          notebook: { baseline: '', settings: '', outcome: '', surprise: '' },
+          evidenceVerdict: ''
+        }
+      }
+    }
+  },
+  {
+    name: 'evolution Capstone evidence evaluation',
+    file: 'stem_lab/stem_tool_evolab.js',
+    id: 'evoLab',
+    state: {
+      evoLab: {
+        view: 'capstone',
+        evoCapstone: {
+          step: 3,
+          scenarioId: 'island',
+          scenarioTitle: 'The Stranded Island Population',
+          predictions: [
+            'Allele frequencies will drift toward fixation in several lineages.',
+            'Repeated lineages will finish at different frequencies.',
+            'The founder sample begins with limited diversity.'
+          ],
+          reflections: ['', '', ''],
+          notebook: {
+            baseline: 'N = 10 and p = 0.50 at generation 0.',
+            settings: 'Five lineages ran for 100 generations.',
+            outcome: 'Three lineages fixed while two retained both alleles.',
+            surprise: 'Identical starting conditions produced different endpoints.'
+          },
+          evidenceVerdict: ''
+        }
+      }
+    }
+  },
+  {
+    name: 'evolution linked Capstone field mission',
+    file: 'stem_lab/stem_tool_evolab.js',
+    id: 'evoLab',
+    state: {
+      evoLab: {
+        view: 'geneticDrift',
+        evoCapstone: {
+          step: 2,
+          scenarioId: 'island',
+          scenarioTitle: 'The Stranded Island Population',
+          module: 'geneticDrift',
+          moduleLabel: 'Genetic Drift Simulator',
+          moduleHint: 'Use N=10 for 100 generations and compare several lineages.',
+          dataMission: [
+            'Confirm N = 10 and a starting allele frequency of 0.50.',
+            'Run several lineages for the same number of generations.',
+            'Record the range of final frequencies and how many lineages reached fixation or loss.'
+          ],
+          predictions: ['', '', ''],
+          reflections: ['', '', ''],
+          notebook: { baseline: '', settings: '', outcome: '', surprise: '' },
+          evidenceVerdict: ''
+        }
+      }
+    }
+  },
   { name: 'microbiology overview', file: 'stem_lab/stem_tool_microbiology.js', id: 'microbiology', state: { microbiology: {} } },
   { name: 'migration lab overview', file: 'stem_lab/stem_tool_migration.js', id: 'migration', state: { migration: {} } },
   { name: 'organism identification overview', file: 'stem_lab/stem_tool_organismid.js', id: 'organismId', state: { organismId: {} } },

@@ -59,6 +59,32 @@ const STUDENT_SHELL_ENTRIES = [
 ];
 const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
 
+function writeWorkspaceFileAtomic(file, content, encoding = 'utf8') {
+    const absolute = path.resolve(file);
+    const workspacePrefix = path.resolve(ROOT) + path.sep;
+    if (!absolute.startsWith(workspacePrefix)) throw new Error(`Refusing to write outside the workspace: ${absolute}`);
+    const nextFile = absolute + '.' + process.pid + '.next';
+    const previousFile = absolute + '.' + process.pid + '.previous';
+    fs.writeFileSync(nextFile, content, encoding);
+    let movedPrevious = false;
+    try {
+        if (fs.existsSync(absolute)) {
+            fs.renameSync(absolute, previousFile);
+            movedPrevious = true;
+        }
+        fs.renameSync(nextFile, absolute);
+        if (movedPrevious) fs.rmSync(previousFile, { force: true });
+    } catch (error) {
+        try {
+            if (!fs.existsSync(absolute) && movedPrevious && fs.existsSync(previousFile)) fs.renameSync(previousFile, absolute);
+            if (fs.existsSync(nextFile)) fs.rmSync(nextFile, { force: true });
+        } catch (restoreError) {
+            error.message += `; restore failed: ${restoreError.message}`;
+        }
+        throw error;
+    }
+}
+
 function publishStudentShell() {
     const sourceIndex = path.join(STUDENT_SHELL_BUILD_DIR, 'index.html');
     if (!fs.existsSync(sourceIndex)) {
@@ -765,6 +791,12 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        // Shared 3D Print Lab inspection, estimation and private handoff contract.
+        name: 'PrintableModel',
+        filename: 'printable_model_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         // Reusable WebXR layer (allovr/1) — feature-detected Enter-VR + rig +
         // controllers + locomotion + comfort vignette + grab, for any three.js
         // STEM scene. Lazy sidecar (loaded only when a headset is present).
@@ -1319,6 +1351,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_papertrail.js',
     'stem_lab/stem_tool_gamestudio.js',
     'stem_lab/stem_tool_geosandbox.js',
+    'stem_lab/stem_tool_printlab.js',
     'stem_lab/stem_tool_inequality.js',
     'stem_lab/stem_tool_lifeskills.js',
     'stem_lab/stem_tool_echolocation.js',
@@ -2233,17 +2266,17 @@ if (dryRun) {
         process.exit(1);
     }
 
-    fs.writeFileSync(OUTPUT, content, 'utf-8');
+    writeWorkspaceFileAtomic(OUTPUT, content, 'utf-8');
     console.log(`📄 Written: ${path.relative(ROOT, OUTPUT)}`);
 
     // Also write backup copy
-    fs.writeFileSync(BACKUP, content, 'utf-8');
+    writeWorkspaceFileAtomic(BACKUP, content, 'utf-8');
     console.log(`📄 Backup:  ${path.relative(ROOT, BACKUP)}`);
 
     // ── Write hashes back to root AlloFlowANTI.txt (prod only) ──
     // Keeps the root source-of-truth file in sync with deployed CDN hashes.
     if (mode === 'prod') {
-        fs.writeFileSync(SOURCE, content, 'utf-8');
+        writeWorkspaceFileAtomic(SOURCE, content, 'utf-8');
         console.log(`📄 Source:  ${path.relative(ROOT, SOURCE)} (updated with @${gitHash})`);
     }
 
@@ -2269,7 +2302,7 @@ if (dryRun) {
                 // surfaced with the source and destination paths.
             }
         }
-        fs.copyFileSync(src, dest);
+        writeWorkspaceFileAtomic(dest, fs.readFileSync(src));
         return true;
     };
     // Accessibility Lab uses a same-origin axe-core build first so audits work

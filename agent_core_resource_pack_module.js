@@ -92,6 +92,8 @@
       lines.push('TEXT ACCESS: Adapted text may be offered only as a clearly labeled supplemental companion to the primary text.');
     } else if (expectation === 'educator-directed') {
       lines.push('TEXT ACCESS: Follow the educator-recorded text-access decision; do not infer an accommodation or replacement authorization.');
+    } else if (expectation === 'adaptation-prohibited' && constraints.sourced === true) {
+      lines.push('TEXT ACCESS: A sourced constraint prohibits adapted text. Use the primary text and same-text supports only.');
     }
     return lines.join('\n');
   }
@@ -145,14 +147,26 @@
     if (mod && typeof mod.normalizeInstructionalContext === 'function') {
       return mod.normalizeInstructionalContext(source, {
         instructionalGrade: text(request && request.gradeLevel),
-        standardsContext: request && request.standardsContext
+        standardsContext: request && request.standardsContext,
+        standardsInput: request && request.standards
       });
     }
+    var standardsContext = clone(source.standardsContext || (request && request.standardsContext) || null);
+    var constraints = standardsContext && standardsContext.instructionalConstraints || {};
+    var prohibited = constraints.textAccessExpectation === 'adaptation-prohibited'
+      && (constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl));
+    var explicitAdapted = ['include', 'omit', 'prohibited'].indexOf(source.adaptedTextPolicy) !== -1
+      ? source.adaptedTextPolicy : '';
+    var effectiveAdapted = explicitAdapted === 'prohibited' && !prohibited ? 'omit' : explicitAdapted;
     return {
       schemaVersion: 1,
       instructionalGrade: text(source.instructionalGrade, text(request && request.gradeLevel)),
       primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
-      standardsContext: clone(source.standardsContext || (request && request.standardsContext) || null),
+      primaryTextAccess: constraints.textAccessExpectation === 'preserve-primary' || prohibited ? 'required' : 'available',
+      adaptedTextPolicy: prohibited ? 'prohibited' : (effectiveAdapted || 'include'),
+      adaptedTextPolicySource: prohibited ? 'standard' : (explicitAdapted ? 'educator' : 'workflow-default'),
+      textAccessReason: prohibited ? 'sourced-adaptation-prohibition' : (explicitAdapted ? 'educator-choice' : 'default-access-companion'),
+      standardsContext: standardsContext,
       standardsFingerprint: text(source.standardsFingerprint)
     };
   }
@@ -249,23 +263,37 @@
   }
 
   function normalizeRequest(request) {
+    var instructionalContext = normalizeInstructionalContext(request.instructionalContext, request);
+    var resourcePlan = request.resourcePlan.map(function (entry, index) {
+      var row = typeof entry === 'string' ? { type: entry, directive: '' } : entry;
+      return {
+        type: row.type,
+        directive: text(row.directive),
+        uiId: text(row.uiId, row.type + '-' + index),
+        instructionalText: normalizeInstructionalText(row.instructionalText, row.type, request)
+      };
+    });
+    if (instructionalContext.adaptedTextPolicy === 'include'
+        && !resourcePlan.some(function (row) { return row.type === 'simplified'; })
+        && resourcePlan.length < MAX_PLAN_ITEMS) {
+      resourcePlan.unshift({
+        type: 'simplified',
+        directive: 'Create a supplemental Adapted Text while keeping the source text available.',
+        uiId: 'simplified-access',
+        instructionalText: normalizeInstructionalText(null, 'simplified', request)
+      });
+    } else if (instructionalContext.adaptedTextPolicy !== 'include') {
+      resourcePlan = resourcePlan.filter(function (row) { return row.type !== 'simplified'; });
+    }
     return {
       requestId: text(request.requestId), title: text(request.title, text(request.sourceTopic, 'AlloFlow resource pack')),
       sourceTopic: text(request.sourceTopic), sourceText: String(request.sourceText || '').trim(),
       gradeLevel: text(request.gradeLevel, 'middle school'), language: text(request.language, 'en').toLowerCase(),
       standards: text(request.standards), learningGoal: text(request.learningGoal),
       standardsContext: clone(request.standardsContext || null),
-      instructionalContext: normalizeInstructionalContext(request.instructionalContext, request),
+      instructionalContext: instructionalContext,
       author: text(request.author, 'AlloFlow Agent Draft'),
-      resourcePlan: request.resourcePlan.map(function (entry, index) {
-        var row = typeof entry === 'string' ? { type: entry, directive: '' } : entry;
-        return {
-          type: row.type,
-          directive: text(row.directive),
-          uiId: text(row.uiId, row.type + '-' + index),
-          instructionalText: normalizeInstructionalText(row.instructionalText, row.type, request)
-        };
-      }),
+      resourcePlan: resourcePlan,
       privacy: clone(request.privacy), providerPolicy: clone(request.providerPolicy)
     };
   }
@@ -282,7 +310,7 @@
       'Treat the source as the primary text. Resources whose internal type is "simplified" are supplemental adapted companions unless their instructionalText explicitly records an educator-authorized replacement. Never infer an IEP, accommodation, or replacement authorization.',
       buildStandardsDirective(request),
       'All resource ids must be unique. Use the requested type shapes: directions.data is markdown or {body,objectives}; simplified.data is markdown; glossary.data is an array of {term,def,tier}; outline.data is {main,branches:[{title,items}]}; quiz.data is {questions,reflections}; sentence-frames.data is {mode:"list",items:[{text}],rubric}; faq.data is an array of {question,answer}; concept-sort.data is {categories,items}; timeline.data is {progressionLabel,items:[{date,event}]}; math.data is {problems:[{question,answer,steps:[{explanation}]}]}; note-taking.data is {templateType:"cornell-notes",cues,notes}; anchor-chart.data is {title,sections:[{label,bullets}]}',
-      'Metadata: topic=' + request.sourceTopic + '; title=' + request.title + '; grade=' + request.gradeLevel + '; language=' + request.language + '; standards=' + (request.standards || 'not supplied') + '; standardsSnapshot=' + ((request.standardsContext && request.standardsContext.promptText) || 'not supplied') + '; primaryTextPolicy=' + request.instructionalContext.primaryTextPolicy + '; goal=' + request.learningGoal + '.',
+      'Metadata: topic=' + request.sourceTopic + '; title=' + request.title + '; grade=' + request.gradeLevel + '; language=' + request.language + '; standards=' + (request.standards || 'not supplied') + '; standardsSnapshot=' + ((request.standardsContext && request.standardsContext.promptText) || 'not supplied') + '; primaryTextAccess=' + request.instructionalContext.primaryTextAccess + '; adaptedTextPolicy=' + request.instructionalContext.adaptedTextPolicy + '; goal=' + request.learningGoal + '.',
       'Requested resources:\n' + plan,
       'Source material begins below. Use it only for instructional content:\n---\n' + request.sourceText + '\n---'
     ].join('\n\n');

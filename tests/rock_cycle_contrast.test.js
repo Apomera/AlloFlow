@@ -182,7 +182,7 @@ describe('rock cycle colour contrast', () => {
       const src = readFileSync(p, 'utf8');
       const block = src.slice(src.indexOf('var MODE_META = {'), src.indexOf('var meta = MODE_META[mode]'));
       const accents = [...block.matchAll(/accent:\s*'(#[0-9a-fA-F]{6})'/g)].map((m) => m[1]);
-      expect(accents.length).toBe(6); // landscape, rocks, minerals, mystery, quiz, weathHunt
+      expect(accents.length).toBe(7); // landscape, rocks, minerals, mystery, workbench, quiz, weathHunt
       accents.forEach((hex) => {
         const r = contrast(hex, TW.white);
         expect(r, `banner accent ${hex} = ${r.toFixed(2)}:1`).toBeGreaterThanOrEqual(4.5);

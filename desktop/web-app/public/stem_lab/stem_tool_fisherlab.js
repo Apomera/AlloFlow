@@ -553,7 +553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   }
   function appendCoreJournalObservation(history, entry) {
     var prior = Array.isArray(history) ? history.slice() : [];
-    if (!entry || !entry.speciesId || entry.identificationCorrect === false || entry.identified === false) return prior;
+    if (!entry || !entry.speciesId) return prior;
     var observationId = String(entry.observationId || [entry.speciesId, entry.ts || entry.date || '', entry.length || ''].join(':'));
     if (prior.some(function(item) { return String(item.observationId || '') === observationId; })) return prior;
     var measured = Number(entry.length);
@@ -570,11 +570,379 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       identificationCorrect: entry.identificationCorrect !== false,
       ruleCorrect: typeof entry.ruleCorrect === 'boolean' ? entry.ruleCorrect : null,
       correct: entry.correct !== false,
+      evidence: String(entry.evidence || '').slice(0, 600),
       region: entry.region || 'maine',
       mission: entry.mission || 'core-voyage',
       ts: Number(entry.ts) || Date.now()
     });
     return prior.slice(-250);
+  }
+  function appendCoreJournalCorrection(history, observationId, reflection, reviewedAt) {
+    var prior = Array.isArray(history) ? history.slice() : [];
+    var targetId = String(observationId || '');
+    var correction = String(reflection || '').trim().slice(0, 600);
+    if (!targetId || correction.length < 20) return prior;
+    var reviewTimestamp = Number(reviewedAt);
+    if (!isFinite(reviewTimestamp) || reviewTimestamp <= 0) reviewTimestamp = Date.now();
+    var updated = false;
+    var next = prior.map(function(entry, sourceIndex) {
+      if (!entry || !entry.speciesId) return entry;
+      var timestamp = Number(entry.ts);
+      var entryId = String(entry.observationId || [entry.speciesId, timestamp || sourceIndex].join(':'));
+      if (entryId !== targetId) return entry;
+      var scoredFlags = [entry.identificationCorrect, entry.ruleCorrect, entry.correct].filter(function(value) { return typeof value === 'boolean'; });
+      if (!scoredFlags.length || scoredFlags.every(function(value) { return value; })) return entry;
+      updated = true;
+      return Object.assign({}, entry, { correction: correction, reviewedAt: reviewTimestamp });
+    });
+    return updated ? next : prior;
+  }
+  // Turn the compact persistence records into a stable evidence model for the
+  // student-facing Field Journal. The simulator writes both newer, fully
+  // scored records and older observations with only a species and disposition;
+  // keeping "not scored" distinct from "correct" prevents legacy data from
+  // quietly inflating a learner's decision accuracy.
+  function getCoreJournalRows(history, options) {
+    var opts = options || {};
+    var requestedRegion = String(opts.region || 'all').toLowerCase();
+    var requestedDisposition = String(opts.disposition || 'all').toLowerCase();
+    var requestedEvidence = String(opts.evidence || 'all').toLowerCase();
+    var query = String(opts.query || '').trim().toLowerCase();
+    var speciesLookup = {};
+    MAINE_SPECIES.concat(CHESAPEAKE_SPECIES, PNW_SPECIES, GREATLAKES_SPECIES).forEach(function(species) {
+      if (species && species.id && !speciesLookup[species.id]) speciesLookup[species.id] = species;
+    });
+
+    return (Array.isArray(history) ? history : []).map(function(entry, sourceIndex) {
+      if (!entry || !entry.speciesId) return null;
+      var speciesId = String(entry.speciesId);
+      var species = speciesLookup[speciesId] || {};
+      var entryRegion = String(entry.region || 'maine').toLowerCase();
+      var regionProfile = REGIONS[entryRegion] || null;
+      var rawDisposition = String(entry.disposition || entry.action || '').toLowerCase();
+      var disposition = /retain|keep/.test(rawDisposition) ? 'retained' : /release/.test(rawDisposition) ? 'released' : 'observed';
+      var measured = entry.length === null || typeof entry.length === 'undefined' || entry.length === '' ? null : Number(entry.length);
+      if (!isFinite(measured)) measured = null;
+      var timestamp = Number(entry.ts);
+      var recordedAt = '';
+      if (isFinite(timestamp) && timestamp > 0) {
+        var recordedDate = new Date(timestamp);
+        if (!isNaN(recordedDate.getTime())) recordedAt = recordedDate.toISOString();
+      }
+      if (!recordedAt && entry.date) recordedAt = String(entry.date);
+      var identificationCorrect = typeof entry.identificationCorrect === 'boolean' ? entry.identificationCorrect : null;
+      var ruleCorrect = typeof entry.ruleCorrect === 'boolean' ? entry.ruleCorrect : null;
+      var explicitCorrect = typeof entry.correct === 'boolean' ? entry.correct : null;
+      var scoredFlags = [identificationCorrect, ruleCorrect, explicitCorrect].filter(function(value) { return typeof value === 'boolean'; });
+      var decisionCorrect = scoredFlags.length ? scoredFlags.every(function(value) { return value; }) : null;
+      var correction = String(entry.correction || '').trim().slice(0, 600);
+      var reviewedTimestamp = Number(entry.reviewedAt);
+      if (!isFinite(reviewedTimestamp) || reviewedTimestamp <= 0) reviewedTimestamp = 0;
+      var reviewedAt = '';
+      if (reviewedTimestamp) {
+        var reviewedDate = new Date(reviewedTimestamp);
+        if (!isNaN(reviewedDate.getTime())) reviewedAt = reviewedDate.toISOString();
+      }
+      var evidenceStatus = decisionCorrect === true ? 'confirmed' : decisionCorrect === false ? (correction.length >= 20 ? 'revisited' : 'review') : 'unscored';
+      var label = String(entry.label || species.name || speciesId);
+      var regionLabel = regionProfile ? regionProfile.label : entryRegion;
+      var mission = String(entry.mission || 'field-observation');
+      return {
+        observationId: String(entry.observationId || [speciesId, timestamp || sourceIndex].join(':')),
+        speciesId: speciesId,
+        label: label,
+        emoji: species.emoji || '*',
+        region: entryRegion,
+        regionLabel: regionLabel,
+        length: measured,
+        disposition: disposition,
+        identificationCorrect: identificationCorrect,
+        ruleCorrect: ruleCorrect,
+        decisionCorrect: decisionCorrect,
+        evidenceStatus: evidenceStatus,
+        evidence: String(entry.evidence || '').slice(0, 600),
+        correction: correction,
+        reviewedTs: reviewedTimestamp,
+        reviewedAt: reviewedAt,
+        mission: mission,
+        ts: isFinite(timestamp) && timestamp > 0 ? timestamp : 0,
+        recordedAt: recordedAt,
+        sourceIndex: sourceIndex
+      };
+    }).filter(function(row) {
+      if (!row) return false;
+      if (requestedRegion !== 'all' && row.region !== requestedRegion) return false;
+      if (requestedDisposition !== 'all' && row.disposition !== requestedDisposition) return false;
+      if (requestedEvidence !== 'all' && row.evidenceStatus !== requestedEvidence) return false;
+      if (!query) return true;
+      var searchable = [row.label, row.speciesId, row.regionLabel, row.disposition, row.evidenceStatus, row.evidence, row.correction, row.mission, row.recordedAt, row.reviewedAt].join(' ').toLowerCase();
+      return searchable.indexOf(query) !== -1;
+    }).sort(function(a, b) {
+      if (a.ts !== b.ts) return b.ts - a.ts;
+      return b.sourceIndex - a.sourceIndex;
+    });
+  }
+  function getCoreJournalSummary(history, options) {
+    var rows = getCoreJournalRows(history, options);
+    var uniqueSpecies = {};
+    var byRegion = {};
+    var retained = 0, released = 0, observed = 0, scored = 0, correct = 0;
+    rows.forEach(function(row) {
+      uniqueSpecies[row.speciesId] = true;
+      byRegion[row.region] = (byRegion[row.region] || 0) + 1;
+      if (row.disposition === 'retained') retained += 1;
+      else if (row.disposition === 'released') released += 1;
+      else observed += 1;
+      if (typeof row.decisionCorrect === 'boolean') {
+        scored += 1;
+        if (row.decisionCorrect) correct += 1;
+      }
+    });
+    return {
+      observations: rows.length,
+      uniqueSpecies: Object.keys(uniqueSpecies).length,
+      retained: retained,
+      released: released,
+      observed: observed,
+      scoredDecisions: scored,
+      correctDecisions: correct,
+      accuracy: scored ? Math.round(correct / scored * 100) : null,
+      byRegion: byRegion
+    };
+  }
+  function getCoreJournalReviewPlan(history, options) {
+    var opts = Object.assign({}, options || {});
+    delete opts.evidence;
+    var rows = getCoreJournalRows(history, opts);
+    var scoredRows = rows.filter(function(row) { return typeof row.decisionCorrect === 'boolean'; });
+    var reviewRows = scoredRows.filter(function(row) { return row.decisionCorrect === false; });
+    var pendingReviewRows = reviewRows.filter(function(row) { return row.evidenceStatus === 'review'; });
+    var revisitedRows = reviewRows.filter(function(row) { return row.evidenceStatus === 'revisited'; });
+
+    function skillMetric(key) {
+      var scored = rows.filter(function(row) { return typeof row[key] === 'boolean'; });
+      var correct = scored.filter(function(row) { return row[key] === true; }).length;
+      return { correct: correct, total: scored.length, accuracy: scored.length ? Math.round(correct / scored.length * 100) : null };
+    }
+    function accuracyFor(decisions) {
+      if (!decisions.length) return null;
+      return Math.round(decisions.filter(function(row) { return row.decisionCorrect; }).length / decisions.length * 100);
+    }
+
+    var identification = skillMetric('identificationCorrect');
+    var regulation = skillMetric('ruleCorrect');
+    var overallAccuracy = accuracyFor(scoredRows);
+    var comparisonSize = Math.min(5, Math.floor(scoredRows.length / 2));
+    var recentAccuracy = comparisonSize >= 2 ? accuracyFor(scoredRows.slice(0, comparisonSize)) : null;
+    var earlierAccuracy = comparisonSize >= 2 ? accuracyFor(scoredRows.slice(comparisonSize, comparisonSize * 2)) : null;
+    var trendDelta = recentAccuracy === null || earlierAccuracy === null ? null : recentAccuracy - earlierAccuracy;
+    var trendId = trendDelta === null ? 'building' : trendDelta >= 10 ? 'improving' : trendDelta <= -10 ? 'slipping' : 'steady';
+    var trendLabel = trendId === 'building' ? 'Keep logging scored decisions to reveal a trend.' : trendId === 'improving' ? 'Recent accuracy improved by ' + trendDelta + ' points.' : trendId === 'slipping' ? 'Recent accuracy is ' + Math.abs(trendDelta) + ' points below the prior set.' : 'Recent accuracy is holding steady.';
+
+    var reviewBySpecies = {};
+    pendingReviewRows.forEach(function(row) {
+      if (!reviewBySpecies[row.speciesId]) reviewBySpecies[row.speciesId] = { speciesId: row.speciesId, label: row.label, count: 0, latestTs: row.ts };
+      reviewBySpecies[row.speciesId].count += 1;
+      reviewBySpecies[row.speciesId].latestTs = Math.max(reviewBySpecies[row.speciesId].latestTs, row.ts);
+    });
+    var reviewSpecies = Object.keys(reviewBySpecies).map(function(speciesId) { return reviewBySpecies[speciesId]; }).sort(function(a, b) {
+      if (a.count !== b.count) return b.count - a.count;
+      if (a.latestTs !== b.latestTs) return b.latestTs - a.latestTs;
+      return a.label.localeCompare(b.label);
+    }).slice(0, 3);
+
+    var identificationErrorRate = identification.total ? (identification.total - identification.correct) / identification.total : 0;
+    var regulationErrorRate = regulation.total ? (regulation.total - regulation.correct) / regulation.total : 0;
+    var focusId = !scoredRows.length ? 'baseline' : !pendingReviewRows.length ? 'balanced' : identificationErrorRate > regulationErrorRate ? 'identification' : regulationErrorRate > identificationErrorRate ? 'regulation' : 'workflow';
+    var recommendations = {
+      baseline: { tab: 'sim', buttonLabel: 'Start a guided voyage', title: 'Build an evidence baseline', guidance: 'Complete a catch inspection so the journal can compare species identification and regulation evidence.' },
+      balanced: { tab: 'sim', buttonLabel: 'Try a harder voyage', title: 'Keep the full workflow sharp', guidance: 'Your scored decisions are confirmed. Continue with a new voyage or a more demanding challenge mode.' },
+      identification: { tab: 'species', buttonLabel: 'Practice species ID', title: 'Focus on diagnostic field marks', guidance: 'Review shape, fins, color patterns, and other field marks before making the next catch decision.' },
+      regulation: { tab: 'regs', buttonLabel: 'Review practice rules', title: 'Focus on measurement and rules', guidance: 'Reconnect measured length with minimums, slots, protected traits, and trip-limit evidence.' },
+      workflow: { tab: 'sim', buttonLabel: 'Rehearse the workflow', title: 'Rehearse identify, measure, classify', guidance: 'Slow down and verify each step in order: identify the species, measure it, select evidence, then classify the catch.' }
+    };
+    var recommendation = Object.assign({}, recommendations[focusId]);
+    if (focusId === 'balanced' && revisitedRows.length && reviewRows.length) {
+      recommendation = { tab: 'sim', buttonLabel: 'Test corrections in a voyage', title: 'Transfer corrections to a new voyage', guidance: 'Every review-needed decision in this water scope has a saved correction. Test the revised reasoning on a fresh catch.' };
+    }
+    if (reviewSpecies.length) recommendation.guidance += ' Start with ' + reviewSpecies.map(function(item) { return item.label; }).join(', ') + '.';
+
+    return {
+      observations: rows.length,
+      scoredDecisions: scoredRows.length,
+      confirmedDecisions: scoredRows.length - reviewRows.length,
+      reviewDecisions: reviewRows.length,
+      needsReview: pendingReviewRows.length,
+      revisitedDecisions: revisitedRows.length,
+      unscored: rows.length - scoredRows.length,
+      overallAccuracy: overallAccuracy,
+      identification: identification,
+      regulation: regulation,
+      recentAccuracy: recentAccuracy,
+      earlierAccuracy: earlierAccuracy,
+      trendDelta: trendDelta,
+      trendId: trendId,
+      trendLabel: trendLabel,
+      focusId: focusId,
+      recommendation: recommendation,
+      reviewSpecies: reviewSpecies,
+      reviewQueue: pendingReviewRows.slice(0, 5),
+      revisitedQueue: revisitedRows.slice(0, 5)
+    };
+  }
+  function getCoreSpeciesMastery(history, options) {
+    var opts = options || {};
+    var requestedRegion = String(opts.region || 'all').toLowerCase();
+    if (requestedRegion !== 'all' && !REGIONS[requestedRegion]) requestedRegion = 'all';
+    var regionIds = requestedRegion === 'all' ? Object.keys(REGIONS) : [requestedRegion];
+    var rows = getCoreJournalRows(history, { region: requestedRegion });
+    var groups = {};
+
+    function ensureGroup(regionId, species, row) {
+      var speciesId = String((species && species.id) || (row && row.speciesId) || '');
+      if (!speciesId) return null;
+      var key = regionId + ':' + speciesId;
+      if (!groups[key]) {
+        groups[key] = {
+          key: key,
+          region: regionId,
+          regionLabel: (REGIONS[regionId] && REGIONS[regionId].label) || (row && row.regionLabel) || regionId,
+          speciesId: speciesId,
+          label: String((species && species.name) || (row && row.label) || speciesId),
+          emoji: (species && species.emoji) || (row && row.emoji) || '*',
+          hasProfile: !!species,
+          rows: []
+        };
+      } else if (species) {
+        groups[key].hasProfile = true;
+        groups[key].label = String(species.name || groups[key].label);
+        groups[key].emoji = species.emoji || groups[key].emoji;
+      }
+      return groups[key];
+    }
+
+    regionIds.forEach(function(regionId) {
+      getSpeciesForRegion(regionId).forEach(function(species) { ensureGroup(regionId, species, null); });
+    });
+    rows.forEach(function(row) {
+      var group = ensureGroup(row.region, null, row);
+      if (group) group.rows.push(row);
+    });
+
+    var stageLabels = {
+      review: 'Needs review',
+      rehearse: 'Test correction',
+      building: 'Building evidence',
+      secure: 'Evidence secure',
+      'not-started': 'Not started'
+    };
+    var stageActions = {
+      review: 'Review the missed evidence, save a correction, then retry this species.',
+      rehearse: 'Use the saved correction on a newer catch to demonstrate transfer.',
+      building: 'Collect another scored identification and regulation decision.',
+      secure: 'Maintain the skill with a different condition or challenge mode.',
+      'not-started': 'Open the profile, study its field marks, then encounter it in a voyage.'
+    };
+    var stageRank = { review: 0, rehearse: 1, building: 2, 'not-started': 3, secure: 4 };
+
+    var masteryRows = Object.keys(groups).map(function(key) {
+      var group = groups[key];
+      var attempts = group.rows.slice().sort(function(a, b) { return b.ts - a.ts; });
+      var identificationRows = attempts.filter(function(row) { return typeof row.identificationCorrect === 'boolean'; });
+      var regulationRows = attempts.filter(function(row) { return typeof row.ruleCorrect === 'boolean'; });
+      var identificationCorrect = identificationRows.filter(function(row) { return row.identificationCorrect; }).length;
+      var regulationCorrect = regulationRows.filter(function(row) { return row.ruleCorrect; }).length;
+      var identificationAccuracy = identificationRows.length ? Math.round(identificationCorrect / identificationRows.length * 100) : null;
+      var regulationAccuracy = regulationRows.length ? Math.round(regulationCorrect / regulationRows.length * 100) : null;
+      var confirmed = attempts.filter(function(row) { return row.decisionCorrect === true; }).length;
+      var needsReview = attempts.filter(function(row) { return row.evidenceStatus === 'review'; }).length;
+      var revisited = attempts.filter(function(row) { return row.evidenceStatus === 'revisited'; }).length;
+      var unscored = attempts.filter(function(row) { return row.decisionCorrect === null; }).length;
+      var latestCorrectionTs = attempts.reduce(function(latest, row) { return Math.max(latest, row.reviewedTs || 0); }, 0);
+      var transferVerified = latestCorrectionTs > 0 && attempts.some(function(row) { return row.decisionCorrect === true && row.ts > latestCorrectionTs; });
+      var stageId = needsReview ? 'review' : revisited && !transferVerified ? 'rehearse' : attempts.length >= 2 && identificationAccuracy !== null && regulationAccuracy !== null && identificationAccuracy >= 80 && regulationAccuracy >= 80 ? 'secure' : attempts.length ? 'building' : 'not-started';
+      var identificationErrorRate = identificationRows.length ? (identificationRows.length - identificationCorrect) / identificationRows.length : 0;
+      var regulationErrorRate = regulationRows.length ? (regulationRows.length - regulationCorrect) / regulationRows.length : 0;
+      var focusSkill = stageId === 'not-started' ? 'baseline' : stageId === 'rehearse' ? 'transfer' : stageId === 'secure' ? 'extend' : identificationErrorRate > regulationErrorRate ? 'identification' : regulationErrorRate > identificationErrorRate ? 'regulation' : 'workflow';
+      return {
+        key: group.key,
+        region: group.region,
+        regionLabel: group.regionLabel,
+        speciesId: group.speciesId,
+        label: group.label,
+        emoji: group.emoji,
+        hasProfile: group.hasProfile,
+        attempts: attempts.length,
+        confirmed: confirmed,
+        needsReview: needsReview,
+        revisited: revisited,
+        unscored: unscored,
+        identificationCorrect: identificationCorrect,
+        identificationTotal: identificationRows.length,
+        identificationAccuracy: identificationAccuracy,
+        regulationCorrect: regulationCorrect,
+        regulationTotal: regulationRows.length,
+        regulationAccuracy: regulationAccuracy,
+        latestSeenTs: attempts.length ? attempts[0].ts : 0,
+        latestCorrectionTs: latestCorrectionTs,
+        transferVerified: transferVerified,
+        stageId: stageId,
+        stageLabel: stageLabels[stageId],
+        nextStep: stageActions[stageId],
+        focusSkill: focusSkill
+      };
+    }).sort(function(a, b) {
+      if (stageRank[a.stageId] !== stageRank[b.stageId]) return stageRank[a.stageId] - stageRank[b.stageId];
+      if (a.needsReview !== b.needsReview) return b.needsReview - a.needsReview;
+      if (a.attempts !== b.attempts) return b.attempts - a.attempts;
+      if (a.regionLabel !== b.regionLabel) return a.regionLabel.localeCompare(b.regionLabel);
+      return a.label.localeCompare(b.label);
+    });
+
+    var summary = {
+      totalSpecies: masteryRows.length,
+      observedSpecies: masteryRows.filter(function(row) { return row.attempts > 0; }).length,
+      needsReview: masteryRows.filter(function(row) { return row.stageId === 'review'; }).length,
+      rehearse: masteryRows.filter(function(row) { return row.stageId === 'rehearse'; }).length,
+      building: masteryRows.filter(function(row) { return row.stageId === 'building'; }).length,
+      secure: masteryRows.filter(function(row) { return row.stageId === 'secure'; }).length,
+      notStarted: masteryRows.filter(function(row) { return row.stageId === 'not-started'; }).length
+    };
+    summary.coveragePct = summary.totalSpecies ? Math.round(summary.observedSpecies / summary.totalSpecies * 100) : 0;
+    return { region: requestedRegion, rows: masteryRows, summary: summary };
+  }
+  function getCoreJournalCsvCell(value) {
+    var cellText = value === null || typeof value === 'undefined' ? '' : String(value);
+    // Spreadsheet programs execute cells beginning with these characters as a
+    // formula. Journal labels are currently authored data, but neutralising the
+    // prefix here keeps future student-entered notes safe too.
+    if (typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(cellText)) cellText = "'" + cellText;
+    return '"' + cellText.replace(/"/g, '""') + '"';
+  }
+  function serializeCoreJournalCsv(history, options) {
+    var rows = getCoreJournalRows(history, options);
+    var headings = ['Recorded at', 'Region', 'Species', 'Measurement (in)', 'Disposition', 'Identification', 'Rule decision', 'Overall decision', 'Evidence status', 'Evidence', 'Correction', 'Reviewed at', 'Mission', 'Observation ID'];
+    function scoreLabel(value) { return value === true ? 'correct' : value === false ? 'review' : 'not scored'; }
+    var lines = [headings.map(getCoreJournalCsvCell).join(',')];
+    rows.forEach(function(row) {
+      lines.push([
+        row.recordedAt,
+        row.regionLabel,
+        row.label,
+        row.length,
+        row.disposition,
+        scoreLabel(row.identificationCorrect),
+        scoreLabel(row.ruleCorrect),
+        scoreLabel(row.decisionCorrect),
+        row.evidenceStatus,
+        row.evidence,
+        row.correction,
+        row.reviewedAt,
+        row.mission,
+        row.observationId
+      ].map(getCoreJournalCsvCell).join(','));
+    });
+    return lines.join('\r\n');
   }
   function deriveCoreAchievements(progress) {
     var input = progress || {};
@@ -585,7 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       unlocked['first-cast'] = true;
       unlocked['red-right'] = true;
     }
-    if (journal.some(function(item) { return item && (item.action === 'retain' || item.action === 'keep' || item.disposition === 'retained') && item.ruleCorrect !== false && item.correct !== false; })) unlocked['first-keeper'] = true;
+    if (journal.some(function(item) { return item && (item.action === 'retain' || item.action === 'keep' || item.disposition === 'retained') && item.identificationCorrect !== false && item.ruleCorrect !== false && item.correct !== false; })) unlocked['first-keeper'] = true;
     var unique = {};
     journal.forEach(function(item) { if (item && item.speciesId && item.identified !== false && item.identificationCorrect !== false) unique[item.speciesId] = true; });
     if (Object.keys(unique).length >= 5) unlocked['species-id-bronze'] = true;
@@ -691,6 +1059,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       depthMatched: input.targetDepth === species.depthZone
     };
   }
+  function getCoreFishingPracticePlan(region, speciesId, conditions) {
+    var activeRegion = String(region || '');
+    var activeSpeciesId = String(speciesId || '');
+    if (!CORE_FISHING_SPOTS[activeRegion] || !CORE_FISHING_SPECIES[activeSpeciesId]) return null;
+    var speciesRecord = getSpeciesForRegion(activeRegion).find(function(item) { return item.id === activeSpeciesId; });
+    if (!speciesRecord) return null;
+    var speciesProfile = CORE_FISHING_SPECIES[activeSpeciesId];
+    var observedConditions = Object.assign({}, conditions || getFishingScenarioConditions(activeRegion));
+    var candidates = [];
+    CORE_FISHING_SPOTS[activeRegion].forEach(function(spot) {
+      CORE_FISHING_TACKLE.forEach(function(tackle) {
+        var setup = {
+          region: activeRegion,
+          speciesId: activeSpeciesId,
+          spotId: spot.id,
+          tackleId: tackle.id,
+          targetDepth: speciesProfile.depthZone,
+          conditions: observedConditions,
+          presentation: {
+            technique: speciesProfile.technique,
+            retrieveSpeed: speciesProfile.retrieveSpeed
+          }
+        };
+        candidates.push({
+          region: activeRegion,
+          speciesId: activeSpeciesId,
+          speciesLabel: speciesRecord.name,
+          spotId: spot.id,
+          spotLabel: spot.label,
+          tackleId: tackle.id,
+          tackleLabel: tackle.label,
+          targetDepth: speciesProfile.depthZone,
+          technique: speciesProfile.technique,
+          retrieveSpeed: speciesProfile.retrieveSpeed,
+          conditions: Object.assign({}, observedConditions),
+          score: scoreFishingSetup(setup)
+        });
+      });
+    });
+    candidates.sort(function(a, b) {
+      if (a.score.total !== b.score.total) return b.score.total - a.score.total;
+      if (a.spotId !== b.spotId) return a.spotId.localeCompare(b.spotId);
+      return a.tackleId.localeCompare(b.tackleId);
+    });
+    if (!candidates.length) return null;
+    return Object.assign({ candidateCount: candidates.length }, candidates[0]);
+  }
+
   function hashCoreFishingSeed(value) {
     var text = String(value == null ? 'fisherlab' : value);
     var hash = 2166136261;
@@ -4876,11 +5292,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreMissionCompletionKeys: getCoreMissionCompletionKeys,
     getCoreMissionProgress: getCoreMissionProgress,
     appendCoreJournalObservation: appendCoreJournalObservation,
+    appendCoreJournalCorrection: appendCoreJournalCorrection,
+    getCoreJournalRows: getCoreJournalRows,
+    getCoreJournalSummary: getCoreJournalSummary,
+    getCoreJournalReviewPlan: getCoreJournalReviewPlan,
+    getCoreSpeciesMastery: getCoreSpeciesMastery,
+    serializeCoreJournalCsv: serializeCoreJournalCsv,
     deriveCoreAchievements: deriveCoreAchievements,
     getFishingSpot: getFishingSpot,
     getFishingTackle: getFishingTackle,
     getFishingScenarioConditions: getFishingScenarioConditions,
     scoreFishingSetup: scoreFishingSetup,
+    getCoreFishingPracticePlan: getCoreFishingPracticePlan,
     createFishingEncounter: createFishingEncounter,
     evaluateCast: evaluateCast,
     evaluateHookset: evaluateHookset,
@@ -14946,6 +15369,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var tabSearch = tabSearchHook[0], setTabSearch = tabSearchHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
+    var speciesFocusHook = useState('');
+    var speciesFocusId = speciesFocusHook[0], setSpeciesFocusId = speciesFocusHook[1];
+    var practiceTargetHook = useState('');
+    var practiceTargetSpeciesId = practiceTargetHook[0], setPracticeTargetSpeciesId = practiceTargetHook[1];
+    var practiceFocusHook = useState('');
+    var practiceFocusSkill = practiceFocusHook[0], setPracticeFocusSkill = practiceFocusHook[1];
+    var practiceTargetRef = useRef(practiceTargetSpeciesId);
+    var practiceFocusRef = useRef(practiceFocusSkill);
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     var sim = simHook[0], setSim = simHook[1];
     var hudHook = useState({});
@@ -14954,6 +15385,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var status = statusHook[0], setStatus = statusHook[1];
     var lifeLogHook = useState(stateInit.lifeLog || []);
     var lifeLog = lifeLogHook[0], setLifeLog = lifeLogHook[1];
+    var journalRegionHook = useState('current');
+    var journalRegionFilter = journalRegionHook[0], setJournalRegionFilter = journalRegionHook[1];
+    var journalDispositionHook = useState('all');
+    var journalDispositionFilter = journalDispositionHook[0], setJournalDispositionFilter = journalDispositionHook[1];
+    var journalEvidenceHook = useState('all');
+    var journalEvidenceFilter = journalEvidenceHook[0], setJournalEvidenceFilter = journalEvidenceHook[1];
+    var journalReviewTargetHook = useState('');
+    var journalReviewTargetId = journalReviewTargetHook[0], setJournalReviewTargetId = journalReviewTargetHook[1];
+    var journalReviewDraftHook = useState('');
+    var journalReviewDraft = journalReviewDraftHook[0], setJournalReviewDraft = journalReviewDraftHook[1];
+    var journalQueryHook = useState('');
+    var journalQuery = journalQueryHook[0], setJournalQuery = journalQueryHook[1];
     var aqCondHook = useState({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] });
     var aqCondIQ = aqCondHook[0], setAqCondIQ = aqCondHook[1];
     var canvasRef = useRef(null);
@@ -15215,6 +15658,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       saveState(s);
     }, [voyageMode]);
 
+    useEffect(function() {
+      practiceTargetRef.current = practiceTargetSpeciesId;
+      practiceFocusRef.current = practiceFocusSkill;
+    }, [practiceTargetSpeciesId, practiceFocusSkill]);
+
+    useEffect(function() {
+      if (!practiceTargetSpeciesId) return;
+      if (getCoreFishingPracticePlan(region, practiceTargetSpeciesId)) return;
+      practiceTargetRef.current = '';
+      practiceFocusRef.current = '';
+      setPracticeTargetSpeciesId('');
+      setPracticeFocusSkill('');
+    }, [region, practiceTargetSpeciesId]);
+
     function getDefaultFishingPlan(activeRegion) {
       var defaults = {
         maine: { spotId: 'rocky-ledge', tackleId: 'bottom-jig', targetDepth: 'bottom', technique: 'vertical-jig', retrieveSpeed: 'slow' },
@@ -15227,11 +15684,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function createFishingSession(ev) {
       var activeRegion = ev && ev.region ? ev.region : region;
       var observedConditions = getFishingScenarioConditions(activeRegion, ev && ev.weather, ev && ev.timeOfDay);
+      var requestedTargetSpeciesId = ev && ev.targetSpeciesId ? ev.targetSpeciesId : practiceTargetRef.current;
+      var defaultTargetSpeciesId = getCoreSimProfile(activeRegion).targetFishId;
+      var practicePlan = getCoreFishingPracticePlan(activeRegion, requestedTargetSpeciesId, observedConditions);
+      var selectedPlan = practicePlan || getCoreFishingPracticePlan(activeRegion, defaultTargetSpeciesId, observedConditions);
+      var fallbackPlan = Object.assign({ speciesId: defaultTargetSpeciesId }, getDefaultFishingPlan(activeRegion));
+      var startingPlan = selectedPlan || fallbackPlan;
+      var focusedPractice = !!(practicePlan && requestedTargetSpeciesId);
       return Object.assign({
         phase: 'setup',
         seed: ev && ev.seed ? ev.seed : activeRegion + '-practice',
         region: activeRegion,
-        targetSpeciesId: getCoreSimProfile(activeRegion).targetFishId,
+        targetSpeciesId: startingPlan.speciesId || defaultTargetSpeciesId,
+        practiceTargeted: focusedPractice,
+        practiceFocusSkill: focusedPractice ? ((ev && ev.focusSkill) || practiceFocusRef.current || 'workflow') : '',
         assistMode: !(ev && ev.mode && ev.mode !== 'guided'),
         retry: 0,
         castMeter: 50,
@@ -15241,8 +15707,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         stamina: 100,
         tensionSamples: [],
         fightTurns: 0,
-        message: 'Read the water, choose a rig and depth, then make a deliberate cast.'
-      }, getDefaultFishingPlan(activeRegion), observedConditions);
+        message: focusedPractice ? 'Focused practice is ready. Inspect the suggested setup, then adjust or cast deliberately.' : 'Read the water, choose a rig and depth, then make a deliberate cast.'
+      }, startingPlan, observedConditions);
     }
     function fishingSetupInput(session) {
       return {
@@ -15380,6 +15846,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           speciesId: activeFishing.encounter.speciesId,
           length: getFishingEncounterLength(species, activeFishing.encounter.seed),
           fishingSummary: {
+            targetSpeciesId: activeFishing.targetSpeciesId,
+            focusedPractice: !!activeFishing.practiceTargeted,
+            focusSkill: activeFishing.practiceFocusSkill || '',
             setupScore: activeFishing.encounter.encounterScore.total,
             setupEvidence: activeFishing.encounter.encounterScore.evidence.join(' '),
             spotLabel: getFishingSpot(activeFishing.region, activeFishing.spotId).label,
@@ -15568,6 +16037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── Tab bar
     var TABS = [
       { id: 'home', label: '🏠 Home' },
+      { id: 'journal', label: 'Field Journal' },
       { id: 'aqcond', label: '🌊 Conditions Lab' },
       { id: 'sim', label: '🎮 3D Sim' },
       { id: 'chart', label: '🗺 Chart Room' },
@@ -15694,6 +16164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       { id: 'careers', label: '🧰 Student & Careers', name: 'Student & Careers', icon: '🧰', tabs: ['lessonplans', 'activities', 'studyguide', 'training', 'mentorship', 'careers', 'studcareer', 'workforce', 'community', 'fishfacts', 'fishessays', 'termessays', 'playbooks'] },
       { id: 'study', label: '🎓 Study Tools & Quiz', name: 'Study & Quiz', icon: '🎓', tabs: ['quiz', 'achievements', 'glossary', 'extglossary', 'bibliography', 'bibext', 'refnumbers', 'events', 'studentfaq', 'faqpub', 'textbook', 'globalcontext', 'indgroups', 'future'] }
     ];
+    CATEGORIES[0].tabs.splice(1, 0, 'journal');
 
     function tabBar() {
       function onSectionTabKey(e) {
@@ -15993,7 +16464,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var speciesState = saved.speciesCaught || {};
       var missionProgressState = getCoreMissionProgress(completedState, MISSIONS.length);
       var completedCount = missionProgressState.count;
-      var caughtCount = Object.keys(speciesState).length;
+      var activeSpeciesIds = {};
+      getSpeciesForRegion(region).forEach(function(species) { activeSpeciesIds[species.id] = true; });
+      var legacyCaughtCount = Object.keys(speciesState).filter(function(speciesId) { return activeSpeciesIds[speciesId] && Number(speciesState[speciesId]) > 0; }).length;
+      var regionJournalSummary = getCoreJournalSummary(lifeLog, { region: region });
+      var caughtCount = regionJournalSummary.observations ? regionJournalSummary.uniqueSpecies : legacyCaughtCount;
       var activeRegion = REGIONS[region] || REGIONS.maine;
       var nextMission = MISSIONS.filter(function(m) { return !completedState[m.id]; })[0] || MISSIONS[0];
       var missionProgress = missionProgressState.percent;
@@ -16002,7 +16477,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         { tab: 'chart', step: 'Plot', title: 'Read the chart', detail: 'Check landmarks, hazards, and the route to the grounds before throttle.', metric: activeRegion.portName || 'Portland Harbor', color: '#fbbf24' },
         { tab: 'colregs', step: 'Yield', title: 'Practice rules', detail: 'Use right-of-way decisions before crossing traffic in the sim.', metric: 'COLREGS warmup', color: '#c4b5fd' },
         { tab: 'species', step: 'Identify', title: 'Know the catch', detail: 'Compare marks, habitat, and season clues before classifying or releasing a fish.', metric: caughtCount + ' species observed', color: '#86efac' },
-        { tab: 'regs', step: 'Measure', title: 'Check keeper rules', detail: 'Review size, slot, bag, and release rules for the active region.', metric: activeRegion.dmrAuthority || 'Regulations', color: '#fb923c' }
+        { tab: 'regs', step: 'Measure', title: 'Check keeper rules', detail: 'Review size, slot, bag, and release rules for the active region.', metric: activeRegion.dmrAuthority || 'Regulations', color: '#fb923c' },
+        { tab: 'journal', step: 'Reflect', title: 'Open the field journal', detail: 'Review identification and release evidence, then export it for reflection or teacher review.', metric: regionJournalSummary.observations + ' region records', color: '#f0abfc' }
       ];
       return h('div', null,
         h('section', {
@@ -16064,7 +16540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               ),
               h('div', { style: { display: 'grid', gap: 8 } },
                 [
-                  { label: 'Observations', value: (lifeLog || []).length, color: '#c4b5fd' },
+                  { label: 'Region records', value: regionJournalSummary.observations, color: '#c4b5fd' },
                   { label: 'Species', value: caughtCount + '/' + getSpeciesForRegion(region).length, color: '#86efac' },
                   { label: 'Missions', value: completedCount + '/' + MISSIONS.length, color: '#fde68a' }
                 ].map(function(stat) {
@@ -16119,23 +16595,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions complete')),
             h('div', null,
-              h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, caughtCount + '/' + MAINE_SPECIES.length),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, caughtCount + '/' + getSpeciesForRegion(region).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Species in Field Journal')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#a78bfa' } }, (lifeLog || []).length),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Total keepers'))
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Journal observations'))
           )),
         // Field Journal histogram — observations by species.
         (function() {
           var sc = speciesState;
-          var ids = Object.keys(sc);
+          var ids = Object.keys(sc).filter(function(speciesId) { return !!activeSpeciesIds[speciesId]; });
           if (!ids.length) return null;
           var ALL = MAINE_SPECIES.concat(CHESAPEAKE_SPECIES, PNW_SPECIES, GREATLAKES_SPECIES);
           var lookup = {}; ALL.forEach(function(s) { lookup[s.id] = s; });
           var rows = ids.map(function(id) { return { id: id, n: sc[id], sp: lookup[id] || { emoji: '🦞', name: id.charAt(0).toUpperCase() + id.slice(1) } }; }).sort(function(a, b) { return b.n - a.n; });
           var maxN = Math.max.apply(null, rows.map(function(r) { return r.n; })) || 1;
           return h('div', { style: cardStyle },
-            h('div', { style: headerStyle }, '🐟 Life list — catches by species'),
+            h('div', { style: headerStyle }, '🐟 Life list — observations by species'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               rows.map(function(r) {
                 return h('div', { key: r.id, style: { display: 'flex', alignItems: 'center', gap: 8 } },
@@ -16191,9 +16667,416 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('p', { style: { color: '#fbbf24' } }, h('b', null, 'No mouse needed. '), 'Everything works from keyboard. Buoy shape (nun = cone, can = cylinder) doubles for color when colorblind.'))));
     }
 
+    // --- FIELD JOURNAL tab
+    function journalTab() {
+      var effectiveRegion = journalRegionFilter === 'current' ? region : journalRegionFilter;
+      var filterOptions = {
+        region: effectiveRegion,
+        disposition: journalDispositionFilter,
+        evidence: journalEvidenceFilter,
+        query: journalQuery
+      };
+      var visibleRows = getCoreJournalRows(lifeLog, filterOptions);
+      var scopeSummary = getCoreJournalSummary(lifeLog, { region: effectiveRegion });
+      var visibleSummary = getCoreJournalSummary(lifeLog, filterOptions);
+      var reviewPlan = getCoreJournalReviewPlan(lifeLog, { region: effectiveRegion });
+      var speciesMastery = getCoreSpeciesMastery(lifeLog, { region: effectiveRegion });
+      var masteryStageColors = { review: '#fdba74', rehearse: '#c4b5fd', building: '#7dd3fc', secure: '#86efac', 'not-started': '#cbd5e1' };
+      var masteryFocusLabels = { identification: 'species ID', regulation: 'regulation evidence', workflow: 'full workflow', transfer: 'transfer practice', extend: 'extension', baseline: 'first evidence' };
+      var activeReviewRow = reviewPlan.reviewQueue.find(function(row) { return row.observationId === journalReviewTargetId; }) || reviewPlan.reviewQueue[0] || null;
+      var activeReviewIssues = [];
+      if (activeReviewRow && activeReviewRow.identificationCorrect === false) activeReviewIssues.push('species identification');
+      if (activeReviewRow && activeReviewRow.ruleCorrect === false) activeReviewIssues.push('regulation evidence');
+      if (activeReviewRow && !activeReviewIssues.length) activeReviewIssues.push('the complete decision workflow');
+      var activeRegionLabel = effectiveRegion === 'all' ? 'All waters' : ((REGIONS[effectiveRegion] && REGIONS[effectiveRegion].label) || effectiveRegion);
+      var totalForBar = Math.max(1, scopeSummary.observations);
+      var controlStyle = { boxSizing: 'border-box', width: '100%', minHeight: 42, padding: '8px 10px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.38)', background: '#071827', color: '#e2e8f0', fontSize: 12 };
+      var labelStyle = { display: 'grid', gap: 5, color: '#bae6fd', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' };
+      var thStyle = { padding: '9px 10px', color: '#bae6fd', background: '#0c2437', borderBottom: '1px solid rgba(125,211,252,0.32)', textAlign: 'left', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.04em' };
+      var tdStyle = { padding: '10px', color: '#dbeafe', borderBottom: '1px solid rgba(148,163,184,0.16)', fontSize: 11, lineHeight: 1.45, verticalAlign: 'top' };
+
+      function formatJournalTime(row) {
+        if (!row || !row.recordedAt) return 'Time not recorded';
+        if (row.ts) {
+          try { return new Date(row.ts).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }); } catch (_) {
+            try { return new Date(row.ts).toLocaleString(); } catch (_) {}
+          }
+        }
+        return row.recordedAt;
+      }
+      function scoreWord(value) {
+        return value === true ? 'Correct' : value === false ? 'Review' : 'Not scored';
+      }
+      function scoreColor(value) {
+        return value === true ? '#86efac' : value === false ? '#fdba74' : '#cbd5e1';
+      }
+      function openMasterySpeciesProfile(masteryRow) {
+        if (!masteryRow) return;
+        setRegion(masteryRow.region);
+        setSpeciesFocusId(masteryRow.speciesId);
+        setTab('species');
+        flAnnounce('Opening ' + masteryRow.label + ' in the ' + masteryRow.regionLabel + ' species guide.');
+        setTimeout(function() {
+          var profile = document.getElementById('fl-species-' + masteryRow.speciesId);
+          if (!profile) return;
+          try { profile.focus({ preventScroll: true }); } catch (_) { try { profile.focus(); } catch (_) {} }
+          try { profile.scrollIntoView({ block: 'center', behavior: 'auto' }); } catch (_) {}
+        }, 80);
+      }
+      function prepareMasteryPractice(masteryRow) {
+        if (!masteryRow) return;
+        var plan = getCoreFishingPracticePlan(masteryRow.region, masteryRow.speciesId);
+        if (!plan) {
+          flAnnounce(masteryRow.label + ' is available for profile study but not as a rod-and-reel target in this simulator build.');
+          openMasterySpeciesProfile(masteryRow);
+          return;
+        }
+        setRegion(masteryRow.region);
+        setSpeciesFocusId(masteryRow.speciesId);
+        practiceTargetRef.current = masteryRow.speciesId;
+        practiceFocusRef.current = masteryRow.focusSkill;
+        setPracticeTargetSpeciesId(masteryRow.speciesId);
+        setPracticeFocusSkill(masteryRow.focusSkill);
+        setTab('sim');
+        flAnnounce('Focused practice prepared for ' + masteryRow.label + '. Review the suggested setup before casting off.');
+        setTimeout(function() {
+          var practiceCard = document.querySelector('[data-fisherlab-practice-plan="' + masteryRow.speciesId + '"]');
+          if (!practiceCard) return;
+          try { practiceCard.focus({ preventScroll: true }); } catch (_) { try { practiceCard.focus(); } catch (_) {} }
+          try { practiceCard.scrollIntoView({ block: 'center', behavior: 'auto' }); } catch (_) {}
+        }, 80);
+      }
+      function saveJournalCorrection() {
+        if (!activeReviewRow) {
+          flAnnounce('Choose a review-needed decision first.');
+          return;
+        }
+        var correction = journalReviewDraft.trim();
+        if (correction.length < 20) {
+          flAnnounce('Write at least 20 characters before saving the correction.');
+          return;
+        }
+        var saved = loadState();
+        var priorLog = Array.isArray(saved.lifeLog) ? saved.lifeLog : (lifeLog || []);
+        var next = appendCoreJournalCorrection(priorLog, activeReviewRow.observationId, correction, Date.now());
+        var correctedRow = getCoreJournalRows(next, { evidence: 'revisited' }).find(function(row) { return row.observationId === activeReviewRow.observationId; });
+        if (!correctedRow) {
+          flAnnounce('That decision could not be updated. The original journal record was preserved.');
+          return;
+        }
+        saved.lifeLog = next;
+        saveState(saved);
+        setLifeLog(next);
+        setJournalReviewTargetId('');
+        setJournalReviewDraft('');
+        flAnnounce('Correction saved for ' + activeReviewRow.label + '. The original score was preserved.');
+      }
+      function exportVisibleJournal() {
+        if (!visibleRows.length) {
+          flAnnounce('No visible journal observations to export.');
+          return;
+        }
+        try {
+          var csv = serializeCoreJournalCsv(lifeLog, filterOptions);
+          var blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+          var scope = effectiveRegion === 'all' ? 'all-waters' : effectiveRegion;
+          var filename = 'fisherlab-field-journal-' + scope + '.csv';
+          if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(blob, filename);
+          } else {
+            var url = window.URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function() { window.URL.revokeObjectURL(url); }, 0);
+          }
+          flAnnounce(visibleRows.length + ' field journal observations exported as CSV.');
+        } catch (error) {
+          console.error('[FisherLab] Field journal export failed', error);
+          flAnnounce('Field journal export is unavailable in this browser.');
+        }
+      }
+
+      return h('div', { 'data-fisherlab-journal': 'true' },
+        h('section', { 'aria-labelledby': 'fl-journal-title', style: Object.assign({}, cardStyle, { padding: 16, background: 'linear-gradient(135deg,rgba(76,29,149,0.62),rgba(8,47,73,0.92) 58%,rgba(6,78,59,0.72))' }) },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' } },
+            h('div', { style: { maxWidth: 720 } },
+              h('div', { style: Object.assign({}, headerStyle, { color: '#f0abfc', marginBottom: 5 }) }, 'Voyage evidence'),
+              h('h2', { id: 'fl-journal-title', style: { margin: '0 0 8px', color: '#f8fafc', fontSize: 24, lineHeight: 1.15 } }, 'Field Journal & Decision Evidence'),
+              h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } },
+                'Every completed catch decision is recorded, including releases and attempts that need review. Use the evidence to spot patterns in species, measurements, and stewardship decisions, not just the fish retained.')),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { type: 'button', className: 'fl-btn', disabled: !visibleRows.length, onClick: exportVisibleJournal,
+                style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(240,171,252,0.55)', background: visibleRows.length ? '#7e22ce' : '#334155', color: '#faf5ff', fontSize: 11, fontWeight: 900, cursor: visibleRows.length ? 'pointer' : 'not-allowed', opacity: visibleRows.length ? 1 : 0.65 } }, 'Export visible CSV'),
+              h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTab('sim'); flAnnounce('3D simulator section open'); },
+                style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.45)', background: '#0c4a6e', color: '#e0f2fe', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Return to the sim'))
+          ),
+          h('div', { 'aria-label': 'Field journal summary for ' + activeRegionLabel, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 9, marginTop: 14 } },
+            [
+              { label: 'Observations', value: scopeSummary.observations, color: '#f0abfc' },
+              { label: 'Unique species', value: scopeSummary.uniqueSpecies, color: '#7dd3fc' },
+              { label: 'Released', value: scopeSummary.released, color: '#86efac' },
+              { label: 'Corrections saved', value: reviewPlan.revisitedDecisions, color: '#c4b5fd' },
+              { label: 'Decision accuracy', value: scopeSummary.accuracy === null ? 'Not scored' : scopeSummary.accuracy + '%', color: scopeSummary.accuracy !== null && scopeSummary.accuracy < 80 ? '#fdba74' : '#fde68a' }
+            ].map(function(stat) {
+              return h('div', { key: stat.label, style: { minHeight: 74, padding: 10, borderRadius: 8, border: '1px solid rgba(226,232,240,0.15)', background: 'rgba(2,6,23,0.42)' } },
+                h('div', { style: { color: stat.color, fontSize: 21, fontWeight: 900, lineHeight: 1.1 } }, stat.value),
+                h('div', { style: { marginTop: 5, color: '#cbd5e1', fontSize: 9, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, stat.label));
+            })
+          ),
+          scopeSummary.observations ? h('div', { style: { marginTop: 12 } },
+            h('div', { role: 'img', 'aria-label': scopeSummary.retained + ' retained, ' + scopeSummary.released + ' released, and ' + scopeSummary.observed + ' observation-only records.', style: { display: 'flex', width: '100%', height: 14, overflow: 'hidden', borderRadius: 7, background: '#1e293b', border: '1px solid rgba(226,232,240,0.16)' } },
+              h('span', { style: { width: (scopeSummary.retained / totalForBar * 100) + '%', background: '#fbbf24' } }),
+              h('span', { style: { width: (scopeSummary.released / totalForBar * 100) + '%', background: '#22c55e' } }),
+              h('span', { style: { width: (scopeSummary.observed / totalForBar * 100) + '%', background: '#38bdf8' } })),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 6, color: '#cbd5e1', fontSize: 10 } },
+              h('span', null, 'Retained ' + scopeSummary.retained),
+              h('span', null, 'Released ' + scopeSummary.released),
+              scopeSummary.observed ? h('span', null, 'Observation only ' + scopeSummary.observed) : null)
+          ) : null
+        ),
+
+        h('section', { 'data-fisherlab-review-coach': 'true', 'aria-labelledby': 'fl-journal-coach-title', style: cardStyle },
+          h('h2', { id: 'fl-journal-coach-title', style: Object.assign({}, headerStyle, { margin: '0 0 10px', fontSize: 12 }) }, 'Evidence review coach'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 12 } },
+            h('article', { 'data-fisherlab-next-practice': reviewPlan.focusId, style: { padding: 13, borderRadius: 9, background: 'linear-gradient(135deg,rgba(30,64,175,0.25),rgba(88,28,135,0.28))', border: '1px solid rgba(196,181,253,0.38)' } },
+              h('div', { style: { color: '#c4b5fd', fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Recommended next practice'),
+              h('h3', { style: { margin: '5px 0 6px', color: '#f8fafc', fontSize: 17, lineHeight: 1.2 } }, reviewPlan.recommendation.title),
+              h('p', { style: { margin: '0 0 10px', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.55 } }, reviewPlan.recommendation.guidance),
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTab(reviewPlan.recommendation.tab); flAnnounce(reviewPlan.recommendation.buttonLabel + ' opened.'); },
+                  style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(196,181,253,0.55)', background: '#6d28d9', color: '#f5f3ff', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, reviewPlan.recommendation.buttonLabel),
+                h('span', { style: { color: reviewPlan.needsReview ? '#fdba74' : '#86efac', fontSize: 10.5, fontWeight: 850 } },
+                  reviewPlan.needsReview ? reviewPlan.needsReview + ' decision' + (reviewPlan.needsReview === 1 ? '' : 's') + ' need review' : reviewPlan.revisitedDecisions ? reviewPlan.revisitedDecisions + ' correction' + (reviewPlan.revisitedDecisions === 1 ? '' : 's') + ' saved' : reviewPlan.scoredDecisions ? 'All scored decisions confirmed' : 'No scored decisions yet'))
+            ),
+            h('div', { style: { padding: 13, borderRadius: 9, background: 'rgba(2,6,23,0.34)', border: '1px solid rgba(125,211,252,0.26)' } },
+              h('div', { style: { color: '#7dd3fc', fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 } }, 'Skill signals'),
+              [
+                { id: 'identification', label: 'Species identification', metric: reviewPlan.identification, color: '#c4b5fd' },
+                { id: 'regulation', label: 'Regulation evidence', metric: reviewPlan.regulation, color: '#7dd3fc' }
+              ].map(function(skill) {
+                var pct = skill.metric.accuracy;
+                return h('div', { key: skill.id, style: { marginBottom: 9 } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#e2e8f0', fontSize: 10.5, fontWeight: 850 } },
+                    h('span', null, skill.label),
+                    h('span', { style: { color: pct === null ? '#cbd5e1' : skill.color } }, pct === null ? 'Not scored' : pct + '% (' + skill.metric.correct + '/' + skill.metric.total + ')')),
+                  pct === null ? h('div', { style: { height: 7, marginTop: 5, borderRadius: 5, background: 'rgba(148,163,184,0.2)' } }) :
+                    h('div', { role: 'progressbar', 'aria-label': skill.label + ' accuracy', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, style: { height: 7, marginTop: 5, overflow: 'hidden', borderRadius: 5, background: 'rgba(148,163,184,0.2)' } },
+                      h('div', { 'aria-hidden': 'true', style: { width: pct + '%', height: '100%', background: skill.color } })));
+              }),
+              h('div', { role: 'status', style: { marginTop: 3, paddingTop: 8, borderTop: '1px solid rgba(125,211,252,0.18)', color: reviewPlan.trendId === 'improving' ? '#86efac' : reviewPlan.trendId === 'slipping' ? '#fdba74' : '#bae6fd', fontSize: 10.5, lineHeight: 1.45, fontWeight: 800 } }, reviewPlan.trendLabel)
+            )
+          ),
+          reviewPlan.reviewQueue.length ? h('div', { 'data-fisherlab-review-queue': 'true', style: { marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.22)' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' } },
+              h('h3', { id: 'fl-journal-review-queue-title', style: { margin: 0, color: '#f8fafc', fontSize: 14 } }, 'Review queue'),
+              h('span', { style: { color: '#fdba74', fontSize: 10, fontWeight: 900 } }, reviewPlan.needsReview + ' in this water scope')),
+            h('p', { style: { margin: '5px 0 8px', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Newest review-needed decisions appear first. Use the saved evidence to explain what should change next time.'),
+            h('ul', { 'aria-labelledby': 'fl-journal-review-queue-title', style: { display: 'grid', gap: 7, margin: 0, padding: 0, listStyle: 'none' } },
+              reviewPlan.reviewQueue.map(function(row) {
+                var issues = [];
+                if (row.identificationCorrect === false) issues.push('species identification');
+                if (row.ruleCorrect === false) issues.push('regulation evidence');
+                if (!issues.length) issues.push('the complete decision workflow');
+                return h('li', { key: 'review-' + row.observationId, style: { padding: 10, borderRadius: 8, background: 'rgba(124,45,18,0.18)', border: '1px solid rgba(251,146,60,0.3)' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+                    h('strong', { style: { color: '#fed7aa', fontSize: 11.5 } }, row.label),
+                    h('span', { style: { color: '#cbd5e1', fontSize: 9.5 } }, formatJournalTime(row))),
+                  h('div', { style: { marginTop: 4, color: '#fdba74', fontSize: 10.5, fontWeight: 850 } }, 'Review ' + issues.join(' and ') + '.'),
+                  h('p', { style: { margin: '4px 0 0', color: '#dbeafe', fontSize: 10.5, lineHeight: 1.45 } }, row.evidence || 'No written evidence was saved for this earlier decision.'));
+              })),
+            h('section', { 'data-fisherlab-correction-workshop': 'true', 'aria-labelledby': 'fl-journal-correction-title', style: { marginTop: 12, padding: 12, borderRadius: 9, background: 'rgba(30,41,59,0.58)', border: '1px solid rgba(196,181,253,0.34)' } },
+              h('h4', { id: 'fl-journal-correction-title', style: { margin: '0 0 5px', color: '#e9d5ff', fontSize: 13.5 } }, 'Correction workshop'),
+              h('p', { id: 'fl-journal-correction-help', style: { margin: '0 0 9px', color: '#dbeafe', fontSize: 10.5, lineHeight: 1.5 } },
+                'Choose a pending decision and explain the stronger evidence you would use now. Saving adds an audit note; it never changes the original score.'),
+              h('label', { htmlFor: 'fl-journal-review-target', style: labelStyle }, 'Decision to revisit',
+                h('select', { id: 'fl-journal-review-target', value: activeReviewRow ? activeReviewRow.observationId : '', onChange: function(e) { setJournalReviewTargetId(e.target.value); setJournalReviewDraft(''); }, style: controlStyle },
+                  reviewPlan.reviewQueue.map(function(row) {
+                    return h('option', { key: row.observationId, value: row.observationId }, row.label + ' - ' + formatJournalTime(row));
+                  }))),
+              activeReviewRow ? h('div', { style: { marginTop: 9, padding: 9, borderRadius: 7, background: 'rgba(2,6,23,0.42)', borderLeft: '3px solid #fdba74' } },
+                h('div', { style: { color: '#fdba74', fontSize: 10.5, fontWeight: 900 } }, 'Needs correction: ' + activeReviewIssues.join(' and ') + '.'),
+                h('div', { style: { marginTop: 4, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } },
+                  h('strong', { style: { color: '#bae6fd' } }, 'Original evidence: '), activeReviewRow.evidence || 'No written evidence was saved for this earlier decision.')) : null,
+              h('label', { htmlFor: 'fl-journal-correction', style: Object.assign({}, labelStyle, { marginTop: 9 }) }, 'Corrected evidence explanation',
+                h('textarea', { id: 'fl-journal-correction', rows: 4, maxLength: 600, value: journalReviewDraft,
+                  'aria-describedby': 'fl-journal-correction-help fl-journal-correction-count',
+                  onChange: function(e) { setJournalReviewDraft(e.target.value); },
+                  placeholder: 'State the diagnostic field mark or measurement rule, then explain how it changes the retention or release decision.',
+                  style: Object.assign({}, controlStyle, { minHeight: 104, resize: 'vertical', lineHeight: 1.5 }) })),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 } },
+                h('span', { id: 'fl-journal-correction-count', style: { color: journalReviewDraft.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10, fontWeight: 800 } },
+                  journalReviewDraft.length + '/600 characters - 20 needed'),
+                h('button', { type: 'button', className: 'fl-btn', disabled: journalReviewDraft.trim().length < 20, onClick: saveJournalCorrection,
+                  style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(196,181,253,0.55)', background: journalReviewDraft.trim().length >= 20 ? '#7e22ce' : '#334155', color: '#faf5ff', fontSize: 11, fontWeight: 900, cursor: journalReviewDraft.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: journalReviewDraft.trim().length >= 20 ? 1 : 0.65 } }, 'Save correction'))
+            )
+          ) : h('p', { role: 'status', style: { margin: '12px 0 0', paddingTop: 10, borderTop: '1px solid rgba(148,163,184,0.22)', color: reviewPlan.scoredDecisions ? '#86efac' : '#cbd5e1', fontSize: 11, fontWeight: 800 } },
+            reviewPlan.scoredDecisions ? 'No pending scored decisions currently need review.' : 'Complete a scored catch decision to build your review queue.')
+        ),
+
+        h('section', { 'data-fisherlab-species-mastery': 'true', 'aria-labelledby': 'fl-journal-mastery-title', style: cardStyle },
+          h('h2', { id: 'fl-journal-mastery-title', style: Object.assign({}, headerStyle, { margin: '0 0 6px', fontSize: 12 }) }, 'Species evidence map'),
+          h('p', { style: { margin: '0 0 10px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+            'Priority order: pending reviews, corrections awaiting transfer, developing evidence, not-started profiles, then secure evidence. A single correct attempt remains developing until it is repeated.'),
+          h('div', { 'aria-label': 'Species mastery summary for ' + activeRegionLabel, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 8, marginBottom: 11 } },
+            [
+              { label: 'Coverage', value: speciesMastery.summary.coveragePct + '%', color: '#7dd3fc' },
+              { label: 'Needs review', value: speciesMastery.summary.needsReview, color: '#fdba74' },
+              { label: 'Test correction', value: speciesMastery.summary.rehearse, color: '#c4b5fd' },
+              { label: 'Evidence secure', value: speciesMastery.summary.secure, color: '#86efac' }
+            ].map(function(stat) {
+              return h('div', { key: stat.label, style: { padding: 9, borderRadius: 7, background: 'rgba(2,6,23,0.32)', border: '1px solid rgba(148,163,184,0.18)' } },
+                h('div', { style: { color: stat.color, fontSize: 17, fontWeight: 900 } }, stat.value),
+                h('div', { style: { marginTop: 3, color: '#cbd5e1', fontSize: 9, fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.04em' } }, stat.label));
+            })),
+          h('div', { style: { overflowX: 'auto', borderRadius: 8, border: '1px solid rgba(125,211,252,0.22)' } },
+            h('table', { style: { width: '100%', minWidth: 860, borderCollapse: 'collapse', background: 'rgba(2,6,23,0.26)' } },
+              h('caption', { className: 'sr-only' }, 'Species evidence stages ordered by learning priority'),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: thStyle }, 'Species'),
+                h('th', { scope: 'col', style: thStyle }, 'Attempts'),
+                h('th', { scope: 'col', style: thStyle }, 'Species ID'),
+                h('th', { scope: 'col', style: thStyle }, 'Rule evidence'),
+                h('th', { scope: 'col', style: thStyle }, 'Evidence stage'),
+                h('th', { scope: 'col', style: thStyle }, 'Practice'))),
+              h('tbody', null, speciesMastery.rows.map(function(row) {
+                var stageColor = masteryStageColors[row.stageId] || '#cbd5e1';
+                var identificationLabel = row.identificationAccuracy === null ? 'Not scored' : row.identificationAccuracy + '% (' + row.identificationCorrect + '/' + row.identificationTotal + ')';
+                var regulationLabel = row.regulationAccuracy === null ? 'Not scored' : row.regulationAccuracy + '% (' + row.regulationCorrect + '/' + row.regulationTotal + ')';
+                return h('tr', { key: row.key, style: { background: row.stageId === 'review' ? 'rgba(124,45,18,0.12)' : row.stageId === 'rehearse' ? 'rgba(88,28,135,0.12)' : 'transparent' } },
+                  h('th', { scope: 'row', style: Object.assign({}, tdStyle, { textAlign: 'left' }) },
+                    h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, row.emoji),
+                    h('span', { style: { color: '#f8fafc', fontWeight: 900 } }, row.label),
+                    h('div', { style: { marginTop: 3, color: '#94a3b8', fontSize: 9, fontWeight: 500 } }, row.regionLabel)),
+                  h('td', { style: tdStyle },
+                    h('div', { style: { color: row.attempts ? '#f8fafc' : '#94a3b8', fontWeight: 850 } }, row.attempts),
+                    row.attempts ? h('div', { style: { marginTop: 2, color: '#94a3b8', fontSize: 9 } }, row.confirmed + ' confirmed') : null),
+                  h('td', { style: tdStyle }, identificationLabel),
+                  h('td', { style: tdStyle }, regulationLabel),
+                  h('td', { style: tdStyle },
+                    h('span', { style: { display: 'inline-flex', padding: '3px 7px', borderRadius: 999, background: 'rgba(15,23,42,0.62)', border: '1px solid ' + stageColor, color: stageColor, fontWeight: 900 } }, row.stageLabel),
+                    h('div', { style: { marginTop: 5, maxWidth: 300, color: '#cbd5e1', fontSize: 9.5, lineHeight: 1.4 } }, row.nextStep),
+                    h('div', { style: { marginTop: 3, color: '#94a3b8', fontSize: 9 } }, 'Focus: ' + (masteryFocusLabels[row.focusSkill] || row.focusSkill))),
+                  h('td', { style: tdStyle },
+                    row.hasProfile ? h('div', { style: { display: 'grid', gap: 6, alignItems: 'start' } },
+                      h('button', { type: 'button', className: 'fl-btn', onClick: function() { openMasterySpeciesProfile(row); },
+                        'aria-label': 'Open ' + row.label + ' profile for ' + row.regionLabel,
+                        style: { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.42)', background: '#0c4a6e', color: '#e0f2fe', fontSize: 10.5, fontWeight: 900, cursor: 'pointer' } }, 'Open profile'),
+                      CORE_FISHING_SPECIES[row.speciesId] ? h('button', { type: 'button', className: 'fl-btn', onClick: function() { prepareMasteryPractice(row); },
+                        'data-fisherlab-prepare-practice': row.speciesId,
+                        'aria-label': 'Prepare a focused simulator voyage for ' + row.label,
+                        style: { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(134,239,172,0.45)', background: '#14532d', color: '#dcfce7', fontSize: 10.5, fontWeight: 900, cursor: 'pointer' } }, 'Prepare voyage') :
+                        h('span', { style: { color: '#94a3b8', fontSize: 9.5, lineHeight: 1.35 } }, 'Profile study only in this voyage build')) :
+                      h('span', { style: { color: '#94a3b8', fontSize: 9.5 } }, 'Observed record only')));
+              })))
+          )
+        ),
+
+        h('section', { 'aria-labelledby': 'fl-journal-filters-title', style: cardStyle },
+          h('div', { id: 'fl-journal-filters-title', style: headerStyle }, 'Filter the evidence'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 10, alignItems: 'end' } },
+            h('label', { style: labelStyle }, 'Water',
+              h('select', { value: journalRegionFilter, onChange: function(e) { setJournalRegionFilter(e.target.value); }, style: controlStyle },
+                h('option', { value: 'current' }, 'Current water - ' + ((REGIONS[region] && REGIONS[region].label) || region)),
+                h('option', { value: 'all' }, 'All waters'),
+                h('option', { value: 'maine' }, REGIONS.maine.label),
+                h('option', { value: 'chesapeake' }, REGIONS.chesapeake.label),
+                h('option', { value: 'pnw' }, REGIONS.pnw.label),
+                h('option', { value: 'greatlakes' }, REGIONS.greatlakes.label))),
+            h('label', { style: labelStyle }, 'Disposition',
+              h('select', { value: journalDispositionFilter, onChange: function(e) { setJournalDispositionFilter(e.target.value); }, style: controlStyle },
+                h('option', { value: 'all' }, 'All outcomes'),
+                h('option', { value: 'retained' }, 'Retained'),
+                h('option', { value: 'released' }, 'Released'),
+                h('option', { value: 'observed' }, 'Observation only'))),
+            h('label', { htmlFor: 'fl-journal-evidence', style: labelStyle }, 'Evidence status',
+              h('select', { id: 'fl-journal-evidence', value: journalEvidenceFilter, onChange: function(e) { setJournalEvidenceFilter(e.target.value); }, style: controlStyle },
+                h('option', { value: 'all' }, 'All evidence'),
+                h('option', { value: 'review' }, 'Needs review'),
+                h('option', { value: 'revisited' }, 'Revisited with correction'),
+                h('option', { value: 'confirmed' }, 'Confirmed'),
+                h('option', { value: 'unscored' }, 'Not scored'))),
+            h('label', { htmlFor: 'fl-journal-search', style: labelStyle }, 'Find species, mission, or evidence',
+              h('input', { id: 'fl-journal-search', type: 'search', value: journalQuery, onChange: function(e) { setJournalQuery(e.target.value); }, placeholder: 'Try cod, review, or slot minimum.', style: controlStyle })),
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { setJournalRegionFilter('current'); setJournalDispositionFilter('all'); setJournalEvidenceFilter('all'); setJournalQuery(''); flAnnounce('Field journal filters reset.'); },
+              style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.4)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Reset filters')
+          ),
+          h('div', { id: 'fl-journal-filter-status', role: 'status', 'aria-live': 'polite', style: { marginTop: 9, color: visibleRows.length ? '#a7f3d0' : '#fde68a', fontSize: 11, fontWeight: 800 } },
+            visibleRows.length + ' of ' + scopeSummary.observations + ' observations shown' + (visibleSummary.uniqueSpecies ? ' across ' + visibleSummary.uniqueSpecies + (visibleSummary.uniqueSpecies === 1 ? ' species' : ' species') : '') + '.')
+        ),
+
+        visibleRows.length ? h('section', { 'aria-labelledby': 'fl-journal-table-title', style: cardStyle },
+          h('div', { id: 'fl-journal-table-title', style: headerStyle }, 'Observation record'),
+          h('div', { style: { overflowX: 'auto', borderRadius: 8, border: '1px solid rgba(125,211,252,0.22)' } },
+            h('table', { 'aria-describedby': 'fl-journal-filter-status', style: { width: '100%', minWidth: 760, borderCollapse: 'collapse', background: 'rgba(2,6,23,0.28)' } },
+              h('caption', { className: 'sr-only' }, 'FisherLab field journal observations in newest-first order'),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: thStyle }, 'Recorded'),
+                h('th', { scope: 'col', style: thStyle }, 'Species'),
+                h('th', { scope: 'col', style: thStyle }, 'Water'),
+                h('th', { scope: 'col', style: thStyle }, 'Measurement'),
+                h('th', { scope: 'col', style: thStyle }, 'Disposition'),
+                h('th', { scope: 'col', style: thStyle }, 'Decision evidence'))),
+              h('tbody', null, visibleRows.map(function(row) {
+                return h('tr', { key: row.observationId },
+                  h('td', { style: tdStyle },
+                    h('div', { style: { color: '#f8fafc', fontWeight: 800 } }, formatJournalTime(row)),
+                    h('div', { style: { marginTop: 3, color: '#94a3b8', fontSize: 9 } }, row.mission.replace(/-/g, ' '))),
+                  h('td', { style: tdStyle },
+                    h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, row.emoji),
+                    h('span', { style: { color: '#f8fafc', fontWeight: 900 } }, row.label)),
+                  h('td', { style: tdStyle }, row.regionLabel),
+                  h('td', { style: tdStyle }, row.length === null ? 'Not recorded' : (Math.round(row.length * 100) / 100) + ' in'),
+                  h('td', { style: tdStyle },
+                    h('span', { style: { display: 'inline-flex', padding: '3px 7px', borderRadius: 999, background: row.disposition === 'released' ? 'rgba(34,197,94,0.18)' : row.disposition === 'retained' ? 'rgba(251,191,36,0.18)' : 'rgba(56,189,248,0.18)', color: row.disposition === 'released' ? '#86efac' : row.disposition === 'retained' ? '#fde68a' : '#bae6fd', fontWeight: 900, textTransform: 'capitalize' } }, row.disposition)),
+                  h('td', { style: tdStyle },
+                    h('div', { style: { color: row.evidenceStatus === 'revisited' ? '#c4b5fd' : scoreColor(row.decisionCorrect), fontWeight: 900 } }, row.evidenceStatus === 'revisited' ? 'Revisited' : scoreWord(row.decisionCorrect)),
+                    h('div', { style: { marginTop: 3, color: '#cbd5e1', fontSize: 9 } }, 'Identification: ' + scoreWord(row.identificationCorrect) + ' | Rule: ' + scoreWord(row.ruleCorrect)),
+                    row.evidence ? h('div', { style: { marginTop: 5, color: '#bae6fd', fontSize: 9.5, lineHeight: 1.45 } }, row.evidence) : null,
+                    row.correction ? h('div', { style: { marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(196,181,253,0.24)', color: '#e9d5ff', fontSize: 9.5, lineHeight: 1.45 } },
+                      h('strong', null, 'Correction: '), row.correction,
+                      row.reviewedAt ? h('div', { style: { marginTop: 3, color: '#94a3b8', fontSize: 9 } }, 'Saved ' + formatJournalTime({ recordedAt: row.reviewedAt, ts: row.reviewedTs })) : null) : null));
+              })))
+          )
+        ) : h('section', { role: 'status', style: Object.assign({}, cardStyle, { textAlign: 'center', padding: 24 }) },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: 20, marginBottom: 8, fontWeight: 900, color: '#f0abfc' } }, '[LOG]'),
+          h('h3', { style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 17 } }, scopeSummary.observations ? 'No observations match these filters' : 'Your field journal is ready'),
+          h('p', { style: { maxWidth: 620, margin: '0 auto 12px', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } },
+            scopeSummary.observations ? 'Reset the filters or broaden the search to bring records back into view.' : 'Launch a voyage, identify a fish or shellfish, measure it, and make a retention or release decision. Completed catch decisions appear here automatically, including attempts that need review.'),
+          h('div', { style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (scopeSummary.observations) { setJournalDispositionFilter('all'); setJournalEvidenceFilter('all'); setJournalQuery(''); } else setTab('sim'); },
+              style: { minHeight: 42, padding: '8px 12px', border: 0, borderRadius: 7, background: '#0ea5e9', color: '#082f49', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, scopeSummary.observations ? 'Clear outcome and search' : 'Launch a voyage'),
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTab('species'); },
+              style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(134,239,172,0.45)', background: '#14532d', color: '#dcfce7', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Practice species ID'))
+        ),
+
+        h('section', { 'aria-labelledby': 'fl-journal-reflect-title', style: cardStyle },
+          h('div', { id: 'fl-journal-reflect-title', style: headerStyle }, 'Reflect from evidence'),
+          h('ol', { style: { margin: '0 0 0 20px', padding: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.7 } },
+            h('li', null, 'Which species or measurements most often led to release decisions?'),
+            h('li', null, 'How does a saved correction use stronger identification or regulation evidence than the original decision?'),
+            h('li', null, 'What will you change on the next voyage: location, tackle, measurement, or evidence choice?'))
+        )
+      );
+    }
+
     // ─── SIM tab
     function simTab() {
       var mission = getCoreSimProfile(region);
+      var practiceTargetSpecies = practiceTargetSpeciesId ? getSpeciesForRegion(region).find(function(item) { return item.id === practiceTargetSpeciesId; }) : null;
+      var practicePlan = practiceTargetSpecies ? getCoreFishingPracticePlan(region, practiceTargetSpecies.id, getFishingScenarioConditions(region, weather, timeOfDay)) : null;
+      var practiceFocusLabel = ({
+        identification: 'diagnostic field marks',
+        regulation: 'measurement and rule evidence',
+        workflow: 'identify, measure, and classify workflow',
+        transfer: 'testing a saved correction',
+        extend: 'adapting under a different condition',
+        baseline: 'building first evidence'
+      })[practiceFocusSkill] || 'complete catch reasoning';
       var completedObjectives = (hud.passedRedNun ? 1 : 0) + (hud.trafficManeuverComplete ? 1 : 0) + (hud.reachedHalfwayRock ? 1 : 0) + (hud.targetFishDecision ? 1 : 0) + (hud.trapDecisionMade ? 1 : 0) + (hud.returnedHome ? 1 : 0);
       var missionProgressPct = Math.round(completedObjectives / 6 * 100);
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
@@ -16248,6 +17131,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('span', { style: { color: '#a7f3d0', fontSize: 10 } }, completedObjectives + '/6 objectives'),
               h('span', { style: { color: '#bae6fd', fontSize: 10 } }, fuelValue.toFixed(0) + '% fuel'))
           ),
+          practiceTargetSpecies && practicePlan ? h('section', {
+            'data-fisherlab-practice-plan': practiceTargetSpecies.id,
+            tabIndex: -1,
+            'aria-labelledby': 'fl-practice-plan-title',
+            style: { margin: '0 0 12px', padding: 12, borderRadius: 8, background: 'linear-gradient(135deg,rgba(20,83,45,0.62),rgba(12,74,110,0.62))', border: '1px solid rgba(134,239,172,0.42)', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 12, alignItems: 'center' }
+          },
+            h('div', { style: { minWidth: 0 } },
+              h('div', { style: { color: '#86efac', fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Focused catch practice'),
+              h('h3', { id: 'fl-practice-plan-title', style: { margin: '4px 0 5px', color: '#f8fafc', fontSize: 16 } }, practiceTargetSpecies.name + ' - ' + practiceFocusLabel),
+              h('p', { style: { margin: '0 0 5px', color: '#dbeafe', fontSize: 11, lineHeight: 1.5 } },
+                'This optional catch target adds journal evidence. The core mission still requires ' + mission.targetFish + ' and remains unchanged.'),
+              h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 10.5, lineHeight: 1.5 } },
+                'Suggested starting setup: ' + practicePlan.spotLabel + ', ' + practicePlan.tackleLabel + ', ' + practicePlan.targetDepth + ' water, ' + practicePlan.technique.replace(/-/g, ' ') + '. Encounters remain probability-weighted, so bycatch is possible.')),
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { practiceTargetRef.current = ''; practiceFocusRef.current = ''; setPracticeTargetSpeciesId(''); setPracticeFocusSkill(''); flAnnounce('Focused practice target cleared.'); },
+              style: { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.34)', background: '#334155', color: '#f8fafc', fontSize: 10.5, fontWeight: 900, cursor: 'pointer' } }, 'Clear target')
+          ) : null,
           h('fieldset', { disabled: sim.active, style: { margin: '0 0 12px', padding: 0, border: 0 } },
             h('legend', { style: { marginBottom: 7, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Voyage challenge'),
             h('div', { role: 'radiogroup', 'aria-label': 'Voyage challenge', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
@@ -16541,6 +17440,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               var phaseLabels = { setup: 'Read the water', cast: 'Place the cast', presentation: 'Work the rig', bite: 'Set the hook', fight: 'Fight the fish', landed: 'Land the fish', lost: 'Fish lost', 'no-bite': 'Adapt the plan' };
               var phaseLabel = phaseLabels[activeFishing.phase] || 'Fishing';
               var spots = CORE_FISHING_SPOTS[activeFishing.region] || CORE_FISHING_SPOTS.maine;
+              var fishingTargetSpecies = getSpeciesForRegion(activeFishing.region).find(function(item) { return item.id === activeFishing.targetSpeciesId; }) || { id: activeFishing.targetSpeciesId, name: getCoreSimProfile(activeFishing.region).targetFish };
               var selectStyle = { width: '100%', minHeight: 44, marginTop: 4, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#071827', color: '#e2e8f0', fontSize: 12 };
               var fieldStyle = { display: 'block', color: '#bae6fd', fontSize: 10, fontWeight: 900, textTransform: 'uppercase' };
               var actionStyle = { minHeight: 44, padding: '9px 14px', border: 0, borderRadius: 7, background: '#38bdf8', color: '#082f49', fontWeight: 900, cursor: 'pointer' };
@@ -16553,11 +17453,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap' } },
                     h('div', null,
                       h('div', { style: { color: '#6ee7b7', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Rod & reel · ' + phaseLabel),
-                      h('h3', { id: 'fl-fishing-title', style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 22 } }, getCoreSimProfile(activeFishing.region).targetFish + ' voyage')),
+                      h('h3', { id: 'fl-fishing-title', style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 22 } }, fishingTargetSpecies.name + ' practice')),
                     h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
                       h('span', { className: 'fl-pill', style: { color: activeFishing.assistMode ? '#a7f3d0' : '#fde68a' } }, activeFishing.assistMode ? 'Guided timing' : 'Standard timing'),
                       activeFishing.phase !== 'landed' ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': 'End fishing and return to helm', onClick: leaveFishing, style: Object.assign({}, secondaryStyle, { minHeight: 36, padding: '6px 10px', fontSize: 10 }) }, 'Return to helm') : null)
                   ),
+                  h('p', { 'data-fisherlab-fishing-target': activeFishing.targetSpeciesId, style: { margin: '10px 0 0', color: '#a7f3d0', fontSize: 10.5, lineHeight: 1.45, fontWeight: 800 } },
+                    (activeFishing.practiceTargeted ? 'Focused target: ' : 'Mission target: ') + fishingTargetSpecies.name + '. Encounters remain probability-weighted, so bycatch is possible.'),
                   h('p', { id: 'fl-fishing-prompt', role: activeFishing.phase === 'fight' ? 'status' : null, 'aria-live': activeFishing.phase === 'fight' ? 'polite' : null, 'aria-atomic': activeFishing.phase === 'fight' ? 'true' : null, style: { margin: '10px 0 12px', padding: 9, borderRadius: 6, background: 'rgba(2,6,23,0.48)', color: activeFishing.phase === 'bite' ? '#fef08a' : '#dbeafe', fontSize: 12, lineHeight: 1.5, fontWeight: activeFishing.phase === 'bite' ? 900 : 600 } }, activeFishing.message),
 
                   activeFishing.phase === 'setup' ? h('div', null,
@@ -16688,6 +17590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
             activeFish ? (function() {
               var regionalSpecies = getSpeciesForRegion(region);
+              var practiceTargetProfile = activeFish.fishingSummary && activeFish.fishingSummary.focusedPractice ? regionalSpecies.find(function(candidate) { return candidate.id === activeFish.fishingSummary.targetSpeciesId; }) : null;
               var regionalFishOptions = [activeFish.species].concat(regionalSpecies.filter(function(candidate) { return candidate.id !== activeFish.species.id; })).slice(0, 3);
               var optionOffset = hashCoreFishingSeed(activeFish.observationId || [activeFish.species.id, activeFish.length].join('-')) % regionalFishOptions.length;
               regionalFishOptions = regionalFishOptions.slice(optionOffset).concat(regionalFishOptions.slice(0, optionOffset));
@@ -16723,8 +17626,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   identificationCorrect: identification.correct,
                   ruleCorrect: ruleResult.correct,
                   correct: result.correct,
+                  evidence: (practiceTargetProfile ? 'Focused target: ' + practiceTargetProfile.name + ' | ' : '') + 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' | ' + result.expectedLabel,
                   region: region,
-                  mission: 'core-voyage'
+                  mission: practiceTargetProfile ? 'focused-practice' : 'core-voyage'
                 });
                 if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, identificationCorrect: identification.correct, ruleCorrect: ruleResult.correct, legalToRetain: ruleResult.legalToRetain, evidence: 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' · ' + result.expectedLabel });
                 setFishDecisionResult({ result: result, identification: identification, handling: handling, message: msg });
@@ -16744,6 +17648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + (fishDecisionResult ? activeFish.species.name : 'Unidentified catch') + ' · ' + activeFish.length + ' in'),
                   activeFish.fishingSummary ? h('div', { style: { marginBottom: 10, padding: 10, borderRadius: 7, background: 'rgba(6,78,59,0.36)', border: '1px solid rgba(52,211,153,0.34)' } },
                     h('strong', { style: { color: '#a7f3d0', fontSize: 11 } }, 'How you landed it'),
+                    activeFish.fishingSummary.focusedPractice ? h('div', { style: { marginTop: 4, color: '#a7f3d0', fontSize: 10, lineHeight: 1.4, fontWeight: 800 } }, 'Focused target: ' + (practiceTargetProfile ? practiceTargetProfile.name : activeFish.fishingSummary.targetSpeciesId) + (practiceTargetProfile && practiceTargetProfile.id !== activeFish.species.id ? ' - this catch is bycatch evidence.' : ' - target encounter landed.')) : null,
                     h('div', { style: { marginTop: 4, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, activeFish.fishingSummary.spotLabel + ' · ' + activeFish.fishingSummary.tackleLabel + ' · cast ' + activeFish.fishingSummary.castQuality + '/100 · hookset ' + (activeFish.fishingSummary.hooksetMs / 1000).toFixed(1) + ' s · working tension ' + activeFish.fishingSummary.safeTensionPct + '%'),
                     h('div', { style: { marginTop: 4, color: '#94a3b8', fontSize: 10, lineHeight: 1.4 } }, activeFish.fishingSummary.setupEvidence)
                   ) : null,
@@ -16940,6 +17845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   identificationCorrect: true,
                   ruleCorrect: correct,
                   correct: correct,
+                  evidence: caliperVal.toFixed(2) + ' in gauge | ' + (activeLobster.isKeeper ? 'training profile permits retention' : reason),
                   region: activeLobster.region,
                   mission: 'core-voyage'
                 });
@@ -17459,25 +18365,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── SPECIES tab
     function speciesTab() {
+      var regionProfile = REGIONS[region] || REGIONS.maine;
+      var regionalSpecies = getSpeciesForRegion(region).slice();
+      regionalSpecies.sort(function(a, b) {
+        if (a.id === speciesFocusId) return -1;
+        if (b.id === speciesFocusId) return 1;
+        return 0;
+      });
       return h('div', null,
         regionBar(),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🐟 Maine Species ID'),
+          h('div', { style: headerStyle }, regionProfile.label + ' Species ID'),
           h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, fontStyle: 'italic' } },
-            'Gulf of Maine fishes + American lobster. Size limits + slots in this guide reflect typical DMR rules — verify current limits at maine.gov/dmr before fishing.'),
+            'Regional practice profiles for ' + regionProfile.label + '. These are instructional identification and scenario-rule summaries, not live legal guidance. Verify current rules with ' + regionProfile.dmrAuthority + ' before fishing.'),
 
           // Every ID note below is written in anatomical shorthand. A student
           // who cannot point to a pectoral fin cannot use any of it.
           h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 6 } }, 'Reading an ID note — the parts by name'),
           h('div', { style: { marginBottom: 14 } }, flFishAnatomySvg(h)),
 
-          h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 2 } }, 'The one pair worth drilling: cod against haddock'),
-          h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } },
-            'Drawn rather than photographed on purpose: a photo is one fish at one angle, while a drawing can show the diagnostic feature and leave out everything that would distract from it. Schematic, not a portrait.'),
-          h('div', { style: { marginBottom: 14 } }, flCodHaddockSvg(h)),
+          region === 'maine' ? h('div', null,
+            h('div', { style: { fontSize: 12, fontWeight: 900, color: '#bae6fd', marginBottom: 2 } }, 'The one pair worth drilling: cod against haddock'),
+            h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6 } },
+              'Drawn rather than photographed on purpose: the schematic isolates diagnostic field marks that can be compared across specimens and viewing angles.'),
+            h('div', { style: { marginBottom: 14 } }, flCodHaddockSvg(h))) :
+            h('p', { style: { margin: '0 0 14px', padding: 9, borderRadius: 7, background: 'rgba(14,116,144,0.12)', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } },
+              'Regional focus: compare the diagnostic field marks, habitat, and scenario rules on each profile below.'),
 
-          MAINE_SPECIES.map(function(s, i) {
-            return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #38bdf8' } },
+          regionalSpecies.map(function(s, i) {
+            var focused = speciesFocusId === s.id;
+            return h('article', { key: s.id || i, id: 'fl-species-' + s.id, tabIndex: -1, 'data-fisherlab-species-profile': s.id,
+              style: { padding: 12, marginBottom: 10, background: focused ? 'rgba(88,28,135,0.28)' : 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid ' + (focused ? '#f0abfc' : '#38bdf8'), boxShadow: focused ? '0 0 0 2px rgba(240,171,252,0.22)' : 'none' } },
+              focused ? h('div', { role: 'status', style: { marginBottom: 8, color: '#f0abfc', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Focused from your species evidence map') : null,
               h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 6 } },
                 h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, s.emoji),
                 h('div', null,
@@ -19463,6 +20382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         style: { minWidth: 0 }
       },
       tab === 'home' ? homeTab() :
+      tab === 'journal' ? journalTab() :
       tab === 'aqcond' ? aqCondTab() :
       tab === 'sim' ? simTab() :
       tab === 'chart' ? chartTab() :

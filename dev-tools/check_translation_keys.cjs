@@ -46,6 +46,9 @@ const HOST = path.join(ROOT, 'AlloFlowANTI.txt');
 const args = process.argv.slice(2);
 const VERBOSE = args.includes('--verbose');
 const QUIET = args.includes('--quiet');
+const SHOW_SAFE_FALLBACKS = args.includes('--show-safe-fallbacks');
+const JSON_OUTPUT = args.includes('--json');
+if (JSON_OUTPUT) console.log = () => {};
 
 for (const f of [UI_STRINGS, HELP_STRINGS, HOST]) {
   if (!fs.existsSync(f)) {
@@ -220,6 +223,7 @@ const tCallsByKey = new Map();   // key → [{ file, line }]
 const helpRefsByKey = new Map(); // key → [{ file, line }]
 let dynamicTCount = 0;
 let safeInlineFallbackCount = 0;
+const safeFallbackRefs = new Map();
 
 for (const file of sourceFiles) {
   const src = fs.readFileSync(file, 'utf-8');
@@ -246,6 +250,11 @@ for (const file of sourceFiles) {
     const hasModuleLiteralArgFallback = file !== HOST && m[3] === ',' && startsWithClosedLiteral(argumentTail);
     if (!uiKeys.has(key) && (hasLiteralOrFallback || hasModuleLiteralArgFallback)) {
       safeInlineFallbackCount++;
+      if (SHOW_SAFE_FALLBACKS) {
+        const line = src.substring(0, m.index).split('\n').length;
+        if (!safeFallbackRefs.has(key)) safeFallbackRefs.set(key, []);
+        safeFallbackRefs.get(key).push({ file: rel, line });
+      }
       continue;
     }
     const line = src.substring(0, m.index).split('\n').length;
@@ -296,7 +305,7 @@ const orphanHelp = [...helpKeys].filter(k => !helpRefsByKey.has(k));
 // ──────────────────────────────────────────────────────────────────────────
 const totalErrors = missingT.length + missingHelp.length;
 
-if (!QUIET || totalErrors > 0) {
+if (!JSON_OUTPUT && (!QUIET || totalErrors > 0)) {
   console.log('');
   console.log('╔══════════════════════════════════════════════════════════════════════╗');
   console.log('║   AlloFlow Translation Key Coverage                                  ║');
@@ -310,7 +319,7 @@ if (!QUIET || totalErrors > 0) {
   console.log('');
 }
 
-if (missingT.length > 0) {
+if (!JSON_OUTPUT && missingT.length > 0) {
   console.log('═══ ✗ MISSING t() KEYS (' + missingT.length + ') — UI will show literal key string instead of translated text ═══');
   console.log('');
   const reportedMissingT = VERBOSE ? missingT : missingT.slice(0, 50);
@@ -322,7 +331,7 @@ if (missingT.length > 0) {
   console.log('');
 }
 
-if (missingHelp.length > 0) {
+if (!JSON_OUTPUT && missingHelp.length > 0) {
   console.log('═══ ✗ MISSING HELP_STRINGS KEYS (' + missingHelp.length + ') — help-mode tooltip is undefined ═══');
   console.log('');
   for (const e of missingHelp.slice(0, 30)) {
@@ -333,7 +342,7 @@ if (missingHelp.length > 0) {
   console.log('');
 }
 
-if (VERBOSE) {
+if (!JSON_OUTPUT && VERBOSE) {
   console.log('═══ ⊙ ORPHAN UI KEYS (' + orphanUI.length + ') — defined but never used (informational) ═══');
   for (const k of orphanUI.slice(0, 30)) console.log('  ⊙ ' + k);
   if (orphanUI.length > 30) console.log('  (... ' + (orphanUI.length - 30) + ' more)');
@@ -341,6 +350,15 @@ if (VERBOSE) {
   console.log('═══ ⊙ ORPHAN HELP KEYS (' + orphanHelp.length + ') ═══');
   for (const k of orphanHelp.slice(0, 30)) console.log('  ⊙ ' + k);
   if (orphanHelp.length > 30) console.log('  (... ' + (orphanHelp.length - 30) + ' more)');
+  console.log('');
+}
+
+if (!JSON_OUTPUT && SHOW_SAFE_FALLBACKS) {
+  console.log('');
+  console.log('── SAFE FALLBACK REGISTRY DEBT (' + safeFallbackRefs.size + ' unique keys) ──');
+  for (const [key, locations] of safeFallbackRefs) {
+    console.log('  • ' + key + ' — ' + locations[0].file + ':' + locations[0].line + ' (' + locations.length + ' total)');
+  }
   console.log('');
 }
 
@@ -358,5 +376,21 @@ if (totalErrors === 0) {
   console.log('  ❌ ' + totalErrors + ' missing key' + (totalErrors === 1 ? '' : 's') + ' — UI will show literal key text in places.');
 }
 console.log('');
+
+if (JSON_OUTPUT) {
+  process.stdout.write(JSON.stringify({
+    uiKeyCount: uiKeys.size,
+    helpKeyCount: helpKeys.size,
+    literalTKeys: [...tCallsByKey.keys()].sort(),
+    literalTCalls: [...tCallsByKey.entries()].map(([key, locations]) => ({ key, locations })),
+    dynamicTCount,
+    safeInlineFallbackCount,
+    safeFallbackRefs: [...safeFallbackRefs.entries()].map(([key, locations]) => ({ key, locations })),
+    missingT,
+    missingHelp,
+    orphanUiCount: orphanUI.length,
+    orphanHelpCount: orphanHelp.length,
+  }, null, 2) + '\n');
+}
 
 process.exit(totalErrors > 0 ? 1 : 0);

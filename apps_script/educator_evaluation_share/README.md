@@ -48,8 +48,9 @@ version**. Re-run the deployment check.
 
 1. In AlloFlow, open **Reports & audit** and export **Educator packet (.html)**.
 2. Choose the downloaded file in this helper. It rejects arbitrary HTML and response files, then
-   reads the packet's educator, code, academic year, packet id, and issue time. Those packet fields
-   fill the folder labels automatically.
+   parses an allowlisted educator-packet payload. The helper rebuilds the filed HTML itself; it
+   never stores the caller's markup, styles, or scripts. Packet fields fill the folder labels
+   automatically.
 3. Enter the exact educator email, choose Viewer (recommended) or Commenter, and optionally choose
    an end date. The expected domain is locked to the verified deployer account.
 4. Retype the email, confirm the policy statement, and select **Review; do not share yet**.
@@ -75,8 +76,18 @@ version**. Re-run the deployment check.
   evaluator assignments or district roles; use the district portal when those controls are needed.
 - **Drive may notify the recipient.** The helper requests Google's Drive share notification. It has
   no Gmail scope and does not compose an independent message.
-- **Packet content is validated twice.** Both the browser and `Code.gs` require an AlloFlow educator
-  packet, version 1, with exactly one matching educator. Free-text evidence can still identify
-  people even when the packet was exported without names; preview the packet before sharing.
+- **Finalized annual rationale and evidence provenance stays server-validated and passive.**
+  A provenance block is accepted only when both annualRationales and annualEvidenceRefs are present
+  on a finalized cycle. The helper accepts only canonical record tokens, re-resolves them against
+  this educator's published walkthroughs, published observation evidence, and locked SPM / SLOs,
+  and creates human-readable labels itself. Pre-final, malformed, unresolved, private, or unlocked
+  references are rejected before a Drive file is created.
+
+- **Packet content is validated and rebuilt.** Both the browser and `Code.gs` require an AlloFlow
+  educator packet, version 1, with exactly one matching educator. `Code.gs` allowlists its fields,
+  escapes every narrative, and renders a new self-contained document with the fixed offline
+  response script. This limits active content; it does not cryptographically prove who authored
+  the underlying evaluation data. Free text can still identify people even when profile names
+  were withheld, so preview the packet before sharing.
 - **Custody remains with the district.** Move or copy the year folder into the official repository
   under the applicable retention schedule.

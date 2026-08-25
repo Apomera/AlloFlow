@@ -80,6 +80,7 @@ const VIEWS = {
   tour: { d: {}, sig: null },
   freeExploreSetup: { d: { tourCompleted: true }, sig: null },
   scenarioSelect: { d: {}, sig: null },
+  scenarioBriefing: { d: { pendingScenario: 'residential' }, sig: 'Three success checks' },
   driving: { d: { scenario: 'residential', vehicle: 'sedan' }, sig: 'Fasten Your Seatbelt' },
   lessonSelect: { d: {}, sig: null },
   lesson: { d: { lesson: 'drag' }, sig: 'Aerodynamic Drag' },
@@ -245,7 +246,7 @@ describe('every view renders real content (no error card, no fallback)', () => {
   it('debrief shows the grade + XP for the same stats', () => {
     const d = { view: 'debrief', drivingStats: STATS };
     const html = renderTool('roadReady', { roadReady: d });
-    expect(html).toContain('Great Drive'); // 85 → B tier label
+    expect(html).toContain('Mission complete'); // safety-weighted 87 → B
   });
 
   it('a bogus view id falls through to the loading fallback (dispatch sanity)', () => {

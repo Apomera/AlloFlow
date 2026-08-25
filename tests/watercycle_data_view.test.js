@@ -12,8 +12,11 @@ describe('Water Cycle semantic Data view', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('className: "wc-data-view wc-focus-secondary"');
-      expect(source).toContain('role: "region"');
-      expect(source).toContain('"aria-label": "Text data view of the Water Cycle model"');
+      const detailsStart = source.indexOf('className: "wc-data-view wc-focus-secondary"');
+      const summaryStart = source.indexOf('React.createElement("summary"', detailsStart);
+      const detailsProps = source.slice(detailsStart, summaryStart);
+      expect(detailsProps).not.toContain('role:');
+      expect(detailsProps).not.toContain('aria-label');
       expect(source).toContain('className: "wc-data-summary"');
       expect(source).toContain('Text alternative to the canvas');
       expect(source).toContain('className: "wc-data-table"');

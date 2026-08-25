@@ -3053,7 +3053,7 @@
     // Teacher-only, for the same reason Review Words is: this page lists every
     // word with its sounds, its rhyme answers and its manipulation answers.
     // ────────────────────────────────────────────────────────────────────
-    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, copyState, ts }) => {
+    const WordSoundsDiScriptPanel = ({ script, onClose, onCopy, copyState, ts, dialogRef, onDialogKeyDown }) => {
       const label = (key, fallback) => {
         try { return (ts && ts(key)) || fallback; } catch (_) { return fallback; }
       };
@@ -3063,7 +3063,15 @@
 
       return /*#__PURE__*/ React.createElement(
         "div",
-        { className: "fixed inset-0 z-50 bg-slate-100 overflow-y-auto" },
+        {
+          ref: dialogRef,
+          className: "fixed inset-0 z-50 bg-slate-100 overflow-y-auto",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-labelledby": "word-sounds-di-script-title",
+          tabIndex: -1,
+          onKeyDown: onDialogKeyDown,
+        },
         /*#__PURE__*/ React.createElement("style", null, `
           @media print {
             html, body { background: #fff !important; }
@@ -3116,9 +3124,10 @@
               "button",
               {
                 type: "button",
-                onClick: onClose,
-                className: "min-h-11 min-w-11 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
-                "aria-label": label("common.close", "Close"),
+                 onClick: onClose,
+                 className: "min-h-11 min-w-11 px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
+                 "aria-label": label("common.close", "Close"),
+                 "data-dialog-initial-focus": "true",
               },
               label("common.close", "Close"),
             ),
@@ -3130,7 +3139,7 @@
             id: "ws-di-print",
             className: "max-w-3xl mx-auto bg-white my-6 p-8 shadow print:shadow-none text-slate-900",
           },
-          /*#__PURE__*/ React.createElement("h1", { className: "text-2xl font-black" }, script.title),
+          /*#__PURE__*/ React.createElement("h1", { id: "word-sounds-di-script-title", className: "text-2xl font-black" }, script.title),
           /*#__PURE__*/ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, script.subtitle),
           /*#__PURE__*/ React.createElement(
             "div",
@@ -3992,6 +4001,8 @@
       const probeResultsDialogRef = React.useRef(null);
       const sessionCompleteDialogRef = React.useRef(null);
       const preparedAudioDialogRef = React.useRef(null);
+      const diScriptDialogRef = React.useRef(null);
+      const diScriptReturnFocusPendingRef = React.useRef(false);
       const dialogReturnFocusRef = React.useRef(null);
       React.useEffect(() => {
         if (typeof document === "undefined") return undefined;
@@ -4365,6 +4376,11 @@
       const [diScript, setDiScript] = React.useState(null);
       const [diScriptState, setDiScriptState] = React.useState("idle");
       const [diCopyState, setDiCopyState] = React.useState("idle");
+      const closeDiScript = React.useCallback(() => {
+        diScriptReturnFocusPendingRef.current = true;
+        setDiScript(null);
+        setDiCopyState("idle");
+      }, []);
       // Builds the printable DI script from the pack that is already loaded.
       // Nothing here calls an AI backend or the network beyond fetching the
       // generator itself, so this works on a keyless device.
@@ -7068,7 +7084,9 @@
       const PROBE_INTERRUPTION_MS = 2000;
       React.useEffect(() => {
         if (typeof document === "undefined" || isMinimized) return undefined;
-        const dialog = studentPreparedAudioBlocked
+        const dialog = diScript
+          ? diScriptDialogRef.current
+          : studentPreparedAudioBlocked
           ? preparedAudioDialogRef.current
           : showProbeResults
           ? probeResultsDialogRef.current
@@ -7076,17 +7094,24 @@
             ? sessionCompleteDialogRef.current
             : modalRef.current;
         if (!dialog) return undefined;
-        const initialTarget =
-          dialog.querySelector("[data-dialog-initial-focus]") ||
-          getDialogFocusable(dialog)[0] ||
-          dialog;
+        let initialTarget = null;
+        if (!diScript && diScriptReturnFocusPendingRef.current) {
+          initialTarget = document.getElementById("word-sounds-di-script-open");
+          diScriptReturnFocusPendingRef.current = false;
+        }
+        if (!initialTarget) {
+          initialTarget =
+            dialog.querySelector("[data-dialog-initial-focus]") ||
+            getDialogFocusable(dialog)[0] ||
+            dialog;
+        }
         const focusTimer = setTimeout(() => {
           if (initialTarget && typeof initialTarget.focus === "function") {
             try { initialTarget.focus({ preventScroll: true }); } catch (e) { try { initialTarget.focus(); } catch (e2) {} }
           }
         }, 0);
         return () => clearTimeout(focusTimer);
-      }, [showProbeResults, showSessionComplete, isMinimized, studentPreparedAudioBlocked, showPreparedAudioRecovery]);
+      }, [diScript, showProbeResults, showSessionComplete, isMinimized, studentPreparedAudioBlocked, showPreparedAudioRecovery]);
       // Per-word-difficulty accuracy for THIS probe (each history item is tagged
       // with wordDifficulty at answer time). Shared by the live session-complete
       // modal and the onProbeComplete payload so a difficulty shift between
@@ -17887,7 +17912,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ts: ts,
           copyState: diCopyState,
           onCopy: handleCopyDiScript,
-          onClose: () => { setDiScript(null); setDiCopyState("idle"); },
+          dialogRef: diScriptDialogRef,
+          onDialogKeyDown: (event) => handleDialogKeyDown(event, closeDiScript),
+          onClose: closeDiScript,
         });
       }
       if (showReviewPanel) {
@@ -18451,8 +18478,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 preloadedWords.length > 0 &&
                   /*#__PURE__*/ React.createElement(
                   "button",
-                  {
-                    type: "button",
+                   {
+                     id: "word-sounds-di-script-open",
+                     type: "button",
                     "aria-label": ts("word_sounds.di_script_open") || "Open the lesson script",
                     onClick: handleOpenDiScript,
                     disabled: diScriptState === "loading",

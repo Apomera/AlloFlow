@@ -178,7 +178,7 @@ describe('Geology Explorer — ambient occlusion (the de-Minecrafting shade)', (
   });
 });
 
-describe('Geology Explorer — first-person explorer (pure flight + you-are-here HUD)', () => {
+describe('Geology Explorer — first-person explorer (grounded mining + Deep Earth flight + you-are-here HUD)', () => {
   // worldPos mirror (engine line ~351) for the round-trip lock
   const wp = (x, y, z) => [(x - (14 - 1) / 2) * 1, ((12 - 1) / 2 - y) * 1, (z - (14 - 1) / 2) * 1];
 
@@ -286,11 +286,19 @@ describe('Geology Explorer — first-person explorer (pure flight + you-are-here
     P.setScene('crust');
   });
 
-  it('fpSeedPose drops you in near the surface for crust and at mid-depth for deep Earth', () => {
-    const crust = P.fpSeedPose('crust'), deep = P.fpSeedPose('deepEarth');
-    expect(crust.pos.y).toBeGreaterThan(0);            // just under the surface
-    expect(deep.pos.y).toBe(0);                        // mid-globe for the radial scene
-    expect(crust.pos.y).not.toBe(deep.pos.y);
+  it('chooses grounded mining for surface scenes and flight only for radial Deep Earth', () => {
+    ['crust', 'geode', 'subduction', 'ridge', 'hotspot'].forEach((sceneId) => {
+      expect(P.fpExplorerMode(sceneId)).toBe('mine');
+    });
+    expect(P.fpExplorerMode('deepEarth')).toBe('fly');
+  });
+
+  it('fpSeedPose starts surface walkers above the terrain and Deep Earth at mid-depth', () => {
+    const crust = P.fpSeedPose('crust'), geode = P.fpSeedPose('geode'), deep = P.fpSeedPose('deepEarth');
+    expect(crust.pos.y).toBeGreaterThan(P.WORLD.h * 0.5); // eye starts above the top face so gravity can settle it
+    expect(crust.pitch).toBeLessThan(0);                  // the first reticle already points toward a mineable block
+    expect(geode.pos).toEqual({ x: 0, y: 0, z: 0 });      // center of the pre-carved cavern
+    expect(deep.pos.y).toBe(0);                           // mid-globe for radial flight
   });
 
   it('flying into the geode hollow resolves to the real crystal lining — never a fabricated "void" readout', () => {
@@ -314,6 +322,247 @@ describe('Geology Explorer — first-person explorer (pure flight + you-are-here
     expect(a).toMatch(/1000/);
     expect(a).toMatch(/degrees Celsius/);              // unit must not be dropped for the string temp
     P.setScene('crust');
+  });
+
+  it('classifies water as swimmable, molten rock as hazardous, and solid mantle as ground', () => {
+    expect(P.fpMaterialPhysics('oceanWater')).toMatchObject({ kind: 'fluid', speed: expect.any(Number), buoyancy: expect.any(Number) });
+    expect(P.fpMaterialPhysics('outerCore')).toMatchObject({ kind: 'fluid', buoyancy: expect.any(Number) });
+    ['magma', 'arcMagma', 'axialMagma', 'conduit'].forEach((key) => expect(P.fpMaterialPhysics(key).kind).toBe('hazard'));
+    expect(P.fpMaterialPhysics('plume').kind).toBe('solid');       // solid-but-flowing mantle is not mislabelled as lava
+    expect(P.fpMaterialPhysics('asthenosphere').kind).toBe('solid');
+  });
+
+  it('gives progressively harder materials longer mining times and protects fluids/hazards', () => {
+    const loose = P.fpMiningProfile('soil', 'Surface');
+    const layered = P.fpMiningProfile('sandstone', 'Sedimentary');
+    const crystal = P.fpMiningProfile('quartz', 'Mineral');
+    const hard = P.fpMiningProfile('basement', 'Igneous (intrusive)');
+    expect(loose.ms).toBeLessThan(layered.ms);
+    expect(layered.ms).toBeLessThan(crystal.ms);
+    expect(crystal.ms).toBeLessThan(hard.ms);
+    expect(P.fpMiningProfile('oceanWater', 'Water').mineable).toBe(false);
+    expect(P.fpMiningProfile('magma', 'Molten').mineable).toBe(false);
+  });
+
+  it('makes the drill faster while preserving hardness and increasing heat load', () => {
+    const loose = P.fpMiningProfile('soil', 'Surface');
+    const hard = P.fpMiningProfile('basement', 'Igneous (intrusive)');
+    expect(P.fpToolMiningDuration(loose, 'pick')).toBe(loose.ms);
+    expect(P.fpToolMiningDuration(loose, 'drill')).toBeLessThan(loose.ms);
+    expect(P.fpToolMiningDuration(hard, 'drill')).toBeGreaterThan(P.fpToolMiningDuration(loose, 'drill'));
+    expect(P.fpToolMiningDuration({ ms: 1 }, 'drill')).toBe(90);
+    expect(P.fpDrillHeatRate(hard)).toBeGreaterThan(P.fpDrillHeatRate(loose));
+  });
+
+  it('maps mining progress to stable visual crack stages', () => {
+    expect(P.fpMiningStage(0, 8)).toBe(0);
+    expect(P.fpMiningStage(0.01, 8)).toBe(1);
+    expect(P.fpMiningStage(0.5, 8)).toBe(4);
+    expect(P.fpMiningStage(1, 8)).toBe(8);
+    expect(P.fpMiningStage(4, 8)).toBe(8);
+  });
+
+  it('uses stable scene/detail keys so each voxel world can restore its own tunnel', () => {
+    expect(P.excavationWorldKey('crust', 'standard')).toBe('crust@standard');
+    expect(P.excavationWorldKey('crust', 'high')).not.toBe(P.excavationWorldKey('crust', 'standard'));
+    expect(P.excavationWorldKey('ridge', 'standard')).not.toBe(P.excavationWorldKey('crust', 'standard'));
+  });
+});
+
+describe('Geology Explorer — directional core rig', () => {
+  const bounds = { minX: 0, maxX: 13, minY: 0, maxY: 11, minZ: 0, maxZ: 13 };
+  const evaluationReport = (sampleCount, uniqueCount, targetDepth = sampleCount, stopReason = null) => {
+    const keys = Array.from({ length: Math.max(1, uniqueCount) }, (_, index) => 'material-' + (index + 1));
+    return {
+      targetDepth,
+      stopReason,
+      samples: Array.from({ length: sampleCount }, (_, index) => ({ key: keys[index % keys.length], depth: index + 1 })),
+    };
+  };
+
+  it('exposes safe surface-only angle and depth presets as defensive copies', () => {
+    expect(P.coreRigAngles()).toEqual({ vertical: 90, slant: 60, shallow: 35 });
+    expect(P.coreRigDepths()).toEqual([6, 9, 12]);
+    const angles = P.coreRigAngles(); angles.vertical = 0;
+    const depths = P.coreRigDepths(); depths.push(99);
+    expect(P.coreRigAngles().vertical).toBe(90);
+    expect(P.coreRigDepths()).toEqual([6, 9, 12]);
+    ['crust', 'geode', 'subduction', 'ridge', 'hotspot'].forEach((sceneId) => expect(P.coreRigSupported(sceneId)).toBe(true));
+    expect(P.coreRigSupported('deepEarth')).toBe(false);
+  });
+
+  it('plans bounded vertical and directional bore paths using the voxel y-down convention', () => {
+    expect(P.coreRigPath({ x: 7, y: 0, z: 7 }, 0, 'vertical', 6, bounds)).toEqual([
+      { x: 7, y: 1, z: 7, distance: 1, depth: 1 },
+      { x: 7, y: 2, z: 7, distance: 2, depth: 2 },
+      { x: 7, y: 3, z: 7, distance: 3, depth: 3 },
+      { x: 7, y: 4, z: 7, distance: 4, depth: 4 },
+      { x: 7, y: 5, z: 7, distance: 5, depth: 5 },
+      { x: 7, y: 6, z: 7, distance: 6, depth: 6 },
+    ]);
+    expect(P.coreRigPath({ x: 7, y: 10, z: 7 }, 0, 'vertical', 6, bounds)).toEqual([
+      { x: 7, y: 11, z: 7, distance: 1, depth: 1 },
+    ]);
+
+    const slant = P.coreRigPath({ x: 7, y: 0, z: 7 }, 0, 'slant', 6, bounds);
+    const shallow = P.coreRigPath({ x: 7, y: 0, z: 7 }, 0, 'shallow', 6, bounds);
+    [slant, shallow].forEach((path) => {
+      expect(new Set(path.map((cell) => `${cell.x},${cell.y},${cell.z}`)).size).toBe(path.length);
+      path.forEach((cell) => {
+        expect(cell.x).toBeGreaterThanOrEqual(bounds.minX); expect(cell.x).toBeLessThanOrEqual(bounds.maxX);
+        expect(cell.y).toBeGreaterThanOrEqual(bounds.minY); expect(cell.y).toBeLessThanOrEqual(bounds.maxY);
+        expect(cell.z).toBeGreaterThanOrEqual(bounds.minZ); expect(cell.z).toBeLessThanOrEqual(bounds.maxZ);
+      });
+      expect(path[path.length - 1].y).toBeGreaterThan(path[0].y);
+      expect(path[path.length - 1].z).toBeLessThan(path[0].z);
+    });
+    const reach = (path) => Math.abs(path[path.length - 1].z - 7);
+    expect(reach(shallow)).toBeGreaterThan(reach(slant));
+  });
+
+  it('stops before unsafe materials and gives harder cores a longer cut time', () => {
+    expect(P.coreRigStopReason(null)).toBe('blocked');
+    expect(P.coreRigStopReason('void')).toBe('blocked');
+    expect(P.coreRigStopReason('magma', 'Molten')).toBe('hazard');
+    expect(P.coreRigStopReason('oceanWater', 'Water')).toBe('fluid');
+    expect(P.coreRigStopReason('outerCore')).toBe('fluid');
+    expect(P.coreRigStopReason('sandstone', 'Sedimentary')).toBeNull();
+    expect(P.coreRigDrillDuration('soil', 'Surface')).toBe(240);
+    expect(P.coreRigDrillDuration('basement', 'Igneous (intrusive)')).toBe(600);
+    expect(P.coreRigDrillDuration('oceanWater', 'Water')).toBe(0);
+    expect(P.coreRigDrillDuration('magma', 'Molten')).toBe(0);
+  });
+
+  it('summarizes the recovered column for the journal and safe-stop readout', () => {
+    expect(P.coreRigReportSummary({ stopReason: 'fluid', samples: [
+      { key: 'sandstone', depth: 1 }, { key: 'shale', depth: 3 }, { key: 'shale', depth: 6 },
+    ] })).toEqual({ sampleCount: 3, uniqueMaterials: 2, deepest: 6, stopReason: 'fluid' });
+    expect(P.coreRigReportSummary()).toEqual({ sampleCount: 0, uniqueMaterials: 0, deepest: 0, stopReason: null });
+  });
+
+  it('grades full and partial columns from recovery, diversity, and depth without mutating the report', () => {
+    const complete = evaluationReport(6, 3, 6);
+    const before = JSON.parse(JSON.stringify(complete));
+    expect(P.coreRigEvaluation(complete)).toEqual({
+      score: 126, grade: 'B', label: 'Strong recovery', fullCore: true, safeBoundary: false, recoveryRatio: 1,
+    });
+    expect(complete).toEqual(before);
+
+    const partial = P.coreRigEvaluation(evaluationReport(1, 1, 12));
+    expect(partial).toMatchObject({ score: 24, grade: 'D', label: 'Partial recovery', fullCore: false, safeBoundary: false });
+    expect(partial.recoveryRatio).toBeCloseTo(1 / 12, 8);
+
+    expect(P.coreRigEvaluation()).toEqual({
+      score: 0, grade: 'D', label: 'Partial recovery', fullCore: false, safeBoundary: false, recoveryRatio: 0,
+    });
+  });
+
+  it('rewards a protected fluid or thermal stop but never mistakes blocked or cancelled work for a safe boundary', () => {
+    const fluid = P.coreRigEvaluation(evaluationReport(6, 3, 9, 'fluid'));
+    expect(fluid).toMatchObject({ score: 118, grade: 'B', fullCore: false, safeBoundary: true });
+    expect(fluid.recoveryRatio).toBeCloseTo(2 / 3, 8);
+    expect(P.coreRigEvaluation(evaluationReport(6, 3, 9, 'hazard'))).toMatchObject({ score: 118, safeBoundary: true });
+    expect(P.coreRigEvaluation(evaluationReport(6, 3, 9, 'blocked'))).toMatchObject({ score: 102, fullCore: false, safeBoundary: false });
+    expect(P.coreRigEvaluation(evaluationReport(6, 3, 9, 'cancelled'))).toMatchObject({ score: 102, fullCore: false, safeBoundary: false });
+    expect(P.coreRigEvaluation({ targetDepth: 6, stopReason: 'fluid', samples: [] })).toMatchObject({ score: 0, safeBoundary: false });
+  });
+
+  it('keeps every grade boundary stable, caps exceptional cores, and clamps over-recovery', () => {
+    [
+      [1, 1, 1, 48, 'D'],
+      [2, 2, 2, 72, 'C'],
+      [5, 2, 5, 102, 'B'],
+      [7, 3, 7, 136, 'A'],
+      [10, 4, 10, 180, 'S'],
+    ].forEach(([count, unique, target, score, grade]) => {
+      expect(P.coreRigEvaluation(evaluationReport(count, unique, target))).toMatchObject({ score, grade, fullCore: true, recoveryRatio: 1 });
+    });
+    expect(P.coreRigEvaluation(evaluationReport(12, 12, 12))).toMatchObject({ score: 200, grade: 'S' });
+    expect(P.coreRigEvaluation(evaluationReport(12, 4, 9)).recoveryRatio).toBe(1);
+    expect(P.coreRigGradeForScore(64)).toBe('D');
+    expect(P.coreRigGradeForScore(65)).toBe('C');
+    expect(P.coreRigGradeForScore(100)).toBe('B');
+    expect(P.coreRigGradeForScore(135)).toBe('A');
+    expect(P.coreRigGradeForScore(175)).toBe('S');
+    expect(P.coreRigGradeForScore(999)).toBe('S');
+  });
+
+  it('awards research XP only for a new best and telescopes to the same 100 XP maximum', () => {
+    expect(P.coreRigResearchReward(0, 126)).toBe(63);
+    expect(P.coreRigResearchReward(126, 126)).toBe(0);
+    expect(P.coreRigResearchReward(140, 126)).toBe(0);
+    expect(P.coreRigResearchReward(126, 127)).toBe(1);
+    expect(P.coreRigResearchReward(126, 128)).toBe(1);
+    expect(P.coreRigResearchReward(126, 129)).toBe(2);
+    expect(P.coreRigResearchReward(1, 2)).toBe(0);
+    expect(P.coreRigResearchReward(2, 3)).toBe(1);
+    expect(P.coreRigResearchReward(0, 200)).toBe(100);
+    expect(P.coreRigResearchReward(undefined, undefined)).toBe(0);
+
+    let incremental = 0;
+    for (let score = 1; score <= 200; score += 1) {
+      const reward = P.coreRigResearchReward(score - 1, score);
+      expect([0, 1]).toContain(reward);
+      incremental += reward;
+    }
+    expect(incremental).toBe(P.coreRigResearchReward(0, 200));
+  });
+
+  it('advances immutable research records while separating best and latest bore results', () => {
+    const first = P.advanceCoreRigResearch(undefined, { score: 126 }, 1000, 'rig-1');
+    expect(first).toEqual({
+      entry: {
+        bestScore: 126, bestGrade: 'B', totalBores: 1, lastScore: 126, lastGrade: 'B',
+        lastCompletedAt: 1000, reportIds: ['rig-1'],
+      },
+      researchReward: 63, newBest: true, duplicate: false,
+    });
+
+    const firstSnapshot = JSON.parse(JSON.stringify(first.entry));
+    const same = P.advanceCoreRigResearch(first.entry, { score: 126 }, 1001, 'rig-2');
+    expect(same).toMatchObject({
+      entry: { bestScore: 126, bestGrade: 'B', totalBores: 2, lastScore: 126, lastGrade: 'B', lastCompletedAt: 1001 },
+      researchReward: 0, newBest: false, duplicate: false,
+    });
+    expect(first.entry).toEqual(firstSnapshot);
+
+    const lower = P.advanceCoreRigResearch(same.entry, { score: 118 }, 1002, 'rig-3');
+    expect(lower).toMatchObject({
+      entry: { bestScore: 126, bestGrade: 'B', totalBores: 3, lastScore: 118, lastGrade: 'B', lastCompletedAt: 1002 },
+      researchReward: 0, newBest: false, duplicate: false,
+    });
+
+    const higher = P.advanceCoreRigResearch(lower.entry, { score: 136 }, 1003, 'rig-4');
+    expect(higher).toMatchObject({
+      entry: { bestScore: 136, bestGrade: 'A', totalBores: 4, lastScore: 136, lastGrade: 'A', lastCompletedAt: 1003 },
+      researchReward: 5, newBest: true, duplicate: false,
+    });
+    expect(higher.entry.reportIds).toEqual(['rig-1', 'rig-2', 'rig-3', 'rig-4']);
+  });
+
+  it('makes repeated completion callbacks idempotent and normalizes corrupt saved research safely', () => {
+    const original = {
+      bestScore: 126, bestGrade: 'B', totalBores: 3, lastScore: 118, lastGrade: 'B',
+      lastCompletedAt: 1002, reportIds: ['rig-1', 'rig-2', 'rig-3'], customSavedField: 'keep',
+    };
+    const snapshot = JSON.parse(JSON.stringify(original));
+    const duplicate = P.advanceCoreRigResearch(original, { score: 200 }, 9999, 'rig-2');
+    expect(duplicate).toMatchObject({
+      entry: { bestScore: 126, bestGrade: 'B', totalBores: 3, lastScore: 118, lastCompletedAt: 1002, customSavedField: 'keep' },
+      researchReward: 0, newBest: false, duplicate: true,
+    });
+    expect(duplicate.entry.reportIds).toEqual(['rig-1', 'rig-2', 'rig-3']);
+    expect(original).toEqual(snapshot);
+
+    const corrupt = { bestScore: Infinity, bestGrade: 'spoofed', totalBores: -9, reportIds: Array.from({ length: 14 }, (_, index) => 'old-' + index) };
+    const normalized = P.advanceCoreRigResearch(corrupt, { score: 65 }, -50, 'fresh');
+    expect(normalized).toMatchObject({
+      entry: { bestScore: 200, bestGrade: 'S', totalBores: 1, lastScore: 65, lastGrade: 'C', lastCompletedAt: 0 },
+      researchReward: 0, newBest: false, duplicate: false,
+    });
+    expect(normalized.entry.reportIds).toHaveLength(12);
+    expect(normalized.entry.reportIds.at(-1)).toBe('fresh');
+    expect(corrupt.reportIds).toHaveLength(14);
   });
 });
 
@@ -513,6 +762,118 @@ describe('Geology Explorer — Hotspot chain scene (intraplate volcanism)', () =
     expect(P.fpBust('plume')).toMatch(/plate moves|fixed/i);
     expect(P.fpBust('oldIsland')).toMatch(/off the plume|carried/i);
     expect(P.fpBust('activeVolcano')).toMatch(/shield|runny/i);
+  });
+});
+
+describe('Geology Explorer — Field Runs gameplay loop', () => {
+  it('offers two safe, three-specimen geology contracts in every scene', () => {
+    const contracts = P.fieldExpeditions();
+    const unsafe = new Set(['oceanWater', 'arcMagma', 'axialMagma', 'conduit', 'outerCore']);
+    for (const id of P.scenes()) {
+      expect(contracts[id], `contracts for ${id}`).toHaveLength(2);
+      const valid = new Set(P.sceneVoxelKeys(id));
+      for (const contract of contracts[id]) {
+        expect(contract.label.length).toBeGreaterThan(0);
+        expect(contract.brief.length).toBeGreaterThan(20);
+        expect(contract.targets).toHaveLength(3);
+        expect(contract.reward).toBeGreaterThan(0);
+        for (const key of contract.targets) {
+          expect(valid.has(key), `${key} belongs to ${id}`).toBe(true);
+          expect(unsafe.has(key), `${key} is safe to collect`).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('rotates contracts and wraps after the second completed run', () => {
+    expect(P.fieldExpeditionFor('crust', 0).id).toBe('strata');
+    expect(P.fieldExpeditionFor('crust', 1).id).toBe('contact');
+    expect(P.fieldExpeditionFor('crust', 2).id).toBe('strata');
+    expect(P.fieldExpeditionFor('missing', 0)).toBeNull();
+  });
+
+  it('turns accumulated XP into clear, stable field ranks', () => {
+    expect(P.fieldRankForXp(0)).toMatchObject({ label: 'Trail Scout', nextLabel: 'Field Geologist', remaining: 300 });
+    expect(P.fieldRankForXp(300)).toMatchObject({ label: 'Field Geologist', nextLabel: 'Senior Geologist', remaining: 450 });
+    expect(P.fieldRankForXp(1499)).toMatchObject({ label: 'Senior Geologist', remaining: 1 });
+    expect(P.fieldRankForXp(1500)).toMatchObject({ label: 'Expedition Lead', nextLabel: null, remaining: 0 });
+    expect(P.fieldRankForXp(-20).label).toBe('Trail Scout');
+  });
+
+  it('logs each mineable specimen once without mutating prior field-book data', () => {
+    const original = {};
+    const first = P.recordFieldDiscovery(original, 'crust', 'sandstone');
+    expect(first.added).toBe(true);
+    expect(first.keys).toEqual(['sandstone']);
+    expect(original).toEqual({});
+
+    const duplicate = P.recordFieldDiscovery(first.discoveredByScene, 'crust', 'sandstone');
+    expect(duplicate.added).toBe(false);
+    expect(duplicate.keys).toEqual(['sandstone']);
+
+    const unsafe = P.recordFieldDiscovery(duplicate.discoveredByScene, 'subduction', 'oceanWater');
+    expect(unsafe.added).toBe(false);
+    expect(unsafe.keys).toEqual([]);
+  });
+
+  it('reports scene-journal completion against only collectible materials', () => {
+    for (const id of P.scenes()) {
+      const available = P.fieldCollectibleKeys(id);
+      expect(available.length).toBeGreaterThan(0);
+      expect(available).not.toContain('oceanWater');
+      expect(available).not.toContain('outerCore');
+      const complete = P.fieldDiscoveryProgress(id, { [id]: available });
+      expect(complete).toMatchObject({ found: available.length, total: available.length, percent: 100, complete: true });
+    }
+    expect(P.fieldDiscoveryProgress('crust', { crust: ['sandstone'] })).toMatchObject({ found: 1, complete: false });
+  });
+
+  it('builds ordered journal cards and summarizes discovery across every world', () => {
+    const geodeKeys = P.fieldCollectibleKeys('geode');
+    const entries = P.fieldJournalEntries('geode', { geode: ['quartz'] });
+    expect(entries.map((entry) => entry.key)).toEqual(geodeKeys);
+    expect(entries.find((entry) => entry.key === 'quartz')).toMatchObject({ discovered: true, name: expect.any(String), type: expect.any(String) });
+    expect(entries.find((entry) => entry.key === 'agate').discovered).toBe(false);
+
+    const empty = P.fieldJournalSummary({});
+    expect(empty).toMatchObject({ found: 0, percent: 0, scenesComplete: 0, sceneTotal: 6 });
+    expect(empty.total).toBeGreaterThan(0);
+
+    const completeBook = {};
+    for (const id of P.scenes()) completeBook[id] = P.fieldCollectibleKeys(id);
+    expect(P.fieldJournalSummary(completeBook)).toMatchObject({ found: empty.total, total: empty.total, percent: 100, scenesComplete: 6, sceneTotal: 6 });
+  });
+
+  it('starts either chosen assignment and retires it without losing completed-run history', () => {
+    const previous = { active: false, completed: 3, contractIndex: 0, collected: ['old'], ready: false };
+    const rotated = P.beginFieldRun(previous, 'crust');
+    expect(rotated).toMatchObject({ active: true, completed: 3, contractIndex: 1, collected: [], ready: false });
+
+    const chosen = P.beginFieldRun(previous, 'crust', 0);
+    expect(chosen).toMatchObject({ active: true, completed: 3, contractIndex: 0, collected: [], ready: false });
+    expect(previous.collected).toEqual(['old']);
+
+    const retired = P.retireFieldRunEntry({ active: true, completed: 3, contractIndex: 1, collected: ['hornfels'], ready: false });
+    expect(retired).toEqual({ active: false, completed: 3, contractIndex: 1, collected: [], ready: false });
+  });
+
+  it('advances only the requested sequence and never mutates saved progress', () => {
+    const contract = P.fieldExpeditionFor('ridge', 0);
+    const original = { active: true, ready: false, collected: [], completed: 0, contractIndex: 0 };
+    const miss = P.advanceFieldRun(original, contract, 'gabbro');
+    expect(miss.matched).toBe(false);
+    expect(miss.entry.collected).toEqual([]);
+    expect(original.collected).toEqual([]);
+
+    const first = P.advanceFieldRun(original, contract, 'basaltN');
+    const second = P.advanceFieldRun(first.entry, contract, 'dikes');
+    const third = P.advanceFieldRun(second.entry, contract, 'gabbro');
+    expect(first.expectedKey).toBe('dikes');
+    expect(second.expectedKey).toBe('gabbro');
+    expect(third.entry.collected).toEqual(['basaltN', 'dikes', 'gabbro']);
+    expect(third.ready).toBe(true);
+    expect(P.fieldRunReward(contract)).toBe(150);
+    expect(original.collected).toEqual([]);
   });
 });
 

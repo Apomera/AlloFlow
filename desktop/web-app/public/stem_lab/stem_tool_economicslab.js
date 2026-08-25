@@ -5173,8 +5173,8 @@ var d = labToolData || {};
                 mild: { label: t('stem.economicslab.mild_mixed', 'Mild / mixed'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: t('stem.economicslab.small_net_effect_policy_levers_roughly', 'Small net effect. Policy levers roughly cancel out.') }
               })[state];
               return React.createElement('div', { className: 'mt-4 p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.economicslab.policy_inquiry_predict_the_macro_outco', '\uD83D\uDD2C Policy Inquiry \u2014 Predict the Macro Outcome')),
-                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.economicslab.move_four_policy_levers_tax_govt_spend', 'Move four policy levers (tax, govt spending, interest rate, tariffs). Predict the macro state before reading it. No score, no reveal.')),
+                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.economicslab.policy_inquiry_predict_the_macro_outco', '\uD83D\uDD2C Policy Inquiry \u2014 Explore the Macro Outcome')),
+                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.economicslab.move_four_policy_levers_tax_govt_spend', 'Move the tax, government-spending, interest-rate, and tariff controls, then observe how the modeled macro state changes. The result updates live; record a hypothesis or pattern you notice.')),
                 React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
                 React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
                 React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },

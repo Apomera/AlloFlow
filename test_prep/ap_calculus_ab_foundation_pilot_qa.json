@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "qaVersion": "ap-calculus-ab-foundation-qa-v1",
+  "reportId": "ap-calculus-ab-foundation-qa",
+  "generatedAt": "2026-08-25T00:00:00.000Z",
+  "packId": "ap-calculus-ab-foundation-pilot",
+  "version": "0.1.0-internal-preview",
+  "status": "pass",
+  "automatedAssessment": "pass",
+  "structuralFindings": [],
+  "advisories": [
+    "Automated QA does not establish AP Calculus AB content validity, fairness, accessibility conformance, rights clearance, production readiness, score meaning, or psychometric quality.",
+    "Independent AP Calculus AB subject-expert, rights, accessibility, field-testing, and psychometric review remain release-blocking.",
+    "The 80-item initial seed is not a complete AP exam form or full topic-depth bank."
+  ],
+  "metrics": {
+    "itemCount": 80,
+    "unitCount": 8,
+    "unitCounts": {
+      "limits-and-continuity": 10,
+      "differentiation-definition-and-fundamental-properties": 10,
+      "differentiation-composite-implicit-inverse-functions": 10,
+      "contextual-applications-of-differentiation": 10,
+      "analytical-applications-of-differentiation": 10,
+      "integration-and-accumulation-of-change": 10,
+      "differential-equations": 10,
+      "applications-of-integration": 10
+    },
+    "selectedFrameworkTopicCount": 66,
+    "foundationTopicRouteCount": 40,
+    "minimumItemsPerSelectedTopic": 2,
+    "practiceCounts": {
+      "MP2": 20,
+      "MP3": 19,
+      "MP1": 36,
+      "MP4": 5
+    },
+    "representationCounts": {
+      "tabular": 3,
+      "verbal": 15,
+      "analytical": 57,
+      "graphical-text": 5
+    },
+    "calculatorCounts": {
+      "calculator-not-required": 56,
+      "calculator-permitted-practice": 24
+    },
+    "answerPositionCounts": [
+      20,
+      20,
+      20,
+      20
+    ],
+    "chapterCount": 8,
+    "sectionCount": 24,
+    "knowledgeCheckCount": 24,
+    "flashcardCount": 40,
+    "memoryAidCount": 16,
+    "practiceRouteCount": 24,
+    "studyRouteCount": 4,
+    "quickReferenceCount": 8,
+    "diagramCount": 8,
+    "diagramPlacementCount": 8,
+    "constructedResponseWorkshopCount": 8
+  },
+  "coverage": {
+    "allSelectedTopicsRepresented": true,
+    "allUnitsRepresented": true,
+    "everyItemSectionRouted": true
+  },
+  "inputs": {
+    "packSha256": "eac15110c2ed779295861dd4acb8d5c3097837c0f8425e98b7afe3e51df71486",
+    "learningLibrarySha256": "5be98f69215ca9602ff083751d8b9037e3d72d8cca1335521a9077322f312d83",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+    "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-calculus-ab/exam",
+    "reviewedAt": "2026-08-25"
+  },
+  "deploymentParity": {
+    "sourceAndDeployCopiesCheckedByManifestBuilder": true,
+    "status": "pending-manifest-build"
+  },
+  "rightsBoundary": {
+    "officialItemsUsed": false,
+    "officialStimuliUsed": false,
+    "officialRubricsUsed": false,
+    "status": "pending-independent-rights-review"
+  },
+  "reviewBoundary": {
+    "subjectExpert": "pending",
+    "accessibility": "pending",
+    "production": "pending",
+    "psychometric": "not-started",
+    "releaseEligible": false
+  }
+}

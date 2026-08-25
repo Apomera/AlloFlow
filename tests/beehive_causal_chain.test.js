@@ -21,7 +21,7 @@ describe('beehive causal evidence chain', () => {
     expect(html).toContain('data-causal-step="command"');
     expect(html).toContain('data-causal-step="flight"');
     expect(html).toContain('Feeds Queen start');
-    expect(html).toContain('Feeds Drone start');
+    expect(html).toContain('Interprets the flight debrief; does not alter route physics');
     expect(html).toContain('Feeds Notebook');
   });
 });

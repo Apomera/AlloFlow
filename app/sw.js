@@ -4,8 +4,8 @@
 // Other same-origin requests: network-first with cache fallback.
 
 // IMPORTANT: placeholders are replaced by postbuild.js.
-const CACHE_NAME = 'alloflow-student-shell-v1787541998916';
-const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.bf2c54d2.js","./static/css/main.36feb30e.css"];
+const CACHE_NAME = 'alloflow-student-shell-v1787640272816';
+const PRECACHE_PATHS = ["./index.html","./alloflow_desktop_bridge.js","./static/js/main.0f13cd51.js","./static/css/main.984d1522.css"];
 const scopedUrl = (relativePath) => new URL(relativePath, self.registration.scope).toString();
 const SHELL_URL = scopedUrl('./index.html');
 
@@ -16,6 +16,15 @@ self.addEventListener('install', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_PATHS.map(scopedUrl)))
     );
     // Do not call skipWaiting(): never interrupt an active classroom tab.
+});
+
+// A waiting worker activates only after the person explicitly accepts the
+// in-app update prompt. This preserves interruption-free automatic updates
+// while making "Refresh now" deterministic when the timing is appropriate.
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ALLOFLOW_ACTIVATE_UPDATE') {
+        self.skipWaiting();
+    }
 });
 
 self.addEventListener('activate', (event) => {

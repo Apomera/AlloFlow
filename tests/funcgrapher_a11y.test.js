@@ -19,4 +19,14 @@ describe('Function Grapher chart and inquiry semantics', () => {
     expect(source).toContain('stem.funcgrapher.hypothesis_input');
     expect(source).toContain('stem.funcgrapher.explanation_input');
   });
+
+  it('places the tool title directly below the host H1', () => {
+    for (const filePath of [sourcePath, publicPath, 'desktop/app-build/stem_lab/stem_tool_funcgrapher.js']) {
+      const source = fs.readFileSync(filePath, 'utf8');
+      expect(source).toContain('React.createElement("h2", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }');
+      expect(source).not.toContain('React.createElement("h3", { className: "mt-3 text-xl font-black tracking-tight sm:text-2xl" }');
+      expect(source).toContain("React.createElement('h3', { className: 'text-sm font-bold text-indigo-700' }");
+      expect(source).not.toContain("React.createElement('h4', { className: 'text-sm font-bold text-indigo-700' }");
+    }
+  });
 });

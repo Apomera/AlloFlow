@@ -834,18 +834,30 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       ? instructionalContext.normalizeInstructionalContext(null, {
           instructionalGrade: unitGrade,
           standardsContext: unitStandardsContext,
+          standardsInput: (unitStandardsContext && unitStandardsContext.promptText) || (dna && dna.standard) || standardsInput || targetStandards,
           primaryTextPolicy: 'preserve-primary'
         })
       : {
           schemaVersion: 1,
           instructionalGrade: unitGrade,
           primaryTextPolicy: 'preserve-primary',
+          primaryTextAccess: 'available',
+          adaptedTextPolicy: 'include',
+          adaptedTextPolicySource: 'workflow-default',
+          textAccessReason: 'default-access-companion',
           standardsContext: unitStandardsContext || null,
           standardsFingerprint: ''
         };
     var types = Array.isArray(lessonSpec.suggestedResourceTypes) && lessonSpec.suggestedResourceTypes.length
       ? lessonSpec.suggestedResourceTypes.slice()
       : ['analysis', 'glossary', 'lesson-plan'];
+    if (unitInstructionalContext.adaptedTextPolicy === 'include'
+        && types.indexOf('simplified') === -1) {
+      var analysisIndex = types.indexOf('analysis');
+      types.splice(analysisIndex >= 0 ? analysisIndex + 1 : 0, 0, 'simplified');
+    } else if (unitInstructionalContext.adaptedTextPolicy !== 'include') {
+      types = types.filter(function (type) { return type !== 'simplified'; });
+    }
     types.sort(function (a, b) {
       function rank(type) { return type === 'analysis' ? 0 : (type === 'lesson-plan' ? 2 : 1); }
       return rank(a) - rank(b);
@@ -884,7 +896,11 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       },
       standardsContext: unitStandardsContext,
       instructionalContext: unitInstructionalContext,
-      sourcePolicy: { primaryTextPolicy: unitInstructionalContext.primaryTextPolicy || 'preserve-primary' }
+      sourcePolicy: {
+        primaryTextPolicy: unitInstructionalContext.primaryTextPolicy || 'preserve-primary',
+        primaryTextAccess: unitInstructionalContext.primaryTextAccess || 'available',
+        adaptedTextPolicy: unitInstructionalContext.adaptedTextPolicy || 'include'
+      }
     };
     var seedDna = {
       grade: unitGrade,

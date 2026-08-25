@@ -21,9 +21,23 @@ const configureAsAdmin = (harness, patch) => {
 };
 
 const rateAndRelease = (harness, teacherId, domains, extra = {}) => {
+  harness.setActiveEmail(EVALUATOR);
+  let evidenceBoot = harness.invoke('bootstrap');
+  let evidence = evidenceBoot.workspace.walkthroughs.find((item) => item.teacherId === teacherId && item.publishedAt);
+  if (!evidence) {
+    const evidenceId = `annual-evidence-${teacherId}`;
+    const published = saveAs(harness, EVALUATOR, (workspace) => {
+      workspace.walkthroughs.push({ id: evidenceId, teacherId, date: '2026-08-12', evidence: 'Published annual-review evidence.', privacyChecked: true, publishedAt: '2026-08-12T12:00:00.000Z' });
+    }, { teacherId, event: 'EVIDENCE_PUBLISHED', entityType: 'walkthrough', entityId: evidenceId, version: 1 });
+    expect(published.ok).toBe(true);
+    evidence = { id: evidenceId };
+  }
+  const evidenceToken = `walkthrough:${evidence.id}`;
   const rate = saveAs(harness, EVALUATOR, (workspace) => {
     const record = workspace.teachers.find((item) => item.id === teacherId);
     record.ratings = { domains, building: extra.building ?? 2, teacher: extra.teacher ?? 2, lea: extra.lea ?? 2 };
+    record.annualRationales = { d1: 'Annual rationale 1', d2: 'Annual rationale 2', d3: 'Annual rationale 3', d4: 'Annual rationale 4' };
+    record.annualEvidenceRefs = { d1: [evidenceToken], d2: [evidenceToken], d3: [evidenceToken], d4: [evidenceToken] };
     record.weightSnapshot = null;
   }, { teacherId, event: 'RATING_UPDATED', entityType: 'evaluation', entityId: teacherId, version: 1 });
   expect(rate.ok).toBe(true);
@@ -262,6 +276,22 @@ describe('released summary sharing and receipts', () => {
     harness.setActiveEmail(ADMIN);
     const health = harness.invoke('getPortalSetupHealth');
     expect(health.checks.releasedSummaryRecoveryRequired).toBe(true);
+  });
+
+  it('blocks both release review and sharing while a prior release recovery remains unresolved', () => {
+    const harness = repositoryFixture();
+    expect(rateAndRelease(harness, 't1', { d1: 3, d2: 2, d3: 2, d4: 3 }).ok).toBe(true);
+    harness.setActiveEmail(EVALUATOR);
+    const earlierReview = harness.invoke('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    harness.properties.set('EE_RELEASE_RECOVERY_REQUIRED', JSON.stringify({
+      at: '2026-08-13T17:10:00.000Z', teacherId: 't1', documentId: 'unresolved-release-file', stage: 'compensation',
+    }));
+
+    const reviewBlocked = harness.invokeError('reviewPortalReleasedEvaluationShare', { teacherId: 't1' });
+    expect(reviewBlocked.code).toBe('release_recovery_required');
+    const shareBlocked = harness.invokeError('sharePortalReleasedEvaluation', { teacherId: 't1', reviewToken: earlierReview.review.token });
+    expect(shareBlocked.code).toBe('release_recovery_required');
+    expect(harness.documents).toHaveLength(0);
   });
 
   it('refuses to share before finalization and refuses teachers outright', () => {

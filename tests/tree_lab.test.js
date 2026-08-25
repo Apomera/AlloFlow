@@ -280,6 +280,9 @@ describe('Tree Life Lab — grade bands span K-12', () => {
     const hs = render({ treeLab: { bandOverride: 'g912', view: 'chem' } });
     expect(hs).toContain('respiration bill');
     expect(hs).toContain('Heartwood');
+    expect(hs).toContain('From sky to sugar');
+    expect(hs).toContain('Bottleneck right now');
+    expect(hs).toContain('allo-tree-reaction');
   });
 
   it('offers the hand-off to chemBalance and cell only where those tools go deeper', () => {
@@ -758,6 +761,9 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(html).toContain('Animal-planted seed');
     expect(html).toContain('Basal resprout');
     expect(html).not.toContain('Root sucker');
+    expect(html).toContain('From one tree to a forest');
+    expect(html).toContain('Strategy signature');
+    expect(html).toContain('allo-tree-strategy-grid');
   });
 
   it('labels every carbon mass as carbon, not biomass', () => {
@@ -834,12 +840,12 @@ describe('Tree Life Lab — banks and mirrors', () => {
     const cfg = { ...GOOD_ENV, droughtYears: [20, 21, 22] };
     for (let i = 0; i < 35; i += 1) t = E.simulateYear(t, E.speciesById('oak'), E.envForYear(cfg, t.age), ALLOC);
 
-    const html = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'g68' } });
+    const html = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'g68', growAdvancedOpen: true } });
     expect(html).toContain('What was limiting, year by year');
     // The band legend names only the factors that actually occurred.
     expect(html).toContain('Water');
     // K-2 does not get it: the idea needs the limiting-factor concept first.
-    const k2 = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'k2' } });
+    const k2 = render({ treeLab: { view: 'grow', tree: t, bandOverride: 'k2', growAdvancedOpen: true } });
     expect(k2).not.toContain('What was limiting, year by year');
   });
 
@@ -869,11 +875,15 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(summer).toContain('litres a day');          // xylem carries a real volume
     expect(summer).toContain('Source right now: the leaves');
     expect(summer).toContain('Stored reserves');
+    expect(summer).toContain('Trace the flow');
+    expect(summer).toContain('allo-tree-pipe-path is-xylem');
+    expect(summer).toContain('Water still rises');
 
     // Spring runs the phloem the other way: the tree builds a canopy out of last
     // year's store before it has leaves to make sugar with.
     const spring = render({ treeLab: { view: 'transport', tree: t, season: 'spring', bandOverride: 'g68' } });
     expect(spring).toContain('stored reserves in the roots and trunk');
+    expect(spring).toContain('New leaves');
     // ...and the store cannot be a destination while it is the source.
     const springSinks = spring.slice(spring.indexOf('Source right now'));
     expect(springSinks).not.toContain('Stored reserves');
@@ -1088,6 +1098,9 @@ describe('Tree Life Lab — banks and mirrors', () => {
     expect(html).toContain('Five strategies, one set of conditions');
     // It must say the numbers are one run, not a ranking of which tree is better.
     expect(html).toMatch(/built for different conditions/);
+    expect(html).toContain('A controlled forest experiment');
+    expect(html).toContain('What this run reveals');
+    expect(html).toContain('allo-tree-species-grid');
   });
 
   it('distinguishes dying of old age from starving', () => {
@@ -1396,6 +1409,8 @@ describe('Tree Life Lab — the spread map', () => {
     expect(seedMarks(html), 'seed survivors drawn ≠ seed survivors resolved').toBe(res.diverseCount);
     expect(cloneMarks(html), 'clonal survivors drawn ≠ clonal survivors resolved').toBe(res.clonalCount);
     expect(seedMarks(html) + cloneMarks(html) + failMarks(html)).toBe(attempts);
+    expect(html).toContain('Decade outcome');
+    expect(html).toContain('allo-tree-spread-results-grid');
   });
 
   it('is stable: the same resolved decade draws the same picture', () => {
@@ -1503,8 +1518,10 @@ describe('Tree Life Lab — response curves', () => {
     const html = chem({ light: 0.12 });
     expect([...html.matchAll(/LIMITING/g)].length).toBe(1);
     // In deep shade with everything else ample, light is what the engine reports.
-    const lightPanelFirst = html.indexOf('LIMITING') < html.indexOf('CO');
-    expect(lightPanelFirst, 'the badge is not on the light panel').toBe(true);
+    const limitingStart = html.indexOf('allo-tree-curve-panel is-limiting');
+    const limitingHeader = html.slice(limitingStart, html.indexOf('<svg', limitingStart));
+    expect(limitingStart, 'no curve panel has the limiting treatment').toBeGreaterThan(-1);
+    expect(limitingHeader, 'the badge is not on the light panel').toContain('Light');
   });
 
   it('reports water, not CO2, when drought is the real cause', () => {
@@ -1698,6 +1715,57 @@ describe('Tree Life Lab — controlled investigations and A/B notebook', () => {
     } });
     expect(html.length).toBeGreaterThan(500);
     expect(html).toContain('Investigation studio');
+  });
+  it('keeps advanced evidence calm by default and opens it on demand', () => {
+    const E = engine();
+    const tree = grown(E, 12);
+
+    const calm = render({ treeLab: { view: 'grow', tree, bandOverride: 'g68' } });
+    expect(calm).toContain('aria-expanded="false"');
+    expect(calm).toContain('Go deeper');
+    expect(calm).toContain('Investigation studio');
+    expect(calm).not.toContain('Survival margin');
+    expect(calm).not.toContain('What was limiting, year by year');
+
+    const open = render({ treeLab: {
+      view: 'grow', tree, bandOverride: 'g68', growAdvancedOpen: true,
+    } });
+    expect(open).toContain('aria-expanded="true"');
+    expect(open).toContain('Hide advanced tools');
+    expect(open).toContain('Survival margin');
+    expect(open).toContain('What was limiting, year by year');
+
+    const active = render({ treeLab: {
+      view: 'grow', tree,
+      experiment: {
+        phase: 'predict', duration: 10,
+        prediction: { limiter: null, outcome: null, reason: '' },
+        baseline: baseline(E, tree),
+      },
+    } });
+    expect(active).toContain('aria-expanded="true"');
+    expect(active).toContain('Advanced tools in use');
+    expect(active).toContain('Make your prediction');
+  });
+
+  it('connects a changed condition to budget, limiter, and tree response', () => {
+    const E = engine();
+    const tree = grown(E, 5);
+    const html = render({ treeLab: {
+      view: 'grow', tree,
+      lastEffect: {
+        seq: 1, factor: 'light', before: 0.4, after: 0.8,
+        netBefore: 1.2, netAfter: 3.7, limiting: 'water', mode: 'slider',
+      },
+    } });
+
+    expect(html).toContain('data-tree-effect="light"');
+    expect(html).toContain('data-tree-scene-effect="light"');
+    expect(html).toContain('Cause \u2192 effect');
+    expect(html).toContain('You changed');
+    expect(html).toContain('Carbon budget');
+    expect(html).toContain('Now limiting');
+    expect(html).toContain('Tree response');
   });
 
   it('renders Predict, Run, Explain, and a controlled A/B evidence table', () => {

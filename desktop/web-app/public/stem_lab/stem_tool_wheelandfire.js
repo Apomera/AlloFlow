@@ -33,8 +33,18 @@
       '.wheel-fire-cycle-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#fbbf24,#dc2626);transition:width .25s ease}',
       '.wheel-fire-culture-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:10px}',
       '.wheel-fire-stage-line{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}',
+      '.wheel-fire-shell[data-experience-mode="guided"] .wheel-fire-advanced{display:none!important}',
+      '.wheel-fire-shell:not([data-experience-mode="research"]) .wheel-fire-research-only{display:none!important}',
       '.wheel-fire-spin{transform-origin:center;animation:wheelFireSpin 1.4s linear infinite}',
+      '.wheel-fire-wheel-motion{animation:wheelFireDash 1.4s linear infinite}',
+      '.wheel-fire-wobble-motion{animation:wheelFireWobble 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}',
+      '.wheel-fire-flame-motion{animation:wheelFireFlame 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}',
+      '.wheel-fire-heat-pulse{animation:wheelFireHeat 2.4s ease-in-out infinite}',
       '@keyframes wheelFireSpin{to{transform:rotate(360deg)}}',
+      '@keyframes wheelFireDash{to{stroke-dashoffset:-72}}',
+      '@keyframes wheelFireWobble{0%,100%{transform:translateX(var(--wheel-fire-wobble-neg,0px))}50%{transform:translateX(var(--wheel-fire-wobble,0px))}}',
+      '@keyframes wheelFireFlame{50%{transform:scaleY(.9) translateY(2px);opacity:.75}}',
+      '@keyframes wheelFireHeat{50%{opacity:.68}}',
       '@container(max-width:760px){.wheel-fire-main{grid-template-columns:1fr}.wheel-fire-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wheel-fire-stage-line{grid-template-columns:repeat(3,minmax(0,1fr))}}',
       '@media(max-width:480px){.wheel-fire-stats{grid-template-columns:1fr}}',
       '@media(prefers-reduced-motion:reduce){.wheel-fire-shell *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}',
@@ -64,6 +74,14 @@
     { id: 'gentle-care', label: 'Gentle care', cycles: 12, dryingRate: 20, cycleTemperatureDelta: 30, note: 'Short reuse with slower drying and a small temperature swing.' },
     { id: 'everyday-service', label: 'Everyday service', cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80, note: 'A neutral classroom comparison point.' },
     { id: 'harsh-contrast', label: 'Harsh contrast', cycles: 36, dryingRate: 85, cycleTemperatureDelta: 160, note: 'A deliberately demanding comparison, not a care recommendation.' }
+  ];
+  var MEASUREMENT_METHODS = [
+    { id: 'calipers', label: 'Calipers / diameter gauge' },
+    { id: 'ruler', label: 'Ruler or flexible tape' },
+    { id: 'water-fill', label: 'Water fill / graduated volume' },
+    { id: 'scale', label: 'Scale + volume estimate' },
+    { id: 'profile', label: 'Profile template / visual estimate' },
+    { id: 'mixed', label: 'Mixed methods (describe in note)' }
   ];
 
   var CULTURAL_STUDIES = [
@@ -314,6 +332,102 @@
     segments = segments.map(function (segment) { return Object.assign({}, segment, { relativePct: totalHours ? segment.durationHours / totalHours * 100 : 0 }); });
     return { roomTemperature: roomTemperature, coolingReference: coolingReference, totalHours: totalHours, segments: segments };
   }
+  function sampleThermalHistory(history, progressPct) {
+    history = history || estimateThermalHistory({});
+    var segments = Array.isArray(history.segments) ? history.segments : [];
+    var totalHours = finite(history.totalHours, segments.reduce(function (sum, segment) { return sum + Math.max(0, finite(segment.durationHours, 0)); }, 0));
+    var progress = clamp(finite(progressPct, 0), 0, 100);
+    var elapsedHours = totalHours * progress / 100;
+    var cursor = 0;
+    for (var i = 0; i < segments.length; i++) {
+      var segment = segments[i];
+      var duration = Math.max(0, finite(segment.durationHours, 0));
+      var segmentEnd = cursor + duration;
+      if (elapsedHours <= segmentEnd + 0.000001 || i === segments.length - 1) {
+        var segmentProgress = duration ? clamp((elapsedHours - cursor) / duration, 0, 1) : 1;
+        var startC = finite(segment.startC, history.roomTemperature || 20);
+        var endC = finite(segment.endC, startC);
+        var segmentId = segment.id || 'ramp';
+        return {
+          progressPct: progress,
+          elapsedHours: elapsedHours,
+          totalHours: totalHours,
+          segmentId: segmentId,
+          phaseLabel: segmentId === 'soak' ? 'Peak soak' : (segmentId === 'cool' ? 'Cooling' : 'Heating'),
+          segmentProgressPct: segmentProgress * 100,
+          temperatureC: startC + (endC - startC) * segmentProgress
+        };
+      }
+      cursor = segmentEnd;
+    }
+    return { progressPct: progress, elapsedHours: elapsedHours, totalHours: totalHours, segmentId: 'ramp', phaseLabel: 'Heating', segmentProgressPct: 0, temperatureC: finite(history.roomTemperature, 20) };
+  }
+  function estimateKilnMaterialState(vessel, sample, settings) {
+    vessel = normalizeVessel(vessel);
+    sample = sample || {};
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var temperature = clamp(finite(sample.temperatureC, 20), 20, 1400);
+    var peakTemperature = clamp(finite(settings.temperature, temperature), temperature, 1400);
+    var segmentId = sample.segmentId || 'ramp';
+    var completedPeak = segmentId === 'soak' || segmentId === 'cool';
+    var referenceTemperature = completedPeak ? peakTemperature : temperature;
+    var maturityProgress = clamp((referenceTemperature - 550) / Math.max(180, body.maturity - 550), 0, 1);
+    var firingShrinkageFactor = vessel.stage === 'glazed' || vessel.stage === 'glaze-fired' ? 0.25 : 0.23;
+    var firingShrinkagePct = body.shrinkage * firingShrinkageFactor * maturityProgress * 100;
+    var glaze = glazeById(settings.glazeId || vessel.glazeId);
+    var glazeEligible = vessel.stage === 'glazed' || vessel.stage === 'glaze-fired';
+    var glazeDevelopmentPct = glazeEligible ? clamp((referenceTemperature - (glaze.maturity - 140)) / 180, 0, 1) * 100 : 0;
+    var label = 'Warming the kiln load';
+    var description = 'The ware is gaining heat; the model has not begun firing shrinkage.';
+    if (segmentId === 'cool') {
+      if (glazeDevelopmentPct > 20 && temperature > 850) {
+        label = 'Glaze melt stiffening';
+        description = 'The developed glaze is becoming more rigid while the body contracts.';
+      } else if (temperature >= 500 && temperature <= 650) {
+        label = 'Silica-change cooling zone';
+        description = 'Even cooling through this region matters because different sections can contract at different times.';
+      } else if (temperature > 200) {
+        label = 'Thermal contraction';
+        description = 'The fired body is contracting as stored heat leaves the kiln load.';
+      } else {
+        label = 'Cooling toward handling range';
+        description = 'The material changes are retained, but the kiln is still treated as hot equipment.';
+      }
+    } else if (segmentId === 'soak') {
+      label = glazeDevelopmentPct > 20 ? 'Glaze melt and body maturity' : 'Heatwork accumulating at peak';
+      description = 'Time at peak adds heatwork even while the displayed temperature stays level.';
+    } else if (temperature < 120) {
+      label = 'Warming the kiln load';
+      description = 'Temperature is rising through the earliest part of the schedule.';
+    } else if (temperature < 250) {
+      label = 'Residual water leaving';
+      description = 'Slow early heating helps remaining physical water leave porous bone-dry ware.';
+    } else if (temperature < 650) {
+      label = 'Burnout and mineral change';
+      description = 'Organics and chemically bound water change while the ceramic body remains porous.';
+    } else if (temperature < 900) {
+      label = 'Early sintering';
+      description = 'Clay particles begin bonding more strongly and permanent firing shrinkage starts.';
+    } else if (temperature < body.maturity - 70) {
+      label = 'Body densifying';
+      description = 'Porosity falls as bonding and glass formation advance toward the body range.';
+    } else {
+      label = glazeDevelopmentPct > 20 ? 'Glaze developing and body vitrifying' : 'Maturation and vitrification';
+      description = 'The selected peak approaches the modeled maturity range for this clay body.';
+    }
+    return {
+      label: label,
+      description: description,
+      temperatureC: temperature,
+      maturityProgressPct: maturityProgress * 100,
+      firingShrinkagePct: firingShrinkagePct,
+      glazeDevelopmentPct: glazeDevelopmentPct,
+      bodyColor: body.color,
+      firedColor: body.fired,
+      glazeColor: glaze.color
+    };
+  }
   function estimateFiredPorosity(bodyOrId, effectiveTemp, kilnType) {
     var body = typeof bodyOrId === 'string' ? clayBody(bodyOrId) : (bodyOrId || CLAY_BODIES.stoneware);
     var maturation = clamp((finite(effectiveTemp, 950) - (body.maturity - 210)) / 210, 0, 1);
@@ -451,6 +565,9 @@
     var body = materialProfile(vessel);
     var ringHeight = vessel.heightCm / Math.max(1, RING_COUNT - 1);
     var wetWeakness = clamp((vessel.moisture - 0.72) / 0.28, 0, 1);
+    var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
+    var lubrication = clamp(finite(settings.lubrication, 30), 0, 100) / 100;
+    var excessLubrication = clamp((lubrication - 0.72) / 0.28, 0, 1);
     var risks = [];
     for (var i = 0; i < RING_COUNT; i++) {
       var wall = vessel.thickness[i];
@@ -464,9 +581,10 @@
       var neighborWall = (vessel.thickness[Math.max(0, i - 1)] + vessel.thickness[Math.min(RING_COUNT - 1, i + 1)]) / 2;
       var irregularity = clamp(Math.abs(wall - neighborWall) / Math.max(0.18, neighborWall) * 0.55, 0, 1);
       var coilJoint = settings.method === 'coil' ? clamp(1 - vessel.coilBond, 0, 1) : clamp(1 - vessel.coilBond, 0, 1) * 0.18;
+      var supportBenefit = handSupport * (thin * 0.1 + overhang * 0.06);
       var risk = clamp(
         thin * 0.62 + overhang * 0.22 + thick * 0.14 + irregularity * 0.12 + wetWeakness * 0.08 +
-        (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + (1 - body.plasticity) * 0.08 + (vessel.collapsed ? 0.7 : 0),
+        (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + (1 - body.plasticity) * 0.08 + excessLubrication * 0.1 - supportBenefit + (vessel.collapsed ? 0.7 : 0),
         0, 1
       );
       risks.push({
@@ -496,6 +614,9 @@
     var maxRadius = Math.max.apply(Math, vessel.radii);
     var uniformity = clamp(100 - (sd / Math.max(0.1, average)) * 85, 0, 100);
     var rpm = clamp(finite(settings.rpm, 55), 0, 120);
+    var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
+    var lubrication = clamp(finite(settings.lubrication, 30), 0, 100) / 100;
+    var excessLubrication = clamp((lubrication - 0.72) / 0.28, 0, 1);
     var slenderness = vessel.heightCm / Math.max(1, maxRadius * 2);
     var ringHeight = vessel.heightCm / Math.max(1, RING_COUNT - 1);
     var maxOutwardSlope = 0;
@@ -505,7 +626,8 @@
     var centrifugal = Math.pow(rpm / 100, 2) * (maxRadius / 9) * (0.45 + vessel.heightCm / 36 * 0.7);
     var thinRisk = clamp((0.48 - minWall) / 0.48, 0, 1);
     var wetWeakness = clamp((vessel.moisture - 0.72) / 0.28, 0, 1);
-    var stability = 100 - vessel.wobble * 40 - centrifugal * (26 + wetWeakness * 12) - thinRisk * 36 - Math.max(0, slenderness - 1.55) * 27 - overhangRisk * 20 - jointRisk * 24 - (1 - vessel.compression) * 11 - (vessel.collapsed ? 75 : 0);
+    var supportBenefit = handSupport * (thinRisk * 8 + overhangRisk * 5);
+    var stability = 100 - vessel.wobble * 40 - centrifugal * (26 + wetWeakness * 12) - thinRisk * 36 - Math.max(0, slenderness - 1.55) * 27 - overhangRisk * 20 - jointRisk * 24 - (1 - vessel.compression) * 11 + supportBenefit - excessLubrication * 9 - (vessel.collapsed ? 75 : 0);
     stability = clamp(stability, 0, 100);
     var capacity = vesselCapacity(vessel);
     var body = materialProfile(vessel);
@@ -527,12 +649,82 @@
       maxRadiusCm: maxRadius,
       slenderness: slenderness,
       overhangRisk: overhangRisk * 100,
+      handSupport: handSupport * 100,
+      lubrication: lubrication * 100,
+      contactSpan: Math.round(clamp(finite(settings.contactSpan, 9), 3, 11)),
       compression: vessel.compression * 100,
       coilBond: vessel.coilBond * 100,
       criticalRing: criticalRing.index,
       maxRingRisk: criticalRing.risk * 100,
       shape: shape,
       status: vessel.collapsed ? 'Collapsed' : (stability >= 75 ? 'Stable' : (stability >= 48 ? 'Watch closely' : 'High collapse risk'))
+    };
+  }
+  function analyzeFailureContributors(vessel, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    var defects = copyArray(vessel.defects);
+    var hasFailure = !!vessel.collapsed || defects.length > 0;
+    if (!hasFailure) return { ready: false, eventLabel: 'No modeled failure', contributors: [], defects: [] };
+    var stats = analyzeVessel(vessel, settings);
+    var body = materialProfile(vessel);
+    var contributors = [];
+    function add(id, label, evidence, action, severity) {
+      if (contributors.some(function (item) { return item.id === id; })) return;
+      contributors.push({ id: id, label: label, evidence: evidence, action: action, severity: clamp(finite(severity, 0), 0, 100) });
+    }
+    var structural = vessel.collapsed || defects.indexOf('structural collapse') >= 0;
+    var drying = defects.indexOf('drying crack') >= 0 || defects.indexOf('coil separation') >= 0 || defects.indexOf('steam crack') >= 0;
+    var thermal = defects.indexOf('thermal crack') >= 0 || defects.indexOf('dunting crack') >= 0 || defects.indexOf('body deformation') >= 0 || defects.indexOf('uneven heatwork') >= 0;
+    var glaze = defects.some(function (defect) { return ['underfired glaze', 'running glaze', 'thin glaze coverage', 'crazing risk', 'shivering risk'].indexOf(defect) >= 0; });
+    var maturity = defects.some(function (defect) { return ['underfired bisque', 'underfired body', 'overfired body'].indexOf(defect) >= 0; });
+    if (structural) {
+      if (finite(settings.pressure, 48) >= 68) add('pressure', 'High forming pressure', Math.round(finite(settings.pressure, 48)) + '% hand-pressure setting increased deformation.', 'Undo to the safe checkpoint, then reduce pressure and repeat at the same ring.', finite(settings.pressure, 48));
+      if (settings.method !== 'coil' && finite(settings.rpm, 58) >= 72) add('rpm', 'High wheel speed', Math.round(finite(settings.rpm, 58)) + ' RPM increased the modeled centrifugal load.', 'Lower wheel speed while holding pressure and work zone constant.', finite(settings.rpm, 58) / 1.2);
+      if (vessel.moisture >= 0.78) add('moisture', 'Very soft clay', Math.round(vessel.moisture * 100) + '% modeled moisture reduced wall support.', 'Compare the same move at a slightly lower moisture setting.', vessel.moisture * 100);
+      if (stats.minWallCm < 0.55) add('thin-wall', 'Thin load-bearing wall', 'The minimum modeled wall is ' + stats.minWallCm.toFixed(2) + ' cm.', 'Support or thicken the vulnerable zone before adding height or outward volume.', clamp((0.7 - stats.minWallCm) / 0.7 * 100, 0, 100));
+      if (stats.overhangRisk >= 22) add('overhang', 'Unsupported outward profile', Math.round(stats.overhangRisk) + '% modeled overhang load concentrated stress above the belly.', 'Collar or compress the shoulder before extending the form.', stats.overhangRisk);
+      if (stats.handSupport < 35 && (stats.minWallCm < 0.68 || stats.overhangRisk >= 18)) add('hand-support', 'Low inside-hand support', Math.round(stats.handSupport) + '% inside support left exterior force less balanced.', 'Repeat the move with more inside-hand support while holding pressure and wheel speed constant.', 70 - stats.handSupport);
+      if (stats.lubrication > 78) add('lubrication', 'Excess surface lubrication', Math.round(stats.lubrication) + '% lubrication reduced control and softened the contact zone.', 'Use less water or slip and repeat at the same support, pressure, and wheel speed.', stats.lubrication - 12);
+      if (vessel.centered < 65 || vessel.wobble > 0.42) add('centering', 'Centering and wobble', Math.round(vessel.centered) + '% centered with ' + Math.round(vessel.wobble * 100) + '% wobble.', 'Center the clay before repeating the shaping move.', Math.max(100 - vessel.centered, vessel.wobble * 100));
+      if (settings.method === 'coil' && stats.coilBond < 58) add('coil-bond', 'Weak coil consolidation', Math.round(stats.coilBond) + '% modeled coil bond reduced continuity.', 'Paddle or smooth the joint before adding another coil.', 100 - stats.coilBond);
+    }
+    if (drying) {
+      var dryingRisk = estimateDryingRisk(vessel, settings) * 100;
+      add('drying', 'Uneven or aggressive drying', Math.round(dryingRisk) + '% comparative drying-risk signal under the selected humidity and drying speed.', 'Slow drying, support the form, and compare the same geometry under one changed condition.', dryingRisk);
+      if (stats.uniformity < 78) add('uniformity', 'Wall-thickness variation', Math.round(stats.uniformity) + '% wall uniformity implies uneven shrinkage demand.', 'Return to a safe wet or leather-hard checkpoint and regularize the wall.', 100 - stats.uniformity);
+      if (defects.indexOf('coil separation') >= 0) add('coil-separation', 'Unconsolidated coil joint', Math.round(stats.coilBond) + '% modeled bond was carried into drying.', 'Compress each joint before the next drying trial.', 100 - stats.coilBond);
+    }
+    if (thermal) {
+      if (finite(settings.ramp, 110) > 170) add('ramp', 'Fast heating ramp', Math.round(finite(settings.ramp, 110)) + '°C/h increased the modeled thermal-gradient signal.', 'Save a comparison schedule with a slower ramp.', clamp((finite(settings.ramp, 110) - 130) / 1.7, 0, 100));
+      if (finite(settings.coolingRate, 100) * body.thermalSensitivity > 82) add('cooling', 'Fast cooling for this body', Math.round(finite(settings.coolingRate, 100)) + '°C/h interacted with the ' + body.name + ' thermal-sensitivity proxy.', 'Compare a slower cooling schedule while holding peak heatwork constant.', clamp(finite(settings.coolingRate, 100) * body.thermalSensitivity, 0, 100));
+      if (defects.indexOf('uneven heatwork') >= 0) add('kiln-uniformity', 'Uneven open-firing heatwork', 'The simplified open-firing model adds a temperature-uniformity penalty.', 'Treat the result as a firing-location question and compare witness-cone evidence in a real supervised firing.', 72);
+    }
+    if (maturity) {
+      var effectiveTemperature = vessel.lastHeatwork ? finite(vessel.lastHeatwork.effectiveTemp, body.maturity) : finite(settings.temperature, body.maturity);
+      add('maturity', 'Body maturity mismatch', 'Modeled effective heatwork was about ' + Math.round(effectiveTemperature) + '°C versus the ' + body.name + ' reference near ' + Math.round(body.maturity) + '°C.', 'Compare a schedule nearer the body range; use real witness cones and manufacturer guidance in a studio.', clamp(Math.abs(effectiveTemperature - body.maturity) / 2, 0, 100));
+    }
+    if (glaze) {
+      var glazeOutcome = vessel.lastGlazeOutcome || {};
+      if (defects.indexOf('running glaze') >= 0) add('glaze-run', 'Excess melt or application thickness', Math.round(finite(vessel.glazeThickness, 50)) + '% application thickness combined with the selected heatwork.', 'Use a test tile and compare one lower thickness or heatwork setting.', Math.max(65, finite(glazeOutcome.runRiskPct, 0)));
+      if (defects.indexOf('thin glaze coverage') >= 0) add('glaze-thin', 'Thin glaze coverage', Math.round(finite(vessel.glazeThickness, 50)) + '% application thickness left a sparse modeled layer.', 'Compare a bounded test tile at a slightly higher application thickness.', 62);
+      if (defects.indexOf('crazing risk') >= 0 || defects.indexOf('shivering risk') >= 0) add('glaze-fit', 'Glaze–body expansion mismatch', 'The modeled expansion gap is ' + finite(glazeOutcome.fitGap, 0).toFixed(2) + '.', 'Compare another glaze–body pairing on supervised test tiles.', Math.max(68, 100 - finite(glazeOutcome.fitScore, 100)));
+      if (defects.indexOf('underfired glaze') >= 0) add('glaze-melt', 'Insufficient glaze heatwork', 'The selected heatwork remained below the modeled glaze window.', 'Compare a schedule closer to the glaze range without changing application thickness.', 70);
+    }
+    if (!contributors.length) add('recorded-flags', 'Recorded model flags', defects.join(', ') || 'The vessel entered a modeled failure state.', 'Return to a safe checkpoint and change one input before repeating.', 55);
+    contributors.sort(function (a, b) { return b.severity - a.severity; });
+    var eventLabel = structural ? 'Structural collapse' : (drying ? 'Drying failure' : (thermal ? 'Thermal failure' : (glaze ? 'Glaze-surface failure' : (maturity ? 'Maturation mismatch' : 'Modeled defect'))));
+    var primary = contributors[0];
+    return {
+      ready: true,
+      eventLabel: eventLabel,
+      contributors: contributors.slice(0, 4),
+      defects: defects,
+      criticalRing: stats.criticalRing,
+      responseLabel: 'Ring ' + (stats.criticalRing + 1) + ' carried the highest local signal at ' + Math.round(stats.maxRingRisk) + '%.',
+      outcomeLabel: vessel.lastOutcome || (defects.length ? defects.join(', ') : eventLabel),
+      primaryCause: primary.label,
+      primaryAction: primary.action
     };
   }
   function applyTool(vessel, tool, ringIndex, settings) {
@@ -544,10 +736,15 @@
     var pressure = clamp(finite(settings.pressure, 48), 0, 100) / 100;
     var rpm = clamp(finite(settings.rpm, 58), 0, 120);
     var method = settings.method === 'coil' ? 'coil' : 'wheel';
+    var handSupport = clamp(finite(settings.handSupport, 0), 0, 100) / 100;
+    var lubrication = clamp(finite(settings.lubrication, 30), 0, 100) / 100;
+    var contactSpan = Math.round(clamp(finite(settings.contactSpan, 9), 3, 11));
+    var contactRadius = Math.max(1, Math.floor(contactSpan / 2));
+    var excessLubrication = clamp((lubrication - 0.72) / 0.28, 0, 1);
     var body = materialProfile(next);
     var softness = body.plasticity * (0.44 + next.moisture * 0.72);
     var motion = method === 'wheel' ? (0.62 + rpm / 120 * 0.55) : 0.92;
-    var force = clamp(pressure * softness * motion, 0.03, 1.1);
+    var force = clamp(pressure * softness * motion * (0.88 + lubrication * 0.4), 0.03, 1.1);
     var before = vesselVolume(next);
     var preserve = tool !== 'trim' && tool !== 'add-coil';
     var radiusDelta = 0.16 + force * 0.58;
@@ -562,25 +759,25 @@
       next.compression = clamp(next.compression + force * 0.07, 0, 1);
       next.lastOutcome = 'The clay became more centered and rotationally even.';
     } else {
-      for (i = Math.max(1, ringIndex - 4); i <= Math.min(RING_COUNT - 1, ringIndex + 4); i++) {
-        var distance = Math.abs(i - ringIndex) / 5;
+      for (i = Math.max(1, ringIndex - contactRadius); i <= Math.min(RING_COUNT - 1, ringIndex + contactRadius); i++) {
+        var distance = Math.abs(i - ringIndex) / (contactRadius + 1);
         var weight = Math.pow(Math.max(0, 1 - distance), 1.6);
         if (tool === 'open') {
-          next.thickness[i] = clamp(next.thickness[i] - radiusDelta * 0.78 * weight, 0.25, next.radii[i]);
+          next.thickness[i] = clamp(next.thickness[i] - radiusDelta * (0.78 - handSupport * 0.25) * weight, 0.25, next.radii[i]);
           next.radii[i] = clamp(next.radii[i] + radiusDelta * 0.12 * weight, 1.2, 12.5);
           next.heightCm = clamp(next.heightCm + force * 0.045, 5, 38);
           next.lastOutcome = 'The opening widened and displaced clay into the surrounding wall.';
         } else if (tool === 'pull') {
-          next.thickness[i] = clamp(next.thickness[i] * (1 - force * 0.075 * weight), 0.22, next.radii[i]);
+          next.thickness[i] = clamp(next.thickness[i] * (1 - force * (0.075 - handSupport * 0.036) * weight), 0.22, next.radii[i]);
           next.radii[i] = clamp(next.radii[i] - radiusDelta * 0.06 * weight, 1.2, 12.5);
-          next.heightCm = clamp(next.heightCm + force * 0.16 * weight, 5, 38);
-          next.compression = clamp(next.compression - force * 0.018 * weight, 0, 1);
-          next.lastOutcome = 'The wall stretched upward and became thinner.';
+          next.heightCm = clamp(next.heightCm + force * (0.16 + handSupport * 0.06) * weight, 5, 38);
+          next.compression = clamp(next.compression - force * (0.018 - handSupport * 0.011) * weight, 0, 1);
+          next.lastOutcome = handSupport >= 0.55 ? 'Balanced inside support helped the wall stretch upward with less thinning.' : 'The wall stretched upward and became thinner.';
         } else if (tool === 'belly') {
           next.radii[i] = clamp(next.radii[i] + radiusDelta * weight, 1.2, 12.5);
-          next.thickness[i] = clamp(next.thickness[i] * (1 - force * 0.035 * weight), 0.22, next.radii[i]);
+          next.thickness[i] = clamp(next.thickness[i] * (1 - force * (0.035 - handSupport * 0.018) * weight), 0.22, next.radii[i]);
           next.compression = clamp(next.compression - force * 0.012 * weight, 0, 1);
-          next.lastOutcome = 'Outward pressure expanded the vessel profile.';
+          next.lastOutcome = handSupport >= 0.55 ? 'Balanced inside and outside pressure expanded the vessel profile.' : 'Outward pressure expanded the vessel profile.';
         } else if (tool === 'collar') {
           next.radii[i] = clamp(next.radii[i] - radiusDelta * 0.72 * weight, 1.2, 12.5);
           next.thickness[i] = clamp(next.thickness[i] + radiusDelta * 0.15 * weight, 0.22, next.radii[i]);
@@ -612,6 +809,7 @@
         next.coilBond = clamp(next.coilBond - force * 0.11, 0, 1);
         next.lastOutcome = 'A new coil added clay mass and height at the rim. Paddle or smooth the joint to consolidate it before drying.';
       }
+      if (tool === 'open' || tool === 'pull' || tool === 'belly' || tool === 'collar') next.compression = clamp(next.compression + handSupport * force * 0.012, 0, 1);
     }
 
     if (preserve) preserveVolume(next, before);
@@ -619,7 +817,7 @@
     next.actions = finite(next.actions, 0) + 1;
     if (method === 'wheel' && tool !== 'center') {
       var imbalance = (rpm / 120) * pressure * (1 - next.centered / 100);
-      next.wobble = clamp(next.wobble + imbalance * 0.035 - (tool === 'smooth' ? force * 0.03 : 0), 0, 1);
+      next.wobble = clamp(next.wobble + imbalance * 0.035 * (1 - handSupport * 0.42) + excessLubrication * pressure * 0.025 - (tool === 'smooth' ? force * 0.03 : 0), 0, 1);
     }
     var stats = analyzeVessel(next, settings);
     if (!next.collapsed && stats.stability < 16 && force > 0.43 && tool !== 'center' && tool !== 'smooth' && tool !== 'paddle') {
@@ -630,7 +828,7 @@
         next.radii[i] = clamp(next.radii[i] * (1 + slump * 0.28), 1.2, 12.5);
       }
       next.defects.push('structural collapse');
-      next.lastOutcome = 'The wall could not support the combined pressure, speed, height, and moisture, so the upper form slumped.';
+      next.lastOutcome = 'The wall could not support the combined pressure, speed, touch balance, height, and moisture, so the upper form slumped.';
     }
     return next;
   }
@@ -909,6 +1107,15 @@
       summary: snapshots.length > 1 ? 'Forward model projects ' + snapshots.length + ' dimensional checkpoints from ' + vessel.stage + ' to ' + snapshots[snapshots.length - 1].stage + '. Compare the trend with calipers, a scale, or measured water capacity.' : 'No forward dimensional steps remain after ' + vessel.stage + '.'
     };
   }
+  function normalizeMeasurementMethod(method) {
+    var id = String(method || '').trim();
+    return MEASUREMENT_METHODS.some(function (candidate) { return candidate.id === id; }) ? id : 'unknown';
+  }
+  function measurementMethodLabel(method) {
+    var id = normalizeMeasurementMethod(method);
+    var found = MEASUREMENT_METHODS.filter(function (candidate) { return candidate.id === id; })[0];
+    return found ? found.label : 'Not recorded';
+  }
   function compareDimensionalMeasurements(history, measurements, currentSettings) {
     history = history || {};
     var snapshots = Array.isArray(history.snapshots) ? history.snapshots : [];
@@ -956,10 +1163,11 @@
       var absoluteTotal = compared.reduce(function (sum, item) { return sum + Math.abs(item.residual); }, 0);
       var signedTotal = compared.reduce(function (sum, item) { return sum + item.residual; }, 0);
       var context = contextEnabled ? compareDimensionModelSettings(entry.modelSettings, currentSettings) : null;
+      var methodId = normalizeMeasurementMethod(entry.measurementMethod);
       var declaredUncertainty = compared.filter(function (item) { return item.uncertainty !== null; });
       var withinUncertainty = declaredUncertainty.filter(function (item) { return item.withinUncertainty; });
       rows.push({
-        id: entry.id || ('measurement-' + rows.length), checkpoint: entry.checkpointLabel || (snapshot && snapshot.label) || 'Recorded checkpoint', stage: entry.stage || (snapshot && snapshot.stage) || 'unknown', modelSource: storedModel ? 'logged' : 'current', context: context, measured: measured, modeled: modeled, residuals: residuals, relativeErrors: relativeErrors, compared: compared,
+        id: entry.id || ('measurement-' + rows.length), checkpointIndex: index, checkpoint: entry.checkpointLabel || (snapshot && snapshot.label) || 'Recorded checkpoint', stage: entry.stage || (snapshot && snapshot.stage) || 'unknown', measurementMethod: methodId, measurementMethodLabel: measurementMethodLabel(methodId), modelSource: storedModel ? 'logged' : 'current', context: context, measured: measured, modeled: modeled, residuals: residuals, relativeErrors: relativeErrors, compared: compared,
         meanAbsoluteResidual: absoluteTotal / compared.length, meanSignedResidual: signedTotal / compared.length, uncertaintyCount: declaredUncertainty.length, withinUncertaintyCount: withinUncertainty.length, outOfBandCount: declaredUncertainty.length - withinUncertainty.length, uncertaintyCoveragePct: declaredUncertainty.length ? withinUncertainty.length / declaredUncertainty.length * 100 : null,
         note: String(entry.note || '').slice(0, 240), savedAt: entry.savedAt || ''
       });
@@ -1011,6 +1219,70 @@
       contextSummary: staleCount || incompleteCount ? (staleCount ? staleCount + ' logged checkpoint' + (staleCount === 1 ? ' uses' : 's use') + ' changed model inputs.' : '') + (staleCount && incompleteCount ? ' ' : '') + (incompleteCount ? incompleteCount + ' checkpoint' + (incompleteCount === 1 ? ' has' : 's have') + ' incomplete model context.' : '') + ' Frozen values are retained; review the controls before treating records as a same-condition comparison.' : (rows.length ? 'All logged checkpoints have complete model context matching the current controls.' : ''),
       uncertaintySummary: declaredUncertainty.length ? 'Declared uncertainty contains ' + withinUncertainty.length + ' of ' + declaredUncertainty.length + ' compared dimensions (' + uncertaintyCoveragePct.toFixed(0) + '%).' + (declaredUncertainty.length - withinUncertainty.length ? ' Out-of-band residuals may indicate model drift, technique error, or an uncertainty range that was set too narrowly.' : ' Every declared residual is inside its recorded range.') : 'No measurement uncertainty ranges declared yet. Add optional +/- values when logging a checkpoint so residuals can be interpreted against instrument or technique precision.',
       summary: rows.length ? 'Compared ' + allCompared.length + ' measured dimensions across ' + rows.length + ' checkpoint' + (rows.length === 1 ? '' : 's') + '. Mean absolute relative error is ' + meanAbsoluteRelativeErrorPct.toFixed(1) + '%; positive residual means the measurement was larger than the model.' : 'No measured checkpoints logged yet. Enter one or more real dimensions to make the model accountable to evidence.'
+    };
+  }
+  function summarizeMeasurementRepeatability(rows) {
+    var entries = Array.isArray(rows) ? rows : [];
+    var metrics = [
+      { id: 'heightCm', label: 'Height', unit: 'cm' },
+      { id: 'diameterCm', label: 'Diameter', unit: 'cm' },
+      { id: 'capacityMl', label: 'Capacity', unit: 'mL' },
+      { id: 'minWallCm', label: 'Min wall', unit: 'cm' }
+    ];
+    var grouped = {};
+    entries.forEach(function (row) {
+      if (!row || typeof row !== 'object' || !Array.isArray(row.compared) || !row.compared.length) return;
+      var index = Math.round(finite(row.checkpointIndex, -1));
+      var label = String(row.checkpoint || 'Recorded checkpoint');
+      var stage = String(row.stage || 'unknown');
+      var key = index >= 0 ? 'index:' + index : 'label:' + label + '|stage:' + stage;
+      if (!grouped[key]) grouped[key] = { key: key, checkpointIndex: index, checkpoint: label, stage: stage, rows: [], values: {}, methods: {} };
+      grouped[key].rows.push(row);
+      var methodId = normalizeMeasurementMethod(row.measurementMethod);
+      grouped[key].methods[methodId] = (grouped[key].methods[methodId] || 0) + 1;
+      row.compared.forEach(function (item) {
+        if (!item || !metrics.some(function (metric) { return metric.id === item.id; }) || !isFinite(Number(item.measured))) return;
+        if (!grouped[key].values[item.id]) grouped[key].values[item.id] = [];
+        grouped[key].values[item.id].push(item);
+      });
+    });
+    var groups = Object.keys(grouped).map(function (key) {
+      var group = grouped[key];
+      var metricSummaries = {};
+      metrics.forEach(function (metric) {
+        var values = group.values[metric.id] || [];
+        var numbers = values.map(function (item) { return Number(item.measured); });
+        var count = numbers.length;
+        var mean = count ? numbers.reduce(function (sum, value) { return sum + value; }, 0) / count : null;
+        var min = count ? Math.min.apply(null, numbers) : null;
+        var max = count ? Math.max.apply(null, numbers) : null;
+        var range = count ? max - min : null;
+        var squared = count > 1 ? numbers.reduce(function (sum, value) { return sum + Math.pow(value - mean, 2); }, 0) / (count - 1) : 0;
+        var declared = values.filter(function (item) { return item.uncertainty !== null && item.uncertainty !== undefined; });
+        metricSummaries[metric.id] = {
+          id: metric.id, label: metric.label, unit: metric.unit, count: count, mean: mean, min: min, max: max, range: range,
+          sampleStdDev: count ? Math.sqrt(squared) : null, spreadPct: count && mean !== 0 ? range / Math.abs(mean) * 100 : null,
+          uncertaintyCount: declared.length, meanUncertainty: declared.length ? declared.reduce(function (sum, item) { return sum + Number(item.uncertainty); }, 0) / declared.length : null
+        };
+      });
+      var summaries = Object.keys(metricSummaries).map(function (id) { return metricSummaries[id]; });
+      var methodIds = Object.keys(group.methods);
+      var methodConsistency = methodIds.length === 1 ? (methodIds[0] === 'unknown' ? 'unknown' : 'consistent') : 'mixed';
+      return {
+        key: group.key, checkpointIndex: group.checkpointIndex, checkpoint: group.checkpoint, stage: group.stage, rowCount: group.rows.length, dimensionCount: summaries.reduce(function (sum, item) { return sum + item.count; }, 0),
+        repeatedDimensionCount: summaries.filter(function (item) { return item.count > 1; }).length, metricSummaries: metricSummaries, methodIds: methodIds, methodLabels: methodIds.map(function (id) { return measurementMethodLabel(id); }), methodConsistency: methodConsistency
+      };
+    });
+    var repeatedGroups = groups.filter(function (group) { return group.rowCount > 1; });
+    var repeatedDimensionCount = groups.reduce(function (sum, group) { return sum + group.repeatedDimensionCount; }, 0);
+    var mixedMethodGroupCount = groups.filter(function (group) { return group.methodConsistency === 'mixed'; }).length;
+    return {
+      groups: groups,
+      groupCount: groups.length,
+      repeatedGroupCount: repeatedGroups.length,
+      repeatedDimensionCount: repeatedDimensionCount,
+      mixedMethodGroupCount: mixedMethodGroupCount,
+      summary: repeatedGroups.length ? 'Repeated evidence covers ' + repeatedDimensionCount + ' dimension' + (repeatedDimensionCount === 1 ? '' : 's') + ' across ' + repeatedGroups.length + ' checkpoint' + (repeatedGroups.length === 1 ? '' : 's') + '. Range and sample spread show how much readings vary within each checkpoint.' + (mixedMethodGroupCount ? ' ' + mixedMethodGroupCount + ' checkpoint' + (mixedMethodGroupCount === 1 ? ' uses' : 's use') + ' mixed measurement methods; compare like-with-like before interpreting spread.' : '') : entries.length ? 'No checkpoint has multiple logs yet. Log the same checkpoint again with the same method to estimate repeatability.' : 'No measured checkpoints are available for a repeatability study yet.'
     };
   }
   function estimateDimensionalTargets(history, targets) {
@@ -1221,6 +1493,7 @@
     CLAY_BODIES: CLAY_BODIES,
     GLAZES: GLAZES,
     CYCLE_PROTOCOLS: CYCLE_PROTOCOLS,
+    MEASUREMENT_METHODS: MEASUREMENT_METHODS,
     CULTURAL_STUDIES: CULTURAL_STUDIES,
     makeVessel: makeVessel,
     normalizeVessel: normalizeVessel,
@@ -1230,22 +1503,28 @@
     vesselCapacity: vesselCapacity,
     estimateHeatwork: estimateHeatwork,
     estimateThermalHistory: estimateThermalHistory,
+    sampleThermalHistory: sampleThermalHistory,
+    estimateKilnMaterialState: estimateKilnMaterialState,
     estimateFiredPorosity: estimateFiredPorosity,
     analyzeGlazeOutcome: analyzeGlazeOutcome,
     analyzeFiringSchedule: analyzeFiringSchedule,
     compareMaterialProfiles: compareMaterialProfiles,
     analyzeRingRisks: analyzeRingRisks,
     analyzeVessel: analyzeVessel,
+    analyzeFailureContributors: analyzeFailureContributors,
     applyTool: applyTool,
     dryVessel: dryVessel,
     fireVessel: fireVessel,
     glazeVessel: glazeVessel,
     dimensionModelSettings: dimensionModelSettings,
     compareDimensionModelSettings: compareDimensionModelSettings,
+    normalizeMeasurementMethod: normalizeMeasurementMethod,
+    measurementMethodLabel: measurementMethodLabel,
     estimateDryingRisk: estimateDryingRisk,
     estimateDryingHistory: estimateDryingHistory,
     estimateDimensionalHistory: estimateDimensionalHistory,
     compareDimensionalMeasurements: compareDimensionalMeasurements,
+    summarizeMeasurementRepeatability: summarizeMeasurementRepeatability,
     estimateDimensionalTargets: estimateDimensionalTargets,
     evaluateVesselUse: evaluateVesselUse,
     compareCycleProtocols: compareCycleProtocols,
@@ -1271,6 +1550,7 @@
       var React = ctx.React || window.React;
       var h = React.createElement;
       var data = (ctx.toolData && ctx.toolData.wheelAndFire) || {};
+      var experienceMode = ['guided', 'studio', 'research'].indexOf(data.experienceMode) >= 0 ? data.experienceMode : 'studio';
       var vessel = normalizeVessel(data.vessel, data.clayBody || 'stoneware');
       var view = data.view || 'shape';
       var method = data.method === 'coil' ? 'coil' : 'wheel';
@@ -1278,9 +1558,25 @@
       var workRing = Math.round(clamp(finite(data.workRing, 22), 0, RING_COUNT - 1));
       var pressure = clamp(finite(data.pressure, 48), 5, 100);
       var rpm = method === 'coil' ? 0 : clamp(finite(data.rpm, 58), 0, 120);
-      var settings = { pressure: pressure, rpm: rpm, method: method };
+      var handSupport = clamp(finite(data.handSupport, 55), 0, 100);
+      var lubrication = clamp(finite(data.lubrication, 30), 0, 100);
+      var contactSpan = Math.round(clamp(finite(data.contactSpan, 9), 3, 11));
+      var cameraTilt = clamp(finite(data.cameraTilt, 42), 20, 70);
+      var settings = { pressure: pressure, rpm: rpm, method: method, handSupport: handSupport, lubrication: lubrication, contactSpan: contactSpan };
       var stats = analyzeVessel(vessel, settings);
+      var failureSettings = Object.assign({}, settings, { humidity: data.humidity, dryingRate: data.dryingRate, temperature: data.kilnTemp, ramp: data.ramp, soak: data.soak, coolingRate: data.coolingRate, kilnType: data.kilnType, atmosphere: data.atmosphere });
+      var failureReport = analyzeFailureContributors(vessel, failureSettings);
       var geometry = profileGeometry(vessel);
+      var formingPreviewAvailable = vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && activeTool === 'trim');
+      var formingPreviewVessel = formingPreviewAvailable ? applyTool(vessel, activeTool, workRing, settings) : copyVessel(vessel);
+      var formingPreviewStats = analyzeVessel(formingPreviewVessel, settings);
+      var formingPreviewGeometry = profileGeometry(formingPreviewVessel);
+      var formingPreviewStabilityDelta = formingPreviewStats.stability - stats.stability;
+      var formingPreviewWallDelta = formingPreviewStats.minWallCm - stats.minWallCm;
+      var formingPreviewCapacityDelta = formingPreviewStats.capacityMl - stats.capacityMl;
+      var formingPreviewHeightDelta = formingPreviewVessel.heightCm - vessel.heightCm;
+      var formingPreviewChanged = Math.abs(formingPreviewStabilityDelta) >= 0.05 || Math.abs(formingPreviewWallDelta) >= 0.001 || Math.abs(formingPreviewCapacityDelta) >= 0.05 || Math.abs(formingPreviewHeightDelta) >= 0.01 || formingPreviewVessel.collapsed !== vessel.collapsed;
+      var formingPreviewRisky = formingPreviewVessel.collapsed || formingPreviewStats.stability < 48 || formingPreviewStabilityDelta < -6 || formingPreviewStats.minWallCm < 0.45;
       function currentDimensionSettings() {
         var body = materialProfile(vessel);
         var kilnType = data.kilnType || 'electric';
@@ -1297,38 +1593,87 @@
       };
       var announce = ctx.announceToSR || function () {};
       var setToolData = ctx.setToolData || function () {};
+      var VIEW_IDS = ['shape', 'science', 'traditions', 'kiln', 'performance', 'journal'];
+      var VIEW_LABELS = { shape: 'Shape', science: 'Clay science', traditions: 'Ways of making', kiln: 'Dry & fire', performance: 'Use tests', journal: 'Journal' };
+      function viewLabel(id) { return VIEW_LABELS[id] || id; }
+      function stageLabel(stage) {
+        return String(stage || 'unknown').split('-').map(function (part) { return part ? part.charAt(0).toUpperCase() + part.slice(1) : part; }).join(' ');
+      }
       function patchData(patch) {
         setToolData(function (previous) {
           previous = previous || {};
           return Object.assign({}, previous, { wheelAndFire: Object.assign({}, previous.wheelAndFire || {}, patch) });
         });
       }
+      function vesselChange(previous, next) {
+        var beforeStats = analyzeVessel(previous, settings);
+        var afterStats = analyzeVessel(next, settings);
+        return {
+          beforeStage: previous.stage,
+          afterStage: next.stage,
+          stabilityDelta: afterStats.stability - beforeStats.stability,
+          centeredDelta: next.centered - previous.centered,
+          minWallDelta: afterStats.minWallCm - beforeStats.minWallCm,
+          capacityDelta: afterStats.capacityMl - beforeStats.capacityMl,
+          massDelta: afterStats.massG - beforeStats.massG,
+          outcome: next.lastOutcome || ''
+        };
+      }
       function commitVessel(next, message, extra) {
         var history = copyArray(data.history).concat([copyVessel(vessel)]).slice(-24);
-        patchData(Object.assign({ vessel: next, history: history, future: [] }, extra || {}));
+        patchData(Object.assign({ vessel: next, history: history, future: [], lastChange: vesselChange(vessel, next), dragStartVessel: null, dragging: false }, extra || {}));
         announce(message || next.lastOutcome || 'Pottery state updated.');
       }
-      function setView(next) { patchData({ view: next }); announce('Opened ' + next + ' section.'); }
-      function applyActive(index) {
+      function setView(next) {
+        var safeView = VIEW_IDS.indexOf(next) >= 0 ? next : 'shape';
+        patchData({ view: safeView });
+        announce('Opened ' + viewLabel(safeView) + ' section.');
+      }
+      function handleTabKey(event, id) {
+        var index = VIEW_IDS.indexOf(id);
+        if (index < 0) return;
+        var nextIndex = index;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % VIEW_IDS.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + VIEW_IDS.length) % VIEW_IDS.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = VIEW_IDS.length - 1;
+        else return;
+        event.preventDefault();
+        var nextId = VIEW_IDS[nextIndex];
+        setView(nextId);
+        var tab = event.currentTarget && event.currentTarget.parentNode && event.currentTarget.parentNode.querySelector('#wheel-fire-tab-' + nextId);
+        if (tab && typeof tab.focus === 'function') tab.focus();
+      }
+      function applyActive(index, options) {
         if (vessel.stage !== 'wet' && !(vessel.stage === 'leather-hard' && activeTool === 'trim')) {
           announce('Shaping is unavailable after the clay has dried.');
           return;
         }
         var next = applyTool(vessel, activeTool, index, settings);
+        if (options && options.drag) {
+          patchData({ vessel: next, history: copyArray(data.history), future: [], lastChange: vesselChange(vessel, next), dragStartVessel: options.start ? copyVessel(vessel) : (data.dragStartVessel || copyVessel(vessel)), dragging: true });
+          return;
+        }
         commitVessel(next, next.lastOutcome);
+      }
+      function finishGesture() {
+        if (!data.dragStartVessel) return;
+        var history = copyArray(data.history).concat([copyVessel(data.dragStartVessel)]).slice(-24);
+        patchData({ history: history, future: [], dragStartVessel: null, dragging: false });
+        announce(vessel.lastOutcome || 'Pottery drag gesture completed.');
       }
       function undo() {
         var history = copyArray(data.history);
         if (!history.length) { announce('Nothing to undo.'); return; }
         var previous = history.pop();
-        patchData({ vessel: previous, history: history, future: [copyVessel(vessel)].concat(copyArray(data.future)).slice(0, 24), recipeDraft: normalizeRecipe(previous.materialRecipe) });
+        patchData({ vessel: previous, history: history, future: [copyVessel(vessel)].concat(copyArray(data.future)).slice(0, 24), recipeDraft: normalizeRecipe(previous.materialRecipe), lastChange: vesselChange(vessel, previous), dragStartVessel: null, dragging: false });
         announce('Pottery action undone.');
       }
       function redo() {
         var future = copyArray(data.future);
         if (!future.length) { announce('Nothing to redo.'); return; }
         var next = future.shift();
-        patchData({ vessel: next, history: copyArray(data.history).concat([copyVessel(vessel)]).slice(-24), future: future, recipeDraft: normalizeRecipe(next.materialRecipe) });
+        patchData({ vessel: next, history: copyArray(data.history).concat([copyVessel(vessel)]).slice(-24), future: future, recipeDraft: normalizeRecipe(next.materialRecipe), lastChange: vesselChange(vessel, next), dragStartVessel: null, dragging: false });
         announce('Pottery action redone.');
       }
       function resetClay(preset, bodyId) {
@@ -1342,6 +1687,25 @@
           h('div', { className: 'text-lg font-black text-slate-900' }, value),
           h('div', { className: 'text-[10px] text-slate-600' }, note));
       }
+      function signed(value, digits, unit) {
+        var amount = finite(value, 0);
+        return (amount >= 0 ? '+' : '') + amount.toFixed(digits) + unit;
+      }
+      function changeFeedback() {
+        var change = data.lastChange;
+        if (!change || typeof change !== 'object') return null;
+        var items = [];
+        if (change.beforeStage !== change.afterStage) items.push('Stage ' + stageLabel(change.beforeStage) + ' → ' + stageLabel(change.afterStage));
+        if (Math.abs(finite(change.stabilityDelta, 0)) >= 0.5) items.push('stability ' + signed(change.stabilityDelta, 1, ' pts'));
+        if (Math.abs(finite(change.centeredDelta, 0)) >= 0.5) items.push('centering ' + signed(change.centeredDelta, 1, ' pts'));
+        if (Math.abs(finite(change.minWallDelta, 0)) >= 0.01) items.push('minimum wall ' + signed(change.minWallDelta, 2, ' cm'));
+        if (Math.abs(finite(change.capacityDelta, 0)) >= 0.5) items.push('capacity ' + signed(change.capacityDelta, 1, ' mL'));
+        if (Math.abs(finite(change.massDelta, 0)) >= 0.5) items.push('clay mass ' + signed(change.massDelta, 1, ' g'));
+        if (!items.length) items.push('the tracked measures changed only slightly');
+        return h('div', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-2 text-xs text-cyan-950', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+          h('strong', null, 'What changed since the previous checkpoint: '), items.join(' · '),
+          change.outcome ? h('p', { className: 'mt-1 text-[11px]' }, 'Outcome: ' + change.outcome) : null);
+      }
       function rangeControl(id, label, value, min, max, unit, onChange, disabled) {
         return h('label', { htmlFor: id, className: 'block text-xs font-bold text-slate-700' },
           label + ': ', h('output', { htmlFor: id, className: 'text-amber-800' }, Math.round(value) + unit),
@@ -1349,31 +1713,156 @@
       }
       function tabButton(id, label, icon) {
         var selected = view === id;
-        return h('button', { type: 'button', role: 'tab', id: 'wheel-fire-tab-' + id, 'aria-controls': 'wheel-fire-panel-' + id, 'aria-selected': selected, tabIndex: selected ? 0 : -1, onClick: function () { setView(id); }, className: 'min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border transition-colors ' + (selected ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50') }, icon + ' ' + label);
+        return h('button', { type: 'button', role: 'tab', id: 'wheel-fire-tab-' + id, 'aria-controls': selected ? 'wheel-fire-panel-' + id : undefined, 'aria-selected': selected, tabIndex: selected ? 0 : -1, onClick: function () { setView(id); }, onKeyDown: function (event) { handleTabKey(event, id); }, className: 'min-h-[42px] px-3 py-2 rounded-xl text-xs font-extrabold border transition-colors ' + (selected ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50') }, icon + ' ' + label);
+      }
+      function experienceModeControl() {
+        var modes = [
+          { id: 'guided', label: 'Guided', description: 'Keeps the next action, core simulation, evidence graph, and safety guidance visible while hiding advanced shelves and wide research logs.' },
+          { id: 'studio', label: 'Studio', description: 'Shows the complete making lifecycle and all current comparison tools. This is the default workspace.' },
+          { id: 'research', label: 'Research', description: 'Keeps the complete studio and adds explicit model-audit information for deeper investigations.' }
+        ];
+        var selected = modes.filter(function (mode) { return mode.id === experienceMode; })[0] || modes[1];
+        function selectMode(id) {
+          patchData({ experienceMode: id });
+          var chosen = modes.filter(function (mode) { return mode.id === id; })[0];
+          announce((chosen ? chosen.label : 'Studio') + ' experience mode selected.');
+        }
+        return h('section', { className: 'rounded-xl border border-stone-300 bg-white p-2 flex flex-wrap items-center gap-2', 'aria-labelledby': 'wheel-fire-experience-mode-title' },
+          h('h2', { id: 'wheel-fire-experience-mode-title', className: 'text-xs font-black text-stone-800 mr-1' }, 'Workspace depth'),
+          h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Pottery workspace depth' }, modes.map(function (mode) {
+            return h('button', { type: 'button', key: mode.id, 'aria-pressed': experienceMode === mode.id, onClick: function () { selectMode(mode.id); }, className: 'rounded-lg border px-3 py-2 text-xs font-bold ' + (experienceMode === mode.id ? 'border-stone-800 bg-stone-800 text-white' : 'border-stone-300 bg-white text-stone-700 hover:bg-stone-50') }, mode.label);
+          })),
+          h('p', { className: 'text-[11px] text-stone-600 flex-1 min-w-[220px]', 'aria-live': 'polite' }, selected.description)
+        );
+      }
+      function safeHistoryIndex() {
+        var history = copyArray(data.history);
+        for (var index = history.length - 1; index >= 0; index -= 1) {
+          var candidate = normalizeVessel(history[index]);
+          if (!candidate.collapsed && !copyArray(candidate.defects).length) return index;
+        }
+        return -1;
+      }
+      function restoreLastSafeCheckpoint() {
+        var history = copyArray(data.history);
+        var index = safeHistoryIndex();
+        if (index < 0) { announce('No earlier safe checkpoint is available. Load fresh clay or a saved journal record.'); return; }
+        var safe = copyVessel(history[index]);
+        patchData({ vessel: safe, history: history.slice(0, index), future: [copyVessel(vessel)].concat(copyArray(data.future)).slice(0, 24), recipeDraft: normalizeRecipe(safe.materialRecipe), lastChange: vesselChange(vessel, safe), dragStartVessel: null, dragging: false, view: 'shape', workRing: failureReport.criticalRing });
+        announce('Restored the last checkpoint before modeled failure. Change one input before repeating the trial.');
+      }
+      function failureAutopsy() {
+        if (!failureReport.ready) return null;
+        var checkpointIndex = safeHistoryIndex();
+        var primary = failureReport.contributors[0];
+        return h('section', { className: 'rounded-2xl border border-rose-400 bg-rose-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-autopsy-title' },
+          h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+            h('div', null,
+              h('h2', { id: 'wheel-fire-autopsy-title', className: 'font-black text-rose-950' }, 'Modeled outcome autopsy · ' + failureReport.eventLabel),
+              h('p', { className: 'text-xs text-rose-950 mt-1' }, 'This traces contributors inside the teaching model. It is a diagnostic hypothesis, not proof of what caused a real ceramic failure.')
+            ),
+            h('span', { className: 'rounded-full border border-rose-300 bg-white px-2 py-1 text-[11px] font-bold text-rose-900' }, failureReport.defects.length + ' modeled flag' + (failureReport.defects.length === 1 ? '' : 's'))
+          ),
+          h('ol', { className: 'grid md:grid-cols-3 gap-2 text-xs text-rose-950', 'aria-label': 'Modeled failure chain' },
+            h('li', { className: 'rounded-lg border border-rose-200 bg-white p-2' }, h('strong', { className: 'block' }, '1. Input or condition'), primary.label, h('span', { className: 'block text-[11px] text-slate-600 mt-1' }, primary.evidence)),
+            h('li', { className: 'rounded-lg border border-rose-200 bg-white p-2' }, h('strong', { className: 'block' }, '2. Vulnerable response'), failureReport.responseLabel),
+            h('li', { className: 'rounded-lg border border-rose-200 bg-white p-2' }, h('strong', { className: 'block' }, '3. Modeled outcome'), failureReport.outcomeLabel)
+          ),
+          h('details', { className: 'rounded-lg border border-rose-200 bg-white p-2', open: experienceMode === 'research' ? true : undefined },
+            h('summary', { className: 'cursor-pointer text-xs font-black text-rose-950' }, 'Ranked contributors and next tests'),
+            h('ol', { className: 'list-decimal pl-5 mt-2 space-y-2 text-xs text-rose-950' }, failureReport.contributors.map(function (item) {
+              return h('li', { key: item.id }, h('strong', null, item.label + ': '), item.evidence, h('span', { className: 'block text-[11px] text-slate-700' }, 'Next controlled test: ' + item.action));
+            }))
+          ),
+          h('div', { className: 'flex flex-wrap gap-2' },
+            h('button', { type: 'button', onClick: function () { patchData({ view: 'shape', workRing: failureReport.criticalRing }); announce('Focused the highest-risk ring in Shape.'); }, className: 'rounded-lg border border-rose-400 bg-white px-3 py-2 text-xs font-black text-rose-900' }, 'Inspect ring ' + (failureReport.criticalRing + 1)),
+            checkpointIndex >= 0 ? h('button', { type: 'button', onClick: restoreLastSafeCheckpoint, className: 'rounded-lg bg-rose-800 px-3 py-2 text-xs font-black text-white' }, 'Restore last safe checkpoint') : h('p', { className: 'text-[11px] text-rose-900 self-center' }, 'No safe checkpoint is stored; load fresh clay or a journal record.')
+          )
+        );
       }
       function stageStrip() {
         var current = stageIndex(vessel.stage);
         return h('div', { className: 'wheel-fire-stage-line', role: 'list', 'aria-label': 'Pottery lifecycle' }, STAGES.map(function (stage, index) {
           var complete = index <= current;
-          return h('div', { key: stage, role: 'listitem', 'aria-current': stage === vessel.stage ? 'step' : undefined, className: 'rounded-lg border px-2 py-1 text-center text-[10px] font-bold ' + (stage === vessel.stage ? 'bg-amber-700 text-white border-amber-800' : (complete ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-50 text-slate-500 border-slate-200')) }, stage.replace('-', ' '));
+          return h('div', { key: stage, role: 'listitem', 'aria-current': stage === vessel.stage ? 'step' : undefined, className: 'rounded-lg border px-2 py-1 text-center text-[10px] font-bold ' + (stage === vessel.stage ? 'bg-amber-700 text-white border-amber-800' : (complete ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-slate-50 text-slate-500 border-slate-200')) }, stageLabel(stage));
         }));
+      }
+      function guidancePanel() {
+        var isNew = !copyArray(data.history).length && vessel.stage === 'wet';
+        var nextView = vessel.stage === 'wet' || vessel.stage === 'leather-hard' ? 'shape' : (vessel.stage === 'glaze-fired' ? 'performance' : 'kiln');
+        var nextLabel = nextView === 'shape' ? 'Open Shape' : (nextView === 'kiln' ? 'Open Dry & fire' : 'Open Use tests');
+        var visitedTraditions = Object.keys(data.visitedTraditions || {}).length;
+        var performanceCount = copyArray(data.performanceLog).length;
+        var challenges = [
+          { label: 'Center the clay', progress: Math.round(vessel.centered) + '%', complete: vessel.centered >= 80 },
+          { label: 'Make a stable thin wall', progress: stats.minWallCm.toFixed(2) + ' cm', complete: stats.minWallCm < 1 && stats.stability >= 55 },
+          { label: 'Study three named traditions', progress: Math.min(3, visitedTraditions) + '/3', complete: visitedTraditions >= 3 },
+          { label: 'Run two use tests', progress: Math.min(2, performanceCount) + '/2', complete: performanceCount >= 2 }
+        ];
+        var guideText = isNew ? 'Pottery is a sequence: shape → dry slowly → fire → optionally glaze → fire again → test. Start with one small shaping change and watch the measurements respond.' : (
+          vessel.stage === 'wet' ? 'Make one small change at a time. Select a tool, choose a work zone, then apply it and read the outcome below the canvas.' :
+          vessel.stage === 'leather-hard' ? 'Leather-hard clay is firm but still trimmable. Use Trim or Scrape for a controlled change, then review drying before firing.' :
+          vessel.stage === 'bone-dry' ? 'Bone-dry means free water has left the clay. Review the modeled drying history, then run the bisque firing when the schedule makes sense.' :
+          vessel.stage === 'bisque' ? 'Bisque is the first fired checkpoint. Apply a glaze in Dry & fire, then run a glaze firing; the surface outcome is still a model to test.' :
+          vessel.stage === 'glazed' ? 'The glaze is on the bisque. Review fit and heatwork, then run the glaze firing when the schedule is appropriate.' :
+          'The piece is glaze-fired. Run a use test, write an observation, and compare the result with the model instead of treating the score as certification.'
+        );
+        var collapseNote = vessel.collapsed ? h('div', { className: 'rounded-lg border border-red-400 bg-red-50 p-2 text-xs text-red-950', role: 'alert' }, h('strong', null, 'The form collapsed. '), 'Undo the last action, lower one input, and try again. A collapse is feedback about the current combination of variables, not a failure.') : null;
+        return h('section', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-2', 'aria-labelledby': 'wheel-fire-guidance-title' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+            h('h2', { id: 'wheel-fire-guidance-title', className: 'font-black text-teal-950' }, isNew ? 'Start here' : 'Next suggested step'),
+            h('span', { className: 'rounded-full border border-teal-300 bg-white px-2 py-1 text-[11px] font-bold text-teal-900' }, 'Phase ' + (stageIndex(vessel.stage) + 1) + ' of ' + STAGES.length)
+          ),
+          h('p', { className: 'text-xs text-teal-950' }, guideText),
+          isNew ? h('ol', { className: 'list-decimal pl-5 text-xs text-teal-950 space-y-1' },
+            h('li', null, 'Choose Potter\'s wheel or Handbuild coils.'),
+            h('li', null, 'Choose a tool, then click or drag the profile; the blue dashed line marks the work zone.'),
+            h('li', null, 'Apply the tool and watch stability, wall thickness, capacity, and the latest outcome.')
+          ) : null,
+          collapseNote,
+          vessel.collapsed && copyArray(data.history).length ? h('button', { type: 'button', onClick: undo, className: 'rounded-lg border border-red-400 bg-white px-3 py-2 text-xs font-black text-red-900' }, 'Undo the collapse') : null,
+          nextView !== view ? h('button', { type: 'button', onClick: function () { setView(nextView); }, className: 'rounded-lg border border-teal-400 bg-white px-3 py-2 text-xs font-black text-teal-900' }, nextLabel) : null,
+          changeFeedback(),
+          h('details', { className: 'rounded-lg border border-teal-200 bg-white p-2' },
+            h('summary', { className: 'cursor-pointer text-xs font-black text-teal-950' }, 'Optional studio challenges'),
+            h('ul', { className: 'mt-2 space-y-1 text-[11px] text-teal-950' }, challenges.map(function (challenge) {
+              return h('li', { key: challenge.label, className: 'flex flex-wrap items-center justify-between gap-2' }, h('span', { className: 'font-bold' }, challenge.complete ? 'Complete: ' : 'Try: ', challenge.label), h('span', null, challenge.progress));
+            }))
+          )
+        );
       }
       function vesselSvg() {
         var selectedY = geometry.bottom - workRing / (RING_COUNT - 1) * geometry.heightPx;
+        var contactRadius = Math.max(1, Math.floor(contactSpan / 2));
+        var contactTopRing = Math.min(RING_COUNT - 1, workRing + contactRadius);
+        var contactBottomRing = Math.max(0, workRing - contactRadius);
+        var contactTopY = geometry.bottom - contactTopRing / (RING_COUNT - 1) * geometry.heightPx;
+        var contactBottomY = geometry.bottom - contactBottomRing / (RING_COUNT - 1) * geometry.heightPx;
+        var selectedOuterRadius = vessel.radii[workRing] * geometry.scale;
+        var selectedInnerRadius = Math.max(8, (vessel.radii[workRing] - vessel.thickness[workRing]) * geometry.scale);
+        var perspectiveDepth = cameraTilt / 70;
+        var wheelEllipseRy = 16 + perspectiveDepth * 22;
+        var rimOuterRx = vessel.radii[RING_COUNT - 1] * geometry.scale;
+        var rimInnerRx = Math.max(5, (vessel.radii[RING_COUNT - 1] - vessel.thickness[RING_COUNT - 1]) * geometry.scale);
+        var rimEllipseRy = Math.max(3, rimOuterRx * (0.055 + perspectiveDepth * 0.075));
+        var wobblePx = method === 'wheel' && rpm > 0 ? clamp((vessel.wobble * 16 + (100 - vessel.centered) * .04) * (rpm / 60), 0, 16) : 0;
+        var wobbleLabel = vessel.wobble <= .12 && vessel.centered >= 90 ? 'low wobble' : (vessel.wobble <= .28 && vessel.centered >= 70 ? 'visible wobble' : 'strong wobble');
         var body = materialProfile(vessel);
         var fillColor = vessel.surfaceColor || body.color;
         var cavityColor = data.showCrossSection ? '#f6e4cb' : '#211711';
-        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(stats.compression) + ' percent compression, stage ' + vessel.stage + '. Active tool ' + activeTool + ' at ring ' + (workRing + 1) + ' of ' + RING_COUNT + '.';
+        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(vessel.centered) + ' percent centered with ' + wobbleLabel + ', ' + Math.round(stats.compression) + ' percent compression, stage ' + stageLabel(vessel.stage) + '. Active tool ' + activeTool + ' at ring ' + (workRing + 1) + ' of ' + RING_COUNT + ', with ' + Math.round(handSupport) + ' percent inside support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span.' + (formingPreviewAvailable && formingPreviewChanged ? ' The dashed profile predicts the next result, with stability changing by ' + formingPreviewStabilityDelta.toFixed(1) + ' points.' : '');
         function ringFromEvent(event) {
           var rect = event.currentTarget.getBoundingClientRect();
           var ratio = clamp((event.clientY - rect.top) / Math.max(1, rect.height), 0, 1);
           return Math.round((1 - ratio) * (RING_COUNT - 1));
         }
         return h('svg', {
-          viewBox: '0 0 520 460', role: 'img', tabIndex: 0, 'aria-label': svgLabel,
+          viewBox: '0 0 520 460', role: 'img', tabIndex: 0, 'aria-label': svgLabel, 'aria-describedby': 'wheel-fire-vessel-help', 'aria-keyshortcuts': 'ArrowUp ArrowDown Enter Space',
           className: 'w-full min-h-[320px] rounded-2xl border-2 border-amber-300 bg-[#2b211c] cursor-crosshair',
-          onPointerDown: function (event) { var index = ringFromEvent(event); patchData({ workRing: index }); applyActive(index); try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {} },
-          onPointerMove: function (event) { if (event.buttons === 1) { var index = ringFromEvent(event); patchData({ workRing: index }); applyActive(index); } },
+          onPointerDown: function (event) { if (event.button !== 0) return; var index = ringFromEvent(event); patchData({ workRing: index }); if (vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && activeTool === 'trim')) { patchData({ dragStartVessel: copyVessel(vessel), dragging: true }); applyActive(index, { drag: true, start: true }); } try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {} },
+          onPointerMove: function (event) { if (event.buttons === 1) { var index = ringFromEvent(event); patchData({ workRing: index }); applyActive(index, { drag: true }); } },
+          onPointerUp: function (event) { finishGesture(); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) {} },
+          onPointerCancel: finishGesture,
           onKeyDown: function (event) {
             if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { event.preventDefault(); patchData({ workRing: clamp(workRing + (event.key === 'ArrowUp' ? 1 : -1), 0, RING_COUNT - 1) }); }
             else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); applyActive(workRing); }
@@ -1387,22 +1876,47 @@
               h('stop', { offset: '52%', stopColor: '#f0c2a0' }),
               h('stop', { offset: '76%', stopColor: fillColor }),
               h('stop', { offset: '100%', stopColor: '#3b241d' })),
+            h('linearGradient', { id: 'wheel-fire-metal-gradient', x1: '0', y1: '0', x2: '0', y2: '1' },
+              h('stop', { offset: '0%', stopColor: '#b8a58f' }),
+              h('stop', { offset: '48%', stopColor: '#66574c' }),
+              h('stop', { offset: '100%', stopColor: '#2a2522' })),
+            h('radialGradient', { id: 'wheel-fire-workshop-glow', cx: '50%', cy: '30%', r: '75%' },
+              h('stop', { offset: '0%', stopColor: '#5b4638' }),
+              h('stop', { offset: '100%', stopColor: '#171210' })),
             h('filter', { id: 'wheel-fire-shadow', x: '-30%', y: '-20%', width: '160%', height: '160%' }, h('feDropShadow', { dx: '0', dy: '8', stdDeviation: '7', floodColor: '#000', floodOpacity: '.48' }))
           ),
-          h('ellipse', { cx: 260, cy: 426, rx: 150, ry: 22, fill: '#574538', stroke: '#a78b6a', strokeWidth: 4 }),
-          method === 'wheel' && rpm > 0 ? h('g', { className: 'wheel-fire-spin', 'aria-hidden': 'true' }, h('path', { d: 'M140 426h240M260 405v42', stroke: '#d6b889', strokeWidth: 3, opacity: .45 })) : null,
-          h('path', { d: geometry.outer, fill: data.showCrossSection ? fillColor : 'url(#wheel-fire-clay-gradient)', stroke: '#e2aa82', strokeWidth: 2, filter: 'url(#wheel-fire-shadow)' }),
-          h('path', { d: geometry.cavity, fill: cavityColor, stroke: data.showCrossSection ? '#8e5b3d' : '#130d0a', strokeWidth: 2 }),
-          [4, 9, 14, 19, 24, 29, 34].map(function (ring) {
-            var y = geometry.bottom - ring / (RING_COUNT - 1) * geometry.heightPx;
-            var radius = vessel.radii[ring] * geometry.scale;
-            return h('ellipse', { key: ring, cx: geometry.center, cy: y, rx: radius, ry: 3.4, fill: 'none', stroke: '#fff1df', strokeWidth: 1, opacity: method === 'coil' ? .26 : .12 });
-          }),
-          vessel.defects.indexOf('drying crack') >= 0 || vessel.defects.indexOf('thermal crack') >= 0 || vessel.defects.indexOf('dunting crack') >= 0 ? h('path', { d: 'M' + (geometry.center + vessel.radii[19] * geometry.scale * .62) + ',' + (geometry.bottom - 19 / 35 * geometry.heightPx) + ' l-12,18 9,15 -15,17', fill: 'none', stroke: '#2a1711', strokeWidth: 4, strokeLinecap: 'round' }) : null,
+          h('rect', { x: 0, y: 0, width: 520, height: 460, rx: 18, fill: 'url(#wheel-fire-workshop-glow)', 'aria-hidden': 'true' }),
+          h('path', { d: 'M0 315 L520 275 L520 460 L0 460 Z', fill: '#241b17', opacity: .78, 'aria-hidden': 'true' }),
+          [55, 150, 260, 370, 465].map(function (x) { return h('line', { key: 'floor-' + x, x1: 260, y1: 300, x2: x, y2: 460, stroke: '#8a6f5c', strokeWidth: 1, opacity: .16, 'aria-hidden': 'true' }); }),
+          h('path', { d: 'M196 424 L324 424 L343 458 L177 458 Z', fill: 'url(#wheel-fire-metal-gradient)', stroke: '#181311', strokeWidth: 3, 'aria-hidden': 'true' }),
+          h('ellipse', { cx: 260, cy: 420, rx: 196, ry: wheelEllipseRy + 9, fill: '#201a17', stroke: '#8a7664', strokeWidth: 4, 'aria-hidden': 'true' }),
+          h('ellipse', { cx: 260, cy: 415, rx: 158, ry: wheelEllipseRy, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#d0b99e', strokeWidth: 4, 'aria-hidden': 'true' }),
+          method === 'wheel' && rpm > 0 ? h('ellipse', { className: 'wheel-fire-wheel-motion', cx: 260, cy: 415, rx: 142, ry: Math.max(8, wheelEllipseRy - 6), fill: 'none', stroke: '#f5d7a8', strokeWidth: 3, strokeDasharray: '28 14', opacity: .58, style: { animationDuration: clamp(3.2 - rpm / 45, .55, 3.2).toFixed(2) + 's' }, 'aria-hidden': 'true' }) : null,
+          h('path', { d: 'M374 444 q34 -10 64 5 l-8 8 q-28 -4 -54 4z', fill: '#6f5c4c', stroke: '#211915', strokeWidth: 2, 'aria-hidden': 'true' }),
+          h('rect', { x: 78, y: contactTopY, width: 364, height: Math.max(6, contactBottomY - contactTopY), rx: 8, fill: '#22d3ee', opacity: .12, 'aria-hidden': 'true' }),
+          wobblePx > .6 ? h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimOuterRx + wobblePx, ry: rimEllipseRy + 3, fill: 'none', stroke: '#fb7185', strokeWidth: 1.5, strokeDasharray: '6 6', opacity: .72, 'aria-hidden': 'true' }) : null,
+          h('g', { className: wobblePx > .4 ? 'wheel-fire-wobble-motion' : '', style: { '--wheel-fire-wobble': wobblePx.toFixed(1) + 'px', '--wheel-fire-wobble-neg': (-wobblePx).toFixed(1) + 'px', animationDuration: clamp(2.2 - rpm / 75, .65, 2.2).toFixed(2) + 's' } },
+            h('path', { d: geometry.outer, fill: data.showCrossSection ? fillColor : 'url(#wheel-fire-clay-gradient)', stroke: '#e2aa82', strokeWidth: 2, filter: 'url(#wheel-fire-shadow)' }),
+            h('path', { d: geometry.cavity, fill: cavityColor, stroke: data.showCrossSection ? '#8e5b3d' : '#130d0a', strokeWidth: 2 }),
+            h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimOuterRx, ry: rimEllipseRy, fill: fillColor, stroke: '#f1c39f', strokeWidth: 2, opacity: .98, 'aria-hidden': 'true' }),
+            h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimInnerRx, ry: Math.max(2, rimEllipseRy * .72), fill: cavityColor, stroke: '#704832', strokeWidth: 2, 'aria-hidden': 'true' }),
+            data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewChanged ? h('path', { d: formingPreviewGeometry.outer, fill: 'none', stroke: formingPreviewVessel.collapsed ? '#fb7185' : '#fbbf24', strokeWidth: 3, strokeDasharray: '9 6', opacity: .95, pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
+            [4, 9, 14, 19, 24, 29, 34].map(function (ring) {
+              var y = geometry.bottom - ring / (RING_COUNT - 1) * geometry.heightPx;
+              var radius = vessel.radii[ring] * geometry.scale;
+              return h('ellipse', { key: ring, cx: geometry.center, cy: y, rx: radius, ry: Math.max(2.4, radius * (0.035 + perspectiveDepth * 0.035)), fill: 'none', stroke: '#fff1df', strokeWidth: 1, opacity: method === 'coil' ? .3 : .16 });
+            }),
+            vessel.defects.indexOf('drying crack') >= 0 || vessel.defects.indexOf('thermal crack') >= 0 || vessel.defects.indexOf('dunting crack') >= 0 ? h('path', { d: 'M' + (geometry.center + vessel.radii[19] * geometry.scale * .62) + ',' + (geometry.bottom - 19 / 35 * geometry.heightPx) + ' l-12,18 9,15 -15,17', fill: 'none', stroke: '#2a1711', strokeWidth: 4, strokeLinecap: 'round' }) : null
+          ),
+          h('path', { d: 'M64 420 A196 ' + (wheelEllipseRy + 9).toFixed(1) + ' 0 0 0 456 420', fill: 'none', stroke: '#c1a98f', strokeWidth: 5, opacity: .75, 'aria-hidden': 'true' }),
           h('line', { x1: 80, x2: 440, y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 }),
           h('circle', { cx: 62, cy: selectedY, r: 9, fill: '#06b6d4', stroke: '#cffafe', strokeWidth: 3 }),
+          h('circle', { cx: geometry.center - selectedInnerRadius + 5, cy: selectedY, r: 4 + handSupport * .035, fill: '#f0fdfa', stroke: '#0f766e', strokeWidth: 2, opacity: .95, 'aria-hidden': 'true' }),
+          h('circle', { cx: geometry.center + selectedOuterRadius + 8, cy: selectedY, r: 5, fill: lubrication > 78 ? '#fb7185' : '#38bdf8', stroke: '#e0f2fe', strokeWidth: 2, 'aria-hidden': 'true' }),
           h('text', { x: 20, y: 25, fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, method === 'wheel' ? Math.round(rpm) + ' RPM' : 'Handbuilding'),
-          h('text', { x: 500, y: 25, fill: '#fef3c7', fontSize: 13, textAnchor: 'end' }, data.showCrossSection ? 'Cross-section' : 'Surface view')
+          h('text', { x: 500, y: 25, fill: '#fef3c7', fontSize: 13, textAnchor: 'end' }, data.showCrossSection ? 'Material cutaway' : '3D wheel · ' + Math.round(cameraTilt) + '° tilt'),
+          h('text', { x: 20, y: 45, fill: '#cffafe', fontSize: 11, fontWeight: 700 }, 'Support ' + Math.round(handSupport) + '% · slip ' + Math.round(lubrication) + '% · contact ' + contactSpan + ' rings'),
+          method === 'wheel' ? h('text', { x: 500, y: 45, fill: vessel.centered >= 70 ? '#d9f99d' : '#fecdd3', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'Centering ' + Math.round(vessel.centered) + '% · ' + wobbleLabel) : null
         );
       }
       function shapePanel() {
@@ -1425,15 +1939,64 @@
           { id: 'trim', label: 'Scrape', icon: '⌁', help: 'Remove clay at leather-hard or wet stages.' }
         ];
         var tools = method === 'wheel' ? wheelTools : coilTools;
+        var selectedTool = tools.filter(function (tool) { return tool.id === activeTool; })[0] || tools[0];
+        function toolAllowed(tool) { return vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && tool.id === 'trim'); }
+        var toolStageNote = vessel.stage === 'wet' ? 'Wet clay accepts the full forming toolkit.' : (vessel.stage === 'leather-hard' ? 'Leather-hard clay only accepts Trim/Scrape in this model.' : 'Shaping is paused after leather-hard; continue in Dry & fire.');
+        function useSaferTouchSetup() {
+          var safer = {
+            pressure: Math.round(clamp(pressure - 15, 15, 80)),
+            handSupport: Math.round(Math.max(75, handSupport)),
+            lubrication: Math.round(clamp(lubrication, 20, 60)),
+            contactSpan: Math.round(Math.max(7, contactSpan))
+          };
+          if (method === 'wheel') safer.rpm = Math.round(clamp(rpm - 15, 20, 75));
+          patchData(safer);
+          announce('Loaded a safer comparative touch setup. Review the new forecast before applying the tool.');
+        }
+        function formingForecast() {
+          if (!formingPreviewAvailable) return null;
+          var reasons = [];
+          if (pressure >= 75) reasons.push('high pressure');
+          if (method === 'wheel' && rpm >= 80) reasons.push('high wheel speed');
+          if (handSupport < 35) reasons.push('low inside support');
+          if (lubrication > 78) reasons.push('excess lubrication');
+          if (contactSpan <= 4) reasons.push('concentrated contact');
+          var title = formingPreviewVessel.collapsed ? 'Collapse forecast' : (formingPreviewRisky ? 'High-risk forecast' : 'Before you shape');
+          var outcome = formingPreviewChanged ? (formingPreviewVessel.lastOutcome || 'The model predicts a measurable profile change.') : 'This setup predicts little measurable change at the selected ring.';
+          var reasonText = reasons.length ? 'Main setup signals: ' + reasons.join(', ') + '.' : 'The selected touch inputs remain within the model’s lower-risk comparative range.';
+          return h('section', { className: 'rounded-xl border p-3 space-y-2 ' + (formingPreviewRisky ? 'border-rose-400 bg-rose-50 text-rose-950' : 'border-amber-300 bg-amber-50 text-amber-950'), role: 'status', 'aria-live': 'polite', 'aria-labelledby': 'wheel-fire-forming-forecast-title' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('h3', { id: 'wheel-fire-forming-forecast-title', className: 'font-black' }, title),
+              h('span', { className: 'text-[11px] font-bold' }, 'Preview only · no clay changed')
+            ),
+            h('p', { className: 'text-xs' }, outcome),
+            h('p', { className: 'text-[11px] font-bold' }, 'Predicted: stability ' + signed(formingPreviewStabilityDelta, 1, ' pts') + ' · minimum wall ' + signed(formingPreviewWallDelta, 2, ' cm') + ' · height ' + signed(formingPreviewHeightDelta, 2, ' cm') + ' · capacity ' + signed(formingPreviewCapacityDelta, 0, ' mL')),
+            h('p', { className: 'text-[11px]' }, reasonText),
+            h('div', { className: 'flex flex-wrap items-center gap-3' },
+              h('label', { className: 'flex items-center gap-2 text-xs font-bold' }, h('input', { type: 'checkbox', checked: data.showFormingPreview !== false, onChange: function (event) { patchData({ showFormingPreview: event.target.checked }); } }), 'Show predicted profile'),
+              formingPreviewRisky ? h('button', { type: 'button', onClick: useSaferTouchSetup, className: 'rounded-lg border border-rose-500 bg-white px-3 py-2 text-xs font-black text-rose-900' }, 'Use safer touch setup') : null
+            )
+          );
+        }
         return h('section', { id: 'wheel-fire-panel-shape', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-shape', className: 'space-y-3' },
           h('div', { className: 'wheel-fire-main' },
             h('div', { className: 'space-y-2' }, vesselSvg(),
-              h('p', { className: 'text-[11px] text-slate-600 text-center' }, 'Pointer: press or drag on the vessel. Keyboard: choose a work height with Arrow keys and press Enter or Space to apply the active tool.'),
+              h('p', { id: 'wheel-fire-vessel-help', className: 'text-[11px] text-slate-600 text-center' }, 'Pointer: press or drag on the vessel. The blue dashed line is the selected work ring; the pale cyan band shows contact span. The inner marker shows support, the outer marker shows lubricated contact, and the dashed amber outline predicts the next profile. Keyboard: use Arrow keys, then press Enter or Space to apply the active tool.'),
+              formingForecast(),
               h('div', { className: 'wheel-fire-stats', role: 'group', 'aria-label': 'Live vessel measurements' },
                 metricCard('Stability', percent(stats.stability), stats.status, stats.stability >= 55 ? 'border-emerald-300' : 'border-red-300'),
                 metricCard('Minimum wall', stats.minWallCm.toFixed(2) + ' cm', 'Average ' + stats.averageWallCm.toFixed(2) + ' cm'),
                 metricCard('Clay mass', Math.round(stats.massG) + ' g', 'Approx. volume ' + Math.round(stats.volumeCm3) + ' cm³'),
                 metricCard('Capacity', Math.round(stats.capacityMl) + ' mL', stats.shape)
+              ),
+              h('details', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-3' },
+                h('summary', { className: 'cursor-pointer text-xs font-black text-amber-950' }, 'What do these numbers mean?'),
+                h('dl', { className: 'grid sm:grid-cols-2 gap-2 mt-2 text-[11px] text-amber-950' },
+                  h('div', null, h('dt', { className: 'font-black' }, 'Stability'), h('dd', null, 'How well the current shape tolerates pressure, speed, moisture, height, and overhang.')),
+                  h('div', null, h('dt', { className: 'font-black' }, 'Minimum wall'), h('dd', null, 'The thinnest modeled zone. Thinner can save clay but may reduce strength or make drying harder to control.')),
+                  h('div', null, h('dt', { className: 'font-black' }, 'Clay mass'), h('dd', null, 'An approximate amount of clay. Adding a coil increases mass; trimming removes it.')),
+                  h('div', null, h('dt', { className: 'font-black' }, 'Capacity'), h('dd', null, 'Modeled interior volume. Opening, pulling, and expanding change it even when the outside silhouette looks similar.'))
+                )
               )
             ),
             h('div', { className: 'space-y-3' },
@@ -1449,17 +2012,24 @@
                 h('label', { htmlFor: 'wheel-fire-clay', className: 'block text-xs font-bold text-slate-700' }, 'Clay body',
                   h('select', { id: 'wheel-fire-clay', value: vessel.clayBody, onChange: function (event) { resetClay(vessel.preset || 'lump', event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 px-2 py-2 bg-white' }, Object.keys(CLAY_BODIES).map(function (id) { return h('option', { key: id, value: id }, CLAY_BODIES[id].name); }))),
                 rangeControl('wheel-fire-pressure', 'Hand pressure', pressure, 5, 100, '%', function (value) { patchData({ pressure: value }); }),
+                rangeControl('wheel-fire-hand-support', 'Inside-hand support', handSupport, 0, 100, '%', function (value) { patchData({ handSupport: value }); }),
+                rangeControl('wheel-fire-lubrication', 'Surface lubrication', lubrication, 0, 100, '%', function (value) { patchData({ lubrication: value }); }),
+                h('div', { className: 'wheel-fire-advanced' }, rangeControl('wheel-fire-contact-span', 'Contact span', contactSpan, 3, 11, ' rings', function (value) { patchData({ contactSpan: Math.round(value) }); })),
+                h('div', { className: 'wheel-fire-advanced' }, rangeControl('wheel-fire-camera-tilt', '3D camera tilt', cameraTilt, 20, 70, '°', function (value) { patchData({ cameraTilt: value }); })),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Inside support balances exterior force. Moderate water or slip reduces drag; excess can reduce control. A wider contact span distributes the same move across more rings.'),
                 rangeControl('wheel-fire-rpm', 'Wheel speed', rpm, 0, 120, ' RPM', function (value) { patchData({ rpm: value }); }, method !== 'wheel'),
                 rangeControl('wheel-fire-moisture', 'Clay moisture', vessel.moisture * 100, 5, 100, '%', function (value) { var next = copyVessel(vessel); next.moisture = value / 100; next.lastOutcome = 'Clay moisture adjusted for the simulation.'; commitVessel(next, next.lastOutcome); }),
-                rangeControl('wheel-fire-height', 'Work height', workRing + 1, 1, RING_COUNT, ' / ' + RING_COUNT, function (value) { patchData({ workRing: value - 1 }); }),
+                rangeControl('wheel-fire-height', 'Work height (ring)', workRing + 1, 1, RING_COUNT, ' / ' + RING_COUNT, function (value) { patchData({ workRing: value - 1 }); }),
                 h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, h('input', { type: 'checkbox', checked: !!data.showCrossSection, onChange: function (event) { patchData({ showCrossSection: event.target.checked }); } }), 'Show material cross-section')
               ),
               h('div', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3' },
                 h('h3', { className: 'font-black text-teal-950 mb-2' }, 'Clay tools'),
+                h('p', { className: 'text-[11px] text-teal-950 mb-2' }, toolStageNote),
+                h('p', { className: 'text-[11px] text-teal-950 mb-2' }, 'Active tool: ', h('strong', null, selectedTool.label), ' — ', selectedTool.help),
                 h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Clay shaping tools' }, tools.map(function (tool) {
-                  return h('button', { type: 'button', key: tool.id, title: tool.help, 'aria-label': tool.label + '. ' + tool.help, 'aria-pressed': activeTool === tool.id, onClick: function () { patchData({ activeTool: tool.id }); }, className: 'min-h-[42px] rounded-lg border px-2 py-2 text-xs font-bold ' + (activeTool === tool.id ? 'bg-teal-700 text-white border-teal-800' : 'bg-white text-teal-900 border-teal-300') }, tool.icon + ' ' + tool.label);
+                  return h('button', { type: 'button', key: tool.id, 'data-tooltip': tool.help, disabled: !toolAllowed(tool), 'aria-label': tool.label + '. ' + tool.help, 'aria-pressed': activeTool === tool.id, onClick: function () { patchData({ activeTool: tool.id }); }, className: 'min-h-[42px] rounded-lg border px-2 py-2 text-xs font-bold disabled:opacity-40 ' + (activeTool === tool.id ? 'bg-teal-700 text-white border-teal-800' : 'bg-white text-teal-900 border-teal-300') }, tool.icon + ' ' + tool.label);
                 })),
-                h('button', { type: 'button', onClick: function () { applyActive(workRing); }, className: 'mt-2 w-full rounded-lg bg-teal-800 text-white px-3 py-2 font-black text-sm' }, 'Apply ' + activeTool.replace('-', ' ') + ' at ring ' + (workRing + 1))
+                h('button', { type: 'button', disabled: !toolAllowed(selectedTool), onClick: function () { applyActive(workRing); }, className: 'mt-2 w-full rounded-lg bg-teal-800 text-white px-3 py-2 font-black text-sm disabled:opacity-40' }, 'Apply ' + selectedTool.label + ' at work zone ' + (workRing + 1) + ' of ' + RING_COUNT)
               ),
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', { type: 'button', onClick: undo, disabled: !copyArray(data.history).length, className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold disabled:opacity-40' }, '↶ Undo'),
@@ -1471,7 +2041,31 @@
         );
       }
       function sciencePanel() {
-        var logs = copyArray(data.measurementLog);
+        var allLogs = copyArray(data.measurementLog);
+        var seriesNames = {};
+        var seriesOrder = [];
+        allLogs.forEach(function (row) {
+          var rowSeriesId = String(row.seriesId || 'series-legacy');
+          var rowSeriesName = String(row.seriesName || '').trim();
+          if (!Object.prototype.hasOwnProperty.call(seriesNames, rowSeriesId)) seriesOrder.push(rowSeriesId);
+          if (rowSeriesName || !Object.prototype.hasOwnProperty.call(seriesNames, rowSeriesId)) seriesNames[rowSeriesId] = rowSeriesName || (rowSeriesId === 'series-legacy' ? 'Unassigned trials' : 'Untitled series');
+        });
+        var inferredSeriesId = allLogs.length ? String(allLogs[allLogs.length - 1].seriesId || 'series-legacy') : 'series-1';
+        var activeSeriesId = String(data.trialSeriesId || inferredSeriesId);
+        if (!Object.prototype.hasOwnProperty.call(seriesNames, activeSeriesId)) seriesOrder.push(activeSeriesId);
+        var activeSeriesName = String(data.trialSeriesName || seriesNames[activeSeriesId] || '').trim() || (activeSeriesId === 'series-legacy' ? 'Unassigned trials' : 'Current mechanics study');
+        seriesNames[activeSeriesId] = activeSeriesName;
+        var seriesCatalog = seriesOrder.map(function (id) { return { id: id, name: id === activeSeriesId ? activeSeriesName : seriesNames[id] }; });
+        var logs = allLogs.filter(function (row) { return String(row.seriesId || 'series-legacy') === activeSeriesId; });
+        var trialBaselineIds = data.trialBaselineIds && typeof data.trialBaselineIds === 'object' ? data.trialBaselineIds : {};
+        function trialKey(row, index) { return row && row.id !== undefined ? String(row.id) : 'legacy-' + index; }
+        var selectedBaselineId = String(trialBaselineIds[activeSeriesId] || '');
+        var baselineLog = null;
+        for (var baselineIndex = 0; baselineIndex < logs.length; baselineIndex += 1) {
+          if (trialKey(logs[baselineIndex], baselineIndex) === selectedBaselineId) { baselineLog = logs[baselineIndex]; break; }
+        }
+        if (!baselineLog && logs.length) baselineLog = logs[0];
+        var activeBaselineId = baselineLog ? trialKey(baselineLog, logs.indexOf(baselineLog)) : '';
         var materialScenarios = copyArray(data.materialScenarios);
         var namedBody = clayBody(vessel.clayBody);
         var activeRecipe = normalizeRecipe(vessel.materialRecipe);
@@ -1544,14 +2138,386 @@
         if (recipeDraft.porosityShift !== 0) recipeTradeoffs.push((recipeDraft.porosityShift > 0 ? 'Higher' : 'Lower') + ' porosity adjustment changes the modeled fired pore pathway and permeability proxy.');
         if (!recipeTradeoffs.length) recipeTradeoffs.push('The preview matches the named body baseline. Add a small assumption, then compare the predicted tradeoff before shaping or firing.');
         function logTrial() {
-          var row = { id: Date.now(), method: method, materialRecipe: normalizeRecipe(vessel.materialRecipe), rpm: Math.round(rpm), pressure: Math.round(pressure), moisture: Math.round(vessel.moisture * 100), minWall: stats.minWallCm.toFixed(2), uniformity: Math.round(stats.uniformity), compression: Math.round(stats.compression), coilBond: Math.round(stats.coilBond), overhang: Math.round(stats.overhangRisk), stability: Math.round(stats.stability), outcome: stats.status };
-          patchData({ measurementLog: logs.concat([row]).slice(-12) });
+          var row = { id: Date.now(), seriesId: activeSeriesId, seriesName: activeSeriesName, method: method, clayBody: vessel.clayBody, tool: activeTool, workRing: workRing, hypothesis: String(data.hypothesis || '').trim().slice(0, 240), observation: String(data.trialObservation || '').trim().slice(0, 240), stage: vessel.stage, materialRecipe: normalizeRecipe(vessel.materialRecipe), rpm: Math.round(rpm), pressure: Math.round(pressure), handSupport: Math.round(handSupport), lubrication: Math.round(lubrication), contactSpan: Math.round(contactSpan), moisture: Math.round(vessel.moisture * 100), minWall: stats.minWallCm.toFixed(2), uniformity: Math.round(stats.uniformity), compression: Math.round(stats.compression), coilBond: Math.round(stats.coilBond), overhang: Math.round(stats.overhangRisk), stability: Math.round(stats.stability), outcome: stats.status };
+          var nextSeriesLogs = logs.concat([row]).slice(-12);
+          var nextLogs = allLogs.filter(function (candidate) { return String(candidate.seriesId || 'series-legacy') !== activeSeriesId; }).concat(nextSeriesLogs);
+          patchData({ measurementLog: nextLogs, trialObservation: '', removedMechanicsTrial: null });
           announce('Measurement trial logged.');
+        }
+        function selectTrialSeries(id) {
+          var nextId = String(id || 'series-1');
+          var nextName = seriesNames[nextId] || (nextId === 'series-legacy' ? 'Unassigned trials' : 'Untitled series');
+          patchData({ trialSeriesId: nextId, trialSeriesName: nextName });
+          announce('Switched to the ' + nextName + ' experiment series. Only this series is compared here.');
+        }
+        function selectTrialBaseline(id) {
+          var nextId = String(id || '');
+          var nextBaselines = Object.assign({}, trialBaselineIds);
+          nextBaselines[activeSeriesId] = nextId;
+          var selectedIndex = -1;
+          logs.forEach(function (row, index) { if (trialKey(row, index) === nextId) selectedIndex = index; });
+          patchData({ trialBaselineIds: nextBaselines });
+          announce('Reference trial set to Trial ' + (selectedIndex + 1) + ' for the ' + activeSeriesName + ' series.');
+        }
+        function startTrialSeries() {
+          var nextId = 'series-' + Date.now();
+          patchData({ trialSeriesId: nextId, trialSeriesName: '' });
+          announce('New mechanics experiment series started. Earlier trials remain saved in the journal.');
+        }
+        function replayTrial(row) {
+          var replayMethod = row.method === 'coil' ? 'coil' : 'wheel';
+          var wheelTools = ['center', 'open', 'pull', 'belly', 'collar', 'smooth', 'trim'];
+          var coilTools = ['add-coil', 'open', 'belly', 'collar', 'paddle', 'smooth', 'trim'];
+          var allowedTools = replayMethod === 'coil' ? coilTools : wheelTools;
+          var replayTool = allowedTools.indexOf(row.tool) >= 0 ? row.tool : (replayMethod === 'coil' ? 'add-coil' : 'center');
+          var replayRing = Math.round(clamp(finite(row.workRing, workRing), 0, RING_COUNT - 1));
+          var replayPatch = { view: 'shape', method: replayMethod, activeTool: replayTool, workRing: replayRing, rpm: replayMethod === 'coil' ? 0 : clamp(finite(row.rpm, rpm), 0, 120), pressure: clamp(finite(row.pressure, pressure), 5, 100), handSupport: clamp(finite(row.handSupport, handSupport), 0, 100), lubrication: clamp(finite(row.lubrication, lubrication), 0, 100), contactSpan: Math.round(clamp(finite(row.contactSpan, contactSpan), 3, 11)), hypothesis: row.hypothesis || data.hypothesis || '' };
+          var replayRecipeLabel = '';
+          if (Object.prototype.hasOwnProperty.call(row, 'materialRecipe')) {
+            var replayRecipe = normalizeRecipe(row.materialRecipe);
+            var replayVessel = copyVessel(vessel);
+            if (row.clayBody && CLAY_BODIES[row.clayBody]) replayVessel.clayBody = row.clayBody;
+            replayVessel.materialRecipe = replayRecipe;
+            replayPatch.vessel = normalizeVessel(replayVessel);
+            replayPatch.recipeDraft = replayRecipe;
+            replayRecipeLabel = replayRecipe ? (replayRecipe.label || 'recipe study') : 'named body baseline';
+          }
+          patchData(replayPatch);
+          announce('Loaded the ' + replayTool + ' setup at ring ' + (replayRing + 1) + (replayRecipeLabel ? ' with ' + replayRecipeLabel : '') + ' in Shape. Change one input before the next trial.');
+        }
+        function removeTrial(row, index) {
+          var removedKey = trialKey(row, index);
+          var allIndex = allLogs.indexOf(row);
+          if (allIndex < 0) return;
+          var nextLogs = allLogs.slice();
+          nextLogs.splice(allIndex, 1);
+          var remaining = logs.filter(function (candidate) { return candidate !== row; });
+          var nextBaselines = Object.assign({}, trialBaselineIds);
+          var wasReference = activeBaselineId === removedKey;
+          if (wasReference) {
+            var fallbackIndex = Math.min(index, Math.max(0, remaining.length - 1));
+            nextBaselines[activeSeriesId] = remaining.length ? trialKey(remaining[fallbackIndex], fallbackIndex) : '';
+          }
+          patchData({
+            measurementLog: nextLogs,
+            trialBaselineIds: nextBaselines,
+            removedMechanicsTrial: {
+              row: Object.assign({}, row),
+              allIndex: allIndex,
+              seriesId: activeSeriesId,
+              seriesName: activeSeriesName,
+              trialLabel: 'Trial ' + (index + 1),
+              removedKey: removedKey,
+              wasReference: wasReference
+            }
+          });
+          announce('Trial ' + (index + 1) + ' removed from the ' + activeSeriesName + ' series. Restore is available below the evidence trail.');
+        }
+        function restoreRemovedTrial() {
+          var removed = data.removedMechanicsTrial;
+          if (!removed || !removed.row) return;
+          var nextLogs = copyArray(data.measurementLog);
+          var insertIndex = Math.round(clamp(finite(removed.allIndex, nextLogs.length), 0, nextLogs.length));
+          var restoredRow = Object.assign({}, removed.row);
+          nextLogs.splice(insertIndex, 0, restoredRow);
+          var nextBaselines = Object.assign({}, trialBaselineIds);
+          if (removed.wasReference) {
+            var restoredSeriesId = String(removed.seriesId || restoredRow.seriesId || 'series-legacy');
+            var restoredSeries = nextLogs.filter(function (candidate) { return String(candidate.seriesId || 'series-legacy') === restoredSeriesId; });
+            var restoredSeriesIndex = restoredSeries.indexOf(restoredRow);
+            nextBaselines[restoredSeriesId] = trialKey(restoredRow, restoredSeriesIndex);
+          }
+          patchData({ measurementLog: nextLogs, trialBaselineIds: nextBaselines, removedMechanicsTrial: null });
+          announce((removed.trialLabel || 'Removed trial') + ' restored to the ' + (removed.seriesName || 'mechanics') + ' series.');
+        }
+        function trialComparison() {
+          if (logs.length < 2) return null;
+          var reference = baselineLog || logs[0];
+          var current = logs[logs.length - 1];
+          var referenceIndex = logs.indexOf(reference);
+          var currentIndex = logs.indexOf(current);
+          if (!reference || reference === current || referenceIndex < 0 || currentIndex < 0) return null;
+          var comparisonSpan = 'Trial ' + (referenceIndex + 1) + ' → Trial ' + (currentIndex + 1);
+          var changed = [];
+          function compareInput(field, label, formatter) {
+            var before = reference[field];
+            var after = current[field];
+            var beforeKey = JSON.stringify(before === undefined ? null : before);
+            var afterKey = JSON.stringify(after === undefined ? null : after);
+            if (beforeKey !== afterKey) changed.push(label + ' (' + formatter(before) + ' → ' + formatter(after) + ')');
+          }
+          compareInput('method', 'forming method', function (value) { return value || 'unknown'; });
+          compareInput('clayBody', 'clay body', function (value) { return value && CLAY_BODIES[value] ? CLAY_BODIES[value].name : 'not recorded'; });
+          compareInput('materialRecipe', 'material recipe', function (value) { var recipe = normalizeRecipe(value); return recipe ? (recipe.label || (Math.round(recipe.temperPercent) + '% temper')) : 'named body'; });
+          compareInput('tool', 'tool', function (value) { return value || 'not recorded'; });
+          compareInput('workRing', 'work zone', function (value) { return value === undefined ? 'not recorded' : 'ring ' + (Number(value) + 1); });
+          compareInput('rpm', 'wheel speed', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' RPM'; });
+          compareInput('pressure', 'hand pressure', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%'; });
+          compareInput('handSupport', 'inside-hand support', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%'; });
+          compareInput('lubrication', 'surface lubrication', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%'; });
+          compareInput('contactSpan', 'contact span', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' rings'; });
+          compareInput('moisture', 'clay moisture', function (value) { return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%'; });
+          var deltas = [];
+          [['stability', 'stability', ' pts'], ['uniformity', 'wall uniformity', ' pts'], ['minWall', 'minimum wall', ' cm'], ['compression', 'compression', ' pts'], ['coilBond', 'coil bond', ' pts'], ['overhang', 'overhang load', ' pts']].forEach(function (item) {
+            var before = finite(reference[item[0]], 0);
+            var after = finite(current[item[0]], 0);
+            if (Math.abs(after - before) >= (item[0] === 'minWall' ? 0.01 : 0.5)) deltas.push(item[1] + ' ' + signed(after - before, item[0] === 'minWall' ? 2 : 1) + item[2]);
+          });
+          var setupText = changed.length === 0 ? 'No setup input changed from ' + comparisonSpan + '; this is a repeatability check.' : (changed.length === 1 ? 'One setup input changed from ' + comparisonSpan + ': ' + changed[0] + '.' : changed.length + ' setup inputs changed from ' + comparisonSpan + ': ' + changed.join(', ') + '.');
+          var deltaText = deltas.length ? deltas.join(' · ') : 'No displayed model metric changed enough to report.';
+          var readingText = changed.length === 0 ? 'How to read it: this is a repeatability check. Similar results strengthen confidence that the setup is stable; different results invite another look at technique and measurement.' : (changed.length === 1 ? 'How to read it: this is a controlled clue, not a rule. Repeat the comparison before making a general claim.' : 'How to read it: more than one setup input changed, so treat the direction as exploratory rather than causal.');
+          return h('div', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 space-y-1', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('h3', { className: 'font-black text-cyan-950' }, 'Reference-to-latest comparison'),
+            h('p', { className: 'text-xs text-cyan-950' }, setupText),
+            h('p', { className: 'text-[11px] text-cyan-950' }, h('strong', null, 'Model deltas: '), deltaText),
+            h('p', { className: 'text-[11px] text-cyan-950' }, readingText),
+            current.hypothesis ? h('p', { className: 'text-[11px] text-cyan-950' }, h('strong', null, 'Prediction recorded: '), current.hypothesis) : null,
+            current.observation ? h('p', { className: 'text-[11px] text-cyan-950' }, h('strong', null, 'Observation recorded: '), current.observation) : null
+          );
+        }
+        function seriesEvidenceSummary() {
+          if (!logs.length) return null;
+          var baseline = baselineLog || logs[0];
+          var latest = logs[logs.length - 1];
+          var baselinePosition = logs.indexOf(baseline);
+          var baselineLabel = 'Trial ' + (baselinePosition + 1);
+          var pathLogs = logs.slice(Math.max(0, baselinePosition));
+          var setupDefs = [
+            { key: 'method', label: 'forming method' },
+            { key: 'clayBody', label: 'clay body' },
+            { key: 'materialRecipe', label: 'material recipe' },
+            { key: 'tool', label: 'tool' },
+            { key: 'workRing', label: 'work zone' },
+            { key: 'rpm', label: 'wheel speed' },
+            { key: 'pressure', label: 'hand pressure' },
+            { key: 'handSupport', label: 'inside-hand support' },
+            { key: 'lubrication', label: 'surface lubrication' },
+            { key: 'contactSpan', label: 'contact span' },
+            { key: 'moisture', label: 'clay moisture' }
+          ];
+          var metricDefs = [
+            { key: 'stability', label: 'Stability', unit: '%', digits: 0 },
+            { key: 'uniformity', label: 'Wall uniformity', unit: '%', digits: 0 },
+            { key: 'minWall', label: 'Minimum wall', unit: ' cm', digits: 2 }
+          ];
+          function setupValue(row, setup) {
+            var value = row[setup.key];
+            if (setup.key === 'method') return value === 'coil' ? 'coil' : 'wheel';
+            if (setup.key === 'clayBody') return value && CLAY_BODIES[value] ? CLAY_BODIES[value].name : 'not recorded';
+            if (setup.key === 'materialRecipe') { var recipe = normalizeRecipe(value); return recipe ? (recipe.label || (Math.round(recipe.temperPercent) + '% temper')) : 'named body'; }
+            if (setup.key === 'workRing') return value === undefined ? 'not recorded' : 'ring ' + (Number(value) + 1);
+            if (setup.key === 'rpm') return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' RPM';
+            if (setup.key === 'pressure' || setup.key === 'handSupport' || setup.key === 'lubrication' || setup.key === 'moisture') return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + '%';
+            if (setup.key === 'contactSpan') return value === undefined ? 'not recorded' : Math.round(finite(value, 0)) + ' rings';
+            return value || 'not recorded';
+          }
+          function setupChanged(setup) {
+            var before = baseline[setup.key] === undefined ? null : baseline[setup.key];
+            var after = latest[setup.key] === undefined ? null : latest[setup.key];
+            return JSON.stringify(before) !== JSON.stringify(after);
+          }
+          var setupChanges = setupDefs.filter(setupChanged).map(function (setup) { return setup.label + ' (' + setupValue(baseline, setup) + ' to ' + setupValue(latest, setup) + ')'; });
+          var setupAudit;
+          if (pathLogs.length < 2) setupAudit = 'Reference only: log a new trial beyond the selected reference before auditing setup changes.';
+          else if (!setupChanges.length) setupAudit = 'No reference-to-latest setup input changed; this is a repeatability path.';
+          else if (setupChanges.length === 1 && pathLogs.length === 2) setupAudit = 'One reference-to-latest input changed: ' + setupChanges[0] + '. This is a one-variable candidate; repeat it before making a general claim.';
+          else setupAudit = setupChanges.length + ' reference-to-latest inputs changed: ' + setupChanges.join(', ') + '. Treat this series as exploratory rather than a clean one-variable test.';
+          function metricValue(row, metric) { return finite(row[metric.key], 0); }
+          function displayValue(row, metric) { return metricValue(row, metric).toFixed(metric.digits) + metric.unit; }
+          function displayDelta(metric) {
+            var change = metricValue(latest, metric) - metricValue(baseline, metric);
+            return signed(change, metric.digits) + metric.unit;
+          }
+          function pathLabel(metric) {
+            if (pathLogs.length < 2) return 'needs another trial';
+            var values = pathLogs.map(function (row) { return metricValue(row, metric); });
+            var rising = true;
+            var falling = true;
+            for (var index = 1; index < values.length; index += 1) {
+              if (values[index] < values[index - 1]) rising = false;
+              if (values[index] > values[index - 1]) falling = false;
+            }
+            if (rising && falling) return 'unchanged';
+            if (rising) return 'rising path';
+            if (falling) return 'falling path';
+            return 'mixed path';
+          }
+          var pathSummary = metricDefs.map(function (metric) { return metric.label.toLowerCase() + ': ' + pathLabel(metric); }).join(' · ');
+          var guidance = pathLogs.length === 1 ? baselineLabel + ' is the reference. Change one control, keep the ring and material context steady, then log again.' : 'Reference is ' + baselineLabel + '; latest is the most recent trial. These modeled paths show association, not proof of causation.';
+          return h('div', { className: 'rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-2', role: 'region', 'aria-label': 'Series evidence trail' },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+              h('h3', { className: 'font-black text-violet-950' }, 'Series evidence trail'),
+              h('span', { className: 'text-[11px] font-bold text-violet-900' }, activeSeriesName + ' · ' + logs.length + ' logged trial' + (logs.length === 1 ? '' : 's'))
+            ),
+            h('p', { className: 'text-xs text-violet-950' }, guidance),
+            h('p', { className: 'text-[11px] text-violet-950' }, h('strong', null, 'Reference: '), baselineLabel),
+            h('p', { className: 'text-[11px] text-violet-950' }, h('strong', null, 'Setup audit: '), setupAudit),
+            h('div', { className: 'overflow-x-auto rounded-lg border border-violet-200 bg-white' },
+              h('table', { className: 'w-full text-xs border-collapse' },
+                h('caption', { className: 'text-left p-2 font-black text-violet-950' }, 'Reference to latest modeled metrics'),
+                h('thead', null, h('tr', { className: 'bg-violet-100' }, ['Metric', 'Reference', 'Latest', 'Change', 'Logged path'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-violet-200' }, label); }))),
+                h('tbody', null, metricDefs.map(function (metric) { return h('tr', { key: metric.key }, h('th', { scope: 'row', className: 'text-left p-2 border-b border-violet-100' }, metric.label), h('td', { className: 'p-2 border-b border-violet-100' }, displayValue(baseline, metric)), h('td', { className: 'p-2 border-b border-violet-100' }, displayValue(latest, metric)), h('td', { className: 'p-2 border-b border-violet-100 font-bold' }, displayDelta(metric)), h('td', { className: 'p-2 border-b border-violet-100' }, pathLabel(metric))); }))
+              )
+            ),
+            h('p', { className: 'text-[11px] text-violet-950' }, h('strong', null, 'Path summary: '), pathSummary)
+          );
+        }
+        function trialEvidenceGraph() {
+          if (!baselineLog || logs.length < 2) return null;
+          var baselinePosition = logs.indexOf(baselineLog);
+          var pathLogs = logs.slice(Math.max(0, baselinePosition));
+          if (pathLogs.length < 2) return null;
+          var metrics = [
+            { key: 'stability', label: 'Stability', unit: '%', digits: 0, color: '#0e7490' },
+            { key: 'uniformity', label: 'Wall uniformity', unit: '%', digits: 0, color: '#7c3aed' },
+            { key: 'minWall', label: 'Minimum wall', unit: ' cm', digits: 2, color: '#b45309' }
+          ];
+          function metricTrack(metric) {
+            var values = pathLogs.map(function (row) { return finite(row[metric.key], 0); });
+            var minimum = Math.min.apply(Math, values);
+            var maximum = Math.max.apply(Math, values);
+            var padding = Math.max((maximum - minimum) * 0.18, metric.key === 'minWall' ? 0.03 : 2);
+            var low = minimum - padding;
+            var high = maximum + padding;
+            var span = Math.max(0.0001, high - low);
+            function x(index) { return 22 + index / Math.max(1, pathLogs.length - 1) * 476; }
+            function y(value) { return 10 + (high - value) / span * 40; }
+            var points = values.map(function (value, index) { return { x: x(index), y: y(value), value: value, trial: baselinePosition + index + 1 }; });
+            var path = points.map(function (point, index) { return (index ? 'L' : 'M') + point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' ');
+            var start = values[0];
+            var finish = values[values.length - 1];
+            var change = finish - start;
+            var direction = Math.abs(change) < (metric.key === 'minWall' ? 0.01 : 0.5) ? 'essentially unchanged' : (change > 0 ? 'higher' : 'lower');
+            var summary = metric.label + ' moved from ' + start.toFixed(metric.digits) + metric.unit + ' at Trial ' + (baselinePosition + 1) + ' to ' + finish.toFixed(metric.digits) + metric.unit + ' at Trial ' + logs.length + ', ' + direction + ' by ' + Math.abs(change).toFixed(metric.digits) + metric.unit + '.';
+            return h('div', { key: metric.key, className: 'grid sm:grid-cols-[150px_minmax(0,1fr)] gap-2 items-center' },
+              h('div', { className: 'text-xs text-slate-800' },
+                h('strong', { className: 'block' }, metric.label),
+                h('span', { className: 'text-[11px] text-slate-600' }, start.toFixed(metric.digits) + metric.unit + ' → ' + finish.toFixed(metric.digits) + metric.unit + ' · ' + signed(change, metric.digits) + metric.unit)
+              ),
+              h('svg', { viewBox: '0 0 520 72', role: 'img', 'aria-label': summary, className: 'w-full min-h-[72px]' },
+                h('title', null, metric.label + ' selected-reference path'),
+                h('desc', null, summary),
+                h('line', { x1: 22, x2: 498, y1: 51, y2: 51, stroke: '#cbd5e1', strokeWidth: 1 }),
+                h('path', { d: path, fill: 'none', stroke: metric.color, strokeWidth: 3, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+                points.map(function (point, index) {
+                  var isReference = index === 0;
+                  var isLatest = index === points.length - 1;
+                  var showLabel = points.length <= 6 || isReference || isLatest;
+                  return h('g', { key: point.trial },
+                    isReference ? h('rect', { x: point.x - 5, y: point.y - 5, width: 10, height: 10, rx: 1, fill: '#ffffff', stroke: metric.color, strokeWidth: 3 }) : h('circle', { cx: point.x, cy: point.y, r: isLatest ? 5 : 4, fill: isLatest ? '#ffffff' : metric.color, stroke: metric.color, strokeWidth: isLatest ? 3 : 1 }),
+                    h('title', null, 'Trial ' + point.trial + ': ' + point.value.toFixed(metric.digits) + metric.unit + (isReference ? ', selected reference' : (isLatest ? ', latest trial' : ''))),
+                    showLabel ? h('text', { x: point.x, y: 67, textAnchor: index === 0 ? 'start' : (index === points.length - 1 ? 'end' : 'middle'), fill: '#334155', fontSize: 10, fontWeight: 700 }, 'T' + point.trial) : null
+                  );
+                })
+              )
+            );
+          }
+          return h('figure', { className: 'rounded-xl border border-cyan-300 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-trial-graph-title' },
+            h('div', null,
+              h('h3', { id: 'wheel-fire-trial-graph-title', className: 'font-black text-cyan-950' }, 'Selected-reference evidence graph'),
+              h('p', { className: 'text-xs text-cyan-950 mt-1' }, 'Read each path from the selected reference through the latest logged trial in ' + activeSeriesName + '.')
+            ),
+            h('div', { className: 'space-y-2' }, metrics.map(metricTrack)),
+            h('figcaption', { className: 'text-[11px] text-slate-600' }, 'Square marker = selected reference; outlined final marker = latest trial. Each metric uses its own vertical scale, so compare direction and labeled values rather than line steepness across tracks.')
+          );
+        }
+        function researchModelLens() {
+          return h('section', { className: 'wheel-fire-research-only rounded-xl border border-slate-400 bg-slate-50 p-3 text-xs text-slate-800', 'aria-labelledby': 'wheel-fire-model-audit-title' },
+            h('h3', { id: 'wheel-fire-model-audit-title', className: 'font-black text-slate-900' }, 'Research model-audit lens'),
+            h('p', { className: 'mt-1' }, 'Deterministic teaching model · ' + RING_COUNT + ' radial rings · dimension model v' + DIMENSION_MODEL_VERSION + '. Forming conserves approximate clay volume except for added coils and trimming. Pressure, inside support, lubrication, and contact span are simplified comparative inputs, not instrument-calibrated hand measurements. Trial paths are associations generated from logged model states, not causal estimates or calibrated material tests.'),
+            h('p', { className: 'mt-1 text-[11px] text-slate-600' }, baselineLog ? 'Current audit reference: Trial ' + (logs.indexOf(baselineLog) + 1) + ' in ' + activeSeriesName + '.' : 'No mechanics reference is logged yet.')
+          );
+        }
+        function trialCoach() {
+          var setup = (method === 'coil' ? 'Coil' : 'Wheel') + ' · ' + activeTool + ' · Ring ' + (workRing + 1) + ' · ' + (method === 'coil' ? 'hand-built' : Math.round(rpm) + ' RPM') + ' · ' + Math.round(pressure) + '% pressure · ' + Math.round(handSupport) + '% support · ' + Math.round(lubrication) + '% slip · ' + contactSpan + '-ring contact · ' + Math.round(vessel.moisture * 100) + '% moisture';
+          var referenceIndex = baselineLog ? logs.indexOf(baselineLog) : -1;
+          var referenceLabel = baselineLog ? 'Trial ' + (referenceIndex + 1) : '';
+          var hasReferenceComparison = referenceIndex >= 0 && logs.length - 1 > referenceIndex;
+          var title = logs.length === 0 ? 'Baseline not logged yet' : (hasReferenceComparison ? 'Comparison ready — interpret the evidence' : 'Reference logged — comparison needs one more trial');
+          var instruction = logs.length === 0 ? 'Log this setup before changing a control. It becomes the reference for your next trial.' : (hasReferenceComparison ? 'Review the latest comparison, decide whether the result supports your prediction, and write the reasoning below.' : 'Open Shape, change one control, keep ' + referenceLabel + ' and the same ring and material context steady, then log again.');
+          return h('div', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-1', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' }, h('strong', { className: 'text-sm text-teal-950' }, title), h('span', { className: 'text-[11px] font-bold text-teal-900' }, logs.length + ' logged trial' + (logs.length === 1 ? '' : 's'))),
+            h('p', { className: 'text-[11px] text-teal-950' }, h('strong', null, 'Series: '), activeSeriesName),
+            referenceLabel ? h('p', { className: 'text-[11px] text-teal-950' }, h('strong', null, 'Reference: '), referenceLabel) : null,
+            h('p', { className: 'text-xs text-teal-950' }, instruction),
+            h('p', { className: 'text-[11px] text-teal-950' }, h('strong', null, 'Current setup: '), setup)
+          );
+        }
+        function studyProtocol() {
+          var reference = baselineLog;
+          var referenceIndex = reference ? logs.indexOf(reference) : -1;
+          var selectedReferenceLabel = reference ? 'Trial ' + (referenceIndex + 1) : '';
+          var referenceRecipe = reference ? normalizeRecipe(reference.materialRecipe) : null;
+          var referenceBody = reference && reference.clayBody && CLAY_BODIES[reference.clayBody] ? CLAY_BODIES[reference.clayBody].name : 'current clay body';
+          var referenceRing = reference && reference.workRing !== undefined ? 'ring ' + (Number(reference.workRing) + 1) : 'work zone not recorded';
+          var referenceMethod = reference ? (reference.method === 'coil' ? 'coil' : 'wheel') : method;
+          var referenceTool = reference && reference.tool ? reference.tool : 'tool not recorded';
+          var referenceSpeed = reference ? (reference.method === 'coil' ? 'hand-built' : Math.round(finite(reference.rpm, 0)) + ' RPM') : 'speed not recorded';
+          var referencePressure = reference && reference.pressure !== undefined ? Math.round(finite(reference.pressure, 0)) + '% pressure' : 'pressure not recorded';
+          var referenceSupport = reference && reference.handSupport !== undefined ? Math.round(finite(reference.handSupport, 0)) + '% support' : 'support not recorded';
+          var referenceLubrication = reference && reference.lubrication !== undefined ? Math.round(finite(reference.lubrication, 0)) + '% slip' : 'lubrication not recorded';
+          var referenceContact = reference && reference.contactSpan !== undefined ? Math.round(finite(reference.contactSpan, 0)) + '-ring contact' : 'contact span not recorded';
+          var referenceMoisture = reference && reference.moisture !== undefined ? Math.round(finite(reference.moisture, 0)) + '% moisture' : 'moisture not recorded';
+          var referenceText = reference ? selectedReferenceLabel + ' · ' + referenceMethod + ' · ' + referenceBody + ' · ' + referenceRing + ' · ' + referenceTool + ' · ' + referenceSpeed + ' · ' + referencePressure + ' · ' + referenceSupport + ' · ' + referenceLubrication + ' · ' + referenceContact + ' · ' + referenceMoisture + (referenceRecipe ? ' · ' + (referenceRecipe.label || 'recipe study') : ' · named body') : 'No baseline yet — log the current setup first.';
+          var nextVariable = method === 'coil' ? 'hand pressure, inside support, lubrication, contact span, tool, work zone, or moisture' : 'wheel speed, hand pressure, inside support, lubrication, contact span, tool, work zone, or moisture';
+          var observation = String(data.trialObservation || '').trim();
+          var observationText = observation ? 'Field note ready: ' + observation.slice(0, 180) + (observation.length > 180 ? '…' : '') : 'Add what you feel, see, hear, or measure. The model cannot sense touch, drag, wobble, sound, or cracks.';
+          var latest = logs.length ? logs[logs.length - 1] : null;
+          var hasReferenceComparison = referenceIndex >= 0 && logs.length - 1 > referenceIndex;
+          var interpretationText = hasReferenceComparison ? 'Compare the latest result with the selected reference in the evidence trail, then complete claim, evidence, and reasoning below.' : 'After a new log beyond the selected reference, compare the model deltas with your field observation and reasoning.';
+          var nextMove;
+          if (!reference) nextMove = 'Log the current setup as a baseline before changing a control.';
+          else if (!hasReferenceComparison) nextMove = 'Change one bounded input, keep this selected reference setup steady, and log the comparison.';
+          else {
+            var stabilityDelta = finite(latest.stability, 0) - finite(reference.stability, 0);
+            var uniformityDelta = finite(latest.uniformity, 0) - finite(reference.uniformity, 0);
+            var overhangDelta = finite(latest.overhang, 0) - finite(reference.overhang, 0);
+            if (stabilityDelta <= -3 || uniformityDelta <= -3 || overhangDelta >= 3) nextMove = 'Repeat the latest setup once, inspect the highest-risk ring, then reduce one stress input such as speed or pressure.';
+            else if (stabilityDelta >= 3 && uniformityDelta >= 0) nextMove = 'Repeat the same change under the same context once more to see whether the improvement holds.';
+            else nextMove = 'Keep the context steady and repeat the latest trial, or make one small change before interpreting the direction.';
+          }
+          return h('div', { className: 'rounded-xl border border-sky-300 bg-sky-50 p-3 space-y-2', role: 'region', 'aria-label': 'Study protocol' },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+              h('h3', { className: 'font-black text-sky-950' }, 'Study protocol'),
+              h('span', { className: 'text-[11px] font-bold text-sky-900' }, logs.length ? 'Reference setup available' : 'Baseline needed')
+            ),
+            h('p', { className: 'text-xs text-sky-950' }, reference ? 'Use ' + selectedReferenceLabel + ' as your selected reference, then make one intentional change and record what the clay—not only the model—does.' : 'Log a baseline setup, then make one intentional change and record what the clay—not only the model—does.'),
+            h('p', { className: 'text-[11px] text-sky-950' }, h('strong', null, 'Next move. '), nextMove),
+            h('ol', { className: 'grid md:grid-cols-2 gap-2 text-[11px] text-sky-950' },
+              h('li', { className: 'border-l-4 border-sky-700 pl-2' }, h('strong', null, 'Hold constant. '), referenceText),
+              h('li', { className: 'border-l-4 border-sky-700 pl-2' }, h('strong', null, 'Change one thing. '), 'Choose one next variable: ' + nextVariable + '. Keep the other inputs steady.'),
+              h('li', { className: 'border-l-4 border-sky-700 pl-2' }, h('strong', null, 'Observe. '), observationText),
+              h('li', { className: 'border-l-4 border-sky-700 pl-2' }, h('strong', null, 'Interpret. '), interpretationText)
+            )
+          );
+        }
+        function trialSeriesControl() {
+          function trialOptionLabel(row, index) { return 'Trial ' + (index + 1) + ' - ' + (row.method === 'coil' ? 'coil' : 'wheel') + ' - ' + (row.method === 'coil' ? 'hand-built' : Math.round(finite(row.rpm, 0)) + ' RPM') + ' - ' + (row.tool || 'tool not recorded') + ' - ring ' + (row.workRing === undefined ? 'not recorded' : (Number(row.workRing) + 1)); }
+          return h('div', { className: 'rounded-xl border border-teal-300 bg-white p-3 space-y-2' },
+            h('div', { className: 'grid md:grid-cols-3 gap-2' },
+              h('label', { htmlFor: 'wheel-fire-trial-series', className: 'block text-xs font-bold text-slate-700' }, 'Experiment series', h('select', { id: 'wheel-fire-trial-series', value: activeSeriesId, onChange: function (event) { selectTrialSeries(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2' }, seriesCatalog.map(function (series) { return h('option', { key: series.id, value: series.id }, series.name); }))),
+              h('label', { htmlFor: 'wheel-fire-trial-series-name', className: 'block text-xs font-bold text-slate-700' }, 'Series name (optional)', h('input', { id: 'wheel-fire-trial-series-name', maxLength: 60, value: data.trialSeriesName || '', onChange: function (event) { patchData({ trialSeriesName: event.target.value }); }, placeholder: 'e.g. speed and rim stability', className: 'block w-full mt-1 rounded-lg border border-teal-300 p-2 font-normal' })),
+              logs.length ? h('label', { htmlFor: 'wheel-fire-trial-baseline', className: 'block text-xs font-bold text-slate-700' }, 'Reference trial', h('select', { id: 'wheel-fire-trial-baseline', value: activeBaselineId, onChange: function (event) { selectTrialBaseline(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2' }, logs.map(function (row, index) { return h('option', { key: trialKey(row, index), value: trialKey(row, index) }, trialOptionLabel(row, index)); }))) : null
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
+              h('button', { type: 'button', onClick: startTrialSeries, className: 'rounded-lg border border-teal-400 bg-white px-3 py-2 text-xs font-bold text-teal-900' }, 'Start a new series'),
+              h('p', { className: 'text-[11px] text-slate-600' }, 'Only trials in the selected series are compared. Earlier series stay available in the Journal.')
+            )
+          );
         }
         return h('section', { id: 'wheel-fire-panel-science', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-science', className: 'space-y-3' },
           h('div', { className: 'rounded-2xl border border-cyan-300 bg-cyan-50 p-4' },
             h('h2', { className: 'text-xl font-black text-cyan-950' }, 'Clay mechanics laboratory'),
-            h('p', { className: 'text-sm text-cyan-950 mt-1' }, 'Change one variable, shape the same ring, and log the result. The model tracks approximate clay volume, centrifugal loading, plasticity, moisture weakness, wall uniformity, slenderness, unsupported overhang, particle compression, coil bonding, and wobble.'),
+            h('p', { className: 'text-sm text-cyan-950 mt-1' }, 'Change one variable, shape the same ring, and log the result. The model tracks approximate clay volume, centrifugal loading, touch balance, lubrication, contact span, plasticity, moisture weakness, wall uniformity, slenderness, unsupported overhang, particle compression, coil bonding, and wobble.'),
+            h('ol', { className: 'grid md:grid-cols-3 gap-2 mt-3 text-xs text-cyan-950', 'aria-label': 'One-variable experiment loop' },
+              h('li', { className: 'border-l-4 border-cyan-700 pl-2' }, h('strong', null, '1. Predict. '), 'Write what you expect to change.'),
+              h('li', { className: 'border-l-4 border-cyan-700 pl-2' }, h('strong', null, '2. Change one thing. '), 'Keep the ring and other controls steady.'),
+              h('li', { className: 'border-l-4 border-cyan-700 pl-2' }, h('strong', null, '3. Compare. '), 'Log the new measurements and explain why.')
+            ),
+            trialSeriesControl(),
+            trialCoach(),
+            studyProtocol(),
+            researchModelLens(),
             h('div', { className: 'wheel-fire-stats mt-3' },
               metricCard('Wall uniformity', percent(stats.uniformity), 'Variation across rings'),
               metricCard('Centering', percent(vessel.centered), 'Wobble ' + percent(vessel.wobble * 100)),
@@ -1570,7 +2536,7 @@
             h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2', role: 'list', 'aria-label': 'Local ring stress zones' }, ringZones.map(function (zone) {
               var peak = zone.peak;
               return h('div', { key: zone.label, role: 'listitem', className: 'min-w-0' },
-                h('button', { type: 'button', onClick: function () { focusRing(peak.index); }, title: 'Focus ring ' + (peak.index + 1) + ' in the Shape section', 'aria-label': zone.label + '. Peak at ring ' + (peak.index + 1) + '. ' + peak.status + '. ' + Math.round(peak.risk * 100) + ' percent local risk.', className: 'w-full rounded-lg border p-2 text-left ' + riskTone(peak.risk) },
+                h('button', { type: 'button', onClick: function () { focusRing(peak.index); }, 'data-tooltip': 'Focus ring ' + (peak.index + 1) + ' in the Shape section', 'aria-label': zone.label + '. Peak at ring ' + (peak.index + 1) + '. ' + peak.status + '. ' + Math.round(peak.risk * 100) + ' percent local risk.', className: 'w-full rounded-lg border p-2 text-left ' + riskTone(peak.risk) },
                   h('span', { className: 'block text-xs font-black' }, zone.label),
                   h('span', { className: 'block text-[10px] font-bold mt-1' }, 'Ring ' + (peak.index + 1) + ' · ' + Math.round(peak.risk * 100) + '%'),
                   h('span', { className: 'block h-2 rounded-full bg-black/10 mt-2 overflow-hidden', role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round(peak.risk * 100), 'aria-label': zone.label + ' local risk' }, h('span', { className: 'block h-full rounded-full bg-current', style: { width: Math.max(4, Math.round(peak.risk * 100)) + '%' } })),
@@ -1580,7 +2546,7 @@
             })),
             h('p', { className: 'text-[11px] text-rose-950' }, 'Select a zone to jump to its peak ring. Then change one shaping control and return here to see whether the local risk moved.')
           ),
-          h('div', { className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-3' },
+          h('div', { className: 'wheel-fire-advanced rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-3' },
             h('div', null,
               h('h3', { className: 'font-black text-amber-950' }, 'Optional material recipe study'),
               h('p', { className: 'text-xs text-amber-950 mt-1' }, 'Vary bounded material assumptions and compare the predicted tradeoffs before you shape or fire. This temper control is an abstract classroom proxy, not a recipe for a real clay source or a claim about any cultural tradition.'),
@@ -1606,7 +2572,7 @@
               h('button', { type: 'button', onClick: clearRecipe, disabled: !activeRecipe && !draftRecipe, className: 'rounded-lg border border-amber-400 bg-white text-amber-950 px-3 py-2 text-xs font-bold disabled:opacity-40' }, 'Clear recipe')
             )
           ),
-          h('div', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-3 space-y-3' },
+          h('div', { className: 'wheel-fire-advanced rounded-xl border border-indigo-300 bg-indigo-50 p-3 space-y-3' },
             h('div', null,
               h('h3', { className: 'font-black text-indigo-950' }, 'Material comparison shelf'),
               h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Saved scenarios preserve the named clay body and assumptions. Loading one changes only the preview draft; apply it separately if you want the current vessel to use it.')
@@ -1638,10 +2604,11 @@
             h('div', { className: 'rounded-xl border border-slate-300 bg-white p-3 space-y-3' },
               h('h3', { className: 'font-black text-slate-900' }, 'One-variable investigation'),
               h('label', { htmlFor: 'wheel-fire-hypothesis', className: 'block text-xs font-bold text-slate-700' }, 'Prediction or hypothesis', h('textarea', { id: 'wheel-fire-hypothesis', rows: 3, value: data.hypothesis || '', onChange: function (event) { patchData({ hypothesis: event.target.value }); }, placeholder: 'If I increase wheel speed while holding pressure and moisture steady, then…', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
+              h('label', { htmlFor: 'wheel-fire-trial-observation', className: 'block text-xs font-bold text-slate-700' }, 'Studio observation (optional)', h('textarea', { id: 'wheel-fire-trial-observation', rows: 3, maxLength: 240, value: data.trialObservation || '', onChange: function (event) { patchData({ trialObservation: event.target.value }); }, placeholder: 'What did you feel, hear, see, or notice? The model cannot sense drag, wobble, sound, cracks, or touch.', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
               h('button', { type: 'button', onClick: logTrial, className: 'rounded-lg bg-cyan-800 text-white px-3 py-2 text-xs font-black' }, 'Log current measurement'),
               h('p', { className: 'text-[11px] text-slate-600' }, 'Tip: return to Shape, alter one control, apply the same tool at the same ring, then log again.')
             ),
-            h('div', { className: 'rounded-xl border border-slate-300 bg-white p-3' },
+            h('div', { className: 'wheel-fire-advanced rounded-xl border border-slate-300 bg-white p-3' },
               h('h3', { className: 'font-black text-slate-900 mb-2' }, 'What the model conserves'),
               h('ul', { className: 'list-disc pl-5 text-xs text-slate-700 space-y-2' },
                 h('li', null, 'Opening, pulling, expanding, collaring, centering, and smoothing redistribute approximately the same clay volume.'),
@@ -1651,11 +2618,18 @@
                 h('li', null, 'This is a teaching model, not a structural certification or kiln-control system.'))
             )
           ),
-          logs.length ? h('div', { className: 'overflow-x-auto rounded-xl border border-slate-300 bg-white' },
+          trialComparison(),
+          seriesEvidenceSummary(),
+          trialEvidenceGraph(),
+          data.removedMechanicsTrial && data.removedMechanicsTrial.row ? h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 flex flex-wrap items-center justify-between gap-2' },
+            h('p', { className: 'text-xs text-amber-950' }, h('strong', null, data.removedMechanicsTrial.trialLabel || 'Trial'), ' removed from ', data.removedMechanicsTrial.seriesName || 'this mechanics series', '. Comparisons and journal evidence now omit it.'),
+            h('button', { type: 'button', onClick: restoreRemovedTrial, className: 'rounded-lg border border-amber-500 bg-white px-3 py-2 text-xs font-black text-amber-950 hover:bg-amber-100' }, 'Restore removed trial')
+          ) : null,
+          logs.length ? h('div', { className: 'wheel-fire-advanced overflow-x-auto rounded-xl border border-slate-300 bg-white' },
             h('table', { className: 'w-full text-xs border-collapse' },
-              h('caption', { className: 'text-left p-3 font-black text-slate-900' }, 'Measurement log'),
-              h('thead', null, h('tr', { className: 'bg-slate-100' }, ['Method', 'Recipe', 'RPM', 'Pressure', 'Moisture', 'Min wall', 'Uniformity', 'Compression', 'Bond', 'Overhang', 'Stability', 'Outcome'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-slate-300' }, label); }))),
-              h('tbody', null, logs.map(function (row) { var rowRecipe = normalizeRecipe(row.materialRecipe); return h('tr', { key: row.id }, h('td', { className: 'p-2 border-b' }, row.method), h('td', { className: 'p-2 border-b' }, rowRecipe ? (rowRecipe.label || (Math.round(rowRecipe.temperPercent) + '% temper')) : 'named body'), h('td', { className: 'p-2 border-b' }, row.rpm), h('td', { className: 'p-2 border-b' }, row.pressure + '%'), h('td', { className: 'p-2 border-b' }, row.moisture + '%'), h('td', { className: 'p-2 border-b' }, row.minWall + ' cm'), h('td', { className: 'p-2 border-b' }, row.uniformity + '%'), h('td', { className: 'p-2 border-b' }, finite(row.compression, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.coilBond, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.overhang, 0) + '%'), h('td', { className: 'p-2 border-b' }, row.stability + '%'), h('td', { className: 'p-2 border-b' }, row.outcome)); }))
+              h('caption', { className: 'text-left p-3 font-black text-slate-900' }, 'Measurement log · ' + activeSeriesName),
+              h('thead', null, h('tr', { className: 'bg-slate-100' }, ['Method', 'Tool', 'Ring', 'Recipe', 'RPM', 'Pressure', 'Moisture', 'Min wall', 'Uniformity', 'Compression', 'Bond', 'Overhang', 'Stability', 'Outcome', 'Observation', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-slate-300' }, label); }))),
+              h('tbody', null, logs.map(function (row, index) { var rowRecipe = normalizeRecipe(row.materialRecipe); var ringText = row.workRing === undefined ? 'not recorded' : 'Ring ' + (Number(row.workRing) + 1); return h('tr', { key: trialKey(row, index) }, h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.method === 'coil' ? 'Coil' : 'Wheel'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, row.tool || 'not recorded'), h('td', { className: 'p-2 border-b whitespace-nowrap' }, ringText), h('td', { className: 'p-2 border-b' }, rowRecipe ? (rowRecipe.label || (Math.round(rowRecipe.temperPercent) + '% temper')) : 'named body'), h('td', { className: 'p-2 border-b' }, row.rpm), h('td', { className: 'p-2 border-b' }, row.pressure + '%'), h('td', { className: 'p-2 border-b' }, row.moisture + '%'), h('td', { className: 'p-2 border-b' }, row.minWall + ' cm'), h('td', { className: 'p-2 border-b' }, row.uniformity + '%'), h('td', { className: 'p-2 border-b' }, finite(row.compression, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.coilBond, 0) + '%'), h('td', { className: 'p-2 border-b' }, finite(row.overhang, 0) + '%'), h('td', { className: 'p-2 border-b' }, row.stability + '%'), h('td', { className: 'p-2 border-b' }, row.outcome), h('td', { className: 'p-2 border-b max-w-xs' }, row.observation || 'No field note'), h('td', { className: 'p-2 border-b' }, h('div', { className: 'flex flex-wrap gap-1' }, h('button', { type: 'button', 'data-tooltip': 'Load this trial setup in Shape', 'aria-label': 'Replay Trial ' + (index + 1) + ' in Shape', onClick: function () { replayTrial(row); }, className: 'rounded border border-cyan-400 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-50' }, 'Replay in Shape'), h('button', { type: 'button', 'data-tooltip': 'Remove this trial from the active series; it can be restored immediately', 'aria-label': 'Remove Trial ' + (index + 1) + ' from series', onClick: function () { removeTrial(row, index); }, className: 'rounded border border-rose-300 px-2 py-1 text-[11px] font-bold text-rose-800 hover:bg-rose-50' }, 'Remove from series')))); }))
             )
           ) : null,
           h('div', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-3 grid md:grid-cols-3 gap-3' },
@@ -1774,6 +2748,14 @@
         var firingSchedules = copyArray(data.firingSchedules);
         var scheduleLabel = String(data.scheduleLabel || '').slice(0, 48);
         var currentSchedule = analyzeFiringSchedule(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, glazeId: glazeId, glazeThickness: glazeThickness });
+        var previewSegments = currentSchedule.thermalHistory.segments;
+        var previewDefaultElapsed = previewSegments[0].durationHours + previewSegments[1].durationHours * .5;
+        var previewDefaultPhase = currentSchedule.thermalHistory.totalHours ? previewDefaultElapsed / currentSchedule.thermalHistory.totalHours * 100 : 50;
+        var kilnPreviewPhase = clamp(finite(data.kilnPreviewPhase, previewDefaultPhase), 0, 100);
+        var kilnSample = sampleThermalHistory(currentSchedule.thermalHistory, kilnPreviewPhase);
+        var kilnPreviewLabel = kilnSample.phaseLabel;
+        var kilnPreviewTemp = kilnSample.temperatureC;
+        var kilnMaterialState = estimateKilnMaterialState(vessel, kilnSample, { temperature: kilnTemp, glazeId: glazeId });
         function advanceDrying() { var next = dryVessel(vessel, { humidity: humidity, dryingRate: dryingRate }); commitVessel(next, next.lastOutcome); }
         function fire() { var next = fireVessel(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere }); commitVessel(next, next.lastOutcome); }
         function applyGlaze() { var next = glazeVessel(vessel, glazeId, glazeThickness); commitVessel(next, next.lastOutcome); }
@@ -1792,24 +2774,113 @@
           announce('Firing schedule removed from the comparison shelf.');
         }
         function firingCurve() {
-          var peakY = 168 - (kilnTemp - 600) / 750 * 124;
-          var soakWidth = 18 + soak / 90 * 72;
-          var riseEnd = 245;
-          var coolStart = riseEnd + soakWidth;
+          var plotStart = 28;
+          var plotEnd = 472;
+          var plotWidth = plotEnd - plotStart;
+          var history = currentSchedule.thermalHistory;
+          var rampShare = history.totalHours ? history.segments[0].durationHours / history.totalHours : .45;
+          var soakShare = history.totalHours ? history.segments[1].durationHours / history.totalHours : .1;
+          var riseEnd = plotStart + plotWidth * rampShare;
+          var coolStart = riseEnd + plotWidth * soakShare;
+          var peakY = 168 - clamp((kilnTemp - 20) / 1330, 0, 1) * 124;
+          var markerX = plotStart + plotWidth * kilnPreviewPhase / 100;
+          var markerY = 168 - clamp((kilnPreviewTemp - 20) / 1330, 0, 1) * 124;
           var curve = 'M28 168 L' + riseEnd + ' ' + peakY.toFixed(1) + ' L' + coolStart.toFixed(1) + ' ' + peakY.toFixed(1) + ' L472 168';
           return h('figure', { className: 'rounded-xl border border-orange-200 bg-orange-50 p-2' },
-            h('svg', { viewBox: '0 0 500 190', role: 'img', 'aria-label': 'Simplified kiln schedule rising to ' + Math.round(kilnTemp) + ' degrees Celsius, soaking for ' + Math.round(soak) + ' minutes, then cooling.', className: 'w-full' },
-              h('title', null, 'Simplified kiln schedule'),
-              h('desc', null, 'The rising line represents heating, the level segment represents soaking at peak temperature, and the falling line represents cooling.'),
+            h('svg', { viewBox: '0 0 500 190', role: 'img', 'aria-label': 'Time-scaled kiln schedule at ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours, currently ' + kilnPreviewLabel.toLowerCase() + ' at about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius.', className: 'w-full' },
+              h('title', null, 'Time-scaled kiln schedule'),
+              h('desc', null, 'The horizontal position is proportional to modeled schedule time. A teal marker follows heating, peak soak, and cooling.'),
               [44, 85, 126, 168].map(function (y) { return h('line', { key: y, x1: 28, x2: 472, y1: y, y2: y, stroke: '#fed7aa', strokeWidth: 1 }); }),
               h('path', { d: curve, fill: 'none', stroke: '#c2410c', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('line', { x1: markerX, x2: markerX, y1: 24, y2: 168, stroke: '#0f766e', strokeWidth: 2, strokeDasharray: '5 5', opacity: .8, 'aria-hidden': 'true' }),
+              h('circle', { cx: markerX, cy: markerY, r: 7, fill: '#0f766e', stroke: '#ccfbf1', strokeWidth: 3, 'aria-hidden': 'true' }),
+              h('text', { x: clamp(markerX, 55, 445), y: 20, textAnchor: 'middle', fill: '#115e59', fontSize: 11, fontWeight: 700 }, kilnSample.elapsedHours.toFixed(1) + ' h'),
               h('circle', { cx: riseEnd, cy: peakY, r: 6, fill: '#9a3412' }),
               h('text', { x: 28, y: 184, fill: '#7c2d12', fontSize: 12 }, 'room'),
               h('text', { x: riseEnd, y: Math.max(16, peakY - 10), textAnchor: 'middle', fill: '#7c2d12', fontSize: 12, fontWeight: 700 }, Math.round(kilnTemp) + '°C'),
               h('text', { x: (riseEnd + coolStart) / 2, y: Math.min(184, peakY + 18), textAnchor: 'middle', fill: '#7c2d12', fontSize: 11 }, Math.round(soak) + ' min soak'),
               h('text', { x: 472, y: 184, textAnchor: 'end', fill: '#7c2d12', fontSize: 12 }, 'cool')
             ),
-            h('figcaption', { className: 'text-[11px] text-orange-950' }, 'Modeled effective heatwork: ' + Math.round(heatwork.effectiveTemp) + '°C equivalent · rough cone neighborhood ' + heatwork.cone + '. Witness cones remain the real kiln check.')
+            h('figcaption', { className: 'text-[11px] text-orange-950' }, 'Teal marker: ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours. Effective heatwork: ' + Math.round(heatwork.effectiveTemp) + '°C equivalent · rough cone neighborhood ' + heatwork.cone + '. Witness cones remain the real kiln check.')
+          );
+        }
+        function kilnCutaway() {
+          var heatRatio = clamp((kilnPreviewTemp - 100) / 1200, 0, 1);
+          var zoneSpread = kilnType === 'open' ? 120 : (kilnType === 'wood' ? 55 : (kilnType === 'gas' ? 28 : 14));
+          var zoneTemps = [kilnPreviewTemp - zoneSpread * .45, kilnPreviewTemp, kilnPreviewTemp + zoneSpread * .55];
+          var showZones = data.showKilnHeatZones !== false;
+          var temperatureDelta = Math.abs(zoneTemps[2] - zoneTemps[0]);
+          var previewScale = 1 - kilnMaterialState.firingShrinkagePct / 100;
+          var bodyDevelopmentOpacity = clamp(kilnMaterialState.maturityProgressPct / 100, 0, 1);
+          var glazeDevelopmentOpacity = clamp(kilnMaterialState.glazeDevelopmentPct / 100, 0, 1);
+          function piecePath(cx, baseY, scale) {
+            var left = [], right = [];
+            var visualScale = scale * previewScale;
+            for (var index = 0; index < RING_COUNT; index += 4) {
+              var ratio = index / (RING_COUNT - 1);
+              var y = baseY - ratio * vessel.heightCm * visualScale;
+              var radius = vessel.radii[index] * visualScale;
+              left.push((cx - radius).toFixed(1) + ' ' + y.toFixed(1));
+              right.unshift((cx + radius).toFixed(1) + ' ' + y.toFixed(1));
+            }
+            return 'M' + left.join(' L') + ' L' + right.join(' L') + ' Z';
+          }
+          function miniaturePiece(cx, baseY, scale, key) {
+            var visualScale = scale * previewScale;
+            var path = piecePath(cx, baseY, scale);
+            return h('g', { key: key, 'aria-hidden': 'true' },
+              h('ellipse', { cx: cx, cy: baseY + 2, rx: vessel.radii[0] * visualScale, ry: Math.max(2, vessel.radii[0] * visualScale * .22), fill: '#1f1410', opacity: .45 }),
+              h('path', { d: path, fill: kilnMaterialState.bodyColor, stroke: '#f5c6a0', strokeWidth: 1.5 }),
+              h('path', { d: path, fill: kilnMaterialState.firedColor, opacity: bodyDevelopmentOpacity.toFixed(2), stroke: 'none' }),
+              glazeDevelopmentOpacity > .01 ? h('path', { d: path, fill: kilnMaterialState.glazeColor, opacity: (.14 + glazeDevelopmentOpacity * .72).toFixed(2), stroke: '#fff7ed', strokeWidth: glazeDevelopmentOpacity > .7 ? 1.2 : .4 }) : null,
+              h('ellipse', { cx: cx, cy: baseY - vessel.heightCm * visualScale, rx: vessel.radii[RING_COUNT - 1] * visualScale, ry: Math.max(2, vessel.radii[RING_COUNT - 1] * visualScale * .2), fill: glazeDevelopmentOpacity > .2 ? kilnMaterialState.glazeColor : '#2a1711', stroke: '#f5c6a0', strokeWidth: 1, opacity: glazeDevelopmentOpacity > .2 ? (.55 + glazeDevelopmentOpacity * .4).toFixed(2) : 1 })
+            );
+          }
+          var sceneLabel = (kilnType === 'open' ? 'Open-firing section' : kilnType + ' kiln cutaway') + ' during ' + kilnPreviewLabel.toLowerCase() + ' at about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius. Material state: ' + kilnMaterialState.label + '. Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + ' percent. Atmosphere: ' + atmosphere + '. ' + (showZones ? 'Modeled top, middle, and bottom temperatures are labeled.' : 'Heat-zone labels are hidden.');
+          var enclosedScene = h('g', null,
+            h('path', { d: 'M76 344 V95 Q76 38 138 28 H422 Q484 38 484 95 V344 Z', fill: 'url(#wheel-fire-kiln-wall)', stroke: '#43261b', strokeWidth: 5 }),
+            h('path', { d: 'M126 330 V105 Q126 76 158 68 H402 Q434 76 434 105 V330 Z', fill: '#28100c', stroke: '#f4b183', strokeWidth: 4 }),
+            h('rect', { className: 'wheel-fire-heat-pulse', x: 130, y: 72, width: 300, height: 254, rx: 28, fill: 'url(#wheel-fire-kiln-heat)', opacity: (.12 + heatRatio * .72).toFixed(2) }),
+            [145, 235, 320].map(function (y, index) { return h('g', { key: 'shelf-' + y }, h('path', { d: 'M136 ' + y + ' L424 ' + y + ' L405 ' + (y + 10) + ' L151 ' + (y + 10) + ' Z', fill: '#8b6b59', stroke: '#f2c49f', strokeWidth: 2 }), miniaturePiece(210 + index * 28, y - 2, .92 - index * .06, 'piece-' + y), miniaturePiece(330 - index * 18, y - 2, .72, 'piece-b-' + y)); }),
+            kilnType === 'electric' ? h('g', { 'aria-hidden': 'true' }, [105, 155, 205, 255].map(function (y) { return h('path', { key: y, d: 'M132 ' + y + ' q14 -12 28 0 t28 0 M428 ' + y + ' q-14 -12 -28 0 t-28 0', fill: 'none', stroke: heatRatio > .25 ? '#ffb347' : '#7c6254', strokeWidth: 5, opacity: .9 }); })) : h('g', { className: 'wheel-fire-flame-motion', 'aria-hidden': 'true' },
+              h('path', { d: 'M90 310 C138 322 150 278 186 294 C224 310 192 252 238 266 C286 280 268 216 318 232 C370 248 354 168 414 182', fill: 'none', stroke: atmosphere === 'reduction' ? '#c084fc' : '#fb923c', strokeWidth: 16, strokeLinecap: 'round', opacity: (.22 + heatRatio * .7).toFixed(2) }),
+              h('path', { d: 'M94 310 C150 318 158 280 196 292 C244 306 218 252 260 266 C312 280 298 224 344 234 C390 244 390 196 424 190', fill: 'none', stroke: '#fde68a', strokeWidth: 5, strokeLinecap: 'round', opacity: heatRatio.toFixed(2) })
+            ),
+            h('path', { d: 'M434 90 Q468 88 480 60', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#7dd3fc', strokeWidth: 7, strokeDasharray: '12 8', opacity: .75, 'aria-hidden': 'true' }),
+            h('text', { x: 458, y: 48, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, 'exhaust'),
+            h('text', { x: 94, y: 327, fill: '#fff7ed', fontSize: 11 }, kilnType === 'electric' ? 'elements' : 'burner / firebox'),
+            showZones ? zoneTemps.map(function (temperature, index) { var y = [118, 207, 296][index]; return h('g', { key: 'zone-' + index }, h('line', { x1: 440, x2: 467, y1: y, y2: y, stroke: '#fef3c7', strokeWidth: 1 }), h('text', { x: 474, y: y + 4, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, Math.round(temperature) + '°')); }) : null,
+            [146, 236, 321].map(function (y, index) { var bend = clamp((zoneTemps[index] - body.maturity + 90) / 180, 0, 1); return h('path', { key: 'cone-' + y, d: 'M382 ' + (y - 6) + ' l8 -24 l' + (5 + bend * 9).toFixed(1) + ' 24 z', fill: '#f5deb3', stroke: '#5b3525', strokeWidth: 1, transform: 'rotate(' + (bend * 24).toFixed(1) + ' 390 ' + (y - 6) + ')', 'aria-hidden': 'true' }); })
+          );
+          var openScene = h('g', null,
+            h('path', { d: 'M20 330 Q150 300 280 326 T540 322 V380 H20 Z', fill: '#4a3023', stroke: '#24150f', strokeWidth: 4 }),
+            h('ellipse', { cx: 280, cy: 322, rx: 190, ry: 38, fill: '#1e1410', stroke: '#8d6e57', strokeWidth: 4 }),
+            [[170, 322, 310, 282], [215, 286, 356, 326], [128, 302, 256, 344], [290, 340, 422, 296]].map(function (log, index) { return h('line', { key: 'log-' + index, x1: log[0], y1: log[1], x2: log[2], y2: log[3], stroke: index % 2 ? '#8b5e3c' : '#6b4226', strokeWidth: 18, strokeLinecap: 'round' }); }),
+            miniaturePiece(228, 306, 1.05, 'open-piece-1'), miniaturePiece(318, 314, .86, 'open-piece-2'),
+            h('g', { className: 'wheel-fire-flame-motion', 'aria-hidden': 'true' },
+              h('path', { d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: (.18 + heatRatio * .78).toFixed(2) })
+            ),
+            h('path', { d: 'M250 135 C210 90 286 72 250 28 M330 172 C382 118 310 94 352 42', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#cbd5e1', strokeWidth: 12, strokeLinecap: 'round', opacity: .38, strokeDasharray: '18 12' }),
+            showZones ? h('g', null, h('text', { x: 24, y: 56, fill: '#fff7ed', fontSize: 12, fontWeight: 700 }, 'Upper plume ≈ ' + Math.round(zoneTemps[0]) + '°C'), h('text', { x: 24, y: 76, fill: '#fff7ed', fontSize: 12, fontWeight: 700 }, 'Fuel bed ≈ ' + Math.round(zoneTemps[2]) + '°C')) : null,
+            h('text', { x: 510, y: 356, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, 'Open firing: uneven heat and atmosphere exposure')
+          );
+          return h('figure', { className: 'rounded-xl border border-orange-300 bg-[#24130e] p-3 space-y-2', 'aria-labelledby': 'wheel-fire-kiln-cutaway-title' },
+            h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 text-orange-50' }, h('h3', { id: 'wheel-fire-kiln-cutaway-title', className: 'font-black' }, kilnType === 'open' ? 'Open-firing 3D section' : '3D kiln cutaway'), h('span', { className: 'text-xs font-bold' }, kilnPreviewLabel + ' · ' + Math.round(kilnPreviewTemp) + '°C · ' + atmosphere + ' · ' + kilnSample.elapsedHours.toFixed(1) + '/' + kilnSample.totalHours.toFixed(1) + ' h')),
+            h('svg', { viewBox: '0 0 560 380', role: 'img', 'aria-label': sceneLabel, className: 'w-full min-h-[300px] rounded-xl bg-[#1b0d09]' },
+              h('defs', null,
+                h('linearGradient', { id: 'wheel-fire-kiln-wall', x1: '0', x2: '1' }, h('stop', { offset: '0%', stopColor: '#5a3526' }), h('stop', { offset: '46%', stopColor: '#d6a77f' }), h('stop', { offset: '100%', stopColor: '#5b3325' })),
+                h('linearGradient', { id: 'wheel-fire-kiln-heat', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '48%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fde68a' })),
+                h('linearGradient', { id: 'wheel-fire-open-flame', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '55%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fef3c7' }))
+              ),
+              kilnType === 'open' ? openScene : enclosedScene
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite', className: 'space-y-1 text-orange-50' },
+              h('p', { className: 'text-xs' }, h('strong', null, kilnMaterialState.label + '. '), kilnMaterialState.description),
+              h('p', { className: 'text-[11px] font-bold text-orange-100' }, 'Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + '% · body development ' + Math.round(kilnMaterialState.maturityProgressPct) + '%' + (kilnMaterialState.glazeDevelopmentPct > 0 ? ' · glaze development ' + Math.round(kilnMaterialState.glazeDevelopmentPct) + '%' : '') + ' · load Δ ≈ ' + Math.round(temperatureDelta) + '°C')
+            ),
+            h('div', { className: 'rounded-lg bg-orange-50 p-2' }, rangeControl('wheel-fire-kiln-phase', 'Preview schedule time', kilnPreviewPhase, 0, 100, '%', function (value) { patchData({ kilnPreviewPhase: value }); })),
+            h('label', { className: 'flex items-center gap-2 text-xs font-bold text-orange-50' }, h('input', { type: 'checkbox', checked: showZones, onChange: function (event) { patchData({ showKilnHeatZones: event.target.checked }); } }), 'Show modeled heat zones'),
+            h('figcaption', { className: 'text-[11px] text-orange-100' }, 'Schedule position follows the selected ramp, soak, and cooling durations. Spatial temperatures, transformations, shrinkage, and flow paths are comparative teaching cues, not computational fluid dynamics. Real firings use witness cones, kiln-rated instruments, ventilation, and trained supervision.')
           );
         }
         function focusDryingHotspot(index) {
@@ -1826,11 +2897,11 @@
             history.ready ? h('div', { className: 'space-y-2', 'aria-label': 'Modeled drying history steps' }, history.segments.map(function (segment) {
               return h('div', { key: segment.id },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700' },
-                  h('span', null, segment.label.charAt(0).toUpperCase() + segment.label.slice(1) + ' Â· ' + Math.round(segment.moistureStartPct) + 'â†’' + Math.round(segment.moistureEndPct) + '% moisture'),
-                  h('span', null, segment.moistureLossPct.toFixed(1) + ' points Â· ' + Math.round(segment.crackRiskPct) + '% crack-risk signal')
+                  h('span', null, segment.label.charAt(0).toUpperCase() + segment.label.slice(1) + ' · ' + Math.round(segment.moistureStartPct) + '→' + Math.round(segment.moistureEndPct) + '% moisture'),
+                  h('span', null, segment.moistureLossPct.toFixed(1) + ' points · ' + Math.round(segment.crackRiskPct) + '% crack-risk signal')
                 ),
                 h('div', { className: 'h-3 overflow-hidden rounded-full bg-sky-100', 'aria-hidden': 'true' }, h('div', { className: 'h-full rounded-full bg-sky-600', style: { width: Math.max(0, Math.min(100, segment.relativePct)).toFixed(1) + '%' } })),
-                h('div', { className: 'text-[11px] text-slate-600' }, 'Modeled shrinkage: ' + segment.shrinkagePct.toFixed(2) + '%' + (segment.newDefects.length ? ' Â· New flags: ' + segment.newDefects.join(', ') : ' Â· No new modeled flags'))
+                h('div', { className: 'text-[11px] text-slate-600' }, 'Modeled shrinkage: ' + segment.shrinkagePct.toFixed(2) + '%' + (segment.newDefects.length ? ' · New flags: ' + segment.newDefects.join(', ') : ' · No new modeled flags'))
               );
             })) : h('p', { className: 'rounded-lg border border-dashed border-sky-300 bg-sky-50 p-3 text-xs text-sky-950' }, history.summary),
             history.ready ? h('div', { className: 'grid grid-cols-2 gap-2 text-xs' },
@@ -1841,7 +2912,7 @@
               h('h4', { className: 'font-black text-sky-950' }, 'Drying hotspots to inspect'),
               h('p', { className: 'text-[11px] text-sky-950' }, 'These rings combine local wall geometry with the selected drying conditions. Focus one in Shape to inspect the profile.'),
               h('div', { className: 'space-y-1' }, history.hotspots.map(function (hotspot) {
-                return h('button', { type: 'button', key: hotspot.index, onClick: function () { focusDryingHotspot(hotspot.index); }, className: 'w-full rounded-lg border border-sky-300 bg-white p-2 text-left text-xs hover:bg-sky-100' }, h('span', { className: 'font-black text-sky-950' }, 'Ring ' + (hotspot.index + 1)), ' Â· ', Math.round(hotspot.riskPct) + '% local signal Â· ' + hotspot.wallCm.toFixed(2) + ' cm wall Â· ' + hotspot.reason)
+                return h('button', { type: 'button', key: hotspot.index, onClick: function () { focusDryingHotspot(hotspot.index); }, className: 'w-full rounded-lg border border-sky-300 bg-white p-2 text-left text-xs hover:bg-sky-100' }, h('span', { className: 'font-black text-sky-950' }, 'Ring ' + (hotspot.index + 1)), ' · ', Math.round(hotspot.riskPct) + '% local signal · ' + hotspot.wallCm.toFixed(2) + ' cm wall · ' + hotspot.reason)
               }))
             ) : null,
             h('p', { className: 'text-[11px] text-slate-600' }, history.ready ? history.summary : 'Drying history is a comparative teaching model; real outcomes depend on airflow, thickness, support, clay body, and studio conditions.')
@@ -1852,9 +2923,12 @@
           function pct(value) { return (value >= 0 ? '+' : '') + value.toFixed(1) + '%'; }
           var measurementLog = copyArray(data.dimensionMeasurementLog);
           var calibration = compareDimensionalMeasurements(history, measurementLog, dimensionalSettings);
+          var repeatability = summarizeMeasurementRepeatability(calibration.rows);
           var checkpointMax = Math.max(0, history.snapshots.length - 1);
           var checkpointIndex = Math.round(clamp(finite(data.dimensionMeasureCheckpoint, 0), 0, checkpointMax));
           var checkpoint = history.snapshots[checkpointIndex] || history.baseline;
+          var measurementMethod = normalizeMeasurementMethod(data.dimensionMeasureMethod || 'calipers');
+          if (measurementMethod === 'unknown') measurementMethod = 'calipers';
           var targetPlan = estimateDimensionalTargets(history, { heightCm: data.dimensionTargetHeight, diameterCm: data.dimensionTargetDiameter, capacityMl: data.dimensionTargetCapacity, minWallCm: data.dimensionTargetMinWall });
           function inputValue(key) { return data[key] === null || data[key] === undefined ? '' : data[key]; }
           function readMeasurement(key) {
@@ -1876,8 +2950,8 @@
             var uncertainty = { heightCm: readUncertainty('dimensionUncertaintyHeight'), diameterCm: readUncertainty('dimensionUncertaintyDiameter'), capacityMl: readUncertainty('dimensionUncertaintyCapacity'), minWallCm: readUncertainty('dimensionUncertaintyMinWall') };
             var hasValue = Object.keys(measured).some(function (key) { return measured[key] !== null; });
             if (!hasValue) { announce('Enter at least one positive measured dimension before logging the checkpoint.'); return; }
-            var entry = { id: Date.now(), checkpointIndex: checkpointIndex, checkpointLabel: checkpoint.label, stage: checkpoint.stage, modeled: { heightCm: checkpoint.heightCm, diameterCm: checkpoint.diameterCm, capacityMl: checkpoint.capacityMl, minWallCm: checkpoint.minWallCm }, modelSettings: dimensionalSettings, measured: measured, uncertainty: uncertainty, note: String(data.dimensionMeasureNote || '').trim().slice(0, 240), savedAt: new Date().toISOString() };
-            patchData({ dimensionMeasurementLog: [entry].concat(measurementLog).slice(0, 12), dimensionMeasureHeight: '', dimensionMeasureDiameter: '', dimensionMeasureCapacity: '', dimensionMeasureMinWall: '', dimensionUncertaintyHeight: '', dimensionUncertaintyDiameter: '', dimensionUncertaintyCapacity: '', dimensionUncertaintyMinWall: '', dimensionMeasureNote: '' });
+            var entry = { id: Date.now(), checkpointIndex: checkpointIndex, checkpointLabel: checkpoint.label, stage: checkpoint.stage, measurementMethod: measurementMethod, modeled: { heightCm: checkpoint.heightCm, diameterCm: checkpoint.diameterCm, capacityMl: checkpoint.capacityMl, minWallCm: checkpoint.minWallCm }, modelSettings: dimensionalSettings, measured: measured, uncertainty: uncertainty, note: String(data.dimensionMeasureNote || '').trim().slice(0, 240), savedAt: new Date().toISOString() };
+            patchData({ dimensionMeasurementLog: [entry].concat(measurementLog).slice(0, 12), dimensionMeasureHeight: '', dimensionMeasureDiameter: '', dimensionMeasureCapacity: '', dimensionMeasureMinWall: '', dimensionUncertaintyHeight: '', dimensionUncertaintyDiameter: '', dimensionUncertaintyCapacity: '', dimensionUncertaintyMinWall: '', dimensionMeasureMethod: '', dimensionMeasureNote: '' });
             announce('Measured dimensions saved for ' + checkpoint.label + '.');
           }
           function metricCell(row, id) {
@@ -1891,11 +2965,22 @@
             if (!row.context) return 'Frozen model';
             return row.context.status === 'current' ? 'Current controls' : (row.context.status === 'stale' ? 'Needs review' : 'Incomplete context');
           }
+          function repeatabilityCell(group, id) {
+            var summary = group.metricSummaries[id];
+            if (!summary || !summary.count) return '—';
+            var digits = metricDigits(id);
+            return summary.count + ' readings; range ' + summary.range.toFixed(digits) + ' ' + summary.unit + '; sample SD ' + summary.sampleStdDev.toFixed(digits) + ' ' + summary.unit;
+          }
+          function repeatabilityMethodCell(group) {
+            if (group.methodConsistency === 'mixed') return 'Mixed: ' + group.methodLabels.join(' + ');
+            return group.methodLabels[0] || 'Not recorded';
+          }
           function clearDimensionTargets() {
             patchData({ dimensionTargetHeight: '', dimensionTargetDiameter: '', dimensionTargetCapacity: '', dimensionTargetMinWall: '' });
             announce('Dimensional targets cleared.');
           }
-          return h('section', { className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-dimensional-history-title' },
+          var repeatedGroups = repeatability.groups.filter(function (group) { return group.rowCount > 1; });
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-indigo-200 bg-indigo-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-dimensional-history-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-dimensional-history-title', className: 'font-black text-indigo-950' }, 'Dimensional shrinkage budget'),
               h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Forward projection from the current stage. Height, diameter, capacity, and minimum wall are model checkpoints—not a substitute for measuring the real piece.')
@@ -1933,12 +3018,14 @@
                 h('h4', { className: 'font-black text-indigo-950' }, 'Calibrate with a real measurement'),
                 h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Choose the checkpoint you actually measured. Log caliper readings, a scale-based capacity estimate, or one dimension at a time; blank fields stay blank rather than becoming zero. The modeled values and controls are frozen in the record for a stable comparison.')
               ),
-              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Checkpoint', h('select', { id: 'wheel-fire-dimension-checkpoint', value: String(checkpointIndex), onChange: function (event) { patchData({ dimensionMeasureCheckpoint: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, history.snapshots.map(function (snapshot, index) { return h('option', { key: snapshot.label, value: String(index) }, snapshot.label + ' · ' + snapshot.stage); }))),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-5 gap-2' },
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Checkpoint', h('select', { id: 'wheel-fire-dimension-checkpoint', value: String(checkpointIndex), onChange: function (event) { patchData({ dimensionMeasureCheckpoint: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, history.snapshots.map(function (snapshot, index) { return h('option', { key: snapshot.label, value: String(index) }, snapshot.label + ' · ' + stageLabel(snapshot.stage)); }))),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement method', h('select', { value: measurementMethod, onChange: function (event) { patchData({ dimensionMeasureMethod: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, MEASUREMENT_METHODS.map(function (methodOption) { return h('option', { key: methodOption.id, value: methodOption.id }, methodOption.label); }))),
                 h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureHeight'), onChange: function (event) { patchData({ dimensionMeasureHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.heightCm.toFixed(1) })),
                 h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureDiameter'), onChange: function (event) { patchData({ dimensionMeasureDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.diameterCm.toFixed(1) })),
                 h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionMeasureCapacity'), onChange: function (event) { patchData({ dimensionMeasureCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: Math.round(checkpoint.capacityMl) }))
               ),
+              h('p', { className: 'text-[11px] text-indigo-950' }, 'Use the same method when repeating a checkpoint. If you combine methods, choose “Mixed methods” and describe the protocol in the note.'),
               h('div', { className: 'grid sm:grid-cols-2 gap-2' },
                 h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured minimum wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionMeasureMinWall'), onChange: function (event) { patchData({ dimensionMeasureMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.minWallCm.toFixed(2) })),
                 h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement note (optional)', h('input', { value: inputValue('dimensionMeasureNote'), maxLength: 240, onChange: function (event) { patchData({ dimensionMeasureNote: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. calipers after glaze firing' }))
@@ -1982,11 +3069,25 @@
                 h('div', { className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
                   h('table', { className: 'w-full text-xs border-collapse' },
                     h('caption', { className: 'text-left p-2 font-black text-indigo-950' }, 'Measured checkpoint log'),
-                    h('thead', null, h('tr', { className: 'bg-indigo-50' }, ['Checkpoint', 'Height', 'Diameter', 'Capacity', 'Min wall', 'Context', 'Note'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
-                    h('tbody', null, calibration.rows.map(function (row) { return h('tr', { key: row.id }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, row.checkpoint), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'heightCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'diameterCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'capacityMl')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'minWallCm')), h('td', { className: 'p-2 border-b align-top font-bold' }, contextLabel(row)), h('td', { className: 'p-2 border-b align-top max-w-xs' }, row.note || '—')); }))
+                    h('thead', null, h('tr', { className: 'bg-indigo-50' }, ['Checkpoint', 'Height', 'Diameter', 'Capacity', 'Min wall', 'Method', 'Context', 'Note'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
+                    h('tbody', null, calibration.rows.map(function (row) { return h('tr', { key: row.id }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, row.checkpoint), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'heightCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'diameterCm')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'capacityMl')), h('td', { className: 'p-2 border-b align-top' }, metricCell(row, 'minWallCm')), h('td', { className: 'p-2 border-b align-top' }, row.measurementMethodLabel), h('td', { className: 'p-2 border-b align-top font-bold' }, contextLabel(row)), h('td', { className: 'p-2 border-b align-top max-w-xs' }, row.note || '—')); }))
                   )
                 )
               ) : null
+            ),
+            h('div', { className: 'rounded-lg border border-violet-300 bg-violet-50 p-3 space-y-3', 'aria-live': 'polite' },
+              h('div', null,
+                h('h4', { className: 'font-black text-violet-950' }, 'Repeatability study'),
+                h('p', { className: 'text-xs text-violet-950 mt-1' }, repeatability.summary)
+              ),
+              repeatedGroups.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-violet-200 bg-white' },
+                h('table', { className: 'w-full text-xs border-collapse' },
+                  h('caption', { className: 'text-left p-2 font-black text-violet-950' }, 'Repeated checkpoint spread'),
+                  h('thead', null, h('tr', { className: 'bg-violet-100' }, ['Checkpoint', 'Logs', 'Method', 'Height spread', 'Diameter spread', 'Capacity spread', 'Min wall spread'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-violet-200' }, label); }))),
+                  h('tbody', null, repeatedGroups.map(function (group) { return h('tr', { key: group.key }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, group.checkpoint), h('td', { className: 'p-2 border-b align-top' }, group.rowCount), h('td', { className: 'p-2 border-b align-top' }, repeatabilityMethodCell(group)), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'heightCm')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'diameterCm')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'capacityMl')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'minWallCm'))); }))
+                )
+              ) : h('p', { className: 'rounded-lg border border-dashed border-violet-300 bg-white p-2 text-xs text-violet-950' }, 'Repeated measurements become useful here when the same checkpoint is logged more than once. Keep the checkpoint, tool, and measuring technique consistent when you want to estimate repeatability.'),
+              h('p', { className: 'text-[11px] text-violet-950' }, 'Range is max minus min; sample SD describes spread among repeated readings. Neither is a pass/fail threshold or a substitute for calibrated instruments.')
             ),
             h('p', { className: 'text-[11px] text-slate-600' }, history.summary)
           );
@@ -1996,13 +3097,13 @@
           return h('section', { className: 'rounded-xl border border-orange-200 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-thermal-history-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-thermal-history-title', className: 'font-black text-orange-950' }, 'Modeled thermal history'),
-              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + 'Â°C. The model does not include kiln load, controller cycling, thermocouple lag, or witness-cone behavior.')
+              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + '°C. The model does not include kiln load, controller cycling, thermocouple lag, or witness-cone behavior.')
             ),
             h('div', { className: 'space-y-2', 'aria-label': 'Modeled thermal history segments' }, history.segments.map(function (segment) {
               return h('div', { key: segment.id },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-700' },
-                  h('span', null, segment.label + ' Â· ' + Math.round(segment.startC) + 'â†’' + Math.round(segment.endC) + 'Â°C'),
-                  h('span', null, segment.durationHours.toFixed(1) + ' h Â· ' + Math.round(segment.relativePct) + '% of modeled time')
+                  h('span', null, segment.label + ' · ' + Math.round(segment.startC) + '→' + Math.round(segment.endC) + '°C'),
+                  h('span', null, segment.durationHours.toFixed(1) + ' h · ' + Math.round(segment.relativePct) + '% of modeled time')
                 ),
                 h('div', { className: 'h-3 overflow-hidden rounded-full bg-orange-100', 'aria-hidden': 'true' }, h('div', { className: segment.id === 'cool' ? 'h-full rounded-full bg-sky-600' : (segment.id === 'soak' ? 'h-full rounded-full bg-red-600' : 'h-full rounded-full bg-orange-600'), style: { width: Math.max(0, Math.min(100, segment.relativePct)).toFixed(1) + '%' } }))
               );
@@ -2020,6 +3121,7 @@
             h('div', { role: 'alert', className: 'mt-2 text-xs font-bold text-red-900 bg-red-50 border border-red-300 rounded-lg p-2' }, 'Simulation only. Real kilns, glazes, clay dust, and firing fumes require trained supervision, ventilation, rated equipment, and material-specific safety guidance.')
           ),
           stageStrip(),
+          kilnCutaway(),
           h('div', { className: 'grid md:grid-cols-2 gap-3' },
             h('div', { className: 'rounded-xl border border-sky-300 bg-sky-50 p-3 space-y-3' },
               h('h3', { className: 'font-black text-sky-950' }, '1. Controlled drying'),
@@ -2120,7 +3222,7 @@
               h('caption', { className: 'text-left p-3 font-black text-orange-950' }, 'Firing evidence log'),
               h('thead', null, h('tr', { className: 'bg-orange-50' }, ['Stage', 'Target', 'Heatwork', 'Cone', 'Soak', 'Cooling', 'Atmosphere', 'Observed model flags', 'Surface outcome'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
               h('tbody', null, vessel.firingLog.map(function (entry, index) { return h('tr', { key: entry.stage + '-' + index },
-                h('td', { className: 'p-2 border-b' }, entry.stage),
+                h('td', { className: 'p-2 border-b' }, stageLabel(entry.stage)),
                 h('td', { className: 'p-2 border-b' }, finite(entry.temperature, 0) + '°C'),
                 h('td', { className: 'p-2 border-b' }, finite(entry.effectiveTemperature, entry.temperature) + '°C eq.'),
                 h('td', { className: 'p-2 border-b' }, entry.cone || '—'),
@@ -2177,7 +3279,7 @@
           var scoreLabel = testType === 'water' || testType === 'permeability' ? 'Retention score' : 'Resilience score';
           var cards = [
             metricCard(scoreLabel, Math.round(preview.score) + '/100', 'Comparative evidence only'),
-            metricCard('Effective porosity', preview.porosityPct.toFixed(1) + '%', vessel.stage),
+            metricCard('Effective porosity', preview.porosityPct.toFixed(1) + '%', stageLabel(vessel.stage)),
             metricCard('Integrity remaining', Math.round(preview.integrityPct) + '%', vessel.defects.length + ' modeled flag' + (vessel.defects.length === 1 ? '' : 's'))
           ];
           if (testType === 'water') cards.push(metricCard('Estimated seepage', preview.seepageMl.toFixed(1) + ' mL', Math.round(preview.durationHours) + ' hour test'));
@@ -2197,13 +3299,13 @@
         function cycleSensitivityExplainer() {
           if (testType !== 'cycles' || !preview.ready || !preview.uncertaintyDrivers) return null;
           var bandWidth = preview.damageRange.high - preview.damageRange.low;
-          return h('section', { className: 'rounded-xl border border-slate-300 bg-slate-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-title' },
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-slate-300 bg-slate-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-sensitivity-title', className: 'font-black text-slate-900' }, 'Read the sensitivity band'),
               h('p', { className: 'text-xs text-slate-700 mt-1' }, 'The point estimate is a teaching-model center, while the band shows how sensitive that estimate is to simplified assumptions. It is not a statistical confidence interval or a prediction of service life.')
             ),
             h('div', { className: 'grid sm:grid-cols-2 gap-2' },
-              h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2' }, h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-500' }, 'Band width'), h('div', { className: 'text-lg font-black text-slate-900' }, Math.round(bandWidth) + ' percentage points'), h('div', { className: 'text-[11px] text-slate-600' }, 'bounded at Â±' + Math.round(preview.uncertaintyPct) + '% around the estimate')),
+              h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2' }, h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-500' }, 'Band width'), h('div', { className: 'text-lg font-black text-slate-900' }, Math.round(bandWidth) + ' percentage points'), h('div', { className: 'text-[11px] text-slate-600' }, 'bounded at ±' + Math.round(preview.uncertaintyPct) + '% around the estimate')),
               h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2' }, h('div', { className: 'text-[11px] font-bold uppercase tracking-wide text-slate-500' }, 'Use it as a question'), h('div', { className: 'text-sm font-black text-slate-900' }, 'What changes if one input changes?'), h('div', { className: 'text-[11px] text-slate-600' }, 'Compare one variable at a time, then record an observation separately.'))
             ),
             h('div', { className: 'rounded-lg border border-slate-200 bg-white p-3 space-y-2', 'aria-label': 'Sensitivity band contributors' },
@@ -2221,7 +3323,7 @@
         function cycleSensitivitySweep() {
           if (testType !== 'cycles' || !preview.ready) return null;
           var sweeps = compareCycleSensitivity(vessel, testSettings);
-          return h('section', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-sweep-title' },
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-sweep-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-sensitivity-sweep-title', className: 'font-black text-teal-950' }, 'One-variable sensitivity sweep'),
               h('p', { className: 'text-xs text-teal-950 mt-1' }, 'Compare lower, current, and higher settings while the other two cycle controls stay fixed. The cells show point damage followed by the uncalibrated band.')
@@ -2248,7 +3350,7 @@
         }
         function sensitivityEvidenceLog() {
           if (!sensitivityLog.length) return null;
-          return h('section', { className: 'rounded-xl border border-cyan-300 bg-cyan-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-log-title' },
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-cyan-300 bg-cyan-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-sensitivity-log-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-sensitivity-log-title', className: 'font-black text-cyan-950' }, 'Sensitivity experiment log'),
               h('p', { className: 'text-xs text-cyan-950 mt-1' }, 'Saved model comparisons and field notes stay together so you can revisit the question without confusing a prediction with an observation.')
@@ -2256,9 +3358,9 @@
             h('div', { className: 'space-y-2' }, sensitivityLog.map(function (entry) {
               var axes = copyArray(entry.axes);
               return h('article', { key: entry.id, className: 'rounded-lg border border-cyan-200 bg-white p-3 space-y-2' },
-                h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' }, h('strong', { className: 'text-sm text-slate-900' }, entry.label || 'Cycle sensitivity sweep'), h('span', { className: 'text-[11px] text-slate-600' }, String(entry.savedAt || '').slice(0, 10) + ' Â· ' + (entry.stage || 'unknown stage'))),
-                h('p', { className: 'text-xs font-bold text-cyan-900' }, 'Baseline: ' + Math.round(finite(entry.damagePct, 0)) + '% damage; ' + Math.round(finite(entry.cycles, 0)) + ' cycles Â· ' + Math.round(finite(entry.dryingRate, 0)) + '% dry Â· ' + Math.round(finite(entry.cycleTemperatureDelta, 0)) + ' C swing'),
-                axes.length ? h('ul', { className: 'list-disc pl-5 text-[11px] text-slate-700' }, axes.map(function (axis) { return h('li', { key: axis.id }, axis.label + ': ' + copyArray(axis.points).map(function (point) { return Math.round(finite(point.value, 0)) + axis.unit + ' â†’ ' + Math.round(finite(point.damagePct, 0)) + '%'; }).join(' Â· ')); })) : null,
+                h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' }, h('strong', { className: 'text-sm text-slate-900' }, entry.label || 'Cycle sensitivity sweep'), h('span', { className: 'text-[11px] text-slate-600' }, String(entry.savedAt || '').slice(0, 10) + ' · ' + stageLabel(entry.stage || 'unknown stage'))),
+                h('p', { className: 'text-xs font-bold text-cyan-900' }, 'Baseline: ' + Math.round(finite(entry.damagePct, 0)) + '% damage; ' + Math.round(finite(entry.cycles, 0)) + ' cycles · ' + Math.round(finite(entry.dryingRate, 0)) + '% dry · ' + Math.round(finite(entry.cycleTemperatureDelta, 0)) + ' C swing'),
+                axes.length ? h('ul', { className: 'list-disc pl-5 text-[11px] text-slate-700' }, axes.map(function (axis) { return h('li', { key: axis.id }, axis.label + ': ' + copyArray(axis.points).map(function (point) { return Math.round(finite(point.value, 0)) + axis.unit + ' → ' + Math.round(finite(point.damagePct, 0)) + '%'; }).join(' · ')); })) : null,
                 h('p', { className: 'text-xs text-slate-700' }, h('strong', null, 'Field note: '), entry.observation || 'No field note saved.')
               );
             }))
@@ -2275,7 +3377,7 @@
             h('div', { className: 'space-y-2', 'aria-label': 'Visual damage progression' }, points.map(function (point) {
               return h('div', { key: point.phase + '-' + point.cycles },
                 h('div', { className: 'flex items-center justify-between text-xs font-bold text-slate-700' },
-                  h('span', null, point.phase + ' Â· ' + Math.round(point.cycles) + ' cycles'),
+                  h('span', null, point.phase + ' · ' + Math.round(point.cycles) + ' cycles'),
                   h('span', null, Math.round(point.damagePct) + '% damage')
                 ),
                 h('div', { className: 'wheel-fire-cycle-bar', 'aria-hidden': 'true' }, h('div', { className: 'wheel-fire-cycle-fill', style: { width: Math.max(0, Math.min(100, point.damagePct)).toFixed(1) + '%' } }))
@@ -2309,7 +3411,7 @@
             patchData({ testCycles: protocol.cycles, testCycleDryingRate: protocol.dryingRate, testCycleTemperatureDelta: protocol.cycleTemperatureDelta });
             announce(protocol.label + ' loaded into the cycle controls. No test was started.');
           }
-          return h('section', { className: 'rounded-xl border border-blue-300 bg-blue-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-protocols-title' },
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-blue-300 bg-blue-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-protocols-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-cycle-protocols-title', className: 'font-black text-blue-950' }, 'Compare reuse protocols'),
               h('p', { className: 'text-xs text-blue-950 mt-1' }, 'Run the same fired vessel through three bounded classroom scenarios. These are comparison presets, not care recommendations or service standards.')
@@ -2351,7 +3453,7 @@
         function cycleProtocolShelf() {
           if (testType !== 'cycles' || !preview.ready) return null;
           var evaluated = compareCycleProtocols(vessel, savedCycleProtocols);
-          return h('section', { className: 'rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-shelf-title' },
+          return h('section', { className: 'wheel-fire-advanced rounded-xl border border-violet-300 bg-violet-50 p-3 space-y-3', 'aria-labelledby': 'wheel-fire-cycle-shelf-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-cycle-shelf-title', className: 'font-black text-violet-950' }, 'Saved reuse protocol shelf'),
               h('p', { className: 'text-xs text-violet-950 mt-1' }, 'Name the current cycle settings to carry a hypothesis into another piece or a later journal review. Saved protocols do not change the vessel until you load one.')
@@ -2402,19 +3504,41 @@
             h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left p-3 font-black text-blue-950' }, 'Performance evidence log'),
               h('thead', null, h('tr', { className: 'bg-blue-50' }, ['Test', 'Stage', 'Clay', 'Score', 'Porosity', 'Integrity', 'Result', 'Observation'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-blue-200' }, label); }))),
-              h('tbody', null, performanceLog.map(function (entry) { var entryBody = materialProfile({ clayBody: entry.clayBody, materialRecipe: entry.materialRecipe }); return h('tr', { key: entry.id }, h('td', { className: 'p-2 border-b' }, entry.label), h('td', { className: 'p-2 border-b' }, entry.stage), h('td', { className: 'p-2 border-b' }, entryBody.name), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.score, 0)) + '/100'), h('td', { className: 'p-2 border-b' }, finite(entry.porosityPct, 0).toFixed(1) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.integrityPct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, entry.status), h('td', { className: 'p-2 border-b max-w-xs' }, entry.observation || 'No field note')); }))
+              h('tbody', null, performanceLog.map(function (entry) { var entryBody = materialProfile({ clayBody: entry.clayBody, materialRecipe: entry.materialRecipe }); return h('tr', { key: entry.id }, h('td', { className: 'p-2 border-b' }, entry.label), h('td', { className: 'p-2 border-b' }, stageLabel(entry.stage)), h('td', { className: 'p-2 border-b' }, entryBody.name), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.score, 0)) + '/100'), h('td', { className: 'p-2 border-b' }, finite(entry.porosityPct, 0).toFixed(1) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(entry.integrityPct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, entry.status), h('td', { className: 'p-2 border-b max-w-xs' }, entry.observation || 'No field note')); }))
             )
           ) : null
         );
       }
       function journalPanel() {
         var saved = copyArray(data.gallery);
+        var mechanicsTrials = copyArray(data.measurementLog);
+        function referenceSummary(trials, seriesId, baselineIds) {
+          var scopedTrials = trials.filter(function (row) { return String(row.seriesId || 'series-legacy') === String(seriesId || 'series-legacy'); });
+          var selectedId = baselineIds && typeof baselineIds === 'object' ? String(baselineIds[seriesId] || '') : '';
+          var selectedIndex = -1;
+          scopedTrials.forEach(function (row, index) {
+            var rowKey = row && row.id !== undefined ? String(row.id) : 'legacy-' + index;
+            if (rowKey === selectedId) selectedIndex = index;
+          });
+          if (selectedIndex < 0 && scopedTrials.length) selectedIndex = 0;
+          if (selectedIndex < 0) return null;
+          var row = scopedTrials[selectedIndex];
+          var methodText = row.method === 'coil' ? 'coil / hand-built' : 'wheel / ' + Math.round(finite(row.rpm, 0)) + ' RPM';
+          var ringText = row.workRing === undefined ? 'ring not recorded' : 'ring ' + (Number(row.workRing) + 1);
+          return { label: 'Trial ' + (selectedIndex + 1), text: 'Trial ' + (selectedIndex + 1) + ' · ' + methodText + ' · ' + ringText };
+        }
+        var mechanicsSeriesId = String(data.trialSeriesId || (mechanicsTrials.length ? mechanicsTrials[mechanicsTrials.length - 1].seriesId || 'series-legacy' : ''));
+        var mechanicsReference = referenceSummary(mechanicsTrials, mechanicsSeriesId, data.trialBaselineIds);
+        var latestMechanicsTrial = mechanicsTrials.length ? mechanicsTrials[mechanicsTrials.length - 1] : null;
         var journalRecipe = normalizeRecipe(vessel.materialRecipe);
         var journalModelSettings = currentDimensionSettings();
         var journalTargets = { heightCm: data.dimensionTargetHeight, diameterCm: data.dimensionTargetDiameter, capacityMl: data.dimensionTargetCapacity, minWallCm: data.dimensionTargetMinWall };
         var journalTargetCount = Object.keys(journalTargets).filter(function (key) { return journalTargets[key] !== '' && journalTargets[key] !== null && journalTargets[key] !== undefined && Number(journalTargets[key]) > 0; }).length;
+        var reflectionCount = ['claim', 'evidence', 'reasoning'].filter(function (key) { return String(data[key] || '').trim(); }).length;
+        var culturalComparisons = copyArray(data.culturalComparisons);
+        var selectedTraditionStudy = CULTURAL_STUDIES.filter(function (study) { return study.id === data.selectedTradition; })[0] || null;
         function loadJournalEntry(entry) {
-          var extra = { method: entry.method, studyLabel: entry.studyLabel || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), cycleProtocols: copyArray(entry.cycleProtocols), sensitivityLog: copyArray(entry.sensitivityStudies), dimensionMeasurementLog: copyArray(entry.dimensionMeasurements), recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) };
+          var extra = { method: entry.method, studyLabel: entry.studyLabel || '', artistStatement: entry.statement || '', performanceLog: copyArray(entry.performanceTests), materialScenarios: copyArray(entry.materialScenarios), firingSchedules: copyArray(entry.firingSchedules), cycleProtocols: copyArray(entry.cycleProtocols), sensitivityLog: copyArray(entry.sensitivityStudies), dimensionMeasurementLog: copyArray(entry.dimensionMeasurements), measurementLog: copyArray(entry.measurementTrials), hypothesis: entry.hypothesis || '', claim: entry.claim || '', evidence: entry.evidence || '', reasoning: entry.reasoning || '', cultureSimilarity: entry.cultureSimilarity || '', cultureDifference: entry.cultureDifference || '', cultureEvidence: entry.cultureEvidence || '', culturalComparisons: copyArray(entry.culturalComparisons), selectedTradition: entry.selectedTradition || '', compareTradition: entry.compareTradition || '', visitedTraditions: entry.visitedTraditions && typeof entry.visitedTraditions === 'object' ? Object.assign({}, entry.visitedTraditions) : {}, trialSeriesId: entry.trialSeriesId || '', trialSeriesName: entry.trialSeriesName || '', trialBaselineIds: entry.trialBaselineIds && typeof entry.trialBaselineIds === 'object' ? Object.assign({}, entry.trialBaselineIds) : {}, recipeDraft: normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe)) };
           var recordedSettings = entry.modelSettings ? dimensionModelSettings(entry.modelSettings) : null;
           if (recordedSettings) {
             extra.humidity = recordedSettings.humidity;
@@ -2436,7 +3560,7 @@
         function savePiece() {
           var name = String(data.pieceName || '').trim().slice(0, 48);
           if (!name) { announce('Name the piece before saving it.'); return; }
-          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), cycleProtocols: copyArray(data.cycleProtocols).slice(0, 8), sensitivityStudies: copyArray(data.sensitivityLog).slice(0, 8), dimensionMeasurements: copyArray(data.dimensionMeasurementLog).slice(0, 12), dimensionTargets: journalTargets, modelVersion: DIMENSION_MODEL_VERSION, modelSettings: journalModelSettings, method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
+          var entry = { id: Date.now(), name: name, vessel: copyVessel(vessel), materialRecipe: normalizeRecipe(vessel.materialRecipe), materialScenarios: copyArray(data.materialScenarios).slice(0, 8), firingSchedules: copyArray(data.firingSchedules).slice(0, 8), cycleProtocols: copyArray(data.cycleProtocols).slice(0, 8), sensitivityStudies: copyArray(data.sensitivityLog).slice(0, 8), dimensionMeasurements: copyArray(data.dimensionMeasurementLog).slice(0, 12), measurementTrials: copyArray(data.measurementLog).slice(0, 12), hypothesis: String(data.hypothesis || '').trim().slice(0, 240), claim: String(data.claim || '').trim().slice(0, 1200), evidence: String(data.evidence || '').trim().slice(0, 1200), reasoning: String(data.reasoning || '').trim().slice(0, 1200), cultureSimilarity: String(data.cultureSimilarity || '').trim().slice(0, 500), cultureDifference: String(data.cultureDifference || '').trim().slice(0, 500), cultureEvidence: String(data.cultureEvidence || '').trim().slice(0, 500), culturalComparisons: copyArray(data.culturalComparisons).slice(0, 8), selectedTradition: data.selectedTradition || '', compareTradition: data.compareTradition || '', visitedTraditions: data.visitedTraditions && typeof data.visitedTraditions === 'object' ? Object.assign({}, data.visitedTraditions) : {}, trialSeriesId: data.trialSeriesId || '', trialSeriesName: String(data.trialSeriesName || '').trim().slice(0, 60), trialBaselineIds: data.trialBaselineIds && typeof data.trialBaselineIds === 'object' ? Object.assign({}, data.trialBaselineIds) : {}, dimensionTargets: journalTargets, modelVersion: DIMENSION_MODEL_VERSION, modelSettings: journalModelSettings, method: method, studyLabel: data.studyLabel || '', statement: data.artistStatement || '', performanceTests: copyArray(data.performanceLog).slice(0, 4), savedAt: new Date().toISOString() };
           patchData({ gallery: [entry].concat(saved).slice(0, 8), pieceName: '' });
           announce(name + ' saved to the pottery journal.');
         }
@@ -2456,7 +3580,7 @@
               h('dl', { className: 'grid grid-cols-2 gap-2 text-xs mt-2' },
                 h('div', null, h('dt', { className: 'font-bold' }, 'Form'), h('dd', null, stats.shape)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Method'), h('dd', null, method)),
-                h('div', null, h('dt', { className: 'font-bold' }, 'Stage'), h('dd', null, vessel.stage)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Stage'), h('dd', null, stageLabel(vessel.stage))),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Stability'), h('dd', null, percent(stats.stability))),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Clay'), h('dd', null, materialProfile(vessel).name)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Recipe study'), h('dd', null, journalRecipe ? (journalRecipe.label || 'Unnamed assumptions') : 'Named body baseline')),
@@ -2466,6 +3590,13 @@
                 h('div', null, h('dt', { className: 'font-bold' }, 'Firing schedules'), h('dd', null, copyArray(data.firingSchedules).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Reuse protocols'), h('dd', null, copyArray(data.cycleProtocols).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Sensitivity studies'), h('dd', null, copyArray(data.sensitivityLog).length)),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Mechanics trials'), h('dd', null, mechanicsTrials.length)),
+                latestMechanicsTrial && latestMechanicsTrial.observation ? h('div', { className: 'col-span-2' }, h('dt', { className: 'font-bold' }, 'Latest field observation'), h('dd', { className: 'text-slate-700' }, latestMechanicsTrial.observation)) : null,
+                h('div', null, h('dt', { className: 'font-bold' }, 'Reflection fields'), h('dd', null, reflectionCount + '/3 recorded')),
+                h('div', null, h('dt', { className: 'font-bold' }, 'Cultural comparisons'), h('dd', null, culturalComparisons.length)),
+                selectedTraditionStudy ? h('div', { className: 'col-span-2' }, h('dt', { className: 'font-bold' }, 'Tradition context'), h('dd', null, selectedTraditionStudy.name)) : null,
+                data.trialSeriesName ? h('div', { className: 'col-span-2' }, h('dt', { className: 'font-bold' }, 'Mechanics series'), h('dd', null, data.trialSeriesName)) : null,
+                mechanicsReference ? h('div', { className: 'col-span-2' }, h('dt', { className: 'font-bold' }, 'Mechanics reference'), h('dd', null, mechanicsReference.text)) : null,
                 h('div', null, h('dt', { className: 'font-bold' }, 'Dimensional measurements'), h('dd', null, copyArray(data.dimensionMeasurementLog).length)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Dimensional targets'), h('dd', null, journalTargetCount)),
                 h('div', null, h('dt', { className: 'font-bold' }, 'Model provenance'), h('dd', null, 'v' + journalModelSettings.modelVersion + ' · current controls'))
@@ -2475,16 +3606,30 @@
           saved.length ? h('div', { className: 'wheel-fire-culture-grid' }, saved.map(function (entry) {
             var entryStats = analyzeVessel(entry.vessel, { rpm: 0 });
             var entryRecipe = normalizeRecipe(entry.materialRecipe || (entry.vessel && entry.vessel.materialRecipe));
+            var entryMechanicsTrials = copyArray(entry.measurementTrials);
+            var entrySeriesId = String(entry.trialSeriesId || (entryMechanicsTrials.length ? entryMechanicsTrials[entryMechanicsTrials.length - 1].seriesId || 'series-legacy' : ''));
+            var entryReference = referenceSummary(entryMechanicsTrials, entrySeriesId, entry.trialBaselineIds);
+            var latestEntryTrial = entryMechanicsTrials.length ? entryMechanicsTrials[entryMechanicsTrials.length - 1] : null;
+            var entryReflectionCount = ['claim', 'evidence', 'reasoning'].filter(function (key) { return String(entry[key] || '').trim(); }).length;
+            var entryCulturalComparisons = copyArray(entry.culturalComparisons);
+            var entryTraditionStudy = CULTURAL_STUDIES.filter(function (study) { return study.id === entry.selectedTradition; })[0] || null;
             var entryContext = compareDimensionModelSettings(entry.modelSettings, journalModelSettings);
             return h('article', { key: entry.id, className: 'rounded-xl border border-emerald-300 bg-white p-3' },
               h('h3', { className: 'font-black text-slate-900' }, entry.name),
-              h('p', { className: 'text-[11px] text-slate-600' }, entry.vessel.stage + ' · ' + entryStats.shape + ' · ' + entry.method),
+              h('p', { className: 'text-[11px] text-slate-600' }, stageLabel(entry.vessel.stage) + ' · ' + entryStats.shape + ' · ' + entry.method),
               entryRecipe ? h('p', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, 'Material: ' + (entryRecipe.label || 'Unnamed recipe study')) : h('p', { className: 'text-[11px] font-bold text-amber-800 mt-1' }, 'Material: Named body baseline'),
               entry.studyLabel ? h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, 'Process credit: ' + entry.studyLabel) : null,
               copyArray(entry.materialScenarios).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.materialScenarios).length + ' saved material scenario' + (copyArray(entry.materialScenarios).length === 1 ? '' : 's')) : null,
               copyArray(entry.firingSchedules).length ? h('p', { className: 'text-[11px] font-bold text-orange-800 mt-1' }, copyArray(entry.firingSchedules).length + ' saved firing schedule' + (copyArray(entry.firingSchedules).length === 1 ? '' : 's')) : null,
               copyArray(entry.cycleProtocols).length ? h('p', { className: 'text-[11px] font-bold text-violet-800 mt-1' }, copyArray(entry.cycleProtocols).length + ' saved reuse protocol' + (copyArray(entry.cycleProtocols).length === 1 ? '' : 's')) : null,
               copyArray(entry.sensitivityStudies).length ? h('p', { className: 'text-[11px] font-bold text-cyan-800 mt-1' }, copyArray(entry.sensitivityStudies).length + ' saved sensitivity stud' + (copyArray(entry.sensitivityStudies).length === 1 ? 'y' : 'ies')) : null,
+              entryMechanicsTrials.length ? h('p', { className: 'text-[11px] font-bold text-cyan-800 mt-1' }, entryMechanicsTrials.length + ' saved mechanics trial' + (entryMechanicsTrials.length === 1 ? '' : 's')) : null,
+              latestEntryTrial && latestEntryTrial.observation ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, h('strong', null, 'Latest field note: '), latestEntryTrial.observation) : null,
+              entryReflectionCount ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, entryReflectionCount + '/3 reflection fields saved') : null,
+              entryCulturalComparisons.length ? h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, entryCulturalComparisons.length + ' saved cultural comparison' + (entryCulturalComparisons.length === 1 ? '' : 's')) : null,
+              entryTraditionStudy ? h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, 'Tradition context: ' + entryTraditionStudy.name) : null,
+              entry.trialSeriesName ? h('p', { className: 'text-[11px] font-bold text-cyan-800 mt-1' }, 'Trial series: ' + entry.trialSeriesName) : null,
+              entryReference ? h('p', { className: 'text-[11px] font-bold text-cyan-800 mt-1' }, 'Reference trial: ' + entryReference.text) : null,
               copyArray(entry.dimensionMeasurements).length ? h('p', { className: 'text-[11px] font-bold text-indigo-800 mt-1' }, copyArray(entry.dimensionMeasurements).length + ' measured checkpoint' + (copyArray(entry.dimensionMeasurements).length === 1 ? '' : 's')) : null,
               h('p', { className: 'text-[11px] font-bold ' + (entryContext.status === 'current' ? 'text-emerald-800' : 'text-amber-800') + ' mt-1' }, 'Model context: ' + (entryContext.status === 'current' ? 'matches current controls' : (entryContext.status === 'stale' ? 'needs review — controls changed' : (entryContext.status === 'incomplete' ? 'incomplete — review before comparing' : 'legacy — no context stored')))),
               copyArray(entry.performanceTests).length ? h('p', { className: 'text-[11px] font-bold text-blue-800 mt-1' }, copyArray(entry.performanceTests).length + ' saved function test' + (copyArray(entry.performanceTests).length === 1 ? '' : 's')) : null,
@@ -2498,15 +3643,15 @@
         );
       }
 
-      return h('div', { className: 'wheel-fire-shell space-y-3 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 p-3 sm:p-4', 'data-wheel-fire-lab': 'true' },
+      return h('div', { className: 'wheel-fire-shell space-y-3 rounded-2xl bg-gradient-to-br from-amber-50 via-orange-50 to-stone-100 p-3 sm:p-4', 'data-wheel-fire-lab': 'true', 'data-experience-mode': experienceMode },
         h('header', { className: 'rounded-2xl bg-[#3d251d] text-amber-50 p-4 shadow-lg' },
           h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
             h('div', null, h('h1', { className: 'text-2xl font-black' }, '🏺 Wheel & Fire'), h('p', { className: 'font-bold text-amber-200' }, 'Pottery Lab · material science, cultural context, and creative practice')),
-            h('div', { className: 'rounded-xl bg-black/25 border border-amber-200/30 px-3 py-2 text-xs' }, h('strong', null, materialProfile(vessel).name), ' · ', vessel.stage, ' · ', stats.status)
+            h('div', { className: 'rounded-xl bg-black/25 border border-amber-200/30 px-3 py-2 text-xs' }, h('strong', null, materialProfile(vessel).name), ' · ', stageLabel(vessel.stage), ' · ', stats.status)
           ),
           h('div', { className: 'mt-3' }, stageStrip())
         ),
-        h('nav', { role: 'tablist', 'aria-label': 'Wheel and Fire sections', className: 'flex flex-wrap gap-2 rounded-xl border border-amber-300 bg-white p-2' },
+        h('nav', { role: 'tablist', 'aria-label': 'Wheel and Fire sections', 'aria-orientation': 'horizontal', className: 'flex flex-wrap gap-2 rounded-xl border border-amber-300 bg-white p-2' },
           tabButton('shape', 'Shape', '🏺'),
           tabButton('science', 'Clay science', '⚖️'),
           tabButton('traditions', 'Ways of making', '🌍'),
@@ -2514,14 +3659,17 @@
           tabButton('performance', 'Use tests', '🧪'),
           tabButton('journal', 'Journal', '📓')
         ),
+        experienceModeControl(),
+        guidancePanel(),
+        failureAutopsy(),
         view === 'shape' ? shapePanel() : null,
         view === 'science' ? sciencePanel() : null,
         view === 'traditions' ? traditionsPanel() : null,
         view === 'kiln' ? kilnPanel() : null,
         view === 'performance' ? performancePanel() : null,
         view === 'journal' ? journalPanel() : null,
-        h('div', { id: 'wheel-fire-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700' },
-          'Stage ' + vessel.stage + '. ' + Math.round(stats.stability) + '% stability. ' + Math.round(stats.uniformity) + '% wall uniformity. ' + vessel.lastOutcome
+          h('div', { id: 'wheel-fire-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700' },
+          'Stage ' + stageLabel(vessel.stage) + '. ' + Math.round(stats.stability) + '% stability. ' + Math.round(stats.uniformity) + '% wall uniformity. ' + vessel.lastOutcome
         )
       );
     }

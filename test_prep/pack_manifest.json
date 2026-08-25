@@ -66,13 +66,13 @@
         "computer-delivered-selected-response"
       ],
       "packUrl": "./test_prep/eppp_part_one_pack.json",
-      "sha256": "7a47d1be1d264d172f4baba3f2284de0d3543335cedffde664708a6bf13fa691",
+      "sha256": "4f1fa10fa94880afb0cba7e1d9595126b2504fb6f6ea4fd94ba9e21986f0228b",
       "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
       "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
       "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
       "learningLibrarySha256": "43544c9975e50d7d4c70c89a1d8ff241cb626682c1dd227a541a2c35343a1195",
       "learningLibraryQaSha256": "63b0544e41b62cada5effb60354dfe0de646c81b5fe1e001fedda01128657c35",
-      "nativeQaSha256": "981e177c05e1cd9ccc8b6b76a71d517414d4ba5e7e63139660547a99385787bc"
+      "nativeQaSha256": "b10beeb76578d0654719f5624c30dcda95a17589bfda08f9b0df1cdbf0d8ec2e"
     },
     {
       "id": "eppp-integrated-2027-preview",
@@ -1032,6 +1032,74 @@
       "nativeQaUrl": "./test_prep/ap_chemistry_foundation_pilot_qa.json",
       "learningLibrarySha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68",
       "nativeQaSha256": "5275cda293aedcd279e8b5b508780dd7c897ba3d0e2f1c6db16d5bcb0544e5bc"
+    },
+    {
+      "id": "ap-physics-1-foundation-pilot",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ],
+      "title": "AP Physics 1 Independent Foundation Pilot",
+      "shortTitle": "AP Physics 1 Foundation Pilot",
+      "description": "An independently authored 500-question AP Physics 1 foundation pilot spanning all eight current units. It tests representations, mathematical routines, system modeling, experimental design, energy and momentum reasoning, rotational dynamics, oscillations, fluids, and layered chained-scenario, mixed-representation, limiting-case, experimental-control, exam-mode, and cumulative capstone transfer reasoning alongside eight three-section textbook chapters, 24 retrieval checks, 24 flashcards, 24 memory aids, 39 deterministic topic diagnostic routes with study plans, eight unit synthesis routes, five cumulative review ladders, a nine-family misconception index, nine structured remediation playbooks, 15 study-session plans, 39 mastery checkpoints, eight original constructed-response workshops, and eight optional visual scaffolds before any release-ready expansion.",
+      "disclaimer": "Independent, unofficial AP Physics 1 preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, laboratory competency, or a substitute for supervised laboratory work.",
+      "credentialOwner": "College Board",
+      "status": "preview",
+      "version": "0.19.0-internal-preview",
+      "blueprintLabel": "AP Physics 1 Algebra-Based Course and Exam Description, effective Fall 2024 with May 2027 exam update",
+      "blueprintEffective": "Current public reference reviewed 2026-08-23; target exam year 2027.",
+      "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+      "itemCount": 500,
+      "domainCount": 8,
+      "itemSchemaVersion": 2,
+      "responseTypes": [
+        "single-choice"
+      ],
+      "examModes": [
+        "hybrid-digital"
+      ],
+      "packUrl": "./test_prep/ap_physics_1_foundation_pilot.json",
+      "sha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5",
+      "learningLibraryUrl": "./test_prep/ap_physics_1_foundation_pilot_learning_library.json",
+      "learningLibraryQaUrl": "",
+      "nativeQaUrl": "./test_prep/ap_physics_1_foundation_pilot_qa.json",
+      "learningLibrarySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
+      "nativeQaSha256": "ae7889a7e9d99db3af9723750ad963fb0b2995be4ce95d52f9e5c51cefe6347f"
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ],
+      "title": "AP Calculus AB Independent Foundation Pilot",
+      "shortTitle": "AP Calculus AB Foundation Pilot",
+      "description": "An independently authored 80-question AP Calculus AB initial foundation seed spanning all eight units. It tests calculus-specific blueprint metadata, representation and calculator routing, native learning chapters, and unscored response planning before expansion toward a complete bank.",
+      "disclaimer": "Independent, unofficial AP Calculus AB preparation material for internal foundation-pilot development only. Not affiliated with, endorsed by, or authored by College Board. This pilot does not provide official scores, score predictions, college-credit predictions, or automated FRQ scores.",
+      "credentialOwner": "College Board",
+      "status": "preview",
+      "version": "0.1.0-internal-preview",
+      "blueprintLabel": "AP Calculus AB and BC Course and Exam Description with Fall 2026 clarifications and May 2027 exam format",
+      "blueprintEffective": "Fall 2026 course clarifications; May 2027 exam format; public references reviewed 2026-08-25.",
+      "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-calculus-ab-and-bc-course-and-exam-description.pdf",
+      "itemCount": 80,
+      "domainCount": 8,
+      "itemSchemaVersion": 2,
+      "responseTypes": [
+        "single-choice"
+      ],
+      "examModes": [
+        "hybrid-digital"
+      ],
+      "packUrl": "./test_prep/ap_calculus_ab_foundation_pilot.json",
+      "sha256": "eac15110c2ed779295861dd4acb8d5c3097837c0f8425e98b7afe3e51df71486",
+      "learningLibraryUrl": "./test_prep/ap_calculus_ab_foundation_pilot_learning_library.json",
+      "learningLibraryQaUrl": "",
+      "nativeQaUrl": "./test_prep/ap_calculus_ab_foundation_pilot_qa.json",
+      "learningLibrarySha256": "5be98f69215ca9602ff083751d8b9037e3d72d8cca1335521a9077322f312d83",
+      "nativeQaSha256": "72811c5c9b5b6fc949e405732f6414ff30c604a53a60844c1953725e6bb1d14e"
     }
   ]
 }

@@ -10,8 +10,8 @@ describe('command/staleness localization payload 2026-08-21', () => {
     expect(payload.fullPackBlueprint.expectedTranslationSlots).toBe(16 * 63);
     expect(payload.fullPackBlueprint.unresolvedEntries).toBe(16 * 63);
     expect(Object.keys(payload.fullPackBlueprint.unresolvedByPack)).toHaveLength(63);
-    expect(payload.fullPackBlueprint.source['cmd.start_lesson_blueprint_done_topic']).toBe('Auto-Fill Blueprint mode is open for “');
-    expect(payload.fullPackBlueprint.source['cmd.start_lesson_blueprint_done_topic2']).toBe('”. Continue with AlloBot to review the resource plan before generating.');
+    expect(payload.fullPackBlueprint.source['cmd.start_blueprint_mode_done_topic']).toBe('Blueprint Mode is open for “');
+    expect(payload.fullPackBlueprint.source['cmd.start_blueprint_mode_done_topic2']).toBe('”. Continue with AlloBot to review the resource plan before generating.');
   }, 30000);
 
   it('pins the six session plus two tour ratchet delta to 496 eligible-pack entries', () => {
@@ -31,12 +31,12 @@ describe('command/staleness localization payload 2026-08-21', () => {
     expect(payload.languagePacks.stalenessHeld).toEqual(['maay_maay']);
   }, 30000);
 
-  it('keeps the historical command backlog at 207 and excludes the new P0 keys', () => {
+  it('keeps the current command backlog at 216 and excludes the new P0 keys', () => {
     const payload = lane.buildPayload();
     expect(payload.commandBacklog.referenceSlug).toBe('spanish_castilian');
-    expect(payload.commandBacklog.referenceCount).toBe(207);
+    expect(payload.commandBacklog.referenceCount).toBe(216);
     expect(payload.commandBacklog.keys.some((key) => lane.FULL_PACK_KEYS.includes(key))).toBe(false);
-    expect(payload.commandBacklog.allPackIntersectionCount).toBe(205);
+    expect(payload.commandBacklog.allPackIntersectionCount).toBe(214);
     expect(payload.commandBacklog.unresolvedEntries).toBeGreaterThan(0);
   }, 30000);
 

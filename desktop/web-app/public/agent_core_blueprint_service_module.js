@@ -77,6 +77,7 @@
           : (prior.universalImageStyle !== undefined ? prior.universalImageStyle : prior.imageGenerationStyle));
       var raw = Object.assign({}, prior, {
         gradeLevel: req.gradeLevel || prior.gradeLevel || '',
+        tone: req.tone !== undefined ? req.tone : prior.tone,
         primaryLanguage: primaryLanguage,
         language: primaryLanguage,
         leveledTextLanguage: primaryLanguage,
@@ -184,7 +185,7 @@
     }
 
     function generationSettingsChanged(before, after) {
-      var keys = ['gradeLevel', 'primaryLanguage', 'language', 'leveledTextLanguage', 'selectedLanguages',
+      var keys = ['gradeLevel', 'tone', 'primaryLanguage', 'language', 'leveledTextLanguage', 'selectedLanguages',
         'translationMode', 'currentUiLanguage', 'translationTarget', 'resolvedTranslationTarget',
         'differentiationRange', 'differentiationGrades', 'differentiationTypes', 'differentiationCustomGrades',
         'studentInterests', 'dokLevel', 'useEmojis', 'textFormat', 'imageGenerationStyle', 'universalImageStyle', 'imageAspectRatio',
@@ -272,6 +273,48 @@
       return blueprint;
     }
 
+    function applyDraftTextAccessDefaults(blueprint, options) {
+      if (!blueprint || !Array.isArray(blueprint.plan)) return blueprint;
+      var opts = options && typeof options === 'object' ? options : {};
+      var context = typeof C.normalizeInstructionalContext === 'function'
+        ? C.normalizeInstructionalContext(blueprint.instructionalContext, {
+            instructionalGrade: blueprint.audience && blueprint.audience.gradeLevel,
+            standardsContext: blueprint.standardsContext,
+            standards: blueprint.standards
+          })
+        : (blueprint.instructionalContext || { adaptedTextPolicy: 'include' });
+      blueprint.instructionalContext = context;
+      var plan = blueprint.plan.slice();
+      var adaptedPolicy = context.adaptedTextPolicy || 'include';
+      if (adaptedPolicy === 'include') {
+        if (opts.ensureAnalysis === true && !plan.some(function (row) { return row && row.tool === 'analysis'; })) {
+          plan.unshift({
+            tool: 'analysis', uiId: 'analysis-access',
+            directive: 'Analyze and retain the source as the primary reference text.'
+          });
+        }
+        if (opts.ensureAdapted === true && !plan.some(function (row) { return row && row.tool === 'simplified'; })) {
+          var analysisIndex = plan.findIndex(function (row) { return row && row.tool === 'analysis'; });
+          plan.splice(Math.max(0, analysisIndex + 1), 0, {
+            tool: 'simplified', uiId: 'simplified-access',
+            directive: 'Create a supplemental Adapted Text while keeping the analyzed primary text available.'
+          });
+        }
+      } else {
+        plan = plan.filter(function (row) { return !row || row.tool !== 'simplified'; });
+      }
+      blueprint.plan = plan;
+      return applyDraftInstructionalTextDefaults(blueprint);
+    }
+
+    function withReviewedAdaptedPolicy(context, policy) {
+      return Object.assign({}, context || {}, {
+        adaptedTextPolicy: policy,
+        adaptedTextPolicySource: 'educator',
+        textAccessReason: 'educator-choice'
+      });
+    }
+
     /**
      * Create a Blueprint draft. request:
      *   { sourceText, gradeLevel, standards, language, guidance, history,
@@ -297,7 +340,9 @@
         return Promise.resolve(d.autoConfigure(req)).then(function (legacyConfig) {
           legacyConfig = legacyConfig && typeof legacyConfig === 'object' ? legacyConfig : {};
           legacyConfig.globalSettings = frozenSettings(req, legacyConfig.globalSettings);
-          var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig(legacyConfig, ctx));
+          var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig(legacyConfig, ctx), {
+            ensureAnalysis: true, ensureAdapted: true
+          });
           bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
           var report = validate(bp);
           if (!report.ok) {
@@ -312,7 +357,9 @@
       var requestedGlobalSettings = req.globalSettings && typeof req.globalSettings === 'object' && !Array.isArray(req.globalSettings)
         ? req.globalSettings : {};
       var globalSettings = frozenSettings(req, requestedGlobalSettings);
-      var bp = applyDraftInstructionalTextDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx));
+      var bp = applyDraftTextAccessDefaults(C.fromLegacyConfig({ resourcePlan: plan, lessonDNA: req.lessonDNA || {}, globalSettings: globalSettings }, ctx), {
+        ensureAnalysis: true, ensureAdapted: true
+      });
       bp.plan = resolveRows(bp.plan, req, bp.globalSettings);
       var report = validate(bp);
       if (!report.ok) {
@@ -373,6 +420,11 @@
       var nextInstructionalContext = ch.instructionalContext !== undefined
         ? ch.instructionalContext
         : b.instructionalContext;
+      if (ch.instructionalContext === undefined && Array.isArray(ch.removeTools) && ch.removeTools.indexOf('simplified') !== -1) {
+        nextInstructionalContext = withReviewedAdaptedPolicy(nextInstructionalContext, 'omit');
+      } else if (ch.instructionalContext === undefined && Array.isArray(ch.addTools) && ch.addTools.indexOf('simplified') !== -1) {
+        nextInstructionalContext = withReviewedAdaptedPolicy(nextInstructionalContext, 'include');
+      }
       // A standards edit invalidates the old fingerprint even when the caller
       // does not explicitly rebuild instructionalContext. The contract will
       // normalize and fingerprint this new reviewed snapshot.
@@ -381,6 +433,11 @@
           standardsContext: nextStandardsContext,
           standardsFingerprint: ''
         });
+        if (b.instructionalContext && b.instructionalContext.adaptedTextPolicySource === 'standard') {
+          delete nextInstructionalContext.adaptedTextPolicy;
+          delete nextInstructionalContext.adaptedTextPolicySource;
+          delete nextInstructionalContext.textAccessReason;
+        }
       }
       var next = {
         schemaVersion: b.schemaVersion,
@@ -398,6 +455,10 @@
         review: { state: 'draft', reviewer: '' }, // edits always re-enter review
         provenance: b.provenance
       };
+      next = applyDraftTextAccessDefaults(next, {
+        ensureAdapted: (ch.standardsContext !== undefined || standardsTextChanged)
+          && b.instructionalContext && b.instructionalContext.adaptedTextPolicySource === 'standard'
+      });
       next = refreshChangedGenerationRows(next, b, generationSettingsChanged(b.globalSettings, next.globalSettings));
       // A new row needs a matrix, but reviewed rows must retain their exact
       // action/variant snapshot. Resolve only rows that do not already carry
@@ -492,9 +553,20 @@
         // silently resetting it during the round-trip.
         next.audience = Object.assign({}, b.audience, next.audience);
         next.sourcePolicy = b.sourcePolicy;
-        next.instructionalContext = b.instructionalContext;
+        var revisionText = String(instruction || '');
+        var removeAdapted = /\b(?:remove|omit|exclude|without)\b[^.\n]{0,80}\b(?:adapted|simplified)\b/i.test(revisionText)
+          || /\b(?:adapted|simplified)\b[^.\n]{0,80}\b(?:remove|omit|exclude)\b/i.test(revisionText);
+        var includeAdapted = /\b(?:add|include|create|restore)\b[^.\n]{0,80}\b(?:adapted|simplified)\b/i.test(revisionText)
+          || /\b(?:adapted|simplified)\b[^.\n]{0,80}\b(?:add|include|create|restore)\b/i.test(revisionText);
+        next.instructionalContext = removeAdapted
+          ? withReviewedAdaptedPolicy(b.instructionalContext, 'omit')
+          : (includeAdapted ? withReviewedAdaptedPolicy(b.instructionalContext, 'include') : b.instructionalContext);
         next.globalSettings = Object.assign({}, b.globalSettings, next.globalSettings);
         next.warnings = b.warnings;
+        next = applyDraftTextAccessDefaults(next, {
+          ensureAnalysis: b.plan.some(function (row) { return row && row.tool === 'analysis'; }),
+          ensureAdapted: !removeAdapted && b.plan.some(function (row) { return row && row.tool === 'simplified'; })
+        });
         next = refreshChangedGenerationRows(next, b, generationSettingsChanged(b.globalSettings, next.globalSettings));
         var unresolvedIndexes = [];
         var unresolvedRows = [];

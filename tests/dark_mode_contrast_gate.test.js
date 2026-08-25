@@ -57,11 +57,15 @@ describe('dark-mode contrast scanner', () => {
     // Floor history: 300 when the baseline was 402 (pre variant-layer apply).
     // 2026-08-16: applying the v3 generated theme layer legitimately covered most
     // STATE-LIGHT-BG hover sites, dropping the honest count to 128 — that drop is
-    // the fix landing, not a broken regex. Floor re-set below the new true count.
+    // the fix landing, not a broken regex.
+    // 2026-08-24: state-prefixed Tailwind utility remaps were correctly excluded
+    // from DARK-ONLY-DEF (their base rules live in Tailwind), leaving 28 genuine
+    // watched patterns. The per-rule negative control below remains the stronger
+    // guard against a regex silently becoming a no-op.
     const r = run(['--quiet']);
     const m = r.out.match(/(\d+) findings \((\d+) baselined/);
     expect(m, r.out).toBeTruthy();
-    expect(Number(m[1])).toBeGreaterThan(80);
+    expect(Number(m[1])).toBeGreaterThan(20);
   }, 200_000);
 
   it('goes red on a deliberately introduced violation of every rule', () => {
@@ -80,6 +84,7 @@ function Broken() {
       <div style={{ background: '#ffffff', color: 'var(--allo-text)' }}>literal vs var</div>
       <style>{\`
         .allo-probe-card { padding: 4px; }
+        .theme-dark .allo-probe-card [class~="focus-visible:ring-amber-500"]:focus-visible { --tw-ring-color: #b45309; }
         .theme-dark .allo-probe-only { color: #ffffff; background: #111111; }
         .allo-probe-mix { color: #ffffff; background: var(--allo-surface); }
       \`}</style>
@@ -93,6 +98,8 @@ function Broken() {
         'PORTAL-ESCAPE', 'STYLE-LITERAL-VS-VAR', 'CSS-LITERAL-VS-VAR', 'DARK-ONLY-DEF']) {
         expect(r.out, `rule ${rule} did not fire on its own fixture`).toContain(rule);
       }
+      expect(r.out, 'state-prefixed Tailwind utility overrides are intentional theme remaps, not dark-only custom selectors')
+        .not.toContain('focus-visible:ring-amber-500');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

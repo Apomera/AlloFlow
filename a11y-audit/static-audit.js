@@ -221,6 +221,14 @@ const CHECKS = [
       // Decorative SVGs inside buttons with labels are okay
       if (/aria-hidden/.test(context)) return false;
 
+      // A decorative child also inherits exclusion from an aria-hidden parent.
+      // Only inspect the immediately preceding line and require that it opens a
+      // renderer call whose props are complete but whose child list is still
+      // open (`},` at end). This catches a parent call followed by h('svg',
+      // ...) without borrowing aria-hidden from a closed sibling.
+      const immediateParent = lines[lineNum - 2] || '';
+      if (/(?:^|[^\w$])(?:h|createElement)\(\s*['"][^'"]+['"]\s*,\s*\{.*["']?aria-hidden["']?\s*:\s*(?:["']true["']|true).*\}\s*,\s*$/.test(immediateParent)) return false;
+
       // Props can be a shared variable rather than an inline object, e.g.
       //   var common = { viewBox: ..., 'aria-hidden': 'true' };
       //   return h('svg', common, ...)

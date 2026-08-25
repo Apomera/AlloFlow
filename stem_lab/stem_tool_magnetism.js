@@ -101,7 +101,7 @@
   }
 
   // Deterministic Hall-probe model. Raw dipole values are scaled to readable
-  // relative microtesla units; optional repeatable noise teaches uncertainty
+  // relative field units; optional repeatable noise teaches uncertainty
   // without making saved investigations change between renders.
   function fieldProbeReading(px, py, magnets, noisePercent) {
     var x = Number(px) || 0, y = Number(py) || 0;
@@ -159,6 +159,218 @@
     var intercept = meanY - exponent * meanX;
     var rSquared = varianceX < 1e-12 || varianceY < 1e-12 ? 0 : covariance * covariance / (varianceX * varianceY);
     return { count: usable.length, exponent: exponent, coefficient: Math.exp(intercept), rSquared: rSquared };
+  }
+
+  // A magnetometer survey is an inverse problem: use several local vector
+  // readings to infer where an unseen dipole is and how it is oriented. The
+  // search is deliberately coarse and deterministic so it stays teachable,
+  // fast on a classroom laptop, and reproducible in saved lab reports.
+  var FIELD_HUNT_ROUNDS = [
+    { name: 'North-south starter', target: { x: -80, y: 40, angle: 0, polarity: 1, strength: 1.2 } },
+    { name: 'Turned source', target: { x: 60, y: -40, angle: Math.PI / 2, polarity: 1, strength: 1.0 } },
+    { name: 'Opposite pole', target: { x: 40, y: 40, angle: Math.PI, polarity: -1, strength: 1.4 } }
+  ];
+
+  function fieldHuntTarget(round) {
+    var count = FIELD_HUNT_ROUNDS.length;
+    var index = ((Math.round(Number(round) || 0) % count) + count) % count;
+    return Object.assign({}, FIELD_HUNT_ROUNDS[index].target);
+  }
+
+  function fieldHuntEstimate(samples, opts) {
+    opts = opts || {};
+    var survey = fieldHuntSurveyQuality(samples);
+    var usable = (Array.isArray(samples) ? samples : []).filter(function (sample) {
+      return sample && Number.isFinite(Number(sample.x)) && Number.isFinite(Number(sample.y)) &&
+        Number.isFinite(Number(sample.bx)) && Number.isFinite(Number(sample.by));
+    });
+    if (!usable.length) return { count: 0, x: null, y: null, angle: null, polarity: 1, strength: null, error: null, margin: null, confidence: 0, survey: survey };
+    var positionStep = Math.max(10, Math.abs(Number(opts.positionStep) || 20));
+    var angleSteps = Math.max(4, Math.round(Number(opts.angleSteps) || 8));
+    var best = null, second = null;
+    function consider(candidate) {
+      var dot = 0, predictedPower = 0, observedPower = 0;
+      var predictions = [];
+      usable.forEach(function (sample) {
+        var predicted = fieldProbeReading(sample.x, sample.y, [candidate], 0);
+        predictions.push(predicted);
+        dot += predicted.bx * Number(sample.bx) + predicted.by * Number(sample.by);
+        predictedPower += predicted.bx * predicted.bx + predicted.by * predicted.by;
+        observedPower += Number(sample.bx) * Number(sample.bx) + Number(sample.by) * Number(sample.by);
+      });
+      if (predictedPower < 1e-12 || observedPower < 1e-12) return;
+      var fittedStrength = Math.max(0.3, Math.min(3, dot / predictedPower));
+      var residual = 0;
+      predictions.forEach(function (predicted, index) {
+        var sample = usable[index];
+        var dx = predicted.bx * fittedStrength - Number(sample.bx);
+        var dy = predicted.by * fittedStrength - Number(sample.by);
+        residual += dx * dx + dy * dy;
+      });
+      var error = residual / observedPower;
+      var result = { x: candidate.x, y: candidate.y, angle: candidate.angle, polarity: candidate.polarity,
+        strength: fittedStrength, error: error };
+      if (!best || error < best.error) {
+        second = best;
+        best = result;
+      } else if (!second || error < second.error) second = result;
+    }
+    for (var x = -120; x <= 120; x += positionStep) {
+      for (var y = -80; y <= 80; y += positionStep) {
+        for (var ai = 0; ai < angleSteps; ai++) {
+          var angle = ai / angleSteps * Math.PI * 2;
+          consider({ x: x, y: y, angle: angle, polarity: 1, strength: 1 });
+          consider({ x: x, y: y, angle: angle, polarity: -1, strength: 1 });
+        }
+      }
+    }
+    if (!best) return { count: usable.length, x: null, y: null, angle: null, polarity: 1, strength: null, error: null, margin: null, confidence: 0, survey: survey };
+    var margin = second ? Math.max(0, second.error - best.error) : 0;
+    return { count: usable.length, x: best.x, y: best.y, angle: best.angle, polarity: best.polarity,
+      strength: best.strength, error: best.error, margin: margin,
+      confidence: Math.max(0, Math.min(1, 1 - best.error / 0.35 + margin / 0.35)), survey: survey };
+  }
+
+  function fieldHuntEvaluation(guess, target, analysis, opts) {
+    opts = opts || {};
+    var gx = Number(guess && guess.x) || 0, gy = Number(guess && guess.y) || 0;
+    var tx = Number(target && target.x) || 0, ty = Number(target && target.y) || 0;
+    var distance = Math.sqrt(Math.pow(gx - tx, 2) + Math.pow(gy - ty, 2));
+    var tolerance = Math.max(10, Number(opts.tolerance) || 30);
+    var readingCount = analysis && Number(analysis.count) || 0;
+    var fitError = analysis && analysis.error != null && Number.isFinite(Number(analysis.error)) ? Number(analysis.error) : NaN;
+    var surveyReady = !analysis || !analysis.survey || analysis.survey.ready !== false;
+    var hasUsableFit = readingCount >= 3 && Number.isFinite(fitError) && fitError < 0.35 && surveyReady;
+    return { distance: distance, tolerance: tolerance, readingCount: readingCount, fitError: Number.isFinite(fitError) ? fitError : null,
+      surveyReady: surveyReady, hasUsableFit: hasUsableFit, solved: distance <= tolerance && hasUsableFit };
+  }
+
+  // Inverse fits are only as good as the geometry of the survey. A cluster of
+  // readings can produce a precise-looking but underdetermined answer, so the
+  // lab scores spatial spread and side-to-side coverage before accepting a
+  // claim. This is experimental design feedback, not an arbitrary game gate.
+  function fieldHuntSurveyQuality(samples) {
+    var unique = [], seen = {};
+    (Array.isArray(samples) ? samples : []).forEach(function (sample) {
+      var x = Number(sample && sample.x), y = Number(sample && sample.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      var key = x.toFixed(2) + '|' + y.toFixed(2);
+      if (seen[key]) return;
+      seen[key] = true;
+      unique.push({ x: x, y: y });
+    });
+    if (!unique.length) return { uniqueCount: 0, spanX: 0, spanY: 0, quadrantCount: 0, score: 0, ready: false, advice: 'Record at least three readings at different positions.' };
+    var minX = unique[0].x, maxX = unique[0].x, minY = unique[0].y, maxY = unique[0].y;
+    unique.forEach(function (point) {
+      minX = Math.min(minX, point.x); maxX = Math.max(maxX, point.x);
+      minY = Math.min(minY, point.y); maxY = Math.max(maxY, point.y);
+    });
+    var meanX = (minX + maxX) / 2, meanY = (minY + maxY) / 2, sides = {};
+    unique.forEach(function (point) { sides[(point.x >= meanX ? 1 : -1) + ',' + (point.y >= meanY ? 1 : -1)] = true; });
+    var quadrantCount = Object.keys(sides).length;
+    var spanX = maxX - minX, spanY = maxY - minY;
+    var spreadScore = Math.min(1, Math.max(spanX / 120, spanY / 80));
+    var coverageScore = Math.min(1, quadrantCount / 4);
+    var score = Math.round((spreadScore * 0.6 + coverageScore * 0.4) * 100);
+    var ready = unique.length >= 3 && spanX >= 70 && spanY >= 45 && quadrantCount >= 3;
+    var advice = ready ? 'Good geometry: your readings span the field and sample multiple sides of the source.' : unique.length < 3 ? 'Record ' + (3 - unique.length) + ' more reading' + (unique.length === 2 ? '' : 's') + ' at different positions.' : spanX < 70 && spanY < 45 ? 'Spread the probe both left-right and up-down before fitting.' : spanX < 70 ? 'Add a reading farther left or right to widen the survey.' : spanY < 45 ? 'Add a reading above or below to widen the survey.' : 'Sample a different side of the source so the fit is not one-dimensional.';
+    return { uniqueCount: unique.length, spanX: spanX, spanY: spanY, quadrantCount: quadrantCount, score: score, ready: ready, advice: advice };
+  }
+
+  // Visual survey helpers are intentionally deterministic. They turn the
+  // quality score into something a learner can see and act on without
+  // pretending that the coarse inverse fit has laboratory-grade statistics.
+  function fieldHuntCoverageHull(samples) {
+    var seen = {}, points = [];
+    (Array.isArray(samples) ? samples : []).forEach(function (sample) {
+      var x = Number(sample && sample.x), y = Number(sample && sample.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      var key = x.toFixed(4) + '|' + y.toFixed(4);
+      if (seen[key]) return;
+      seen[key] = true;
+      points.push({ x: x, y: y });
+    });
+    points.sort(function (a, b) { return a.x === b.x ? a.y - b.y : a.x - b.x; });
+    if (points.length <= 2) return points;
+    function cross(o, a, b) { return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); }
+    var lower = [], upper = [];
+    points.forEach(function (point) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], point) <= 0) lower.pop();
+      lower.push(point);
+    });
+    points.slice().reverse().forEach(function (point) {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], point) <= 0) upper.pop();
+      upper.push(point);
+    });
+    lower.pop(); upper.pop();
+    return lower.concat(upper);
+  }
+
+  function fieldHuntNextSample(samples) {
+    var points = (Array.isArray(samples) ? samples : []).filter(function (sample) {
+      return sample && Number.isFinite(Number(sample.x)) && Number.isFinite(Number(sample.y));
+    }).map(function (sample) { return { x: Number(sample.x), y: Number(sample.y) }; });
+    var candidates = [
+      { x: -120, y: -70 }, { x: 0, y: -70 }, { x: 120, y: -70 },
+      { x: -120, y: 0 }, { x: 120, y: 0 },
+      { x: -120, y: 70 }, { x: 0, y: 70 }, { x: 120, y: 70 }
+    ];
+    if (!points.length) return { x: 100, y: 0, distance: null };
+    var best = candidates[0], bestDistance = -1;
+    candidates.forEach(function (candidate) {
+      var nearest = Infinity;
+      points.forEach(function (point) {
+        var distance = Math.sqrt(Math.pow(candidate.x - point.x, 2) + Math.pow(candidate.y - point.y, 2));
+        nearest = Math.min(nearest, distance);
+      });
+      if (nearest > bestDistance) { best = candidate; bestDistance = nearest; }
+    });
+    return { x: best.x, y: best.y, distance: bestDistance };
+  }
+
+  function fieldHuntUncertainty(analysis, survey) {
+    if (!analysis || analysis.x == null || analysis.y == null) return null;
+    survey = survey || { spanX: 0, spanY: 0 };
+    var confidence = Math.max(0, Math.min(1, Number(analysis.confidence) || 0));
+    var xPenalty = Math.max(0, 1 - (Number(survey.spanX) || 0) / 120);
+    var yPenalty = Math.max(0, 1 - (Number(survey.spanY) || 0) / 80);
+    return {
+      rx: Math.round(14 + (1 - confidence) * 34 + xPenalty * 18),
+      ry: Math.round(12 + (1 - confidence) * 30 + yPenalty * 16)
+    };
+  }
+
+  function fieldHuntProgressState(samples, options) {
+    options = options || {};
+    var survey = fieldHuntSurveyQuality(samples);
+    var observed = survey.uniqueCount > 0;
+    var estimatePlaced = !!options.estimatePlaced || !!options.checked || !!options.solved;
+    var checked = !!options.checked;
+    var solved = !!options.solved;
+    var currentIndex = solved ? -1 : !observed ? 0 : !survey.ready ? 1 : !estimatePlaced ? 2 : 3;
+    var steps = [
+      { key: 'observe', label: 'Observe', done: observed, current: currentIndex === 0,
+        detail: observed ? survey.uniqueCount + ' vector' + (survey.uniqueCount === 1 ? '' : 's') + ' saved' : 'Move the probe and save one vector' },
+      { key: 'spread', label: 'Spread', done: survey.ready, current: currentIndex === 1,
+        detail: survey.ready ? 'Coverage ready' : 'Sample different sides of the map' },
+      { key: 'estimate', label: 'Estimate', done: estimatePlaced, current: currentIndex === 2,
+        detail: estimatePlaced ? 'Source estimate placed' : 'Place the pink estimate' },
+      { key: 'check', label: 'Check', done: solved, current: currentIndex === 3,
+        detail: solved ? 'Source located' : checked ? 'Revise and retry' : 'Commit your claim' }
+    ];
+    var nextAction = !observed
+      ? { key: 'sample', label: 'Record the first vector', detail: 'Move the green probe, then save its direction and strength.' }
+      : !survey.ready
+        ? { key: 'sample', label: 'Spread the survey', detail: survey.advice }
+        : !estimatePlaced
+          ? { key: 'estimate', label: 'Place your source estimate', detail: 'Switch to Source estimate, then place the pink diamond using the whole vector pattern.' }
+          : !checked
+            ? { key: 'check', label: 'Commit your estimate', detail: 'Check the claim only after it is independent of the inverse-model answer.' }
+            : !solved
+              ? { key: 'revise', label: 'Revise from the evidence', detail: 'Move the pink estimate, compare vector direction and strength, then check again.' }
+              : { key: 'next', label: 'Try a new hidden source', detail: 'Transfer the same survey strategy to a fresh field pattern.' };
+    return { survey: survey, steps: steps, currentIndex: currentIndex, estimatePlaced: estimatePlaced,
+      checked: checked, solved: solved, nextAction: nextAction };
   }
   // Full 3-D dipole model. yaw turns around the vertical y axis; pitch tilts
   // above or below the horizontal plane. Polarity reverses the dipole moment.
@@ -301,6 +513,64 @@
   function solenoidField(turns, current, lengthM, coreMult) {
     var n = turns / Math.max(lengthM, 1e-6);
     return MU0 * n * current * (coreMult || 1);
+  }
+
+  function normalizeElectromagnetTrial(value) {
+    var source = value || {};
+    var turns = Number(source.turns), current = Number(source.current);
+    if (!Number.isFinite(turns)) turns = 0;
+    if (!Number.isFinite(current)) current = 0;
+    return {
+      turns: Math.max(0, turns),
+      current: Math.max(0, current),
+      core: !!source.core,
+      currentDir: Number(source.currentDir) < 0 ? -1 : 1,
+      windingDir: Number(source.windingDir) < 0 ? -1 : 1
+    };
+  }
+
+  // Compare two electromagnet setups as classroom evidence. A fair test
+  // changes exactly one control; direction reversals are tracked separately
+  // from field magnitude so learners can see what stayed constant too.
+  function electromagnetFairTestState(baseline, trial) {
+    var live = normalizeElectromagnetTrial(trial);
+    var liveField = Math.abs(solenoidField(live.turns, live.current, 0.1, live.core ? 600 : 1));
+    if (!baseline) {
+      return {
+        status: 'empty', fair: false, baseline: null, trial: live,
+        changed: [], changedLabels: [], changedKey: null,
+        baselineField: 0, trialField: liveField, ratio: null,
+        delta: liveField, percentChange: null, directionFlipped: false
+      };
+    }
+    var locked = normalizeElectromagnetTrial(baseline);
+    var controls = [
+      { key: 'turns', label: 'turns', changed: Math.abs(locked.turns - live.turns) > 1e-9 },
+      { key: 'current', label: 'current', changed: Math.abs(locked.current - live.current) > 1e-9 },
+      { key: 'core', label: 'core material', changed: locked.core !== live.core },
+      { key: 'currentDir', label: 'current direction', changed: locked.currentDir !== live.currentDir },
+      { key: 'windingDir', label: 'winding direction', changed: locked.windingDir !== live.windingDir }
+    ];
+    var changedControls = controls.filter(function (control) { return control.changed; });
+    var baselineField = Math.abs(solenoidField(locked.turns, locked.current, 0.1, locked.core ? 600 : 1));
+    var ratio = baselineField > 1e-12 ? liveField / baselineField : null;
+    var baselineDirection = locked.currentDir * locked.windingDir;
+    var liveDirection = live.currentDir * live.windingDir;
+    return {
+      status: changedControls.length === 0 ? 'unchanged' : changedControls.length === 1 ? 'fair' : 'confounded',
+      fair: changedControls.length === 1,
+      baseline: locked,
+      trial: live,
+      changed: changedControls.map(function (control) { return control.key; }),
+      changedLabels: changedControls.map(function (control) { return control.label; }),
+      changedKey: changedControls.length === 1 ? changedControls[0].key : null,
+      baselineField: baselineField,
+      trialField: liveField,
+      ratio: ratio,
+      delta: liveField - baselineField,
+      percentChange: ratio == null ? null : (ratio - 1) * 100,
+      directionFlipped: baselineDirection !== liveDirection
+    };
   }
 
   var CORE_MATERIALS = {
@@ -680,6 +950,113 @@
     return s1 * s2 * Math.pow(60 / r, 4);
   }
 
+  var FORCE_BENCH_PREDICTIONS = [
+    { factor: 2, label: '2× weaker', detail: 'A simple inverse-distance guess.' },
+    { factor: 4, label: '4× weaker', detail: 'What an inverse-square pattern would predict.' },
+    { factor: 8, label: '8× weaker', detail: 'A steeper drop, but not the dipole-pair model.' },
+    { factor: 16, label: '16× weaker', detail: 'The inverse-fourth-power prediction.' }
+  ];
+
+  // One derived evidence story powers the Force Bench challenge, notebook,
+  // restored sessions, and tests. The baseline is deliberately restricted to
+  // a distance that can be doubled inside the 40–140 unit teaching range.
+  function forceBenchEvidenceState(strength1Input, strength2Input, distanceInput, attractInput, baselineInput, predictionInput, resultSeenInput) {
+    function bounded(input, minimum, maximum, fallback) {
+      var numeric = Number(input);
+      return Number.isFinite(numeric) ? Math.max(minimum, Math.min(maximum, numeric)) : fallback;
+    }
+    var strength1 = bounded(strength1Input, 0.5, 3, 1);
+    var strength2 = bounded(strength2Input, 0.5, 3, 1);
+    var distance = bounded(distanceInput, 40, 140, 70);
+    var attract = attractInput !== false;
+    var force = magnetPairForce(strength1, strength2, distance);
+    var baseline = null;
+    if (baselineInput && typeof baselineInput === 'object') {
+      var rawDistance = Number(baselineInput.distance);
+      var rawStrength1 = Number(baselineInput.strength1);
+      var rawStrength2 = Number(baselineInput.strength2);
+      if (Number.isFinite(rawDistance) && Number.isFinite(rawStrength1) && Number.isFinite(rawStrength2)) {
+        var baselineDistance = Math.max(40, Math.min(70, rawDistance));
+        var baselineStrength1 = Math.max(0.5, Math.min(3, rawStrength1));
+        var baselineStrength2 = Math.max(0.5, Math.min(3, rawStrength2));
+        baseline = {
+          distance: baselineDistance,
+          strength1: baselineStrength1,
+          strength2: baselineStrength2,
+          force: magnetPairForce(baselineStrength1, baselineStrength2, baselineDistance),
+          targetDistance: baselineDistance * 2,
+          targetForce: magnetPairForce(baselineStrength1, baselineStrength2, baselineDistance * 2)
+        };
+      }
+    }
+    var predictionNumber = Number(predictionInput);
+    var prediction = baseline && FORCE_BENCH_PREDICTIONS.some(function (option) { return option.factor === predictionNumber; }) ? predictionNumber : null;
+    var resultCaptured = !!resultSeenInput && !!baseline && prediction !== null;
+    var expectedWeakerFactor = baseline ? baseline.force / Math.max(1e-12, baseline.targetForce) : 16;
+    var predictionCorrect = resultCaptured ? prediction === Math.round(expectedWeakerFactor) : null;
+    var ratioToBaseline = baseline ? force / Math.max(1e-12, baseline.force) : null;
+    var currentComparison = 'Capture a baseline to compare this reading.';
+    if (ratioToBaseline != null) {
+      if (Math.abs(ratioToBaseline - 1) < 0.005) currentComparison = 'Matches the baseline force.';
+      else if (ratioToBaseline < 1) currentComparison = (1 / Math.max(1e-12, ratioToBaseline)).toFixed(ratioToBaseline < 0.1 ? 1 : 2) + '× weaker than baseline.';
+      else currentComparison = ratioToBaseline.toFixed(ratioToBaseline > 10 ? 1 : 2) + '× stronger than baseline.';
+    }
+    var steps = [
+      { key: 'baseline', label: 'Baseline', detail: 'Hold strength fixed at a 60-unit gap.', done: !!baseline },
+      { key: 'predict', label: 'Predict', detail: 'Commit before doubling the distance.', done: prediction !== null },
+      { key: 'test', label: 'Double & test', detail: 'Move to 120 units and compare force.', done: resultCaptured }
+    ];
+    var currentIndex = steps.findIndex(function (step) { return !step.done; });
+    steps.forEach(function (step, index) {
+      step.state = step.done ? 'done' : (index === currentIndex ? 'current' : 'upcoming');
+    });
+    var phase = !baseline ? 'setup' : prediction === null ? 'predict' : !resultCaptured ? 'ready' : predictionCorrect ? 'confirmed' : 'revised';
+    var phaseLabel = phase === 'setup' ? 'Set the controlled baseline'
+      : phase === 'predict' ? 'Prediction comes before evidence'
+        : phase === 'ready' ? 'Ready to double the gap'
+          : phase === 'confirmed' ? 'Prediction confirmed'
+            : 'Prediction revised by evidence';
+    var nextAction = phase === 'setup'
+      ? { key: 'baseline', label: 'Set 60-unit baseline', detail: 'Keep both magnet strengths and direction, then record force at 60 units.' }
+      : phase === 'predict'
+        ? { key: 'predict', label: 'Choose a prediction', detail: 'How many times weaker will the force become when the gap doubles?' }
+        : phase === 'ready'
+          ? { key: 'run', label: 'Run the doubled-gap test', detail: 'The bench will hold strength fixed and move from 60 to 120 units.' }
+          : { key: 'restart', label: 'Try another controlled run', detail: 'Change magnet strength or pull/push direction, then test the same distance law again.' };
+    return {
+      strength1: strength1,
+      strength2: strength2,
+      strengthProduct: strength1 * strength2,
+      distance: distance,
+      attract: attract,
+      direction: attract ? 'attraction' : 'repulsion',
+      force: force,
+      baseline: baseline,
+      prediction: prediction,
+      resultCaptured: resultCaptured,
+      expectedWeakerFactor: expectedWeakerFactor,
+      observedWeakerFactor: baseline ? baseline.force / Math.max(1e-12, baseline.targetForce) : null,
+      predictionCorrect: predictionCorrect,
+      ratioToBaseline: ratioToBaseline,
+      currentComparison: currentComparison,
+      phase: phase,
+      phaseLabel: phaseLabel,
+      completedCount: steps.filter(function (step) { return step.done; }).length,
+      complete: resultCaptured,
+      currentIndex: currentIndex,
+      steps: steps,
+      nextAction: nextAction,
+      predictions: FORCE_BENCH_PREDICTIONS.map(function (option) {
+        return Object.assign({}, option, {
+          selected: option.factor === prediction,
+          state: !resultCaptured ? (option.factor === prediction ? 'selected' : 'open')
+            : option.factor === Math.round(expectedWeakerFactor) ? 'correct'
+              : option.factor === prediction ? 'revised' : 'unselected'
+        });
+      })
+    };
+  }
+
   var ANALYZER_SPECIES = {
     proton: { name: 'Proton', symbol: 'H⁺', mass: 1, charge: 1, color: '#fbbf24', dash: '2 4' },
     deuteron: { name: 'Deuteron', symbol: 'D⁺', mass: 2, charge: 1, color: '#34d399', dash: '8 4' },
@@ -924,6 +1301,67 @@
     return -turns * dPhi / Math.max(dt, 1e-9);
   }
 
+  function normalizeInductionSpeedTrial(value, kind) {
+    var labels = { slow: 'Slow', fast: 'Fast', still: 'Still' };
+    var source = value && typeof value === 'object' ? value : null;
+    var voltage = source ? Number(source.voltage) : NaN;
+    var turns = source ? Number(source.turns) : NaN;
+    var duration = source ? Number(source.duration) : NaN;
+    var start = source ? Number(source.start) : NaN;
+    var finish = source ? Number(source.finish) : NaN;
+    var completed = !!source && Number.isFinite(voltage) && Number.isFinite(turns) && Number.isFinite(duration) && Number.isFinite(start) && Number.isFinite(finish);
+    return {
+      kind: kind, label: labels[kind] || kind, completed: completed,
+      voltage: completed ? Math.abs(voltage) : 0,
+      turns: completed ? Math.max(0, turns) : null,
+      duration: completed ? Math.max(0, duration) : null,
+      start: completed ? start : null,
+      finish: completed ? finish : null
+    };
+  }
+
+  // Summarize the controlled hand-generator speed experiment. The slow and
+  // fast runs must share path and turns; the still control must use the same
+  // coil. This keeps a visually persuasive result from masking a confound.
+  function inductionSpeedEvidenceState(trials) {
+    var source = trials && typeof trials === 'object' ? trials : {};
+    var slow = normalizeInductionSpeedTrial(source.slow, 'slow');
+    var fast = normalizeInductionSpeedTrial(source.fast, 'fast');
+    var still = normalizeInductionSpeedTrial(source.still, 'still');
+    var ordered = [slow, fast, still];
+    var completedCount = ordered.filter(function (trial) { return trial.completed; }).length;
+    var complete = completedCount === ordered.length;
+    var samePath = slow.completed && fast.completed && Math.abs(slow.start - fast.start) <= 1e-9 && Math.abs(slow.finish - fast.finish) <= 1e-9;
+    var sameMovingTurns = slow.completed && fast.completed && Math.abs(slow.turns - fast.turns) <= 1e-9;
+    var sameCoil = complete && Math.abs(slow.turns - still.turns) <= 1e-9 && Math.abs(fast.turns - still.turns) <= 1e-9;
+    var controlled = complete && samePath && sameMovingTurns && sameCoil;
+    var ratio = slow.completed && fast.completed && slow.voltage > 1e-12 ? fast.voltage / slow.voltage : null;
+    var expectedRatio = slow.completed && fast.completed && fast.duration > 1e-12 ? slow.duration / fast.duration : null;
+    var ratioMatches = ratio != null && expectedRatio != null && Math.abs(ratio - expectedRatio) <= Math.max(0.03, expectedRatio * 0.03);
+    var stillZero = still.completed && still.voltage <= 0.005;
+    var valid = complete && controlled && ratioMatches && stillZero;
+    var issues = [];
+    if (slow.completed && fast.completed && !samePath) issues.push('slow and fast used different movement paths');
+    if (slow.completed && fast.completed && !sameMovingTurns) issues.push('coil turns changed between slow and fast');
+    if (complete && !sameCoil) issues.push('the still control used a different coil');
+    if (complete && controlled && !ratioMatches) issues.push('the voltage ratio does not match the time ratio');
+    if (complete && !stillZero) issues.push('the still control was not zero');
+    var missing = ordered.filter(function (trial) { return !trial.completed; })[0] || null;
+    var nextAction = missing
+      ? { key: missing.kind, label: 'Run the ' + missing.label.toLowerCase() + ' trial' }
+      : valid
+        ? { key: 'explain', label: 'Explain the speed pattern' }
+        : { key: 'reset', label: 'Reset and repeat the fair test' };
+    return {
+      trials: ordered, completedCount: completedCount, complete: complete,
+      samePath: samePath, sameCoil: sameCoil, controlled: controlled,
+      ratio: ratio, expectedRatio: expectedRatio, ratioMatches: ratioMatches,
+      stillZero: stillZero, valid: valid, issues: issues,
+      status: !complete ? 'collecting' : valid ? 'complete' : 'confounded',
+      nextAction: nextAction
+    };
+  }
+
   // ── Transformer (mutual induction) ─────────────────────────────────────
   // Coil normal uses the same yaw/pitch convention as the 3-D dipole moment.
   function coilNormal3D(coil) {
@@ -1025,6 +1463,62 @@
     return { vout: vout, iout: iout, pout: pout, pin: pin, loss: Math.max(0, pin - pout), efficiency: eta };
   }
 
+  // Engineering briefs turn the transformer controls into a constrained
+  // design problem. Each mission can be solved exactly with the available
+  // slider steps, but voltage, useful power, and heat must all work together.
+  var TRANSFORMER_DESIGN_MISSIONS = [
+    { id: 'charger', icon: '\uD83D\uDD0C', label: '24 V device charger', brief: 'Step 120 V down for a low-voltage device while delivering useful power without excess heat.', targetVoltage: 24, voltageTolerance: 3, powerMin: 8, powerMax: 12, maxLoss: 0.8 },
+    { id: 'workshop', icon: '\uD83D\uDCA1', label: '60 V workshop lamp', brief: 'Supply a brighter isolated lamp while keeping the winding-and-core loss under control.', targetVoltage: 60, voltageTolerance: 4, powerMin: 25, powerMax: 35, maxLoss: 2.5 },
+    { id: 'feeder', icon: '\u26A1', label: '240 V feeder model', brief: 'Step voltage up for a feeder demonstration, then limit the load so power and heat stay inside the brief.', targetVoltage: 240, voltageTolerance: 10, powerMin: 220, powerMax: 280, maxLoss: 16 }
+  ];
+
+  function transformerDesignState(vin, n1, n2, isAC, loadOhms, efficiency, missionIndex) {
+    var count = TRANSFORMER_DESIGN_MISSIONS.length;
+    var rawIndex = Number(missionIndex);
+    var index = Number.isFinite(rawIndex) ? ((Math.round(rawIndex) % count) + count) % count : 0;
+    var mission = Object.assign({}, TRANSFORMER_DESIGN_MISSIONS[index]);
+    var input = Math.max(0, Math.abs(Number(vin) || 0));
+    var primary = Math.max(1, Math.abs(Number(n1) || 1));
+    var secondary = Math.max(1, Math.abs(Number(n2) || 1));
+    var resistance = Math.max(1, Math.abs(Number(loadOhms) || 1));
+    var eta = Math.max(0.01, Math.min(1, Number.isFinite(Number(efficiency)) ? Number(efficiency) : 0.94));
+    var active = !!isAC;
+    var load = transformerLoad(input, primary, secondary, active, resistance, eta);
+    var voltageMin = mission.targetVoltage - mission.voltageTolerance;
+    var voltageMax = mission.targetVoltage + mission.voltageTolerance;
+    var voltageMet = active && load.vout >= voltageMin && load.vout <= voltageMax;
+    var powerMet = active && load.pout >= mission.powerMin && load.pout <= mission.powerMax;
+    var lossMet = active && load.loss <= mission.maxLoss;
+    var metCount = [voltageMet, powerMet, lossMet].filter(Boolean).length;
+    var targetRatio = input > 0 ? mission.targetVoltage / input : 0;
+    var nextAction;
+    if (!active) {
+      nextAction = { key: 'ac', label: 'Switch the input to AC', detail: 'A steady DC flux cannot sustain secondary voltage, so no delivery target can be met.' };
+    } else if (!voltageMet) {
+      var voltageLow = load.vout < voltageMin;
+      nextAction = { key: 'voltage', label: voltageLow ? 'Raise the turns ratio' : 'Lower the turns ratio', detail: 'Tune N2/N1 toward ' + targetRatio.toFixed(2) + ' to bring the output into the ' + voltageMin.toFixed(0) + '\u2013' + voltageMax.toFixed(0) + ' V band.' };
+    } else if (!powerMet) {
+      var powerLow = load.pout < mission.powerMin;
+      nextAction = { key: 'power', label: powerLow ? 'Lower load resistance' : 'Raise load resistance', detail: powerLow ? 'With voltage on target, lower resistance to draw more current and useful power.' : 'With voltage on target, raise resistance to reduce current and useful power.' };
+    } else if (!lossMet) {
+      nextAction = { key: 'loss', label: 'Reduce the heat loss', detail: 'Raise transformer efficiency. If useful power is near its upper limit, slightly raising load resistance can help too.' };
+    } else {
+      nextAction = { key: 'validate', label: 'Lock in the design', detail: 'Voltage, useful power, and heat all satisfy the engineering brief.' };
+    }
+    return {
+      index: index, mission: mission, load: load, active: active, targetRatio: targetRatio,
+      voltageMin: voltageMin, voltageMax: voltageMax, voltageMet: voltageMet,
+      powerMet: powerMet, lossMet: lossMet, metCount: metCount,
+      allMet: metCount === 3, status: !active ? 'inactive' : metCount === 3 ? 'ready' : 'tuning',
+      nextAction: nextAction,
+      criteria: [
+        { key: 'voltage', label: 'Output voltage', value: load.vout, min: voltageMin, max: voltageMax, scaleMax: Math.max(voltageMax * 1.6, 1), unit: 'V', digits: 0, met: voltageMet, target: voltageMin.toFixed(0) + '\u2013' + voltageMax.toFixed(0) + ' V' },
+        { key: 'power', label: 'Useful power', value: load.pout, min: mission.powerMin, max: mission.powerMax, scaleMax: Math.max(mission.powerMax * 1.6, 1), unit: 'W', digits: 0, met: powerMet, target: mission.powerMin.toFixed(0) + '\u2013' + mission.powerMax.toFixed(0) + ' W' },
+        { key: 'loss', label: 'Heat loss', value: load.loss, min: 0, max: mission.maxLoss, scaleMax: Math.max(mission.maxLoss * 2.4, 1), unit: 'W', digits: 1, met: lossMet, target: '\u2264 ' + mission.maxLoss.toFixed(1) + ' W' }
+      ]
+    };
+  }
+
   // A compact history-dependent M-H model. branch is +1 while sweeping the
   // applied field downward from positive saturation and -1 on the return path.
   function hysteresisMagnetization(appliedField, branch, coercivity, slope, saturation) {
@@ -1034,6 +1528,141 @@
     var softness = Math.max(0.03, Math.abs(slope == null ? 0.25 : slope));
     var sat = Math.max(0, Math.min(1, saturation == null ? 1 : saturation));
     return sat * Math.tanh((h + dir * hc) / softness);
+  }
+
+  var DOMAIN_MATERIALS = {
+    soft: {
+      name: 'Soft iron', icon: '⚡', coercivity: 0.16, slope: 0.30, saturation: 1,
+      use: 'Switchable electromagnet core',
+      note: 'Narrow loop: easy to magnetize and easy to erase. Ideal for electromagnets.'
+    },
+    hard: {
+      name: 'Hard steel', icon: '🧭', coercivity: 0.48, slope: 0.18, saturation: 0.96,
+      use: 'Long-lasting permanent magnet',
+      note: 'Wide loop: needs a stronger reverse field, then remembers. Ideal for permanent magnets.'
+    }
+  };
+
+  // Derive one evidence story from the M-H model so the live dashboard,
+  // notebook, mission review, and restored sessions all describe the same
+  // magnetic state. Milestones are separate from the current point because
+  // heating can erase the sample without erasing evidence that the learner
+  // already observed saturation, remanence, and reversal.
+  function domainMemoryEvidenceState(materialKey, appliedFieldInput, branchInput, historyInput, alignmentInput, milestonesInput) {
+    var key = DOMAIN_MATERIALS[materialKey] ? materialKey : 'soft';
+    var material = DOMAIN_MATERIALS[key];
+    var rawField = Number(appliedFieldInput);
+    var field = Number.isFinite(rawField) ? Math.max(-1, Math.min(1, rawField)) : 0;
+    var branch = Number(branchInput) < 0 ? -1 : 1;
+    var history = !!historyInput;
+    var rawAlignment = Number(alignmentInput);
+    var storedAlignment = Number.isFinite(rawAlignment) ? Math.max(0, Math.min(1, Math.abs(rawAlignment))) : 0;
+    var magnetization = history
+      ? hysteresisMagnetization(field, branch, material.coercivity, material.slope, material.saturation)
+      : storedAlignment;
+    var alignment = Math.abs(magnetization);
+    var fieldAbs = Math.abs(field);
+    var opposed = fieldAbs > 0.06 && alignment > 0.08 && Math.sign(magnetization) !== Math.sign(field);
+    var phase = 'responding';
+    var phaseLabel = 'Domains responding';
+    var phaseDetail = 'The applied field is shifting domain walls and changing the vector sum.';
+    var phaseIcon = '↔';
+    if (!history && alignment < 0.05) {
+      phase = 'scrambled';
+      phaseLabel = 'Scrambled domains';
+      phaseDetail = 'Random domain directions cancel, so the sample has almost no net magnetization.';
+      phaseIcon = '✣';
+    } else if (history && field <= -0.90 && magnetization <= -0.85) {
+      phase = 'reversed';
+      phaseLabel = 'Negative saturation';
+      phaseDetail = 'A strong reverse field switched nearly every domain to the left.';
+      phaseIcon = '←';
+    } else if (history && field >= 0.90 && magnetization >= 0.85) {
+      phase = 'saturated';
+      phaseLabel = 'Positive saturation';
+      phaseDetail = 'Nearly every domain points right; the material is at its modeled magnetic limit.';
+      phaseIcon = '→';
+    } else if (history && fieldAbs < 0.06 && alignment > 0.20) {
+      phase = 'remanence';
+      phaseLabel = 'Remanence: field off, memory on';
+      phaseDetail = 'The external field is near zero, but aligned domains retain a magnetic memory.';
+      phaseIcon = '◎';
+    } else if (opposed) {
+      phase = 'coercive';
+      phaseLabel = 'Coercive battle';
+      phaseDetail = 'The reverse field is fighting the remembered direction but has not switched the vector sum yet.';
+      phaseIcon = '⇄';
+    } else if (alignment < 0.18) {
+      phase = 'switching';
+      phaseLabel = 'Domains switching';
+      phaseDetail = 'Competing domain directions nearly cancel while the material crosses its coercive threshold.';
+      phaseIcon = '⤨';
+    }
+
+    var memoryAtZero = Math.abs(hysteresisMagnetization(0, branch, material.coercivity, material.slope, material.saturation));
+    var milestones = milestonesInput || {};
+    var saturatedSeen = !!milestones.saturated || (history && field >= 0.90 && magnetization >= 0.85);
+    var remanenceSeen = !!milestones.remanence || (history && fieldAbs < 0.06 && alignment > 0.20);
+    var reversedSeen = !!milestones.reversed || (history && field <= -0.90 && magnetization <= -0.85);
+    var steps = [
+      { key: 'magnetize', label: 'Magnetize', detail: 'Align domains with a strong positive field.', done: saturatedSeen },
+      { key: 'remove', label: 'Test memory', detail: 'Remove H and look for remanence.', done: remanenceSeen },
+      { key: 'reverse', label: 'Reverse', detail: 'Cross coercivity and flip the vector sum.', done: reversedSeen }
+    ];
+    var currentIndex = steps.findIndex(function (step) { return !step.done; });
+    steps.forEach(function (step, index) {
+      step.state = step.done ? 'done' : (index === currentIndex ? 'current' : 'upcoming');
+    });
+    var nextAction = currentIndex === 0
+      ? { key: 'magnetize', label: 'Stroke with magnet', detail: 'Drive H to +1 and align the domains.' }
+      : currentIndex === 1
+        ? { key: 'remove', label: 'Remove field', detail: 'Set H to zero and test what the material remembers.' }
+        : currentIndex === 2
+          ? { key: 'reverse', label: 'Reverse strongly', detail: 'Drive H to −1 and watch the vector sum switch left.' }
+          : { key: 'compare', label: key === 'soft' ? 'Try hard steel' : 'Try soft iron', detail: 'Repeat the same evidence sequence and compare retained memory.' };
+    var comparisons = Object.keys(DOMAIN_MATERIALS).map(function (comparisonKey) {
+      var comparison = DOMAIN_MATERIALS[comparisonKey];
+      return {
+        id: comparisonKey,
+        name: comparison.name,
+        icon: comparison.icon,
+        use: comparison.use,
+        remanencePercent: Math.round(Math.abs(hysteresisMagnetization(0, 1, comparison.coercivity, comparison.slope, comparison.saturation)) * 100),
+        coercivityPercent: Math.round(comparison.coercivity * 100),
+        active: comparisonKey === key
+      };
+    });
+    return {
+      materialKey: key,
+      material: material,
+      field: field,
+      branch: branch,
+      history: history,
+      magnetization: magnetization,
+      alignment: alignment,
+      alignmentPercent: Math.round(alignment * 100),
+      signedPercent: Math.round(magnetization * 100),
+      fieldPercent: Math.round(field * 100),
+      fieldDirection: field > 0.06 ? 'right' : (field < -0.06 ? 'left' : 'off'),
+      magnetizationDirection: magnetization > 0.05 ? 'right' : (magnetization < -0.05 ? 'left' : 'mixed'),
+      memoryAtZero: memoryAtZero,
+      memoryAtZeroPercent: Math.round(memoryAtZero * 100),
+      coercivityPercent: Math.round(material.coercivity * 100),
+      opposed: opposed,
+      phase: phase,
+      phaseLabel: phaseLabel,
+      phaseDetail: phaseDetail,
+      phaseIcon: phaseIcon,
+      saturatedSeen: saturatedSeen,
+      remanenceSeen: remanenceSeen,
+      reversedSeen: reversedSeen,
+      completedCount: steps.filter(function (step) { return step.done; }).length,
+      complete: currentIndex === -1,
+      currentIndex: currentIndex,
+      steps: steps,
+      nextAction: nextAction,
+      comparisons: comparisons
+    };
   }
 
   // Relative eddy-current braking: conductivity and wall thickness strengthen
@@ -1073,6 +1702,46 @@
   // and non-magnetic interleaved so every pass is a decision).
   var CRANE_ORDER = ['nail', 'foil', 'clip', 'penny', 'nickel', 'ruler', 'cobalt', 'pencil'];
   var BIN_SLOT = 8; // rightmost position, one past the last item slot
+
+  // Summarize the prediction -> test -> evidence loop independently from the
+  // crane UI. Keeping this pure makes saved runs recoverable and lets the
+  // notebook, mission report, and visual ledger share one interpretation.
+  function craneEvidenceState(predictions, tests, deposited) {
+    var safePredictions = predictions && typeof predictions === 'object' ? predictions : {};
+    var safeTests = tests && typeof tests === 'object' ? tests : {};
+    var safeDeposited = deposited && typeof deposited === 'object' ? deposited : {};
+    var items = CRANE_ORDER.map(function (id, index) {
+      var material = MATERIALS.find(function (candidate) { return candidate.id === id; }) || { id: id, name: id, emoji: '•', magnetic: false };
+      var record = safeTests[id] && typeof safeTests[id] === 'object' ? safeTests[id] : null;
+      var tested = !!record && typeof record.lifted === 'boolean';
+      var hasPrediction = Object.prototype.hasOwnProperty.call(safePredictions, id);
+      var predicted = tested && typeof record.predicted === 'boolean'
+        ? record.predicted
+        : hasPrediction ? !!safePredictions[id] : null;
+      var lifted = tested ? !!record.lifted : null;
+      var correct = tested ? predicted === lifted : null;
+      return {
+        id: id, index: index, name: material.name, emoji: material.emoji,
+        magnetic: !!material.magnetic, predicted: predicted, tested: tested,
+        lifted: lifted, correct: correct, recycled: !!safeDeposited[id]
+      };
+    });
+    var predictionCount = items.filter(function (item) { return item.predicted !== null; }).length;
+    var testedItems = items.filter(function (item) { return item.tested; });
+    var correctCount = testedItems.filter(function (item) { return item.correct; }).length;
+    return {
+      items: items,
+      predictionCount: predictionCount,
+      testedCount: testedItems.length,
+      correctCount: correctCount,
+      accuracy: testedItems.length ? Math.round(correctCount / testedItems.length * 100) : null,
+      liftedCount: testedItems.filter(function (item) { return item.lifted; }).length,
+      noPullCount: testedItems.filter(function (item) { return !item.lifted; }).length,
+      recycledCount: items.filter(function (item) { return item.recycled; }).length,
+      complete: testedItems.length === items.length,
+      perfect: testedItems.length === items.length && correctCount === items.length
+    };
+  }
 
   // ── Magnetic domains ───────────────────────────────────────────────────
   // Angle of domain i at alignment level a (0 = fully scrambled, 1 = fully
@@ -1120,6 +1789,92 @@
     return { n: { x: r.x + ox, y: r.y + oy }, s: { x: r.x - ox, y: r.y - oy } };
   }
 
+  function fieldWalkReferenceSteps(round) {
+    var count = MAZE_ROUNDS.length;
+    var index = ((Math.round(Number(round) || 0) % count) + count) % count;
+    var def = MAZE_ROUNDS[index];
+    var magnet = { x: def.x, y: def.y, angle: def.angle, polarity: def.polarity };
+    var poles = mazePoles(index);
+    var gx = def.start[0], gy = def.start[1], seen = {};
+    for (var step = 0; step <= 400; step++) {
+      var point = mazeCellToField(gx, gy);
+      if (Math.hypot(point.x - poles.s.x, point.y - poles.s.y) < MAZE_CELL * 1.2) return step;
+      var key = gx + ',' + gy;
+      if (seen[key]) return null;
+      seen[key] = true;
+      var field = fieldAt(point.x, point.y, [magnet]);
+      var dx = 0, dy = 0;
+      if (Math.abs(field.x) >= Math.abs(field.y)) dx = field.x >= 0 ? 1 : -1;
+      else dy = field.y >= 0 ? 1 : -1;
+      var nx = Math.max(0, Math.min(MAZE_COLS - 1, gx + dx));
+      var ny = Math.max(0, Math.min(MAZE_ROWS - 1, gy + dy));
+      if (nx === gx && ny === gy) return null;
+      gx = nx; gy = ny;
+    }
+    return null;
+  }
+
+  // Convert the breadcrumb trail into evidence without storing duplicate
+  // measurements. Strength is shown relative to the round's starting square;
+  // a log scale keeps the near-pole surge readable instead of flattening every
+  // earlier sample. Alignment scores only legal one-cell D-pad moves.
+  function fieldWalkEvidenceState(round, trail) {
+    var count = MAZE_ROUNDS.length;
+    var index = ((Math.round(Number(round) || 0) % count) + count) % count;
+    var def = MAZE_ROUNDS[index];
+    var magnet = { x: def.x, y: def.y, angle: def.angle, polarity: def.polarity };
+    var cells = [{ x: def.start[0], y: def.start[1] }];
+    (Array.isArray(trail) ? trail : []).forEach(function (entry) {
+      if (entry == null) return;
+      var parts = typeof entry === 'string' ? entry.split(',') : Array.isArray(entry) ? entry : [entry && entry.x, entry && entry.y];
+      var x = Number(parts[0]), y = Number(parts[1]);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+      x = Math.round(x); y = Math.round(y);
+      if (x < 0 || x >= MAZE_COLS || y < 0 || y >= MAZE_ROWS) return;
+      cells.push({ x: x, y: y });
+    });
+    var samples = cells.map(function (cell) {
+      var point = mazeCellToField(cell.x, cell.y);
+      var field = fieldAt(point.x, point.y, [magnet]);
+      return { x: cell.x, y: cell.y, strength: Math.hypot(field.x, field.y) };
+    });
+    var startStrength = Math.max(1e-18, samples[0].strength);
+    samples.forEach(function (sample) {
+      sample.ratio = sample.strength / startStrength;
+      sample.signalPercent = Math.max(2, Math.min(100, 12 + Math.log(Math.max(0.5, sample.ratio)) / Math.LN2 * 11));
+    });
+    var seen = {}, uniqueCount = 0, revisits = 0, alignedCount = 0, validMoveCount = 0, lastMoveAligned = null;
+    cells.forEach(function (cell, cellIndex) {
+      var key = cell.x + ',' + cell.y;
+      if (seen[key]) revisits++; else { seen[key] = true; uniqueCount++; }
+      if (cellIndex === 0) return;
+      var previous = cells[cellIndex - 1];
+      var dx = cell.x - previous.x, dy = cell.y - previous.y;
+      if (Math.abs(dx) + Math.abs(dy) !== 1) return;
+      var point = mazeCellToField(previous.x, previous.y);
+      var field = fieldAt(point.x, point.y, [magnet]);
+      var recommendedX = 0, recommendedY = 0;
+      if (Math.abs(field.x) >= Math.abs(field.y)) recommendedX = field.x >= 0 ? 1 : -1;
+      else recommendedY = field.y >= 0 ? 1 : -1;
+      lastMoveAligned = dx === recommendedX && dy === recommendedY;
+      validMoveCount++;
+      if (lastMoveAligned) alignedCount++;
+    });
+    var current = samples[samples.length - 1];
+    var previousSample = samples.length > 1 ? samples[samples.length - 2] : null;
+    var signalTrend = !previousSample ? 'baseline' : current.strength > previousSample.strength * 1.08 ? 'rising' : current.strength < previousSample.strength * 0.92 ? 'falling' : 'steady';
+    var signalLabel = current.ratio < 0.8 ? 'weaker than start' : current.ratio < 1.25 ? 'starting level' : current.ratio < 3 ? 'building' : current.ratio < 10 ? 'strong' : 'very strong';
+    return {
+      round: index, cells: cells, samples: samples, current: current,
+      moveCount: validMoveCount, alignedCount: alignedCount,
+      alignmentPercent: validMoveCount ? Math.round(alignedCount / validMoveCount * 100) : null,
+      lastMoveAligned: lastMoveAligned, uniqueCount: uniqueCount, revisits: revisits,
+      signalRatio: current.ratio, signalPercent: current.signalPercent,
+      signalTrend: signalTrend, signalLabel: signalLabel,
+      referenceSteps: fieldWalkReferenceSteps(index)
+    };
+  }
+
   // ── Magnetic materials (predict-then-test) ─────────────────────────────
   // Only the ferromagnetic trio (iron, nickel, cobalt) and their alloys stick
   // to an everyday magnet — the classic misconception is "all metals do".
@@ -1133,6 +1888,56 @@
     { id: 'ruler',   name: 'Plastic ruler',    emoji: '📏', magnetic: false, why: 'Plastic shows no visible pull in this classroom test; its magnetic response is extremely weak.' },
     { id: 'pencil',  name: 'Wooden pencil',    emoji: '✏️', magnetic: false, why: 'Wood shows no visible attraction to an everyday magnet; any response is far too weak for this test.' }
   ];
+
+  // Interleave the samples so material family, not list position, drives each
+  // decision. The evidence helper powers the sorter, notebook, and tests.
+  var MATERIAL_SORT_ORDER = ['nail', 'foil', 'clip', 'penny', 'nickel', 'ruler', 'cobalt', 'pencil'];
+  var MATERIAL_METAL_IDS = { nail: true, foil: true, clip: true, penny: true, nickel: true, cobalt: true };
+  function materialSortEvidenceState(guesses, revealed) {
+    var safeGuesses = guesses && typeof guesses === 'object' ? guesses : {};
+    var items = MATERIAL_SORT_ORDER.map(function (id, index) {
+      var material = MATERIALS.find(function (candidate) { return candidate.id === id; }) || { id: id, name: id, emoji: '•', magnetic: false, why: '' };
+      var answered = Object.prototype.hasOwnProperty.call(safeGuesses, id) && typeof safeGuesses[id] === 'boolean';
+      var prediction = answered ? !!safeGuesses[id] : null;
+      return Object.assign({}, material, {
+        index: index, isMetal: !!MATERIAL_METAL_IDS[id], prediction: prediction,
+        answered: answered, correct: answered ? prediction === !!material.magnetic : null
+      });
+    });
+    var answeredItems = items.filter(function (item) { return item.answered; });
+    var correctCount = answeredItems.filter(function (item) { return item.correct; }).length;
+    var metalFalsePositives = items.filter(function (item) { return item.isMetal && !item.magnetic && item.prediction === true; });
+    var ferromagneticMisses = items.filter(function (item) { return item.magnetic && item.prediction === false; });
+    var allAnswered = answeredItems.length === items.length;
+    var perfect = allAnswered && correctCount === items.length;
+    var status = !allAnswered ? 'collecting' : !revealed ? 'ready' : perfect ? 'perfect'
+      : metalFalsePositives.length && !ferromagneticMisses.length ? 'metal-trap'
+        : ferromagneticMisses.length && !metalFalsePositives.length ? 'family-miss' : 'mixed-revision';
+    return {
+      items: items,
+      answeredCount: answeredItems.length,
+      unansweredCount: items.length - answeredItems.length,
+      correctCount: correctCount,
+      wrongCount: answeredItems.length - correctCount,
+      allAnswered: allAnswered,
+      perfect: perfect,
+      revealed: !!revealed,
+      status: status,
+      nextItem: items.find(function (item) { return !item.answered; }) || null,
+      metalFalsePositives: metalFalsePositives,
+      ferromagneticMisses: ferromagneticMisses,
+      predictionGroups: {
+        lift: items.filter(function (item) { return item.prediction === true; }),
+        waiting: items.filter(function (item) { return item.prediction === null; }),
+        noPull: items.filter(function (item) { return item.prediction === false; })
+      },
+      responseGroups: {
+        ferromagnetic: items.filter(function (item) { return item.magnetic; }),
+        otherMetals: items.filter(function (item) { return item.isMetal && !item.magnetic; }),
+        nonmetals: items.filter(function (item) { return !item.isMetal; })
+      }
+    };
+  }
 
   // ── Quiz bank ──────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1209,11 +2014,129 @@
   var QUIZ_TABS = ['field', 'field', 'field', 'electro', 'electro', 'electro', 'motor', 'earth', 'earth', 'earth', 'induce', 'materials', 'transformer', 'induce', 'materials', 'maze', 'field', 'electro', 'motor', 'motor', 'induce', 'induce'];
   var QUIZ_PASS = 15; // ~70% of 22
 
+  var QUIZ_TOPIC_META = {
+    field: { label: '🧭 Field Explorer', shortLabel: 'Fields' },
+    electro: { label: '🔌 Electromagnet', shortLabel: 'Coils' },
+    motor: { label: '⚙️ Motor', shortLabel: 'Motion' },
+    induce: { label: '⚡ Generator', shortLabel: 'Induction' },
+    materials: { label: '🔩 Materials', shortLabel: 'Materials' },
+    maze: { label: '🧭 Field Walk', shortLabel: 'Field walk' },
+    transformer: { label: '🔁 Transformer', shortLabel: 'Transformers' },
+    earth: { label: '🌍 Earth’s Field', shortLabel: 'Earth' }
+  };
+
+  // A single, defensive view of quiz history powers both the live evidence
+  // trail and the results dashboard. Saved sessions from older versions may
+  // have partial or malformed history, so every index and count is sanitized.
+  function quizEvidenceState(indexInput, scoreInput, pickedInput, missedInput, doneInput) {
+    var total = QUIZ.length;
+    var rawIndex = Number(indexInput);
+    var index = Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0;
+    index = Math.max(0, Math.min(Math.max(0, total - 1), index));
+    var done = !!doneInput;
+    var picked = pickedInput !== null && pickedInput !== undefined;
+    var answeredCount = done ? total : Math.min(total, index + (picked ? 1 : 0));
+    var rawScore = Number(scoreInput);
+    var score = Number.isFinite(rawScore) ? Math.max(0, Math.min(total, Math.floor(rawScore))) : 0;
+    var missedLookup = {};
+    var missed = [];
+    (Array.isArray(missedInput) ? missedInput : []).forEach(function (value) {
+      var questionIndex = Number(value);
+      if (!Number.isInteger(questionIndex) || questionIndex < 0 || questionIndex >= answeredCount || missedLookup[questionIndex]) return;
+      missedLookup[questionIndex] = true;
+      missed.push(questionIndex);
+    });
+    if (picked && !done && QUIZ[index] && Number(pickedInput) !== QUIZ[index].c && !missedLookup[index]) {
+      missedLookup[index] = true;
+      missed.push(index);
+    }
+    missed.sort(function (a, b) { return a - b; });
+
+    var currentStreak = 0;
+    var bestStreak = 0;
+    var run = 0;
+    for (var question = 0; question < answeredCount; question++) {
+      if (missedLookup[question]) run = 0;
+      else {
+        run += 1;
+        bestStreak = Math.max(bestStreak, run);
+      }
+    }
+    for (var tail = answeredCount - 1; tail >= 0 && !missedLookup[tail]; tail--) currentStreak += 1;
+
+    var progress = [];
+    for (var step = 0; step < total; step++) {
+      var stepState = 'upcoming';
+      if (step < answeredCount) stepState = missedLookup[step] ? 'revised' : 'confirmed';
+      else if (!done && step === index) stepState = 'current';
+      progress.push({
+        index: step,
+        number: step + 1,
+        topic: QUIZ_TABS[step] || 'field',
+        state: stepState
+      });
+    }
+
+    var topicOrder = [];
+    var topicLookup = {};
+    QUIZ_TABS.forEach(function (topic, questionIndex) {
+      if (!topicLookup[topic]) {
+        var meta = QUIZ_TOPIC_META[topic] || { label: topic, shortLabel: topic };
+        topicLookup[topic] = {
+          id: topic,
+          label: meta.label,
+          shortLabel: meta.shortLabel,
+          total: 0,
+          answered: 0,
+          correct: 0,
+          missed: 0,
+          missedQuestions: []
+        };
+        topicOrder.push(topic);
+      }
+      var summary = topicLookup[topic];
+      summary.total += 1;
+      if (questionIndex < answeredCount) {
+        summary.answered += 1;
+        if (missedLookup[questionIndex]) {
+          summary.missed += 1;
+          summary.missedQuestions.push(questionIndex);
+        } else summary.correct += 1;
+      }
+    });
+    var topics = topicOrder.map(function (topic) {
+      var summary = topicLookup[topic];
+      summary.percent = summary.total ? Math.round((summary.correct / summary.total) * 100) : 0;
+      summary.needsReview = summary.missed > 0;
+      summary.status = summary.needsReview ? 'review' : (summary.answered === summary.total ? 'secure' : (summary.answered ? 'growing' : 'upcoming'));
+      return summary;
+    });
+
+    return {
+      total: total,
+      index: index,
+      score: score,
+      done: done,
+      answeredCount: answeredCount,
+      missed: missed,
+      missedCount: missed.length,
+      historyComplete: score + missed.length === answeredCount,
+      progressPercent: total ? Math.round((answeredCount / total) * 100) : 0,
+      currentStreak: currentStreak,
+      bestStreak: bestStreak,
+      pass: score >= QUIZ_PASS,
+      neededForPass: Math.max(0, QUIZ_PASS - score),
+      progress: progress,
+      topics: topics,
+      reviewTopics: topics.filter(function (topic) { return topic.needsReview; })
+    };
+  }
+
   // Quest definitions, in recommended learning-path order. `tab` says where
   // each quest is earned — the journey strip uses it to jump the student
   // straight to the right section. The host only reads id/label/icon/check.
   var QUEST_DEFS = [
-    { id: 'mag_field', tab: 'field', label: 'Move the compass through a magnet’s field', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.compassMoved || s.field3dUsed); } },
+    { id: 'mag_field', tab: 'field', label: 'Move the compass through a magnet’s field', icon: '🧭', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.compassMoved || s.field3dUsed || s.fieldHuntSolved); } },
     { id: 'mag_pair', tab: 'field', label: 'See two magnets attract and repel', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.sawAttract && s.sawRepel); } },
     { id: 'mag_force_bench', tab: 'field', label: 'Test how magnet force changes with distance', icon: '📉', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.forceBenchUsed; } },
     { id: 'mag_electro', tab: 'electro', label: 'Change an electromagnet’s turns or current', icon: '🔌', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.coilTouched; } },
@@ -1225,7 +2148,7 @@
     { id: 'mag_generator_phase', tab: 'induce', label: 'Compare generator speed, flux, and voltage', icon: '〰️', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.genSpeedSeen && s.genPhaseSeen); } },
     { id: 'mag_materials', tab: 'materials', label: 'Sort all 8 materials correctly', icon: '🔩', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.matPerfect; } },
     { id: 'mag_domains', tab: 'materials', label: 'Fully magnetize the iron (align every domain)', icon: '🧲', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.domainsFull; } },
-    { id: 'mag_crane', tab: 'crane', label: 'Recycle all 4 ferromagnetic items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.craneDone; } },
+    { id: 'mag_crane', tab: 'crane', label: 'Recycle all 4 ferromagnetic items with the crane', icon: '🏗️', check: function (d) { var s = (d && d.magnetism) || {}; return !!(s.craneDone || s.craneRewarded); } },
     { id: 'mag_maze', tab: 'maze', label: 'Find the hidden magnet by compass alone', icon: '🗺️', check: function (d) { var s = (d && d.magnetism) || {}; return (s.mazeWins || 0) >= 1; } },
     { id: 'mag_earth', tab: 'earth', label: 'Explore Earth’s magnetic field', icon: '🌍', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.earthSeen; } },
     { id: 'mag_investigator', tab: 'field', label: 'Record evidence in the investigation notebook', icon: '📓', check: function (d) { var s = (d && d.magnetism) || {}; return !!s.notebookUsed; } },
@@ -1299,10 +2222,25 @@
       if (step.questId === 'mag_motor') return 'Motor run observed at ' + Math.round(Number(source.motorAngle) || 0) + '°.';
       if (step.questId === 'mag_motor_direction') return 'Direction reversal tested with current or field flip.';
       if (step.questId === 'mag_lorentz') return 'Charged-particle bend reversal tested.';
-      if (step.questId === 'mag_materials') return 'All material classifications matched the magnetic rule.';
-      if (step.questId === 'mag_domains') return 'Domain alignment reached 100%.';
+      if (step.questId === 'mag_materials') {
+        var materialEvidence = materialSortEvidenceState(source.matGuesses, source.matRevealed);
+        var materialBest = Math.max(Number(source.matBest) || 0, source.matPerfect ? MATERIALS.length : 0, source.matRevealed ? materialEvidence.correctCount : 0);
+        return 'Material evidence: best sort ' + materialBest + '/8; iron, nickel, cobalt, and iron-rich steel define the response pattern.';
+      }
+      if (step.questId === 'mag_domains') {
+        var domainEvidence = domainMemoryEvidenceState(source.domainMaterial, source.domainField, source.domainBranch, source.domainHistory, source.domainAlign, {
+          saturated: source.domainSaturatedSeen || source.domainsFull,
+          remanence: source.domainRemanenceSeen,
+          reversed: source.domainReversedSeen
+        });
+        return 'Domain evidence: saturation reached; ' + domainEvidence.material.name + ' retains about ' + domainEvidence.memoryAtZeroPercent + '% modeled magnetization at H = 0' + (domainEvidence.reversedSeen ? '; reverse saturation observed.' : '.');
+      }
       if (step.questId === 'mag_earth') return 'Earth shield explored at solar-wind level ' + (source.earthSolarWind || 0) + '/10.';
-      if (step.questId === 'mag_crane') return 'Four ferromagnetic items lifted and recycled.';
+      if (step.questId === 'mag_crane') {
+        var craneEvidence = craneEvidenceState(source.cranePredictions, source.craneTests, source.craneDeposited);
+        var craneMissionEvidence = source.craneRewarded && source.craneBestEvidence && craneEvidence.recycledCount < 4 ? source.craneBestEvidence : craneEvidence;
+        return 'Crane evidence: ' + craneMissionEvidence.recycledCount + '/4 recycled; ' + craneMissionEvidence.testedCount + '/8 objects tested' + (craneMissionEvidence.accuracy == null ? '.' : ' at ' + craneMissionEvidence.accuracy + '% prediction accuracy.');
+      }
       return 'Evidence recorded at the ' + step.tab + ' station.';
     }
     var synthesis = progress.mission.id === 'power_path'
@@ -1369,22 +2307,48 @@
     }
     var tab = source.tab || 'field';
     if (tab === 'field') {
-      if (source.fieldView === 'map') {
+      if (source.fieldView === 'hunt') {
+        var huntSamples = Array.isArray(source.fieldHuntSamples) ? source.fieldHuntSamples : [];
+        var huntFit = fieldHuntEstimate(huntSamples);
+        var huntSurvey = fieldHuntSurveyQuality(huntSamples);
+        add('hunt_readings', 'Magnetometer readings', huntSamples.length, 'points', 0);
+        add('hunt_survey_score', 'Coverage quality', huntSurvey.score, '/100', 0);
+        if (huntFit.error != null) add('hunt_fit_error', 'Source-fit error', huntFit.error, 'relative', 3);
+        if (source.fieldHuntChecked) {
+          var huntGuess = source.fieldHuntGuess || { x: 0, y: 0 };
+          var huntResult = fieldHuntEvaluation(huntGuess, fieldHuntTarget(source.fieldHuntRound), huntFit);
+          add('hunt_guess_distance', 'Guess distance', huntResult.distance, 'field units', 1);
+        }
+      } else if (source.fieldView === 'map') {
         var mapProbe = Object.assign({ x: 90, y: 0 }, source.fieldMapProbe || {});
         var mapMagnet = { x: 0, y: 0, angle: 0, polarity: 1, strength: Number(source.fieldMapStrength) || 1 };
         var reading = fieldProbeReading(mapProbe.x, mapProbe.y, [mapMagnet], source.fieldMapNoise);
-        add('field_rel', 'Probe magnitude', reading.measuredMagnitude, 'rel uT', 2);
+        add('field_rel', 'Probe magnitude', reading.measuredMagnitude, 'relative units', 2);
       } else if (source.fieldView === '3d') {
         var probe = source.field3dProbe || { x: 0, y: 1.8, z: 1.2 };
         var total = fieldAt3D(probe.x, probe.y, probe.z, source.field3dMagnets || []);
         add('field_3d', '3D field magnitude', Math.hypot(total.x, total.y, total.z), 'relative', 3);
       } else {
-        add('force_rel', 'Pair force', magnetPairForce(source.pairStrength1 || 1, source.pairStrength2 || 1, source.pairDistance || 70), 'relative', 3);
+        var forceEvidence = forceBenchEvidenceState(source.pairStrength1, source.pairStrength2, source.pairDistance, source.pairAttract, source.forceBenchBaseline, source.forceBenchPrediction, source.forceBenchResultSeen);
+        add('force_rel', 'Pair force', forceEvidence.force, 'relative', 3);
+        add('force_gap', 'Magnet gap', forceEvidence.distance, 'distance units', 0);
+        add('force_strength_product', 'Combined strength', forceEvidence.strengthProduct, '×', 2);
+        if (forceEvidence.baseline) add('force_baseline', '60-unit baseline force', forceEvidence.baseline.force, 'relative', 3);
+        if (forceEvidence.resultCaptured) {
+          add('force_doubled_gap', 'Doubled test gap', forceEvidence.baseline.targetDistance, 'distance units', 0);
+          add('force_drop_factor', 'Force drop', forceEvidence.observedWeakerFactor, '× weaker', 0);
+        }
       }
     } else if (tab === 'electro') {
       add('field_mT', 'Center field', solenoidField(source.turns || 0, source.current || 0, 0.1, source.core ? 600 : 1) * 1000, 'mT', 2);
       add('turns', 'Turns', source.turns, 'turns', 0);
       add('current_A', 'Current', source.current, 'A', 1);
+      if (source.electroBaseline) {
+        var fairTest = electromagnetFairTestState(source.electroBaseline, source);
+        add('electro_baseline_mT', 'Baseline field', fairTest.baselineField * 1000, 'mT', 2);
+        add('electro_changed_controls', 'Changed controls', fairTest.changed.length, 'controls', 0);
+        if (fairTest.ratio != null) add('electro_field_ratio', 'Trial / baseline field', fairTest.ratio, '×', 2);
+      }
     } else if (tab === 'motor') {
       if (source.benchUsed) {
         var bench = motorGeneratorBench(source.motorCurrent, source.motorField, source.benchLoadOhms, source.benchFriction, source.benchTurns, source.benchField);
@@ -1417,17 +2381,51 @@
       } else {
         add('voltage_V', 'Induced voltage', Math.abs(source.lastEMF || 0), 'V', 2);
         add('peak_V', 'Peak voltage', Math.abs(source.peakEMF || 0), 'V', 2);
+        var speedEvidence = inductionSpeedEvidenceState(source.induceSpeedTrials);
+        if (speedEvidence.completedCount > 0) add('speed_trial_count', 'Speed trials', speedEvidence.completedCount, '/3', 0);
+        if (speedEvidence.ratio != null) add('fast_slow_ratio', 'Fast / slow voltage', speedEvidence.ratio, '×', 2);
+        if (speedEvidence.trials[2].completed) add('still_voltage', 'Still-control voltage', speedEvidence.trials[2].voltage, 'V', 2);
       }
+    } else if (tab === 'maze') {
+      var walkEvidence = fieldWalkEvidenceState(source.mazeRound, source.mazeTrail);
+      add('walk_signal_gain', 'Signal gain from start', walkEvidence.signalRatio, '×', 2);
+      if (walkEvidence.alignmentPercent != null) add('walk_alignment', 'Field-aligned moves', walkEvidence.alignmentPercent, '%', 0);
+      add('walk_unique_cells', 'Unique squares sampled', walkEvidence.uniqueCount, 'squares', 0);
+      add('walk_revisits', 'Route revisits', walkEvidence.revisits, 'squares', 0);
     } else if (tab === 'materials') {
+      var materialEvidence = materialSortEvidenceState(source.matGuesses, source.matRevealed);
+      var domainEvidence = domainMemoryEvidenceState(source.domainMaterial, source.domainField, source.domainBranch, source.domainHistory, source.domainAlign, {
+        saturated: source.domainSaturatedSeen,
+        remanence: source.domainRemanenceSeen,
+        reversed: source.domainReversedSeen
+      });
       add('domain_alignment', 'Domain alignment', (source.domainAlign || 0) * 100, '%', 0);
-      if (source.matRevealed) add('material_score', 'Material score', MATERIALS.filter(function (item) { return source.matGuesses && source.matGuesses[item.id] === item.magnetic; }).length, '/8', 0);
+      add('domain_field', 'Applied domain field H', domainEvidence.field, 'relative H', 2);
+      add('domain_signed_m', 'Signed magnetization M', domainEvidence.magnetization * 100, '%', 0);
+      add('domain_remanence', 'Modeled zero-field memory', domainEvidence.memoryAtZeroPercent, '%', 0);
+      add('material_predictions', 'Material predictions', materialEvidence.answeredCount, '/8', 0);
+      if (source.matRevealed) {
+        add('material_score', 'Material score', materialEvidence.correctCount, '/8', 0);
+        add('material_metal_traps', 'Other metals predicted to lift', materialEvidence.metalFalsePositives.length, 'samples', 0);
+        add('material_family_misses', 'Ferromagnetic samples missed', materialEvidence.ferromagneticMisses.length, 'samples', 0);
+      }
+    } else if (tab === 'crane') {
+      var craneEvidence = craneEvidenceState(source.cranePredictions, source.craneTests, source.craneDeposited);
+      add('crane_tests', 'Objects field-tested', craneEvidence.testedCount, '/8', 0);
+      if (craneEvidence.accuracy != null) add('crane_accuracy', 'Prediction accuracy', craneEvidence.accuracy, '%', 0);
+      add('crane_lifts', 'Lift responses', craneEvidence.liftedCount, 'objects', 0);
+      add('crane_recycled', 'Items recycled', craneEvidence.recycledCount, '/4', 0);
     } else if (tab === 'earth') {
       var earth = magnetosphereTeachingState(source.earthSolarWind || 0);
       add('solar_wind', 'Solar-wind level', earth.pressure, '/10', 0);
       add('dayside_RE', 'Dayside boundary', earth.daysideRadiusRE, 'R_E', 1);
     } else if (tab === 'transformer') {
-      add('output_V', 'Output voltage', transformerOut(120, source.xfmrN1, source.xfmrN2, source.xfmrAC), 'V', 0);
+      var transformerDesign = transformerDesignState(120, source.xfmrN1, source.xfmrN2, source.xfmrAC, source.xfmrLoad, (source.xfmrEfficiency || 94) / 100, source.xfmrMission);
+      add('output_V', 'Output voltage', transformerDesign.load.vout, 'V', 0);
       add('turns_ratio', 'Turns ratio', (source.xfmrN2 || 0) / Math.max(1, source.xfmrN1 || 1), 'x', 2);
+      add('useful_power_W', 'Useful output power', transformerDesign.load.pout, 'W', 1);
+      add('heat_loss_W', 'Heat loss', transformerDesign.load.loss, 'W', 1);
+      add('design_constraints', 'Design constraints met', transformerDesign.metCount, '/3', 0);
     }
     return metrics;
   }
@@ -1497,6 +2495,43 @@
       var ACTIVE = '#be123c';
       var _sliderUid = 0;
 
+      var CAUSAL_FEEDBACK = {
+        magnets: { cause: 'Magnet setup changed', effect: 'the field pattern, local vectors, and compass direction update' },
+        compass: { cause: 'Compass moved', effect: 'the needle now samples a different local field vector' },
+        fieldMapProbe: { cause: 'Hall probe moved', effect: 'Bx, By, and field magnitude are recalculated at the new position' },
+        fieldMapStrength: { cause: 'Source strength changed', effect: 'the whole measured field scales while its geometry stays fixed' },
+        fieldMapNoise: { cause: 'Sensor uncertainty changed', effect: 'readings vary more even though the underlying field is unchanged' },
+        fieldMapSamples: { cause: 'Measurement set changed', effect: 'the distance-law graph and fitted exponent update' },
+        fieldHuntProbe: { cause: 'Survey probe moved', effect: 'the live vector changes while saved evidence stays fixed' },
+        fieldHuntGuess: { cause: 'Source estimate moved', effect: 'only your claim marker changes; the evidence does not' },
+        fieldHuntSamples: { cause: 'Survey evidence changed', effect: 'coverage quality, the footprint, and fit readiness update' },
+        fieldHuntAnalysis: { cause: 'Inverse model updated', effect: 'the fit-quality region now reflects all saved vectors' },
+        turns: { cause: 'Coil turns changed', effect: 'field strength and wire-length tradeoffs update together' },
+        current: { cause: 'Coil current changed', effect: 'field strength rises with current while heating rises faster' },
+        core: { cause: 'Core material changed', effect: 'domain response changes the field inside the coil' },
+        electroBaseline: { cause: 'Fair-test baseline updated', effect: 'setup A is locked while setup B remains live' },
+        motorCurrent: { cause: 'Motor current changed', effect: 'magnetic force and available torque change together' },
+        motorField: { cause: 'Motor field changed', effect: 'wire force and torque scale with field strength' },
+        motorLoad: { cause: 'Shaft load changed', effect: 'the torque margin moves toward running or stall' },
+        motorAngle: { cause: 'Coil angle changed', effect: 'the perpendicular lever arm and torque change' },
+        forceLabAngle: { cause: 'Wire angle changed', effect: 'only the perpendicular current component produces magnetic force' },
+        forceLabCurrent: { cause: 'Wire current changed', effect: 'magnetic force changes in direct proportion' },
+        forceLabField: { cause: 'Applied field changed', effect: 'magnetic force changes in direct proportion' },
+        genRPM: { cause: 'Generator speed changed', effect: 'voltage amplitude and frequency change together' },
+        genTurns: { cause: 'Generator turns changed', effect: 'induced-voltage amplitude changes without shifting phase' },
+        genField: { cause: 'Generator field changed', effect: 'magnetic flux and induced-voltage amplitude change' },
+        induceX: { cause: 'Magnet moved', effect: 'changing flux produces a signed induced voltage' },
+        induceSpeedTrials: { cause: 'Generator speed evidence changed', effect: 'the slow, fast, and still comparison updates' },
+        eddyField: { cause: 'Brake field changed', effect: 'eddy-current drag responds strongly because the model uses B²' },
+        eddySpeed: { cause: 'Plate speed changed', effect: 'eddy-current drag and stopping distance update' },
+        xfmrN1: { cause: 'Primary turns changed', effect: 'the turns ratio changes secondary voltage and current capacity' },
+        xfmrN2: { cause: 'Secondary turns changed', effect: 'the turns ratio changes secondary voltage and current capacity' },
+        xfmrAC: { cause: 'Input type changed', effect: 'only changing flux sustains transformer output' },
+        earthSolarWind: { cause: 'Solar-wind pressure changed', effect: 'the dayside boundary compresses and the magnetic tail stretches' },
+        declination: { cause: 'Declination changed', effect: 'magnetic north rotates relative to true north' },
+        domainField: { cause: 'Applied field changed', effect: 'more magnetic domains align with the field' }
+      };
+
       // Fresh per render so the defaults-merge below can never share (and
       // never mutate) a module-level object between renders.
       var MAG_DEFAULTS = {
@@ -1508,11 +2543,13 @@
         fieldView: '2d', field3dStatus: 'loading', field3dAttempt: 0, field3dUsed: false,
         fieldMapProbe: { x: 90, y: 0 }, fieldMapPath: 'axial',
         fieldMapStrength: 1, fieldMapNoise: 0, fieldMapSamples: [], fieldMapUsed: false,
+        fieldHuntRound: 0, fieldHuntProbe: { x: 100, y: 0 }, fieldHuntGuess: { x: 0, y: 0 }, fieldHuntSamples: [], fieldHuntAnalysis: null, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntWins: 0, fieldHuntUsed: false, fieldHuntMapMode: 'probe', fieldHuntEstimatePlaced: false, fieldHuntModelRevealed: false,
         field3dMagnets: [{ x: -1.6, y: 0, z: 0, yaw: 0, pitch: 0, polarity: 1, strength: 1 }, { x: 1.6, y: 0, z: 0, yaw: 0, pitch: 0, polarity: 1, strength: 1 }],
         field3dProbe: { x: 0, y: 1.8, z: 1.2 }, field3dSelected: 0,
         field3dVectors: true, field3dLines: true, field3dSlice: 'xz', field3dSliceOffset: 0, field3dNullFound: false,
         // Electromagnet
         turns: 20, current: 2, currentDir: 1, windingDir: 1, core: false, coilTouched: false, directionSeen: false,
+        electroBaseline: null, electroCompareUsed: false,
         electroView: '2d', electro3dStatus: 'loading', electro3dAttempt: 0, electro3dUsed: false,
         electro3dLengthCm: 12, electro3dRadiusCm: 3, electro3dMaterial: 'air',
         electro3dVectors: true, electro3dLines: true, electro3dProbe: { x: 0, y: 0, z: 0 },
@@ -1528,6 +2565,7 @@
         analyzerE: 6, analyzerSelectorB: 3, analyzerSpeed: 2, analyzerB: 4,
         analyzerSpecies: 'deuteron', analyzerShowAll: true, analyzerUsed: false,
         pairDistance: 70, pairStrength1: 1, pairStrength2: 1, pairAttract: true,
+        forceBenchBaseline: null, forceBenchPrediction: null, forceBenchResultSeen: false, forceBenchChallengeRuns: 0,
         chargeSign: 1, chargeField: 1, chargeSpeed: 5, chargeB: 4, chargeView: '2d',
         chargeTilt: 45, chargeMass: 1, chargeFieldModel: 'uniform', chargeMirrorRatio: 3, charge3dStatus: 'loading', charge3dAttempt: 0, charge3dUsed: false, charge3dProgress: 0, charge3dRunning: false, charge3dTrail: true, charge3dReference: null,
         // Rotating-coil generator
@@ -1539,31 +2577,32 @@
         ind3dCoilRadius: 1.25, ind3dCoilYaw: 0, ind3dCoilPitch: 0, ind3dTurns: 80,
         ind3dStepTime: 0.5, ind3dFlux: 0, ind3dEMF: 0, ind3dTrace: [], ind3dTrialMsg: '',
         // Learning mode + investigation notebook
-        learningMode: 'guided', missionId: 'power_path', missionStarted: false, missionSeen: false, notebookOpen: false, notebookPrediction: '', notebookClaim: '', replaySelectedIndex: null,
+        learningMode: 'guided', missionId: 'power_path', missionStarted: false, missionSeen: false, missionPanelOpen: false, labFocus: false, magLastChange: null, magChangeSeq: 0, notebookOpen: false, notebookPrediction: '', notebookClaim: '', replaySelectedIndex: null,
         notebookTrials: [], notebookUsed: false, forceBenchUsed: false, lorentzUsed: false,
         // Earth
         earthSeen: false, declination: 12, earthSolarWind: 5, earthView: '2d', earth3dStatus: 'loading', earth3dAttempt: 0, earth3dUsed: false, earth3dFieldLines: true, earth3dBoundary: true, earth3dBelts: true, earth3dWind: true, earth3dReference: true, earth3dMotion: false,
         // Induction (generator)
         induceX: -100, inducePrevX: -100, induceTurns: 50, lastEMF: 0, peakEMF: 0,
-        emfTrace: [], induceTrialMsg: '',
+        emfTrace: [], induceTrialMsg: '', induceSpeedTrials: {},
         // Eddy-current tube race
         tubeProg: { cu: 0, pl: 0 }, tubeRunning: false, tubeDone: false,
         eddyMaterial: 'copper', eddyThickness: 4, eddySlit: false, eddySpeed: 6, eddyField: 6,
         // Magnetic domains
         domainAlign: 0, domainsFull: false, domainField: 0, domainBranch: 1, domainMaterial: 'soft', domainHistory: false,
+        domainSaturatedSeen: false, domainRemanenceSeen: false, domainReversedSeen: false, domainErasedSeen: false,
         // Field Walk (hidden-magnet compass game)
         mazeRound: 0, mazePx: 0, mazePy: 7, mazeSteps: 0, mazeWon: false, mazeWins: 0, mazeTrail: [],
         // Materials sorter
-        matGuesses: {}, matRevealed: false, matPerfect: false,
+        matGuesses: {}, matRevealed: false, matPerfect: false, matRewarded: false, matBest: 0,
         // Junkyard crane
         craneSlot: 0, cranePower: false, craneHolding: null,
         craneItems: { 0: 'nail', 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
-        craneDeposited: {}, craneMsg: '', craneDone: false,
+        craneDeposited: {}, cranePredictions: {}, craneTests: {}, craneMsg: '', craneDone: false, craneRewarded: false, craneBestEvidence: null,
         // Transformer
         xfmrN1: 100, xfmrN2: 200, xfmrAC: true, xfmrTouched: false,
-        xfmrLoad: 120, xfmrEfficiency: 94,
+        xfmrLoad: 120, xfmrEfficiency: 94, xfmrMission: 0, xfmrChecked: false, xfmrMissionWins: {},
         // Quiz
-        quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0, quizMissed: [],
+        quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizBest: 0, quizMissed: [], quizRewarded: false,
         factIdx: 0,
         askInput: '', askAnswer: '', askLoading: false
       };
@@ -1592,14 +2631,22 @@
         setLabToolData(function (prev) {
           return Object.assign({}, prev, { magnetism: MAG_DEFAULTS });
         });
-        return h('div', { style: { padding: 24, color: SOFT, textAlign: 'center' } }, __alloT('stem.magnetism.initializing', '🧲 Charging the coils…'));
+        return h('div', { style: { padding: 24, color: '#475569', backgroundColor: '#ffffff', textAlign: 'center' } }, __alloT('stem.magnetism.initializing', '🧲 Charging the coils…'));
       }
       // PARTIAL state must render, not crash: saved projects from older
       // versions (and the render gate's per-tab probe) supply only some
       // fields — layer the defaults under whatever is present.
       function upd(patch) {
         setLabToolData(function (prev) {
-          var s = Object.assign({}, (prev && prev.magnetism) || {}, patch);
+          var previous = (prev && prev.magnetism) || {};
+          var s = Object.assign({}, previous, patch);
+          var changedKey = Object.keys(patch || {}).find(function (key) {
+            return !!CAUSAL_FEEDBACK[key] && previous[key] !== patch[key];
+          });
+          if (changedKey) {
+            s.magLastChange = changedKey;
+            s.magChangeSeq = (Number(previous.magChangeSeq) || 0) + 1;
+          }
           return Object.assign({}, prev, { magnetism: s });
         });
       }
@@ -1645,8 +2692,30 @@
           '.mag-root .mag-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--mag-accent)}' +
           '.mag-root .mag-card-title{display:flex;align-items:center;gap:7px}' +
           '.mag-root .mag-card-title:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--mag-accent)}' +
+          '.mag-root .mag-mission-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}' +
+          '.mag-root .mag-mission-summary-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}' +
+          '.mag-root .mag-mission-body{padding-top:10px;margin-top:10px;border-top:1px solid ' + BORDER + '}' +
+          '.mag-root .mag-mission-body[hidden]{display:none}' +
+          '.mag-root .mag-lab-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 10px;margin-bottom:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.055)}' +
+          '.mag-root .mag-lab-context{display:flex;align-items:center;gap:7px;min-width:180px;flex:1 1 220px;color:' + TEXT + ';font-size:12.5px;font-weight:800}' +
+          '.mag-root .mag-model-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 7px;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:10.5px;font-weight:800;letter-spacing:.02em}' +
+          '.mag-root .mag-causal-strip{flex:1 0 100%;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:center;padding:7px 9px;border-radius:9px;border:1px solid rgba(56,189,248,.28);background:rgba(56,189,248,.08);color:' + SOFT + ';font-size:11.5px;line-height:1.4;animation:mag-causal-pulse .42s ease-out}' +
+          '.mag-root .mag-causal-strip b{color:' + TEXT + '}' +
+          '@keyframes mag-causal-pulse{0%{box-shadow:0 0 0 0 rgba(56,189,248,.4)}100%{box-shadow:0 0 0 7px rgba(56,189,248,0)}}' +
+          '.mag-root .mag-tabs{position:sticky;top:0;z-index:8;display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:7px;margin-bottom:12px;border:1px solid ' + BORDER + ';border-radius:12px;background:' + PANEL + ';box-shadow:0 8px 22px rgba(2,6,23,.18);scrollbar-width:thin}' +
+          '.mag-root .mag-tabs button{flex:0 0 auto;white-space:nowrap}' +
           '.mag-root .mag-tabs button{transition:transform .16s ease,background .16s ease,border-color .16s ease}' +
           '.mag-root .mag-tabs button:hover{transform:translateY(-1px)}' +
+          '.mag-root .mag-guide{margin-bottom:10px;overflow:hidden;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.055)}' +
+          '.mag-root .mag-guide>summary{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;align-items:center;min-height:48px;padding:8px 10px;list-style:none;cursor:pointer;color:' + TEXT + '}' +
+          '.mag-root .mag-guide>summary::-webkit-details-marker{display:none}' +
+          '.mag-root .mag-guide>summary:after{content:"Open +";color:' + SOFT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-guide[open]>summary:after{content:"Close \u2212"}' +
+          '.mag-root .mag-guide-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(56,189,248,.1);font-size:17px}' +
+          '.mag-root .mag-guide-phase{min-width:0;font-size:12.5px;font-weight:850;line-height:1.25}' +
+          '.mag-root .mag-guide-phase small{display:block;margin-top:2px;color:' + SOFT + ';font-size:10.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+          '.mag-root .mag-guide-route{padding:3px 7px;border:1px solid ' + BORDER + ';border-radius:999px;color:' + SOFT + ';font-size:10px;font-weight:800;white-space:nowrap}' +
+          '.mag-root .mag-guide .mag-station{margin:0;border:0;border-top:1px solid ' + BORDER + ';border-radius:0;background:transparent;box-shadow:none}' +
           '.mag-root .mag-station{display:grid;grid-template-columns:minmax(0,1.35fr) repeat(3,minmax(0,1fr));gap:8px;align-items:stretch;padding:12px;border:1px solid ' + BORDER + ';border-radius:14px;background:rgba(148,163,184,.055);margin-bottom:12px}' +
           '.mag-root .mag-station-main{padding:2px 8px 2px 2px}' +
           '.mag-root .mag-cycle{min-width:0;padding:8px 9px;border-left:2px solid ' + BORDER + '}' +
@@ -1661,10 +2730,245 @@
           '.mag-root .mag-strength-meter i.is-on{border-color:#fb7185;background:#fb7185;box-shadow:0 0 7px rgba(251,113,133,.28)}' +
           '.mag-root .mag-observe{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;padding:9px 10px;border-radius:10px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.24);margin:9px 0;color:' + SOFT + ';font-size:12px;line-height:1.45}' +
           '.mag-root .mag-observe b{color:' + TEXT + '}' +
+          '.mag-root .mag-fair-test{margin:10px 0;padding:11px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.045)}' +
+          '.mag-root .mag-fair-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}' +
+          '.mag-root .mag-fair-kicker{color:' + TEXT + ';font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}' +
+          '.mag-root .mag-fair-badge{display:inline-flex;align-items:center;min-height:24px;padding:3px 8px;border:1px solid ' + BORDER + ';border-radius:999px;color:' + SOFT + ';font-size:10.5px;font-weight:850}' +
+          '.mag-root .mag-fair-badge[data-status="fair"]{border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.11);color:' + TEXT + '}' +
+          '.mag-root .mag-fair-badge[data-status="confounded"]{border-color:rgba(251,191,36,.55);background:rgba(251,191,36,.1);color:' + TEXT + '}' +
+          '.mag-root .mag-fair-flow{display:grid;grid-template-columns:minmax(0,1fr) minmax(82px,.58fr) minmax(0,1fr);gap:8px;align-items:stretch}' +
+          '.mag-root .mag-fair-node{padding:9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}' +
+          '.mag-root .mag-fair-node[data-kind="baseline"]{border-top:3px solid #38bdf8}.mag-root .mag-fair-node[data-kind="trial"]{border-top:3px solid #fb7185}' +
+          '.mag-root .mag-fair-node small{display:block;color:' + SOFT + ';font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}' +
+          '.mag-root .mag-fair-node b{display:block;margin:3px 0;color:' + TEXT + ';font-size:16px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-fair-node span{display:block;color:' + SOFT + ';font-size:10.5px;line-height:1.35}' +
+          '.mag-root .mag-fair-change{display:grid;place-content:center;justify-items:center;gap:4px;min-width:0;text-align:center;color:' + SOFT + ';font-size:10px;font-weight:750;line-height:1.25}' +
+          '.mag-root .mag-fair-change i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:rgba(251,113,133,.12);color:' + TEXT + ';font-size:17px;font-style:normal}' +
+          '.mag-root .mag-fair-meters{display:grid;gap:6px;margin:9px 0}' +
+          '.mag-root .mag-fair-meter{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:7px;align-items:center;color:' + SOFT + ';font-size:10.5px}' +
+          '.mag-root .mag-fair-meter>span:first-child{font-weight:900;color:' + TEXT + '}' +
+          '.mag-root .mag-fair-track{height:8px;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.17)}' +
+          '.mag-root .mag-fair-fill{display:block;height:100%;min-width:0;border-radius:inherit;background:var(--mag-fair-color);transition:width .24s ease}' +
+          '.mag-root .mag-fair-feedback{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;padding:8px 9px;border:1px solid ' + BORDER + ';border-radius:9px;color:' + SOFT + ';font-size:11.5px;line-height:1.4}' +
+          '.mag-root .mag-fair-feedback[data-status="fair"]{border-color:rgba(52,211,153,.38);background:rgba(52,211,153,.075)}' +
+          '.mag-root .mag-fair-feedback[data-status="confounded"]{border-color:rgba(251,191,36,.42);background:rgba(251,191,36,.07)}' +
+          '.mag-root .mag-fair-feedback b{color:' + TEXT + '}' +
+          '.mag-root .mag-fair-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}' +
+          '.mag-root .mag-speed-evidence{margin:10px 0;padding:11px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.045)}' +
+          '.mag-root .mag-speed-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}' +
+          '.mag-root .mag-speed-head b{color:' + TEXT + ';font-size:12px}.mag-root .mag-speed-head span{color:' + SOFT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-speed-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}' +
+          '.mag-root .mag-speed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}' +
+          '.mag-root .mag-speed-run{position:relative;overflow:hidden;padding:8px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}' +
+          '.mag-root .mag-speed-run:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--mag-speed-color,' + BORDER + ')}' +
+          '.mag-root .mag-speed-run small{display:block;color:' + SOFT + ';font-size:9.5px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}' +
+          '.mag-root .mag-speed-run b{display:block;margin:4px 0 2px;color:' + TEXT + ';font-size:15px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-speed-run span{display:block;min-height:28px;color:' + SOFT + ';font-size:10px;line-height:1.35}' +
+          '.mag-root .mag-speed-track{height:7px;overflow:hidden;margin-top:7px;border-radius:999px;background:rgba(148,163,184,.17)}' +
+          '.mag-root .mag-speed-fill{display:block;height:100%;border-radius:inherit;background:var(--mag-speed-color);transition:width .24s ease}' +
+          '.mag-root .mag-speed-next{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;margin-top:9px;padding:8px 9px;border:1px solid rgba(56,189,248,.3);border-radius:9px;background:rgba(56,189,248,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.4}' +
+          '.mag-root .mag-speed-next[data-status="complete"]{border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.075)}' +
+          '.mag-root .mag-speed-next[data-status="confounded"]{border-color:rgba(251,191,36,.44);background:rgba(251,191,36,.075)}' +
+          '.mag-root .mag-speed-next b{display:block;color:' + TEXT + ';font-size:11.5px}' +
+          '.mag-root .mag-maze-evidence{margin:10px 0;padding:11px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.045)}' +
+          '.mag-root .mag-maze-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}' +
+          '.mag-root .mag-maze-head b{color:' + TEXT + ';font-size:12px}.mag-root .mag-maze-head span{color:' + SOFT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-maze-chart{display:block;width:100%;height:auto;margin-bottom:8px;border-radius:9px}' +
+          '.mag-root .mag-maze-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:8px}' +
+          '.mag-root .mag-maze-metric{position:relative;overflow:hidden;padding:8px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';text-align:center}' +
+          '.mag-root .mag-maze-metric:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--mag-maze-tone,#38bdf8)}' +
+          '.mag-root .mag-maze-metric small{display:block;color:' + SOFT + ';font-size:9.5px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}' +
+          '.mag-root .mag-maze-metric b{display:block;margin:3px 0 1px;color:' + TEXT + ';font-size:15px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-maze-metric span{display:block;color:' + SOFT + ';font-size:10px;line-height:1.3}' +
+          '.mag-root .mag-maze-feedback{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;padding:8px 9px;border:1px solid rgba(56,189,248,.3);border-radius:9px;background:rgba(56,189,248,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.4}' +
+          '.mag-root .mag-maze-feedback[data-state="aligned"]{border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.075)}' +
+          '.mag-root .mag-maze-feedback[data-state="cross"]{border-color:rgba(251,191,36,.44);background:rgba(251,191,36,.075)}' +
+          '.mag-root .mag-maze-feedback b{display:block;color:' + TEXT + ';font-size:11.5px}' +
+          '.mag-root .mag-maze-actions{display:flex;justify-content:flex-end;margin-top:7px}' +
+          '.mag-root .mag-force-shell{display:grid;gap:10px}.mag-root .mag-force-challenge{position:relative;overflow:hidden;padding:12px;border:1px solid rgba(56,189,248,.34);border-radius:14px;background:radial-gradient(circle at 100% 0,rgba(167,139,250,.12),transparent 36%),linear-gradient(145deg,rgba(56,189,248,.075),rgba(15,23,42,.025))}.mag-root .mag-force-challenge:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:2px;background:linear-gradient(90deg,#38bdf8,#a78bfa,#34d399)}' +
+          '.mag-root .mag-force-head{display:flex;align-items:start;justify-content:space-between;gap:10px;margin-bottom:8px}.mag-root .mag-force-head>span:first-child{min-width:0}.mag-root .mag-force-head b{display:block;color:' + TEXT + ';font-size:13px}.mag-root .mag-force-head small{display:block;margin-top:2px;color:' + SOFT + ';font-size:10.5px;line-height:1.4}.mag-root .mag-force-count{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(56,189,248,.3);border-radius:999px;background:rgba(56,189,248,.08);color:#7dd3fc;font-size:9.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}' +
+          '.mag-root .mag-force-progress{display:block;width:100%;height:7px;margin:0 0 10px;overflow:hidden;appearance:none;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';accent-color:#38bdf8}.mag-root .mag-force-progress::-webkit-progress-bar{background:' + INSTRUMENT + '}.mag-root .mag-force-progress::-webkit-progress-value{border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#a78bfa,#34d399)}.mag-root .mag-force-progress::-moz-progress-bar{border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#a78bfa,#34d399)}' +
+          '.mag-root .mag-force-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:0;list-style:none}.mag-root .mag-force-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;padding:0 7px;color:' + SOFT + ';text-align:center}.mag-root .mag-force-step:not(:last-child):after{content:"";position:absolute;z-index:0;top:15px;left:calc(50% + 19px);right:calc(-50% + 19px);height:2px;background:' + BORDER + '}.mag-root .mag-force-step[data-state="done"]:not(:last-child):after{background:#34d399}' +
+          '.mag-root .mag-force-step-index{position:relative;z-index:1;display:grid;place-items:center;width:31px;height:31px;border:2px solid ' + BORDER + ';border-radius:50%;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:11px;font-weight:900}.mag-root .mag-force-step[data-state="done"] .mag-force-step-index{border-color:#34d399;background:rgba(52,211,153,.14);color:#6ee7b7}.mag-root .mag-force-step[data-state="current"] .mag-force-step-index{border-color:#38bdf8;background:rgba(56,189,248,.16);color:#bae6fd;box-shadow:0 0 0 3px rgba(56,189,248,.09);animation:mag-force-current 1.8s ease-in-out infinite}.mag-root .mag-force-step b{color:' + TEXT + ';font-size:10.5px;line-height:1.2}.mag-root .mag-force-step small{max-width:145px;font-size:9.5px;line-height:1.3}' +
+          '.mag-root .mag-force-next{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-top:11px;padding:9px 10px;border:1px solid rgba(56,189,248,.4);border-radius:10px;background:rgba(56,189,248,.075);color:' + SOFT + ';font-size:11.5px;line-height:1.4}.mag-root .mag-force-next[data-complete="true"]{border-color:rgba(52,211,153,.44);background:rgba(52,211,153,.075)}.mag-root .mag-force-next-icon{font-size:20px}.mag-root .mag-force-next b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-force-next small{display:block}.mag-root .mag-force-next button{white-space:nowrap}.mag-root .mag-force-next-cue{color:#7dd3fc;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.045em;white-space:nowrap}' +
+          '.mag-root .mag-force-predictions{margin:10px 0 0;padding:9px;border:1px solid rgba(167,139,250,.28);border-radius:11px;background:rgba(167,139,250,.045)}.mag-root .mag-force-predictions legend{padding:0 5px;color:' + TEXT + ';font-size:10.5px;font-weight:900}.mag-root .mag-force-prediction-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.mag-root .mag-force-prediction{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px;align-items:center;min-width:0;padding:8px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';color:' + TEXT + ';font:inherit;text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}.mag-root .mag-force-prediction:hover:not(:disabled){transform:translateY(-1px);border-color:#38bdf8}.mag-root .mag-force-prediction:disabled{cursor:default;opacity:1}.mag-root .mag-force-prediction[data-state="selected"]{border-color:#fbbf24;background:rgba(251,191,36,.09);box-shadow:inset 0 0 0 1px rgba(251,191,36,.12)}.mag-root .mag-force-prediction[data-state="correct"]{border-color:#34d399;background:rgba(52,211,153,.1);box-shadow:inset 0 0 0 1px rgba(52,211,153,.13)}.mag-root .mag-force-prediction[data-state="revised"]{border-color:#fb7185;background:rgba(251,113,133,.095);box-shadow:inset 0 0 0 1px rgba(251,113,133,.12)}.mag-root .mag-force-prediction-mark{display:grid;place-items:center;width:23px;height:23px;border:1px solid currentColor;border-radius:50%;color:' + SOFT + ';font-size:10px;font-weight:900}.mag-root .mag-force-prediction[data-state="selected"] .mag-force-prediction-mark{color:#fbbf24}.mag-root .mag-force-prediction[data-state="correct"] .mag-force-prediction-mark{color:#34d399}.mag-root .mag-force-prediction[data-state="revised"] .mag-force-prediction-mark{color:#fb7185}.mag-root .mag-force-prediction b{display:block;font-size:11.5px}.mag-root .mag-force-prediction small{display:block;margin-top:1px;color:' + SOFT + ';font-size:9px;line-height:1.25}' +
+          '.mag-root .mag-force-verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;margin-top:9px;padding:9px 10px;border:1px solid rgba(52,211,153,.42);border-radius:10px;background:rgba(52,211,153,.075);color:' + SOFT + ';font-size:11px;line-height:1.45}.mag-root .mag-force-verdict[data-result="revised"]{border-color:rgba(251,113,133,.44);background:rgba(251,113,133,.075)}.mag-root .mag-force-verdict>span:first-child{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(52,211,153,.16);color:#6ee7b7;font-weight:950}.mag-root .mag-force-verdict[data-result="revised"]>span:first-child{background:rgba(251,113,133,.16);color:#fda4af}.mag-root .mag-force-verdict b{display:block;color:' + TEXT + ';font-size:11.5px}' +
+          '.mag-root .mag-force-comparison{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:7px;align-items:stretch;margin-top:10px}.mag-root .mag-force-reading{display:grid;align-content:start;min-width:0;padding:9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}.mag-root .mag-force-reading[data-reading="baseline"]{border-color:rgba(167,139,250,.38)}.mag-root .mag-force-reading[data-reading="test"]{border-color:rgba(52,211,153,.34)}.mag-root .mag-force-reading small{color:' + SOFT + ';font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.mag-root .mag-force-reading b{margin-top:2px;color:' + TEXT + ';font-size:13px}.mag-root .mag-force-reading strong{margin-top:5px;color:#f8fafc;font-size:17px;font-variant-numeric:tabular-nums}.mag-root .mag-force-reading span{margin-top:2px;color:' + SOFT + ';font-size:9.5px;line-height:1.3}.mag-root .mag-force-bridge{display:grid;place-content:center;justify-items:center;min-width:86px;padding:7px;color:' + SOFT + ';text-align:center}.mag-root .mag-force-bridge small{font-size:8.5px;font-weight:850;text-transform:uppercase;letter-spacing:.05em}.mag-root .mag-force-bridge b{margin-top:3px;color:#fbbf24;font-size:13px}.mag-root .mag-force-bridge span{margin-top:2px;padding:3px 6px;border-radius:999px;background:rgba(148,163,184,.09);color:' + TEXT + ';font-size:10px;font-weight:900}.mag-root .mag-force-bridge[data-revealed="true"] span{background:rgba(52,211,153,.13);color:#6ee7b7}' +
+          '.mag-root .mag-force-hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.mag-root .mag-force-metric{position:relative;overflow:hidden;min-width:0;padding:9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';text-align:center}.mag-root .mag-force-metric:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:var(--mag-force-tone,#38bdf8)}.mag-root .mag-force-metric small{display:block;color:' + SOFT + ';font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.05em}.mag-root .mag-force-metric b{display:block;margin-top:3px;color:' + TEXT + ';font-size:14px;font-variant-numeric:tabular-nums}.mag-root .mag-force-metric span{display:block;overflow:hidden;margin-top:2px;color:' + SOFT + ';font-size:9px;line-height:1.25;text-overflow:ellipsis}' +
+          '.mag-root .mag-force-figure{margin:0;padding:9px;border:1px solid rgba(56,189,248,.22);border-radius:12px;background:rgba(15,23,42,.025)}.mag-root .mag-force-figure svg{display:block;max-width:560px;margin:0 auto;border-radius:10px;filter:drop-shadow(0 7px 16px rgba(2,6,23,.16))}.mag-root .mag-force-figure figcaption{margin-top:7px;color:' + SOFT + ';font-size:10.5px;line-height:1.4}.mag-root .mag-force-figure figcaption b{margin-right:4px;color:' + TEXT + '}.mag-root .mag-force-legend{display:flex;gap:8px 13px;flex-wrap:wrap;margin-top:6px;color:' + SOFT + ';font-size:9.5px}.mag-root .mag-force-legend span{display:inline-flex;align-items:center;gap:5px}.mag-root .mag-force-key{position:relative;display:inline-block;width:18px;height:8px}.mag-root .mag-force-key.is-curve:before{content:"";position:absolute;inset:3px 0 auto;height:2px;border-radius:999px;background:#38bdf8}.mag-root .mag-force-key.is-current{width:9px;height:9px;border:2px solid #fbbf24;border-radius:50%}.mag-root .mag-force-key.is-arrow:before{content:"";position:absolute;left:0;right:4px;top:3px;height:3px;border-radius:999px;background:#34d399}.mag-root .mag-force-key.is-arrow:after{content:"";position:absolute;right:0;top:1px;border-width:4px 0 4px 6px;border-style:solid;border-color:transparent transparent transparent #34d399}.mag-root .mag-force-point-ring{transform-box:fill-box;transform-origin:center;animation:mag-force-point 1.7s ease-out infinite}' +
+          '.mag-root .mag-force-controls{padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:11px;background:rgba(148,163,184,.035)}.mag-root .mag-force-controls summary{display:flex;justify-content:space-between;gap:9px;color:' + TEXT + ';font-size:11.5px;cursor:pointer;list-style:none}.mag-root .mag-force-controls summary::-webkit-details-marker{display:none}.mag-root .mag-force-controls summary:after{content:"▾";margin-left:auto;color:#38bdf8}.mag-root .mag-force-controls:not([open]) summary:after{content:"▸"}.mag-root .mag-force-controls summary span{color:' + SOFT + ';font-size:10px;font-weight:600}.mag-root .mag-force-direction{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 8px}.mag-root .mag-force-control-note{margin:7px 0 0;padding:7px 8px;border-left:3px solid #fbbf24;border-radius:0 7px 7px 0;background:rgba(251,191,36,.065);color:' + SOFT + ';font-size:10px;line-height:1.4}' +
+          '@keyframes mag-force-current{0%,100%{box-shadow:0 0 0 3px rgba(56,189,248,.08)}50%{box-shadow:0 0 0 7px rgba(56,189,248,.02)}}@keyframes mag-force-point{0%{opacity:.82;transform:scale(.65)}75%,100%{opacity:0;transform:scale(1.55)}}' +
+          '@media(max-width:620px){.mag-root .mag-force-prediction-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-force-hud{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-force-comparison{grid-template-columns:1fr}.mag-root .mag-force-bridge{grid-template-columns:repeat(3,auto);gap:7px;align-items:center;min-width:0}.mag-root .mag-force-bridge b,.mag-root .mag-force-bridge span{margin-top:0}.mag-root .mag-force-next{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-force-next button,.mag-root .mag-force-next-cue{grid-column:1/-1;width:100%;text-align:center}.mag-root .mag-force-head{align-items:start}.mag-root .mag-force-controls summary span{display:none}}' +
+          '@media(max-width:460px){.mag-root .mag-force-challenge{padding:10px}.mag-root .mag-force-step{padding:0 3px}.mag-root .mag-force-step small{display:none}.mag-root .mag-force-prediction-grid{grid-template-columns:1fr}.mag-root .mag-force-count{font-size:8.5px}.mag-root .mag-force-reading strong{font-size:15px}.mag-root .mag-force-legend{display:grid;grid-template-columns:1fr}.mag-root .mag-force-direction button{flex:1 1 120px}}' +
+          '.mag-root .mag-material-board{margin:10px 0;padding:11px;border:1px solid rgba(163,230,53,.28);border-radius:13px;background:linear-gradient(145deg,rgba(163,230,53,.07),rgba(56,189,248,.025))}' +
+          '.mag-root .mag-material-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.mag-root .mag-material-head b{color:' + TEXT + ';font-size:12.5px}.mag-root .mag-material-head span{color:' + SOFT + ';font-size:10.5px;font-weight:850}' +
+          '.mag-root .mag-material-track{height:7px;overflow:hidden;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';margin-bottom:9px}.mag-root .mag-material-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#84cc16,#38bdf8);transition:width .25s ease}' +
+          '.mag-root .mag-material-magnet{display:flex;justify-content:center;align-items:center;margin:0 auto 9px;filter:drop-shadow(0 5px 12px rgba(2,6,23,.28))}.mag-root .mag-material-magnet span{display:grid;place-items:center;width:52px;height:30px;color:#fff;font-size:11px;font-weight:900;letter-spacing:.06em}.mag-root .mag-material-magnet span:first-child{border-radius:8px 0 0 8px;background:#dc2626}.mag-root .mag-material-magnet span:last-child{border-radius:0 8px 8px 0;background:#2563eb}' +
+          '.mag-root .mag-material-board.is-tested .mag-material-magnet{animation:mag-material-test .55s ease-out}.mag-root .mag-material-flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}' +
+          '.mag-root .mag-material-lane{min-width:0;padding:8px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}.mag-root .mag-material-lane[data-lane="lift"],.mag-root .mag-material-lane[data-lane="ferromagnetic"]{border-color:rgba(52,211,153,.42)}.mag-root .mag-material-lane[data-lane="waiting"],.mag-root .mag-material-lane[data-lane="other-metals"]{border-color:rgba(251,191,36,.42)}.mag-root .mag-material-lane[data-lane="no-pull"],.mag-root .mag-material-lane[data-lane="nonmetals"]{border-color:rgba(56,189,248,.4)}' +
+          '.mag-root .mag-material-lane-title{display:flex;justify-content:space-between;gap:5px;margin-bottom:6px;color:' + TEXT + ';font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.045em}.mag-root .mag-material-lane-title span{color:' + SOFT + ';font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-material-chips{display:flex;gap:4px;flex-wrap:wrap;align-content:flex-start;min-height:30px}.mag-root .mag-material-chip{display:inline-flex;align-items:center;gap:3px;max-width:100%;padding:4px 6px;border:1px solid ' + BORDER + ';border-radius:999px;background:rgba(148,163,184,.07);color:' + TEXT + ';font-size:9.5px;line-height:1.2}.mag-root .mag-material-empty{color:' + SOFT + ';font-size:10px;font-style:italic}' +
+          '.mag-root .mag-material-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px}.mag-root .mag-material-tile{min-width:0;padding:9px;border:1px solid ' + BORDER + ';border-radius:11px;background:rgba(148,163,184,.045)}.mag-root .mag-material-tile[data-choice="lift"]{border-color:rgba(52,211,153,.45)}.mag-root .mag-material-tile[data-choice="no-pull"]{border-color:rgba(56,189,248,.45)}.mag-root .mag-material-tile[data-result="confirmed"]{background:rgba(52,211,153,.075);border-color:rgba(52,211,153,.5)}.mag-root .mag-material-tile[data-result="revised"]{background:rgba(251,191,36,.075);border-color:rgba(251,191,36,.52)}' +
+          '.mag-root .mag-material-tile-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:center}.mag-root .mag-material-emoji{font-size:20px}.mag-root .mag-material-name{min-width:0}.mag-root .mag-material-name b{display:block;overflow:hidden;text-overflow:ellipsis;color:' + TEXT + ';font-size:12px;white-space:nowrap}.mag-root .mag-material-name small{display:block;color:' + SOFT + ';font-size:9.5px;text-transform:uppercase;letter-spacing:.045em}.mag-root .mag-material-mark{color:' + TEXT + ';font-size:12px;font-weight:900}' +
+          '.mag-root .mag-material-controls{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.mag-root .mag-material-controls button{flex:1 1 105px}.mag-root .mag-material-result{margin-top:6px;color:' + SOFT + ';font-size:10.5px;font-weight:750;line-height:1.35}.mag-root .mag-material-tile details{margin-top:5px}.mag-root .mag-material-tile summary{color:' + TEXT + ';font-size:10.5px;font-weight:800;cursor:pointer}.mag-root .mag-material-tile details p{margin:4px 0 0;color:' + SOFT + ';font-size:10.5px;line-height:1.4}' +
+          '.mag-root .mag-material-action{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;margin-top:9px;padding:9px 10px;border:1px solid rgba(163,230,53,.3);border-radius:10px;background:rgba(163,230,53,.06);color:' + SOFT + ';font-size:11.5px;line-height:1.4}.mag-root .mag-material-action b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-material-action button{white-space:nowrap}' +
+          '.mag-root .mag-material-rule{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.mag-root .mag-material-rule>div{padding:9px;border:1px solid ' + BORDER + ';border-radius:9px;background:rgba(148,163,184,.045);color:' + SOFT + ';font-size:10.5px;line-height:1.4}.mag-root .mag-material-rule b{display:block;margin-bottom:3px;color:' + TEXT + ';font-size:11px}' +
+          '@keyframes mag-material-test{0%{transform:scale(.92);filter:brightness(1)}55%{transform:scale(1.08);filter:brightness(1.35)}100%{transform:scale(1);filter:brightness(1)}}' +
+          '@media(max-width:560px){.mag-root .mag-material-flow,.mag-root .mag-material-rule,.mag-root .mag-material-grid{grid-template-columns:1fr}.mag-root .mag-material-action{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-material-action button{grid-column:1/-1;width:100%}}' +
+          '.mag-root .mag-domain-lab{display:grid;gap:10px;margin-top:10px}' +
+          '.mag-root .mag-domain-intro{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:10px 11px;border:1px solid rgba(163,230,53,.28);border-radius:12px;background:linear-gradient(145deg,rgba(163,230,53,.075),rgba(56,189,248,.025));color:' + SOFT + ';font-size:11.5px;line-height:1.48}.mag-root .mag-domain-intro>span{font-size:21px}.mag-root .mag-domain-intro b{display:block;color:' + TEXT + ';font-size:12.5px}' +
+          '.mag-root .mag-domain-materials{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}' +
+          '.mag-root .mag-domain-material{position:relative;width:100%;min-width:0;padding:10px;border:1px solid ' + BORDER + ';border-radius:12px;background:' + INSTRUMENT + ';color:' + SOFT + ';text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}' +
+          '.mag-root .mag-domain-material:hover{transform:translateY(-1px);border-color:#38bdf8}.mag-root .mag-domain-material[data-active="true"]{border-color:#a3e635;background:linear-gradient(145deg,rgba(163,230,53,.1),rgba(56,189,248,.045));box-shadow:inset 0 0 0 1px rgba(163,230,53,.16)}' +
+          '.mag-root .mag-domain-material-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:7px;align-items:center}.mag-root .mag-domain-material-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(148,163,184,.1);font-size:17px}.mag-root .mag-domain-material-head b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-domain-material-head small{display:block;color:' + SOFT + ';font-size:9.5px}.mag-root .mag-domain-material-badge{color:#bef264;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}' +
+          '.mag-root .mag-domain-properties{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.mag-root .mag-domain-property{padding:6px 7px;border:1px solid rgba(148,163,184,.17);border-radius:8px;background:rgba(148,163,184,.045)}.mag-root .mag-domain-property small{display:block;color:' + SOFT + ';font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.045em}.mag-root .mag-domain-property b{display:block;margin-top:2px;color:' + TEXT + ';font-size:12px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-domain-mini-track{display:block;height:5px;margin-top:5px;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.16)}.mag-root .mag-domain-mini-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#a78bfa)}' +
+          '.mag-root .mag-domain-experiment{padding:11px;border:1px solid rgba(244,63,94,.26);border-radius:13px;background:linear-gradient(145deg,rgba(244,63,94,.055),rgba(148,163,184,.025))}' +
+          '.mag-root .mag-domain-exp-head{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:7px}.mag-root .mag-domain-exp-head b{color:' + TEXT + ';font-size:12.5px}.mag-root .mag-domain-exp-head span{color:' + SOFT + ';font-size:10px;font-weight:850;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-domain-progress{display:block;width:100%;height:7px;margin:0 0 10px;overflow:hidden;appearance:none;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';accent-color:#f43f5e}.mag-root .mag-domain-progress::-webkit-progress-bar{background:' + INSTRUMENT + '}.mag-root .mag-domain-progress::-webkit-progress-value{border-radius:999px;background:linear-gradient(90deg,#fb7185,#fbbf24)}.mag-root .mag-domain-progress::-moz-progress-bar{border-radius:999px;background:linear-gradient(90deg,#fb7185,#fbbf24)}' +
+          '.mag-root .mag-domain-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:0;padding:0;list-style:none}.mag-root .mag-domain-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;padding:0 7px;text-align:center;color:' + SOFT + '}.mag-root .mag-domain-step:not(:last-child):after{content:"";position:absolute;z-index:0;top:15px;left:calc(50% + 19px);right:calc(-50% + 19px);height:2px;background:' + BORDER + '}.mag-root .mag-domain-step[data-state="done"]:not(:last-child):after{background:#34d399}' +
+          '.mag-root .mag-domain-step-index{position:relative;z-index:1;display:grid;place-items:center;width:31px;height:31px;border:2px solid ' + BORDER + ';border-radius:50%;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:11px;font-weight:900}.mag-root .mag-domain-step[data-state="done"] .mag-domain-step-index{border-color:#34d399;background:rgba(52,211,153,.14);color:#6ee7b7}.mag-root .mag-domain-step[data-state="current"] .mag-domain-step-index{border-color:#fb7185;background:rgba(251,113,133,.16);color:#fecdd3;box-shadow:0 0 0 3px rgba(251,113,133,.09);animation:mag-domain-current 1.8s ease-in-out infinite}' +
+          '.mag-root .mag-domain-step b{color:' + TEXT + ';font-size:10.5px;line-height:1.2}.mag-root .mag-domain-step small{max-width:140px;font-size:9.5px;line-height:1.3}' +
+          '.mag-root .mag-domain-next{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;margin-top:10px;padding:9px 10px;border:1px solid rgba(251,113,133,.38);border-radius:10px;background:rgba(251,113,133,.075);color:' + SOFT + ';font-size:11.5px;line-height:1.4}.mag-root .mag-domain-next[data-complete="true"]{border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.075)}.mag-root .mag-domain-next-icon{font-size:20px}.mag-root .mag-domain-next b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-domain-next button{white-space:nowrap}' +
+          '.mag-root .mag-domain-hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.mag-root .mag-domain-metric{position:relative;overflow:hidden;padding:8px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';text-align:center}.mag-root .mag-domain-metric:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--mag-domain-tone,#38bdf8)}.mag-root .mag-domain-metric small{display:block;color:' + SOFT + ';font-size:9px;font-weight:850;letter-spacing:.045em;text-transform:uppercase}.mag-root .mag-domain-metric b{display:block;margin:3px 0 1px;color:' + TEXT + ';font-size:15px;font-variant-numeric:tabular-nums}.mag-root .mag-domain-metric span{display:block;color:' + SOFT + ';font-size:9.5px;line-height:1.25}' +
+          '.mag-root .mag-domain-visuals{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:9px}.mag-root .mag-domain-figure{min-width:0;margin:0;padding:8px;border:1px solid ' + BORDER + ';border-radius:11px;background:' + INSTRUMENT + '}.mag-root .mag-domain-figure svg{display:block;width:100%;height:auto}.mag-root .mag-domain-figure figcaption{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 2px 6px;color:' + TEXT + ';font-size:10.5px;font-weight:850}.mag-root .mag-domain-figure figcaption span{color:' + SOFT + ';font-size:9px;font-weight:750}' +
+          '.mag-root .mag-domain-legend{display:flex;gap:7px;flex-wrap:wrap;margin:6px 1px 0;color:' + SOFT + ';font-size:9px;line-height:1.25}.mag-root .mag-domain-legend span{display:inline-flex;align-items:center;gap:4px}.mag-root .mag-domain-key{display:inline-block;width:13px;height:3px;border-radius:3px;background:var(--mag-key,#38bdf8)}.mag-root .mag-domain-key.is-point{width:8px;height:8px;border-radius:50%}' +
+          '.mag-root .mag-domain-point-ring{transform-box:fill-box;transform-origin:center;animation:mag-domain-point 1.8s ease-in-out infinite}' +
+          '.mag-root .mag-domain-phase{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;padding:9px 10px;border:1px solid rgba(56,189,248,.34);border-radius:10px;background:rgba(56,189,248,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.42}.mag-root .mag-domain-phase[data-phase="remanence"],.mag-root .mag-domain-phase[data-phase="saturated"]{border-color:rgba(52,211,153,.44);background:rgba(52,211,153,.075)}.mag-root .mag-domain-phase[data-phase="coercive"],.mag-root .mag-domain-phase[data-phase="switching"]{border-color:rgba(251,191,36,.48);background:rgba(251,191,36,.075)}.mag-root .mag-domain-phase[data-phase="reversed"]{border-color:rgba(167,139,250,.48);background:rgba(167,139,250,.075)}.mag-root .mag-domain-phase-icon{font-size:20px}.mag-root .mag-domain-phase b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-domain-phase p{margin:2px 0 0}' +
+          '.mag-root .mag-domain-controls{margin:0;padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:10px;background:rgba(148,163,184,.04)}.mag-root .mag-domain-controls legend{padding:0 5px;color:' + TEXT + ';font-size:10.5px;font-weight:850}.mag-root .mag-domain-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}.mag-root .mag-domain-reset-note{margin:7px 0 0;color:' + SOFT + ';font-size:10px;line-height:1.35;text-align:center}' +
+          '@keyframes mag-domain-current{0%,100%{box-shadow:0 0 0 3px rgba(251,113,133,.08)}50%{box-shadow:0 0 0 6px rgba(251,113,133,.14)}}@keyframes mag-domain-point{0%,100%{opacity:.28;transform:scale(.75)}50%{opacity:.75;transform:scale(1.25)}}' +
+          '@media(max-width:620px){.mag-root .mag-domain-hud{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-domain-visuals{grid-template-columns:1fr}.mag-root .mag-domain-next{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-domain-next button{grid-column:1/-1;width:100%}}' +
+          '@media(max-width:480px){.mag-root .mag-domain-materials{grid-template-columns:1fr}.mag-root .mag-domain-step{padding:0 3px}.mag-root .mag-domain-step small{display:none}.mag-root .mag-domain-properties{grid-template-columns:1fr 1fr}.mag-root .mag-domain-actions button{flex:1 1 125px}}' +
+          '.mag-root .mag-crane-evidence{margin:10px 0;padding:11px;border:1px solid rgba(249,115,22,.3);border-radius:12px;background:linear-gradient(145deg,rgba(249,115,22,.075),rgba(148,163,184,.025))}' +
+          '.mag-root .mag-crane-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}' +
+          '.mag-root .mag-crane-head b{color:' + TEXT + ';font-size:12.5px}.mag-root .mag-crane-head span{color:' + SOFT + ';font-size:10.5px;font-weight:850}' +
+          '.mag-root .mag-crane-track{height:7px;overflow:hidden;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';margin-bottom:8px}' +
+          '.mag-root .mag-crane-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,#f97316,#fbbf24);transition:width .25s ease}' +
+          '.mag-root .mag-crane-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:8px}' +
+          '.mag-root .mag-crane-metric{padding:7px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';text-align:center}' +
+          '.mag-root .mag-crane-metric small{display:block;color:' + SOFT + ';font-size:9.5px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}.mag-root .mag-crane-metric b{display:block;margin-top:2px;color:' + TEXT + ';font-size:14px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-crane-ledger{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;list-style:none;margin:0;padding:0}' +
+          '.mag-root .mag-crane-tile{position:relative;min-width:0;padding:7px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';color:' + SOFT + '}' +
+          '.mag-root .mag-crane-tile[data-current="true"]{outline:2px solid #f97316;outline-offset:1px}' +
+          '.mag-root .mag-crane-tile[data-state="predicted"]{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.07)}.mag-root .mag-crane-tile[data-state="confirmed"],.mag-root .mag-crane-tile[data-state="recycled"]{border-color:rgba(52,211,153,.48);background:rgba(52,211,153,.07)}.mag-root .mag-crane-tile[data-state="revised"]{border-color:rgba(56,189,248,.52);background:rgba(56,189,248,.075)}' +
+          '.mag-root .mag-crane-tile-top{display:flex;align-items:center;justify-content:space-between;gap:4px}.mag-root .mag-crane-tile-emoji{font-size:18px}.mag-root .mag-crane-tile-mark{font-size:10px;font-weight:900;color:' + TEXT + '}' +
+          '.mag-root .mag-crane-tile b{display:block;overflow:hidden;text-overflow:ellipsis;color:' + TEXT + ';font-size:10.5px;white-space:nowrap}.mag-root .mag-crane-tile small{display:block;margin-top:2px;font-size:9.5px;line-height:1.25}' +
+          '.mag-root .mag-crane-next{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;margin:9px 0;padding:9px 10px;border:1px solid rgba(249,115,22,.34);border-radius:10px;background:rgba(249,115,22,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.4}.mag-root .mag-crane-next b{display:block;color:' + TEXT + ';font-size:12px}' +
+          '.mag-root .mag-crane-predict{margin:8px 0;padding:9px 10px;border:1px solid ' + BORDER + ';border-radius:10px;background:rgba(148,163,184,.045)}.mag-root .mag-crane-predict legend{padding:0 5px;color:' + TEXT + ';font-size:11.5px;font-weight:800}.mag-root .mag-crane-predict div{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}.mag-root .mag-crane-predict button{flex:0 1 165px}' +
+          '.mag-root .mag-crane-scene.is-powered .mag-crane-glow{transform-box:fill-box;transform-origin:center;animation:mag-crane-pulse 1.8s ease-in-out infinite}.mag-root .mag-crane-scene.is-powered .mag-crane-field-line{stroke-dasharray:5 4;animation:mag-crane-flow 1.35s linear infinite}' +
+          '@keyframes mag-crane-pulse{0%,100%{opacity:.55;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}@keyframes mag-crane-flow{to{stroke-dashoffset:-18}}' +
+          '.mag-root .mag-xfmr-challenge{margin:10px 0;padding:11px;border:1px solid ' + BORDER + ';border-radius:12px;background:rgba(148,163,184,.045)}' +
+          '.mag-root .mag-xfmr-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}' +
+          '.mag-root .mag-xfmr-head b{color:' + TEXT + ';font-size:12px}.mag-root .mag-xfmr-head span{color:' + SOFT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-xfmr-missions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}' +
+          '.mag-root .mag-xfmr-brief{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;padding:9px;border:1px solid rgba(56,189,248,.28);border-radius:10px;background:rgba(56,189,248,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.42}' +
+          '.mag-root .mag-xfmr-brief>span:first-child{font-size:19px}.mag-root .mag-xfmr-brief b{display:block;color:' + TEXT + ';font-size:12px}' +
+          '.mag-root .mag-xfmr-goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:9px 0}' +
+          '.mag-root .mag-xfmr-goal{padding:9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}' +
+          '.mag-root .mag-xfmr-goal[data-pass="true"]{border-color:rgba(52,211,153,.48);background:rgba(52,211,153,.065)}' +
+          '.mag-root .mag-xfmr-goal-head{display:flex;justify-content:space-between;gap:6px;align-items:start}' +
+          '.mag-root .mag-xfmr-goal-head small{color:' + SOFT + ';font-size:9.5px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}' +
+          '.mag-root .mag-xfmr-goal-head i{color:' + SOFT + ';font-size:10px;font-style:normal;font-weight:900}.mag-root .mag-xfmr-goal[data-pass="true"] .mag-xfmr-goal-head i{color:#34d399}' +
+          '.mag-root .mag-xfmr-reading{display:block;margin:4px 0;color:' + TEXT + ';font-size:16px;font-weight:850;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-xfmr-track{position:relative;height:9px;margin:6px 0;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.17)}' +
+          '.mag-root .mag-xfmr-band{position:absolute;top:0;bottom:0;border-radius:999px;background:rgba(56,189,248,.42)}' +
+          '.mag-root .mag-xfmr-marker{position:absolute;z-index:1;top:-2px;bottom:-2px;width:3px;border-radius:3px;background:#fb7185;box-shadow:0 0 0 2px ' + INSTRUMENT + ';transform:translateX(-1px);transition:left .24s ease}' +
+          '.mag-root .mag-xfmr-goal[data-pass="true"] .mag-xfmr-marker{background:#34d399}' +
+          '.mag-root .mag-xfmr-target{display:block;color:' + SOFT + ';font-size:10px;line-height:1.3}' +
+          '.mag-root .mag-xfmr-feedback{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:start;padding:9px;border:1px solid rgba(251,191,36,.4);border-radius:10px;background:rgba(251,191,36,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.42}' +
+          '.mag-root .mag-xfmr-feedback[data-status="ready"],.mag-root .mag-xfmr-feedback[data-status="won"]{border-color:rgba(52,211,153,.46);background:rgba(52,211,153,.075)}' +
+          '.mag-root .mag-xfmr-feedback b{display:block;color:' + TEXT + ';font-size:12px}' +
+          '.mag-root .mag-xfmr-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}' +
+          '.mag-root .mag-quality-row{display:grid;grid-template-columns:minmax(105px,auto) minmax(90px,1fr) auto;gap:8px;align-items:center;margin:7px 0;color:' + SOFT + ';font-size:11.5px}' +
+          '.mag-root .mag-quality-track{height:8px;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.18)}' +
+          '.mag-root .mag-quality-fill{display:block;height:100%;border-radius:inherit;background:#fbbf24;transition:width .24s ease}' +
+          '.mag-root .mag-quiz-shell{display:grid;gap:10px}' +
+          '.mag-root .mag-quiz-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}' +
+          '.mag-root .mag-quiz-topic{display:inline-flex;align-items:center;min-height:28px;padding:4px 9px;border:1px solid rgba(244,63,94,.34);border-radius:999px;background:rgba(244,63,94,.08);color:' + TEXT + ';font-size:11px;font-weight:850}' +
+          '.mag-root .mag-quiz-position{color:' + SOFT + ';font-size:10.5px;font-weight:850;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-evidence-head{display:flex;align-items:end;justify-content:space-between;gap:8px;margin:0 1px 6px}.mag-root .mag-quiz-evidence-head b{color:' + TEXT + ';font-size:11.5px}.mag-root .mag-quiz-evidence-head span{color:' + SOFT + ';font-size:9.5px;font-weight:800}' +
+          '.mag-root .mag-quiz-hud{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:8px}' +
+          '.mag-root .mag-quiz-metric{position:relative;overflow:hidden;padding:8px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';text-align:center}' +
+          '.mag-root .mag-quiz-metric:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--mag-quiz-tone,#38bdf8)}' +
+          '.mag-root .mag-quiz-metric small{display:block;color:' + SOFT + ';font-size:9.5px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}' +
+          '.mag-root .mag-quiz-metric b{display:block;margin:3px 0 1px;color:' + TEXT + ';font-size:15px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-metric span{display:block;color:' + SOFT + ';font-size:9.5px;line-height:1.25}' +
+          '.mag-root .mag-quiz-progress{display:block;width:100%;height:9px;overflow:hidden;appearance:none;border:1px solid ' + BORDER + ';border-radius:999px;background:' + INSTRUMENT + ';accent-color:#f43f5e;margin-bottom:9px}' +
+          '.mag-root .mag-quiz-progress::-webkit-progress-bar{background:' + INSTRUMENT + '}.mag-root .mag-quiz-progress::-webkit-progress-value{border-radius:999px;background:linear-gradient(90deg,#f43f5e,#fbbf24)}.mag-root .mag-quiz-progress::-moz-progress-bar{border-radius:999px;background:linear-gradient(90deg,#f43f5e,#fbbf24)}' +
+          '.mag-root .mag-quiz-trail{display:grid;grid-template-columns:repeat(11,minmax(0,1fr));gap:5px;list-style:none;margin:0 0 12px;padding:0}' +
+          '.mag-root .mag-quiz-step{display:grid;place-items:center;min-width:0;aspect-ratio:1;border:1px solid ' + BORDER + ';border-radius:7px;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:9.5px;font-weight:900;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-step[data-state="confirmed"]{border-color:rgba(52,211,153,.58);background:rgba(52,211,153,.11);color:#6ee7b7}' +
+          '.mag-root .mag-quiz-step[data-state="revised"]{border-color:rgba(251,191,36,.62);background:rgba(251,191,36,.11);color:#fde68a}' +
+          '.mag-root .mag-quiz-step[data-state="current"]{border-color:#fb7185;background:rgba(251,113,133,.14);color:#fecdd3;box-shadow:0 0 0 3px rgba(251,113,133,.09);animation:mag-quiz-current 1.8s ease-in-out infinite}' +
+          '.mag-root .mag-quiz-question{padding:12px;border:1px solid rgba(56,189,248,.25);border-radius:13px;background:linear-gradient(145deg,rgba(56,189,248,.055),rgba(148,163,184,.025))}' +
+          '.mag-root .mag-quiz-kicker{margin:0 0 4px;color:#7dd3fc;font-size:9.5px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}' +
+          '.mag-root .mag-quiz-question h3{margin:0 0 11px;color:' + TEXT + ';font-size:15px;line-height:1.5}' +
+          '.mag-root .mag-quiz-answers{display:grid;gap:7px;margin:0;padding:0;border:0}' +
+          '.mag-root .mag-quiz-legend{margin-bottom:7px;padding:0;color:' + SOFT + ';font-size:10.5px;font-weight:750}' +
+          '.mag-root .mag-quiz-option{display:grid;width:100%;grid-template-columns:30px minmax(0,1fr) auto;gap:9px;align-items:center;min-height:48px;padding:8px 10px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + ';color:' + TEXT + ';text-align:left;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}' +
+          '.mag-root .mag-quiz-option:not(:disabled):hover{transform:translateY(-1px);border-color:#38bdf8;background:rgba(56,189,248,.07)}' +
+          '.mag-root .mag-quiz-option:disabled{cursor:default;opacity:1}' +
+          '.mag-root .mag-quiz-letter{display:grid;place-items:center;width:28px;height:28px;border:1px solid ' + BORDER + ';border-radius:8px;background:rgba(148,163,184,.08);color:' + TEXT + ';font-size:11px;font-weight:900}' +
+          '.mag-root .mag-quiz-option-copy{font-size:12.5px;line-height:1.38}' +
+          '.mag-root .mag-quiz-option-status{color:' + SOFT + ';font-size:9.5px;font-weight:900;white-space:nowrap}' +
+          '.mag-root .mag-quiz-option[data-state="correct"]{border-color:rgba(52,211,153,.65);background:rgba(52,211,153,.1)}' +
+          '.mag-root .mag-quiz-option[data-state="correct"] .mag-quiz-letter{border-color:#34d399;background:rgba(52,211,153,.16);color:#6ee7b7}' +
+          '.mag-root .mag-quiz-option[data-state="correct"] .mag-quiz-option-status{color:#6ee7b7}' +
+          '.mag-root .mag-quiz-option[data-state="revised"]{border-color:rgba(251,191,36,.68);background:rgba(251,191,36,.1)}' +
+          '.mag-root .mag-quiz-option[data-state="revised"] .mag-quiz-letter{border-color:#fbbf24;background:rgba(251,191,36,.16);color:#fde68a}' +
+          '.mag-root .mag-quiz-option[data-state="revised"] .mag-quiz-option-status{color:#fde68a}' +
+          '.mag-root .mag-quiz-option[data-state="unselected"]{opacity:.68}' +
+          '.mag-root .mag-quiz-feedback{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:start;margin-top:9px;padding:10px;border:1px solid rgba(56,189,248,.3);border-radius:11px;background:rgba(56,189,248,.07);color:' + SOFT + ';font-size:11.5px;line-height:1.42}' +
+          '.mag-root .mag-quiz-feedback[data-state="correct"]{border-color:rgba(52,211,153,.44);background:rgba(52,211,153,.075)}.mag-root .mag-quiz-feedback[data-state="revised"]{border-color:rgba(251,191,36,.48);background:rgba(251,191,36,.075)}' +
+          '.mag-root .mag-quiz-feedback-icon{font-size:19px}.mag-root .mag-quiz-feedback b{display:block;color:' + TEXT + ';font-size:12px}.mag-root .mag-quiz-feedback p{margin:2px 0 5px}.mag-root .mag-quiz-next-cue{display:block;color:' + TEXT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-quiz-evidence-summary{text-align:center;color:' + SOFT + ';font-size:10.5px;font-weight:750;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-results{display:grid;gap:11px}' +
+          '.mag-root .mag-quiz-results-hero{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center;padding:13px;border:1px solid rgba(244,63,94,.28);border-radius:14px;background:linear-gradient(145deg,rgba(244,63,94,.08),rgba(56,189,248,.035))}' +
+          '.mag-root .mag-quiz-results[data-pass="true"] .mag-quiz-results-hero{border-color:rgba(52,211,153,.38);background:linear-gradient(145deg,rgba(52,211,153,.09),rgba(56,189,248,.035))}' +
+          '.mag-root .mag-quiz-ring{display:grid;place-items:center;width:104px;height:104px;border-radius:50%;background:conic-gradient(#34d399 var(--mag-quiz-score-angle),rgba(148,163,184,.17) 0);box-shadow:0 8px 26px rgba(2,6,23,.28)}' +
+          '.mag-root .mag-quiz-ring-core{display:grid;place-items:center;width:78px;height:78px;border:1px solid ' + BORDER + ';border-radius:50%;background:' + PANEL + ';text-align:center}' +
+          '.mag-root .mag-quiz-ring-core span{font-size:19px;line-height:1}.mag-root .mag-quiz-ring-core b{display:block;color:' + TEXT + ';font-size:18px;font-variant-numeric:tabular-nums}.mag-root .mag-quiz-ring-core small{color:' + SOFT + ';font-size:9px;font-weight:800;text-transform:uppercase}' +
+          '.mag-root .mag-quiz-results-copy h3{margin:0 0 4px;color:' + TEXT + ';font-size:17px}.mag-root .mag-quiz-results-copy p{margin:0;color:' + SOFT + ';font-size:12px;line-height:1.45}' +
+          '.mag-root .mag-quiz-result-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}' +
+          '.mag-root .mag-quiz-result-metric{padding:8px;border:1px solid ' + BORDER + ';border-radius:9px;background:' + INSTRUMENT + ';text-align:center}.mag-root .mag-quiz-result-metric small{display:block;color:' + SOFT + ';font-size:9px;font-weight:850;letter-spacing:.05em;text-transform:uppercase}.mag-root .mag-quiz-result-metric b{display:block;margin-top:3px;color:' + TEXT + ';font-size:14px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-review-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:9px 10px;border:1px solid rgba(251,191,36,.43);border-radius:10px;background:rgba(251,191,36,.075);color:' + SOFT + ';font-size:11.5px;line-height:1.42}.mag-root .mag-quiz-review-note b{display:block;color:' + TEXT + ';font-size:12px}' +
+          '.mag-root .mag-quiz-topic-head{display:flex;align-items:end;justify-content:space-between;gap:8px;margin-bottom:7px}.mag-root .mag-quiz-topic-head h3{margin:0;color:' + TEXT + ';font-size:13px}.mag-root .mag-quiz-topic-head span{color:' + SOFT + ';font-size:10px;font-weight:800}' +
+          '.mag-root .mag-quiz-topics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}' +
+          '.mag-root .mag-quiz-topic-card{padding:9px;border:1px solid ' + BORDER + ';border-radius:10px;background:' + INSTRUMENT + '}.mag-root .mag-quiz-topic-card[data-status="secure"]{border-color:rgba(52,211,153,.42);background:rgba(52,211,153,.06)}.mag-root .mag-quiz-topic-card[data-status="review"]{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.065)}' +
+          '.mag-root .mag-quiz-topic-card-head{display:flex;align-items:start;justify-content:space-between;gap:7px}.mag-root .mag-quiz-topic-card-head b{min-width:0;color:' + TEXT + ';font-size:11px;line-height:1.3}.mag-root .mag-quiz-topic-state{color:' + SOFT + ';font-size:9px;font-weight:900;white-space:nowrap}' +
+          '.mag-root .mag-quiz-topic-score{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:6px 0 4px;color:' + SOFT + ';font-size:9.5px}.mag-root .mag-quiz-topic-score strong{color:' + TEXT + ';font-size:11px;font-variant-numeric:tabular-nums}' +
+          '.mag-root .mag-quiz-topic-track{height:7px;overflow:hidden;border-radius:999px;background:rgba(148,163,184,.17)}.mag-root .mag-quiz-topic-fill{display:block;height:100%;border-radius:inherit;background:#34d399}.mag-root .mag-quiz-topic-card[data-status="review"] .mag-quiz-topic-fill{background:#fbbf24}' +
+          '.mag-root .mag-quiz-topic-card button{width:100%;margin-top:7px}' +
+          '.mag-root .mag-quiz-results-actions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap}' +
+          '@keyframes mag-quiz-current{0%,100%{box-shadow:0 0 0 2px rgba(251,113,133,.07)}50%{box-shadow:0 0 0 5px rgba(251,113,133,.14)}}' +
+          '@media(max-width:560px){.mag-root .mag-quiz-trail{grid-template-columns:repeat(6,minmax(0,1fr))}.mag-root .mag-quiz-topics{grid-template-columns:1fr}.mag-root .mag-quiz-feedback{grid-template-columns:auto minmax(0,1fr)}.mag-root .mag-quiz-feedback button{grid-column:1/-1;width:100%}}' +
+          '@media(max-width:400px){.mag-root .mag-quiz-option{grid-template-columns:28px minmax(0,1fr)}.mag-root .mag-quiz-option-status{grid-column:2}.mag-root .mag-quiz-results-hero{grid-template-columns:1fr;justify-items:center;text-align:center}.mag-root .mag-quiz-hud,.mag-root .mag-quiz-result-metrics{grid-template-columns:1fr 1fr}.mag-root .mag-quiz-metric:last-child,.mag-root .mag-quiz-result-metric:last-child{grid-column:1/-1}}' +
+          '.mag-root .mag-viz-cue{display:none;align-items:center;justify-content:center;gap:5px;margin:0 0 6px;color:' + SOFT + ';font-size:10.5px;font-weight:800}' +
+          '.mag-root .mag-viz-scroll{max-width:100%;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-color:#38bdf8 rgba(148,163,184,.18);scrollbar-width:auto}' +
+          '.mag-root .mag-viz-scroll::-webkit-scrollbar{height:9px}.mag-root .mag-viz-scroll::-webkit-scrollbar-track{background:rgba(148,163,184,.14);border-radius:999px}.mag-root .mag-viz-scroll::-webkit-scrollbar-thumb{background:#38bdf8;border-radius:999px;border:2px solid ' + INSTRUMENT + '}' +
+          '.mag-root .mag-hunt-map{display:block;max-width:760px;margin:0 auto 9px}' +
+          '.mag-root .mag-map-mode{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin:0 0 8px;color:' + SOFT + ';font-size:11.5px}' +
+          '.mag-root .mag-hunt-mark{display:inline-grid;place-items:center;width:20px;height:20px;color:var(--mag-mark);font-size:16px;font-weight:900;line-height:1}' +
+          '.mag-root .mag-hunt-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:0 0 10px;padding:0;list-style:none}' +
+          '.mag-root .mag-hunt-step{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;padding:0 4px;text-align:center;color:' + SOFT + '}' +
+          '.mag-root .mag-hunt-step:not(:last-child):after{content:"";position:absolute;z-index:0;top:14px;left:calc(50% + 17px);right:calc(-50% + 17px);height:2px;background:' + BORDER + '}' +
+          '.mag-root .mag-hunt-step[data-status="done"]:not(:last-child):after{background:#34d399}' +
+          '.mag-root .mag-hunt-step-index{position:relative;z-index:1;display:grid;place-items:center;width:29px;height:29px;border:2px solid ' + BORDER + ';border-radius:50%;background:' + INSTRUMENT + ';color:' + SOFT + ';font-size:11px;font-weight:900}' +
+          '.mag-root .mag-hunt-step[data-status="done"] .mag-hunt-step-index{border-color:#34d399;background:rgba(52,211,153,.14);color:#6ee7b7}' +
+          '.mag-root .mag-hunt-step[data-status="current"] .mag-hunt-step-index{border-color:#fb7185;background:rgba(251,113,133,.16);color:#fecdd3;box-shadow:0 0 0 3px rgba(251,113,133,.1)}' +
+          '.mag-root .mag-hunt-step b{color:' + TEXT + ';font-size:10.5px;line-height:1.15}' +
+          '.mag-root .mag-hunt-step small{max-width:118px;font-size:9.5px;line-height:1.25}' +
+          '.mag-root .mag-hunt-next{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;align-items:center;margin:8px 0;padding:8px 10px;border:1px solid rgba(251,113,133,.34);border-radius:10px;background:rgba(251,113,133,.075);color:' + SOFT + ';font-size:11.5px;line-height:1.4}' +
+          '.mag-root .mag-hunt-next-index{display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:' + ACTIVE + ';color:#fff;font-weight:900}' +
+          '.mag-root .mag-hunt-next b{display:block;color:' + TEXT + ';font-size:12px}' +
+          '.mag-root .mag-hunt-metric{position:relative;overflow:hidden;padding:9px;border:1px solid ' + BORDER + ';border-radius:9px;text-align:center}' +
+          '.mag-root .mag-hunt-metric:before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--mag-metric,#38bdf8)}' +
           '.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d,.mag-root .mag-motor3d,.mag-root .mag-charge3d,.mag-root .mag-earth3d{height:410px}' +
-          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d,.mag-root .mag-motor3d,.mag-root .mag-charge3d,.mag-root .mag-earth3d{height:320px}.mag-root .mag-scene-hud{left:7px;top:7px;right:40px;gap:4px}.mag-root .mag-hud-chip{padding:5px 6px}.mag-root .mag-scene-axis{right:7px;bottom:7px}}' +
-          '@media(max-width:640px){.mag-root .mag-station{grid-template-columns:1fr 1fr}.mag-root .mag-station-main{grid-column:1/-1}.mag-root .mag-cycle{border-left:0;border-top:2px solid ' + BORDER + '}.mag-root .mag-cycle:last-child{grid-column:1/-1}.mag-root .mag-hero{padding:14px}.mag-root .mag-tabs button{flex:1 1 145px}}' +
-          '@media(max-width:390px){.mag-root .mag-station{grid-template-columns:1fr}.mag-root .mag-cycle:last-child{grid-column:auto}}' +
+          '@media(max-width:480px){.mag-root .mag-sim-grid{grid-template-columns:1fr!important}.mag-root .mag-field3d,.mag-root .mag-induction3d,.mag-root .mag-electro3d,.mag-root .mag-motor3d,.mag-root .mag-charge3d,.mag-root .mag-earth3d{height:320px}.mag-root .mag-scene-hud{left:7px;top:7px;right:40px;gap:4px}.mag-root .mag-hud-chip{padding:5px 6px}.mag-root .mag-scene-axis{right:7px;bottom:7px}.mag-root .mag-viz-cue{display:flex}.mag-root .mag-hunt-map{min-width:500px}.mag-root .mag-mission-summary{grid-template-columns:1fr}.mag-root .mag-mission-summary-actions{justify-content:flex-start}.mag-root .mag-quality-row{grid-template-columns:1fr auto}.mag-root .mag-quality-track{grid-column:1/-1;grid-row:2}}' +
+          '@media(max-width:640px){.mag-root .mag-station{grid-template-columns:1fr 1fr}.mag-root .mag-station-main{grid-column:1/-1}.mag-root .mag-cycle{border-left:0;border-top:2px solid ' + BORDER + '}.mag-root .mag-cycle:last-child{grid-column:1/-1}.mag-root .mag-hero{padding:14px}.mag-root .mag-tabs{margin-left:-4px;margin-right:-4px}.mag-root .mag-tabs button{flex:0 0 auto}.mag-root .mag-lab-context{flex-basis:100%}}' +
+          '@media(max-width:480px){.mag-root .mag-guide>summary{grid-template-columns:auto minmax(0,1fr) auto}.mag-root .mag-guide-route{display:none}.mag-root .mag-hunt-step{padding:0 2px}.mag-root .mag-hunt-step small{display:none}.mag-root .mag-hunt-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}.mag-root .mag-hunt-next{align-items:start}.mag-root .mag-fair-flow{grid-template-columns:1fr}.mag-root .mag-fair-change{grid-template-columns:auto minmax(0,1fr);place-content:initial;justify-items:start;align-items:center;text-align:left}.mag-root .mag-fair-change i{transform:rotate(90deg)}.mag-root .mag-speed-actions button{flex:1 1 120px}.mag-root .mag-maze-metrics{grid-template-columns:1fr 1fr}.mag-root .mag-maze-metric:last-child{grid-column:1/-1}.mag-root .mag-crane-ledger{grid-template-columns:repeat(2,minmax(0,1fr))}.mag-root .mag-crane-metrics{grid-template-columns:1fr 1fr}.mag-root .mag-crane-metric:last-child{grid-column:1/-1}.mag-root .mag-crane-predict button{flex:1 1 130px}.mag-root .mag-xfmr-goals{grid-template-columns:1fr}.mag-root .mag-xfmr-missions button{flex:1 1 135px}}' +
+          '@media(max-width:390px){.mag-root .mag-station{grid-template-columns:1fr}.mag-root .mag-cycle:last-child{grid-column:auto}.mag-root .mag-speed-grid{grid-template-columns:1fr 1fr}.mag-root .mag-speed-run:last-child{grid-column:1/-1}}' +
+          '@media(pointer:coarse){.mag-root button{min-height:44px}.mag-root summary{min-height:44px}}' +
           '@media(prefers-reduced-motion:reduce){.mag-root *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
           '@media(forced-colors:active){.mag-root .mag-card,.mag-root .mag-hero{box-shadow:none}.mag-root .mag-swatch,.mag-root .mag-pole-chip{border:1px solid CanvasText}.mag-root button[aria-pressed="true"],.mag-root button[aria-selected="true"]{outline:2px solid SelectedItem;outline-offset:1px}}'
         } });
@@ -1699,10 +3003,12 @@
         function activateTab(tab, moveFocus) {
           upd(Object.assign({ tab: tab.id }, tab.id === 'earth' ? { earthSeen: true } : {}));
           announceToSR(tab.label + ' section');
-          if (moveFocus && typeof document !== 'undefined') {
+          if (typeof document !== 'undefined') {
             window.setTimeout(function () {
               var nextTab = document.getElementById('mag-tab-' + tab.id);
-              if (nextTab && typeof nextTab.focus === 'function') nextTab.focus();
+              if (!nextTab) return;
+              if (typeof nextTab.scrollIntoView === 'function') nextTab.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+              if (moveFocus && typeof nextTab.focus === 'function') nextTab.focus();
             }, 0);
           }
         }
@@ -1716,7 +3022,7 @@
           event.preventDefault();
           activateTab(TABS[nextIndex], true);
         }
-        return h('div', { className: 'mag-tabs', role: 'tablist', 'aria-label': 'Magnetism sections', 'aria-orientation': 'horizontal', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+        return h('div', { className: 'mag-tabs', role: 'tablist', 'aria-label': 'Magnetism sections', 'aria-orientation': 'horizontal' },
           TABS.map(function (t, index) {
             var on = d.tab === t.id;
             return h('button', { key: t.id, id: 'mag-tab-' + t.id, type: 'button', role: 'tab', tabIndex: on ? 0 : -1, 'aria-selected': on ? 'true' : 'false',
@@ -1729,8 +3035,18 @@
 
       function stationGuide() {
         var g = STATION_GUIDES[d.tab] || STATION_GUIDES.field;
-        if (d.learningMode === 'challenge' && d.tab !== 'quiz') {
-          return h('section', { className: 'mag-station', 'aria-label': g.phase + ' challenge investigation' },
+        if (d.tab === 'field' && d.fieldView === 'hunt') {
+          g = { phase: 'Infer a hidden source', icon: '\uD83E\uDDED', goal: 'Use well-spread vector readings to infer an unseen dipole.', predict: 'Will one nearby reading locate the source?', test: 'Sample multiple sides, then fit and check.', explain: 'Connect field direction, magnitude, and survey geometry.' };
+        }
+        var challenge = d.learningMode === 'challenge' && d.tab !== 'quiz';
+        var summary = h('summary', null,
+          h('span', { className: 'mag-guide-icon', 'aria-hidden': 'true' }, g.icon),
+          h('span', { className: 'mag-guide-phase' }, g.phase,
+            h('small', null, (challenge ? 'Challenge brief' : 'Learning guide') + ' \u00b7 ' + g.goal)),
+          h('span', { className: 'mag-guide-route' }, challenge ? 'Design \u2192 test \u2192 defend' : 'Predict \u2192 test \u2192 explain'));
+        var body;
+        if (challenge) {
+          body = h('section', { className: 'mag-station', 'aria-label': g.phase + ' challenge investigation' },
             h('div', { className: 'mag-station-main' },
               h('div', { className: 'mag-kicker' }, 'Challenge investigation'),
               h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, g.icon + ' ' + g.phase),
@@ -1739,16 +3055,18 @@
               h('b', null, 'Design your own fair test'),
               h('span', null, 'Write a prediction, change one variable, record evidence, and defend a claim in the notebook. Guidance and answer-highlighting are reduced.'))
           );
+        } else {
+          body = h('section', { className: 'mag-station', 'aria-label': g.phase + ' learning cycle' },
+            h('div', { className: 'mag-station-main' },
+              h('div', { className: 'mag-kicker' }, 'Current investigation'),
+              h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, g.icon + ' ' + g.phase),
+              h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.4, marginTop: 3 } }, g.goal)),
+            h('div', { className: 'mag-cycle' }, h('b', null, '1 · Predict'), h('span', null, g.predict)),
+            h('div', { className: 'mag-cycle' }, h('b', null, '2 · Test'), h('span', null, g.test)),
+            h('div', { className: 'mag-cycle' }, h('b', null, '3 · Explain'), h('span', null, g.explain))
+          );
         }
-        return h('section', { className: 'mag-station', 'aria-label': g.phase + ' learning cycle' },
-          h('div', { className: 'mag-station-main' },
-            h('div', { className: 'mag-kicker' }, 'Current investigation'),
-            h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, g.icon + ' ' + g.phase),
-            h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.4, marginTop: 3 } }, g.goal)),
-          h('div', { className: 'mag-cycle' }, h('b', null, '1 · Predict'), h('span', null, g.predict)),
-          h('div', { className: 'mag-cycle' }, h('b', null, '2 · Test'), h('span', null, g.test)),
-          h('div', { className: 'mag-cycle' }, h('b', null, '3 · Explain'), h('span', null, g.explain))
-        );
+        return h('details', { className: 'mag-guide' }, summary, body);
       }
 
       // ── Field Explorer ────────────────────────────────────────────────
@@ -2383,7 +3701,7 @@
             h('select', { id: 'mag-field3d-slice', value: d.field3dSlice || 'none', onChange: function (e) { commitField3D({ field3dSlice: e.target.value }, e.target.value === 'none' ? 'Heat slice hidden.' : e.target.value.toUpperCase() + ' field-strength slice shown.'); }, style: { padding: '8px 10px', borderRadius: 8, border: '1px solid ' + BORDER, background: PANEL, color: TEXT } },
               h('option', { value: 'none' }, 'None'), h('option', { value: 'xy' }, 'XY plane'), h('option', { value: 'xz' }, 'XZ plane'), h('option', { value: 'yz' }, 'YZ plane'))),
           d.field3dSlice && d.field3dSlice !== 'none' ? slider('Slice offset', d.field3dSliceOffset, -3, 3, 0.25, function (v) { commitField3D({ field3dSliceOffset: v }); }) : null,
-          h('div', { className: 'mag-legend', 'aria-label': '3D field legend', style: { marginTop: 3 } },
+          h('div', { className: 'mag-legend', role: 'group', 'aria-label': '3D field legend', style: { marginTop: 3 } },
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#38bdf8' } }), 'cyan arrows sample local direction'),
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#f43f5e' } }), 'curves follow the field'),
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'gold arrow is the probe total')),
@@ -2484,7 +3802,7 @@
         function recordProbe() {
           var row = Object.assign({}, current, { id: samples.length + 1, path: 'manual', strength: sourceMagnet.strength });
           upd({ fieldMapSamples: samples.concat([row]).slice(-14), fieldMapUsed: true, compassMoved: true, forceBenchUsed: true });
-          announceToSR('Hall probe reading recorded: ' + row.measuredMagnitude.toFixed(2) + ' relative microtesla.');
+          announceToSR('Hall probe reading recorded: ' + row.measuredMagnitude.toFixed(2) + ' relative field units.');
         }
         function runScan() {
           var distances = [50, 65, 80, 100, 125, 150, 175];
@@ -2577,8 +3895,8 @@
         visual.push(h('line', { key: 'xAxis', x1: graphLeft, y1: graphTop + graphH, x2: graphLeft + graphW, y2: graphTop + graphH, stroke: BORDER, strokeWidth: 1.5 }));
         visual.push(h('text', { key: 'theoryLabel', x: graphLeft + graphW - 4, y: graphY(theory[theory.length - 1].measuredMagnitude) - 7, fill: TEXT, fontSize: 10.5, textAnchor: 'end' }, 'ideal dipole · dashed'));
         visual.push(h('text', { key: 'graphXLabel', x: graphLeft + graphW / 2, y: 291, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, 'distance from center'));
-        visual.push(h('text', { key: 'graphYLabel', x: 397, y: graphTop + graphH / 2, fill: SOFT, fontSize: 11, textAnchor: 'middle', transform: 'rotate(-90 397 ' + (graphTop + graphH / 2) + ')' }, '|B| · rel. µT'));
-        var aria = 'Hall-probe magnetic field map. Probe at x ' + probe.x.toFixed(0) + ', y ' + probe.y.toFixed(0) + '. Measured field ' + current.measuredMagnitude.toFixed(2) + ' relative microtesla, components B x ' + current.measuredBx.toFixed(2) + ' and B y ' + current.measuredBy.toFixed(2) + '. ' + samples.length + ' readings recorded.';
+        visual.push(h('text', { key: 'graphYLabel', x: 397, y: graphTop + graphH / 2, fill: SOFT, fontSize: 11, textAnchor: 'middle', transform: 'rotate(-90 397 ' + (graphTop + graphH / 2) + ')' }, '|B| · relative units'));
+        var aria = 'Hall-probe magnetic field map. Probe at x ' + probe.x.toFixed(0) + ', y ' + probe.y.toFixed(0) + '. Measured field ' + current.measuredMagnitude.toFixed(2) + ' relative field units, components B x ' + current.measuredBx.toFixed(2) + ' and B y ' + current.measuredBy.toFixed(2) + '. ' + samples.length + ' readings recorded.';
 
         var tableRows = samples.length ? samples : [current];
         return card('Quantitative Field Mapping Lab', h('div', null,
@@ -2592,13 +3910,13 @@
               if (viewX < mapLeft || viewX > mapLeft + mapW || viewY < mapTop || viewY > mapTop + mapH) return;
               commitProbe((viewX - mapLeft) / mapW * 360 - 180, (viewY - mapTop) / mapH * 240 - 120);
             } }, visual),
-          h('div', { className: 'mag-legend', 'aria-label': 'Field map key' },
+          h('div', { className: 'mag-legend', role: 'group', 'aria-label': 'Field map key' },
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#38bdf8' } }), 'deeper tint and longer arrows mean stronger field'),
             h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'gold crosshair is the probe'),
             h('span', { style: { color: TEXT } }, 'dashed curve is the ideal dipole prediction')),
           h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '0 0 9px' } },
-            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Measured |B|'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, current.measuredMagnitude.toFixed(2) + ' rel. µT')),
-            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Components Bx · By'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, current.measuredBx.toFixed(2) + ' · ' + current.measuredBy.toFixed(2))),
+            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Measured |B|'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, current.measuredMagnitude.toFixed(2) + ' relative units')),
+            h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Field components'), h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800 } }, 'Bx ' + current.measuredBx.toFixed(2) + ' / By ' + current.measuredBy.toFixed(2))),
             h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Power-law exponent'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, fit.exponent == null ? 'need ≥2 points' : fit.exponent.toFixed(2)))),
           h('div', { role: 'group', 'aria-label': 'Automated field scan path', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
             h('button', { 'aria-pressed': pathName === 'axial' ? 'true' : 'false', onClick: function () { upd({ fieldMapPath: 'axial', fieldMapUsed: true }); }, style: btn(pathName === 'axial') }, 'Axial scan · beyond N pole'),
@@ -2639,20 +3957,264 @@
           h('p', { style: { color: SOFT, fontSize: 11.5, margin: '8px 0 0', lineHeight: 1.45 } }, 'Model boundary: readings use an ideal point-dipole field outside the bar. Near the magnet body, real geometry and Hall-sensor calibration matter; uncertainty here is deterministic so saved trials remain reproducible.')
         ), '#38bdf8');
       }
+
+      function fieldHuntCard() {
+        var target = fieldHuntTarget(d.fieldHuntRound);
+        var probe = Object.assign({ x: 100, y: 0 }, d.fieldHuntProbe || {});
+        var guess = Object.assign({ x: 0, y: 0 }, d.fieldHuntGuess || {});
+        probe.x = Math.max(-140, Math.min(140, Number(probe.x) || 0));
+        probe.y = Math.max(-90, Math.min(90, Number(probe.y) || 0));
+        guess.x = Math.max(-120, Math.min(120, Number(guess.x) || 0));
+        guess.y = Math.max(-70, Math.min(70, Number(guess.y) || 0));
+        var current = fieldProbeReading(probe.x, probe.y, [target], 0);
+        var samples = (Array.isArray(d.fieldHuntSamples) ? d.fieldHuntSamples : []).slice(-10);
+        var estimatePlaced = !!d.fieldHuntEstimatePlaced || !!d.fieldHuntChecked || !!d.fieldHuntSolved || Math.abs(guess.x) > 0.1 || Math.abs(guess.y) > 0.1;
+        var huntProgress = fieldHuntProgressState(samples, { estimatePlaced: estimatePlaced, checked: d.fieldHuntChecked, solved: d.fieldHuntSolved });
+        var survey = huntProgress.survey;
+        var analysis = d.fieldHuntAnalysis && Number(d.fieldHuntAnalysis.count) === samples.length ? d.fieldHuntAnalysis : null;
+        var activeAnalysis = analysis ? Object.assign({}, analysis, { survey: survey }) : null;
+        var displayAnalysis = analysis && (d.learningMode !== 'challenge' || d.fieldHuntChecked || d.fieldHuntModelRevealed) ? analysis : null;
+        var evaluation = d.fieldHuntChecked ? fieldHuntEvaluation(guess, target, activeAnalysis || fieldHuntEstimate(samples)) : null;
+        var roundIndex = Math.abs(Number(d.fieldHuntRound) || 0) % FIELD_HUNT_ROUNDS.length;
+        var roundName = FIELD_HUNT_ROUNDS[roundIndex].name;
+        var mapMode = d.fieldHuntMapMode === 'estimate' ? 'estimate' : 'probe';
+
+        function point(x, y, limits) {
+          return { x: Math.max(limits.x[0], Math.min(limits.x[1], Math.round(Number(x) || 0))), y: Math.max(limits.y[0], Math.min(limits.y[1], Math.round(Number(y) || 0))) };
+        }
+        function moveProbe(x, y) {
+          if (d.fieldHuntSolved) { announceToSR('This round is complete. Start the next hidden source to keep surveying.'); return; }
+          var next = point(x, y, { x: [-140, 140], y: [-90, 90] });
+          upd({ fieldHuntProbe: next, fieldHuntUsed: true, compassMoved: true });
+          announceToSR('Survey probe moved to ' + next.x + ', ' + next.y + '.');
+        }
+        function moveGuess(x, y) {
+          if (d.fieldHuntSolved) { announceToSR('This round is complete. Start the next hidden source to revise a new estimate.'); return; }
+          var next = point(x, y, { x: [-120, 120], y: [-70, 70] });
+          upd({ fieldHuntGuess: next, fieldHuntEstimatePlaced: true, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntUsed: true });
+          announceToSR('Source estimate moved to ' + next.x + ', ' + next.y + '.');
+        }
+        function recordReading() {
+          var duplicate = samples.some(function (sample) { return Math.abs(Number(sample.x) - current.x) < 1 && Math.abs(Number(sample.y) - current.y) < 1; });
+          if (duplicate) {
+            announceToSR('This position is already in the survey. Move the probe to a new position before recording another vector.');
+            return;
+          }
+          var row = { id: samples.length + 1, x: current.x, y: current.y, bx: current.bx, by: current.by, magnitude: current.magnitude, angle: current.angle };
+          var nextSamples = samples.concat([row]).slice(-10);
+          var nextSurvey = fieldHuntSurveyQuality(nextSamples);
+          var coverageJustReady = nextSurvey.ready && !survey.ready;
+          upd({ fieldHuntSamples: nextSamples, fieldHuntAnalysis: null, fieldHuntModelRevealed: false, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntUsed: true, compassMoved: true,
+            fieldHuntMapMode: nextSurvey.ready ? 'estimate' : 'probe' });
+          announceToSR(coverageJustReady ? 'Vector reading ' + row.id + ' recorded. Coverage is ready. Map clicks now place your source estimate.' : 'Vector reading ' + row.id + ' recorded. Move the probe before recording the next point.');
+        }
+        function analyzeReadings() {
+          if (samples.length < 3 || !survey.ready) return;
+          var fit = fieldHuntEstimate(samples);
+          upd({ fieldHuntAnalysis: fit, fieldHuntModelRevealed: true, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntUsed: true, fieldHuntMapMode: 'estimate' });
+          announceToSR(fit.x == null ? 'The readings did not produce a usable source fit.' : 'Model fit found a candidate source near ' + Math.round(fit.x) + ', ' + Math.round(fit.y) + '. Map clicks now place your source estimate.');
+        }
+        function checkGuess() {
+          if (d.fieldHuntSolved || samples.length < 3 || !survey.ready || !estimatePlaced) return;
+          var fit = activeAnalysis || fieldHuntEstimate(samples);
+          var result = fieldHuntEvaluation(guess, target, fit);
+          var wins = Number(d.fieldHuntWins) || 0;
+          if (result.solved && !d.fieldHuntSolved) wins += 1;
+          upd({ fieldHuntAnalysis: fit, fieldHuntEstimatePlaced: true, fieldHuntModelRevealed: true, fieldHuntChecked: true, fieldHuntSolved: result.solved, fieldHuntWins: wins, fieldHuntUsed: true });
+          announceToSR(result.solved ? 'Source located. Your estimate is within ' + result.tolerance + ' field units.' : 'Estimate not yet inside the search tolerance. Use the recorded vector directions to revise it.');
+        }
+        function clearReadings() {
+          upd({ fieldHuntProbe: { x: 100, y: 0 }, fieldHuntGuess: { x: 0, y: 0 }, fieldHuntSamples: [], fieldHuntAnalysis: null, fieldHuntEstimatePlaced: false, fieldHuntModelRevealed: false, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntUsed: true, fieldHuntMapMode: 'probe' });
+          announceToSR('Magnetometer readings cleared.');
+        }
+        function nextRound() {
+          upd({ fieldHuntRound: ((Number(d.fieldHuntRound) || 0) + 1) % FIELD_HUNT_ROUNDS.length, fieldHuntProbe: { x: 100, y: 0 }, fieldHuntGuess: { x: 0, y: 0 }, fieldHuntSamples: [], fieldHuntAnalysis: null, fieldHuntEstimatePlaced: false, fieldHuntModelRevealed: false, fieldHuntChecked: false, fieldHuntSolved: false, fieldHuntUsed: true, fieldHuntMapMode: 'probe' });
+          announceToSR('New hidden-source round: ' + FIELD_HUNT_ROUNDS[((Number(d.fieldHuntRound) || 0) + 1) % FIELD_HUNT_ROUNDS.length].name + '.');
+        }
+
+        var readingRows = samples.map(function (row, index) {
+          return h('tr', { key: row.id || index },
+            h('th', { scope: 'row', style: { textAlign: 'left', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, String(index + 1)),
+            [row.x, row.y, row.bx, row.by, row.magnitude].map(function (value, cellIndex) {
+              return h('td', { key: cellIndex, style: { textAlign: 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER, whiteSpace: 'nowrap' } }, Number(value || 0).toFixed(cellIndex < 2 ? 0 : 2));
+            }));
+        });
+        var mapLeft = 30, mapTop = 36, mapW = 494, mapH = 236;
+        function mapX(x) { return mapLeft + (x + 150) / 300 * mapW; }
+        function mapY(y) { return mapTop + (y + 100) / 200 * mapH; }
+        var coverageHull = fieldHuntCoverageHull(samples);
+        var nextSample = survey.ready ? null : fieldHuntNextSample(samples);
+        var fitUncertainty = displayAnalysis ? fieldHuntUncertainty(displayAnalysis, survey) : null;
+        var visual = [h('rect', { key: 'bg', x: 0, y: 0, width: 560, height: 320, rx: 12, fill: INSTRUMENT }),
+          h('text', { key: 'title', x: 280, y: 20, fill: TEXT, fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, 'HIDDEN-SOURCE MAP')];
+        [-120, -60, 0, 60, 120].forEach(function (x) {
+          visual.push(h('line', { key: 'gx' + x, x1: mapX(x), y1: mapTop, x2: mapX(x), y2: mapTop + mapH, stroke: 'rgba(148,163,184,.14)', strokeWidth: 1 }));
+          visual.push(h('text', { key: 'gxl' + x, x: mapX(x), y: mapTop + mapH + 15, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, String(x)));
+        });
+        [-80, -40, 0, 40, 80].forEach(function (y) {
+          visual.push(h('line', { key: 'gy' + y, x1: mapLeft, y1: mapY(y), x2: mapLeft + mapW, y2: mapY(y), stroke: 'rgba(148,163,184,.14)', strokeWidth: 1 }));
+          visual.push(h('text', { key: 'gyl' + y, x: mapLeft - 7, y: mapY(y) + 3, fill: SOFT, fontSize: 10.5, textAnchor: 'end' }, String(y)));
+        });
+        visual.push(h('text', { key: 'x-axis-label', x: mapLeft + mapW / 2, y: 310, fill: SOFT, fontSize: 10.5, textAnchor: 'middle' }, 'x position · field units'));
+        visual.push(h('text', { key: 'y-axis-label', x: 10, y: mapTop + mapH / 2, fill: SOFT, fontSize: 10.5, textAnchor: 'middle', transform: 'rotate(-90 10 ' + (mapTop + mapH / 2) + ')' }, 'y position · field units'));
+        if (nextSample) {
+          visual.push(h('g', { key: 'next-sample-region' },
+            h('circle', { cx: mapX(nextSample.x), cy: mapY(nextSample.y), r: 22, fill: 'rgba(56,189,248,.08)', stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '5 4' }),
+            h('text', { x: mapX(nextSample.x), y: mapY(nextSample.y) + 4, fill: '#7dd3fc', fontSize: 10.5, fontWeight: 800, textAnchor: 'middle' }, 'sample')));
+        }
+        if (coverageHull.length >= 3) {
+          visual.push(h('polygon', { key: 'coverage-footprint', points: coverageHull.map(function (point) { return mapX(point.x).toFixed(1) + ',' + mapY(point.y).toFixed(1); }).join(' '), fill: 'rgba(251,191,36,.07)', stroke: 'rgba(251,191,36,.55)', strokeWidth: 1.5, strokeDasharray: '5 4' }));
+        } else if (coverageHull.length === 2) {
+          visual.push(h('line', { key: 'coverage-span', x1: mapX(coverageHull[0].x), y1: mapY(coverageHull[0].y), x2: mapX(coverageHull[1].x), y2: mapY(coverageHull[1].y), stroke: 'rgba(251,191,36,.55)', strokeWidth: 2, strokeDasharray: '5 4' }));
+        }
+        visual.push(h('rect', { key: 'border', x: mapLeft, y: mapTop, width: mapW, height: mapH, rx: 7, fill: 'none', stroke: BORDER }));
+        samples.forEach(function (sample, index) {
+          var magnitude = Math.sqrt(Number(sample.bx) * Number(sample.bx) + Number(sample.by) * Number(sample.by));
+          if (magnitude < 1e-9) return;
+          var length = Math.min(30, 9 + Math.log10(magnitude + 1) * 7);
+          var ux = Number(sample.bx) / magnitude, uy = Number(sample.by) / magnitude;
+          var px = mapX(sample.x), py = mapY(sample.y), tx = px + ux * length, ty = py + uy * length;
+          visual.push(h('g', { key: 'sample-' + index },
+            h('circle', { cx: px, cy: py, r: 5, fill: INSTRUMENT, stroke: '#fbbf24', strokeWidth: 2 }),
+            h('line', { x1: px, y1: py, x2: tx, y2: ty, stroke: '#fbbf24', strokeWidth: 2 }),
+            h('circle', { cx: tx, cy: ty, r: 2.5, fill: '#fbbf24' }),
+            h('text', { x: px + 7, y: py - 7, fill: TEXT, fontSize: 10, fontWeight: 800 }, String(index + 1))));
+        });
+        var probeX = mapX(probe.x), probeY = mapY(probe.y);
+        var probeMagnitude = Math.sqrt(current.bx * current.bx + current.by * current.by);
+        var probeLength = probeMagnitude > 1e-9 ? Math.min(36, 12 + Math.log10(probeMagnitude + 1) * 8) : 0;
+        var probeUx = probeMagnitude > 1e-9 ? current.bx / probeMagnitude : 1, probeUy = probeMagnitude > 1e-9 ? current.by / probeMagnitude : 0;
+        visual.push(h('g', { key: 'probe' },
+          h('circle', { cx: probeX, cy: probeY, r: 9, fill: INSTRUMENT, stroke: '#34d399', strokeWidth: 2.5 }),
+          h('line', { x1: probeX - 13, y1: probeY, x2: probeX + 13, y2: probeY, stroke: '#34d399', strokeWidth: 1 }),
+          h('line', { x1: probeX, y1: probeY - 13, x2: probeX, y2: probeY + 13, stroke: '#34d399', strokeWidth: 1 }),
+          probeLength ? h('line', { x1: probeX, y1: probeY, x2: probeX + probeUx * probeLength, y2: probeY + probeUy * probeLength, stroke: '#34d399', strokeWidth: 3 }) : null));
+        var guessX = mapX(guess.x), guessY = mapY(guess.y);
+        visual.push(h('polygon', { key: 'guess', points: guessX + ',' + (guessY - 10) + ' ' + (guessX + 10) + ',' + guessY + ' ' + guessX + ',' + (guessY + 10) + ' ' + (guessX - 10) + ',' + guessY, fill: 'none', stroke: '#fb7185', strokeWidth: 2, strokeDasharray: '4 3' }));
+        if (displayAnalysis && displayAnalysis.x != null) {
+          visual.push(h('ellipse', { key: 'fit-zone', cx: mapX(displayAnalysis.x), cy: mapY(displayAnalysis.y), rx: fitUncertainty.rx / 300 * mapW, ry: fitUncertainty.ry / 200 * mapH, fill: 'rgba(167,139,250,.07)', stroke: '#a78bfa', strokeWidth: 2, strokeDasharray: '4 3' }));
+          visual.push(h('circle', { key: 'fit-center', cx: mapX(displayAnalysis.x), cy: mapY(displayAnalysis.y), r: 3.5, fill: '#a78bfa' }));
+          visual.push(h('text', { key: 'fitLabel', x: mapX(displayAnalysis.x) + 14, y: mapY(displayAnalysis.y) + 4, fill: '#c4b5fd', fontSize: 10.5, fontWeight: 800 }, 'fit zone'));
+        }
+        if (d.fieldHuntSolved) {
+          var sourceX = mapX(target.x), sourceY = mapY(target.y);
+          var sourceAngle = target.angle + (target.polarity < 0 ? Math.PI : 0);
+          visual.push(h('g', { key: 'revealed-source' },
+            h('g', { transform: 'translate(' + sourceX + ' ' + sourceY + ') rotate(' + (sourceAngle * 180 / Math.PI) + ')' },
+              h('rect', { x: -20, y: -8, width: 40, height: 16, rx: 4, fill: 'rgba(34,211,238,.16)', stroke: '#22d3ee', strokeWidth: 2.5 }),
+              h('line', { x1: 0, y1: -8, x2: 0, y2: 8, stroke: '#22d3ee', strokeWidth: 1.5 }),
+              h('text', { x: -10, y: 4, fill: TEXT, fontSize: 9, fontWeight: 900, textAnchor: 'middle' }, 'S'),
+              h('text', { x: 10, y: 4, fill: TEXT, fontSize: 9, fontWeight: 900, textAnchor: 'middle' }, 'N')),
+            h('text', { x: sourceX + 23, y: sourceY - 11, fill: '#67e8f9', fontSize: 10.5, fontWeight: 800 }, 'source revealed')));
+        }
+        var aria = 'Hidden-source magnetometer map. ' + (d.fieldHuntSolved ? 'The hidden source is revealed after the check. ' : 'The source is not drawn. ') + samples.length + ' vector readings are recorded. ' + (coverageHull.length >= 3 ? 'A shaded polygon shows the survey footprint. ' : '') + (nextSample ? 'A blue dashed circle suggests a useful next sampling region. ' : '') + 'Live probe at ' + probe.x + ', ' + probe.y + ' with field magnitude ' + current.magnitude.toFixed(2) + ' relative field units. Map clicks currently move the ' + (mapMode === 'estimate' ? 'source estimate' : 'survey probe') + '.';
+        function huntMark(symbol, color) {
+          return h('b', { className: 'mag-hunt-mark', 'aria-hidden': 'true', style: { '--mag-mark': color } }, symbol);
+        }
+        function huntModeButton(active) {
+          return Object.assign({}, btn(false), active ? { border: '1px solid #38bdf8', background: 'rgba(56,189,248,.12)', color: '#e0f2fe', boxShadow: 'inset 0 -3px 0 #38bdf8' } : {});
+        }
+        return card('Magnetometer Hunt · infer the unseen source', h('div', null,
+          h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 } },
+            h('span', { className: 'mag-model-badge' }, 'Ideal 2-D inverse model'),
+            h('span', { className: 'mag-model-badge' }, 'Relative field units'),
+            h('span', { className: 'mag-model-badge' }, d.learningMode === 'challenge' ? 'Independent estimate first' : 'Model-assisted investigation'),
+            h('span', { className: 'mag-model-badge' }, 'Round ' + (roundIndex + 1) + '/' + FIELD_HUNT_ROUNDS.length),
+            h('span', { className: 'mag-model-badge', 'aria-label': (Number(d.fieldHuntWins) || 0) + ' hidden sources found' }, (Number(d.fieldHuntWins) || 0) + ' source' + ((Number(d.fieldHuntWins) || 0) === 1 ? '' : 's') + ' found')),
+          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'A magnetometer reveals vectors, not the hidden magnet. Spread readings across the map, place a source estimate, then check the model. Round: ', h('b', { style: { color: TEXT } }, roundName), '.'),
+          h('ol', { className: 'mag-hunt-steps', 'aria-label': d.fieldHuntSolved ? 'Hunt workflow complete: four of four steps' : 'Hunt workflow: step ' + (huntProgress.currentIndex + 1) + ' of four' },
+            huntProgress.steps.map(function (step, index) {
+              var status = step.done ? 'done' : step.current ? 'current' : 'upcoming';
+              return h('li', { key: step.key, className: 'mag-hunt-step', 'data-status': status, 'aria-current': step.current ? 'step' : undefined },
+                h('span', { className: 'mag-hunt-step-index', 'aria-hidden': 'true' }, step.done ? '\u2713' : String(index + 1)),
+                h('span', { className: 'mag-sronly' }, step.done ? 'Completed. ' : step.current ? 'Current step. ' : 'Upcoming. '),
+                h('b', null, step.label),
+                h('small', null, step.detail));
+            })),
+          h('div', { className: 'mag-map-mode', role: 'group', 'aria-label': 'Map click action' },
+            h('span', null, 'Map click moves'),
+            h('button', { type: 'button', disabled: !!d.fieldHuntSolved, 'aria-pressed': mapMode === 'probe' ? 'true' : 'false', onClick: function () { upd({ fieldHuntMapMode: 'probe' }); announceToSR('Map clicks now move the survey probe.'); }, style: huntModeButton(mapMode === 'probe') }, 'Survey probe'),
+            h('button', { type: 'button', disabled: !!d.fieldHuntSolved, 'aria-pressed': mapMode === 'estimate' ? 'true' : 'false', onClick: function () { upd({ fieldHuntMapMode: 'estimate' }); announceToSR('Map clicks now place your source estimate.'); }, style: huntModeButton(mapMode === 'estimate') }, 'Source estimate')),
+          h('p', { className: 'mag-viz-cue' }, h('span', { 'aria-hidden': 'true' }, '\u2194'), ' Swipe horizontally to inspect the full map'),
+          h('div', { className: 'mag-viz-scroll', tabIndex: 0, role: 'region', 'aria-label': 'Scrollable magnetometer survey map' },
+          h('svg', { className: 'mag-hunt-map', viewBox: '0 0 560 320', width: '100%', role: 'img', 'aria-label': aria,
+            onClick: function (event) {
+              if (d.fieldHuntSolved) return;
+              var rect = event.currentTarget.getBoundingClientRect();
+              if (!rect.width || !rect.height) return;
+              var viewX = (event.clientX - rect.left) / rect.width * 560, viewY = (event.clientY - rect.top) / rect.height * 320;
+              if (viewX < mapLeft || viewX > mapLeft + mapW || viewY < mapTop || viewY > mapTop + mapH) return;
+              var fieldX = (viewX - mapLeft) / mapW * 300 - 150, fieldY = (viewY - mapTop) / mapH * 200 - 100;
+              if (mapMode === 'estimate') moveGuess(fieldX, fieldY); else moveProbe(fieldX, fieldY);
+            } }, visual)),
+          h('div', { className: 'mag-hunt-legend mag-legend', role: 'group', 'aria-label': 'Magnetometer hunt key' },
+            h('span', { style: { color: TEXT } }, huntMark('↗', '#fbbf24'), 'recorded field vector'),
+            h('span', { style: { color: TEXT } }, huntMark('⊕', '#34d399'), 'live survey probe'),
+            h('span', { style: { color: TEXT } }, huntMark('◇', '#fb7185'), 'your source estimate'),
+            displayAnalysis ? h('span', { style: { color: TEXT } }, huntMark('◌', '#a78bfa'), 'inverse-model fit zone') : null,
+            d.fieldHuntSolved ? h('span', { style: { color: TEXT } }, huntMark('▭', '#22d3ee'), 'revealed N–S source') : null),
+          h('div', { className: 'mag-sim-grid mag-hunt-metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(128px,1fr))', gap: 8, marginBottom: 9 } },
+            h('div', { className: 'mag-hunt-metric', style: { '--mag-metric': '#34d399' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Live |B|'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, current.magnitude.toFixed(2) + ' relative units')),
+            h('div', { className: 'mag-hunt-metric', style: { '--mag-metric': '#38bdf8' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Field components'), h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800 } }, 'Bx ' + current.bx.toFixed(2) + ' / By ' + current.by.toFixed(2))),
+            h('div', { className: 'mag-hunt-metric', style: { '--mag-metric': '#fbbf24' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Evidence readiness'), h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800 } }, samples.length + ' saved · ' + (survey.ready ? 'coverage ready' : 'building coverage'))),
+            h('div', { className: 'mag-hunt-metric', style: { '--mag-metric': '#a78bfa' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Fit quality'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, displayAnalysis ? Math.round(Math.max(0, Math.min(1, Number(displayAnalysis.confidence) || 0)) * 100) + '%' : '—'))),
+          h('div', { className: 'mag-quality-row' },
+            h('span', null, h('b', { style: { color: TEXT } }, 'Coverage quality')),
+            h('span', { className: 'mag-quality-track', role: 'progressbar', 'aria-label': 'Survey coverage quality', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': survey.score },
+              h('span', { className: 'mag-quality-fill', style: { width: survey.score + '%' } })),
+            h('span', { style: { color: TEXT, fontWeight: 800, fontVariantNumeric: 'tabular-nums' } }, survey.score + '/100')),
+          !survey.ready ? h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
+            h('span', { 'aria-hidden': 'true' }, 'MAP'),
+            h('span', null, h('b', null, 'Coverage guidance. '), survey.advice, nextSample ? ' The blue dashed region marks a useful place for the next independent reading.' : '')) : null,
+          h('div', { className: 'mag-hunt-next', role: 'status', 'aria-live': 'polite', 'aria-label': 'Next action: ' + huntProgress.nextAction.label },
+            h('span', { className: 'mag-hunt-next-index', 'aria-hidden': 'true' }, d.fieldHuntSolved ? '\u2713' : String(huntProgress.currentIndex + 1)),
+            h('span', null, h('b', null, 'Next · ' + huntProgress.nextAction.label), huntProgress.nextAction.detail)),
+          !d.fieldHuntSolved ? h('details', { className: 'mag-scene-text', open: d.learningMode === 'challenge' },
+            h('summary', null, 'Coordinate controls · probe (' + probe.x + ', ' + probe.y + ') · estimate (' + guess.x + ', ' + guess.y + ')'),
+            h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 12, paddingTop: 8 } },
+              h('div', null,
+                slider('Probe x position', probe.x, -140, 140, 10, function (value) { moveProbe(value, probe.y); }),
+                slider('Probe y position', probe.y, -90, 90, 10, function (value) { moveProbe(probe.x, value); })),
+              h('div', null,
+                slider('Your estimate x', guess.x, -120, 120, 10, function (value) { moveGuess(value, guess.y); }),
+                slider('Your estimate y', guess.y, -70, 70, 10, function (value) { moveGuess(guess.x, value); })))) : null,
+          h('div', { className: 'mag-hunt-actions', role: 'group', 'aria-label': 'Magnetometer Hunt actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+            !d.fieldHuntSolved ? h('button', { type: 'button', onClick: recordReading, disabled: samples.length >= 10, style: btn(!survey.ready) }, samples.length >= 10 ? '10 readings saved' : survey.ready ? 'Add another vector' : 'Record vector reading') : null,
+            !d.fieldHuntSolved && d.learningMode !== 'challenge' ? h('button', { type: 'button', onClick: analyzeReadings, disabled: samples.length < 3 || !survey.ready, style: btn(survey.ready && !analysis && !estimatePlaced) }, 'Fit hidden source') : null,
+            !d.fieldHuntSolved ? h('button', { type: 'button', onClick: checkGuess, disabled: samples.length < 3 || !survey.ready || !estimatePlaced || !!d.fieldHuntChecked, style: btn(survey.ready && estimatePlaced && !d.fieldHuntChecked) }, d.fieldHuntChecked ? 'Revise estimate to retry' : !estimatePlaced ? 'Place estimate before checking' : d.learningMode === 'challenge' ? 'Commit & check estimate' : 'Check my estimate') : null,
+            !d.fieldHuntSolved ? h('button', { type: 'button', onClick: clearReadings, disabled: !samples.length, style: btn(false) }, 'Clear readings') : null,
+            d.fieldHuntSolved ? h('button', { type: 'button', onClick: nextRound, style: btn(true) }, 'Next hidden source') : null),
+          displayAnalysis ? h('div', { style: { padding: 9, border: '1px solid rgba(167,139,250,.4)', borderRadius: 9, background: 'rgba(167,139,250,.08)', color: SOFT, fontSize: 11.5, lineHeight: 1.45 } },
+            h('b', { style: { color: TEXT } }, 'Inverse-model comparison: '), 'candidate near (' + Math.round(displayAnalysis.x) + ', ' + Math.round(displayAnalysis.y) + '), orientation ' + Math.round((((displayAnalysis.angle * 180 / Math.PI) % 360) + 360) % 360) + '°, relative strength ' + displayAnalysis.strength.toFixed(2) + ', residual error ' + displayAnalysis.error.toFixed(3) + '. The violet ellipse is a qualitative fit-quality zone, not a statistical confidence interval. Your pink estimate remains the claim.') : null,
+          evaluation ? h('div', { className: 'mag-observe', role: 'status', 'aria-live': 'polite' },
+            h('span', { 'aria-hidden': 'true' }, evaluation.solved ? 'OK' : 'TRY'),
+            h('span', null, h('b', null, evaluation.solved ? 'Source located. ' : 'Not yet. '), 'Your estimate is ' + evaluation.distance.toFixed(1) + ' field units from the hidden source; the tolerance is ' + evaluation.tolerance + '. ' + (evaluation.solved ? 'Change the round and see whether your method transfers.' : 'Move the probe to a different region and compare vector direction before revising the claim.'))) : null,
+          h('details', { className: 'mag-scene-text' },
+            h('summary', null, 'Reading table · ' + samples.length + ' saved vector' + (samples.length === 1 ? '' : 's')),
+            h('div', { style: { overflowX: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', color: TEXT, fontSize: 11.5 }, 'aria-label': 'Recorded hidden-source magnetometer readings' },
+                h('thead', null, h('tr', null, ['Point', 'x', 'y', 'Bx', 'By', '|B|'].map(function (label) { return h('th', { key: label, scope: 'col', style: { textAlign: label === 'Point' ? 'left' : 'right', padding: '6px 5px', borderBottom: '1px solid ' + BORDER } }, label); }))),
+                h('tbody', null, readingRows)))),
+          h('details', { className: 'mag-scene-text' },
+            h('summary', null, 'Model boundary · what this survey leaves out'),
+            h('p', { style: { margin: '5px 0 0' } }, 'This is an ideal 2-D dipole and a coarse source fit in relative field units. The field is not a line from probe to source: it bends and its magnitude falls with distance. The violet fit zone is a teaching visualization derived from fit quality and survey spread, not a calibrated statistical interval. Real surveys add sensor calibration, background fields, shielding, multiple sources, and quantified uncertainty.'))),
+          '#34d399');
+      }
       function fieldTab() {
         var two = d.magnets.length > 1;
-        var fieldMode = ['2d', '3d', 'map'].indexOf(d.fieldView) >= 0 ? d.fieldView : '2d';
+        var fieldMode = ['2d', '3d', 'map', 'hunt'].indexOf(d.fieldView) >= 0 ? d.fieldView : '2d';
         return h('div', null,
           h('div', { role: 'group', 'aria-label': 'Field Explorer dimension', style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 } },
             h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Explore and measure with'),
             h('button', { 'aria-pressed': fieldMode === '2d' ? 'true' : 'false', onClick: function () { upd({ fieldView: '2d' }); announceToSR('Two-dimensional field explorer selected.'); }, style: btn(fieldMode === '2d') }, '2D field explorer'),
             h('button', { 'aria-pressed': fieldMode === '3d' ? 'true' : 'false', onClick: function () { if (fieldMode === '3d') return; upd({ fieldView: '3d', field3dStatus: 'loading', field3dUsed: true }); announceToSR('Three-dimensional field studio selected.'); }, style: btn(fieldMode === '3d') }, '3D field studio'),
-            h('button', { 'aria-pressed': fieldMode === 'map' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'map', fieldMapUsed: true }); announceToSR('Quantitative Hall-probe field mapping lab selected.'); }, style: btn(fieldMode === 'map') }, 'Measurement lab')),
-          fieldMode === '3d' ? field3DCard() : fieldMode === 'map' ? fieldMapperCard() : card('Trace the invisible field', h('div', null,
+            h('button', { 'aria-pressed': fieldMode === 'map' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'map', fieldMapUsed: true }); announceToSR('Quantitative Hall-probe field mapping lab selected.'); }, style: btn(fieldMode === 'map') }, 'Measurement lab'),
+            h('button', { 'aria-pressed': fieldMode === 'hunt' ? 'true' : 'false', onClick: function () { upd({ fieldView: 'hunt', fieldHuntUsed: true }); announceToSR('Magnetometer Hunt inverse investigation selected.'); }, style: btn(fieldMode === 'hunt') }, 'Magnetometer Hunt')),
+          fieldMode === 'hunt' ? fieldHuntCard() : fieldMode === '3d' ? field3DCard() : fieldMode === 'map' ? fieldMapperCard() : card('Trace the invisible field', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Field lines leave the ', h('b', { style: { color: TEXT } }, 'north (N/red)'), ' pole and curve back into the ', h('b', { style: { color: TEXT } }, 'south (S/blue)'), ' pole. Click open space to move the compass, or use the labeled controls to rebuild the field. The needle follows the local resultant field.'),
             poleLegend('North pole — red; N or one bright stripe', 'South pole — blue; S or two bright stripes'),
             h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, renderFieldSVG()),
-            h('div', { className: 'mag-legend', 'aria-label': 'Field visual legend' },
+            h('div', { className: 'mag-legend', role: 'group', 'aria-label': 'Field visual legend' },
               h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'arrows show N → S'),
               h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#f43f5e' } }), 'closer lines = stronger field'),
               d.filings ? h('span', null, 'short grains align like tiny compasses') : null),
@@ -2729,75 +4291,161 @@
             (d.sawAttract && d.sawRepel) ? h('p', { style: { color: '#34d399', fontSize: 12, marginTop: 8 } }, '✓ You have now seen both — notice the lines bridge across for attract, and bulge apart for repel.') : null
           ), '#3b82f6') : null,
           fieldMode === '2d' ? forceBenchCard() : null,
-          disclosure('The field explorer, 3D studio, and Hall-probe lab share ideal dipole physics. Field lines show topology rather than exact laboratory calibration. The mapper preserves vector superposition and the far-field B ∝ 1/r³ relationship; its relative microtesla scale, deterministic uncertainty, point-dipole source, and near-body limitations are stated inside the investigation.')
+          disclosure('The field explorer, 3D studio, and Hall-probe lab share ideal dipole physics. Field lines show topology rather than exact laboratory calibration. The mapper preserves vector superposition and the far-field B ∝ 1/r³ relationship; its relative field-unit scale, deterministic uncertainty, point-dipole source, and near-body limitations are stated inside the investigation.')
         );
       }
 
       function forceBenchCard() {
-        var distance = d.pairDistance;
-        var force = magnetPairForce(d.pairStrength1, d.pairStrength2, distance);
+        var evidence = forceBenchEvidenceState(d.pairStrength1, d.pairStrength2, d.pairDistance, d.pairAttract, d.forceBenchBaseline, d.forceBenchPrediction, d.forceBenchResultSeen);
+        var distance = evidence.distance;
+        var force = evidence.force;
         var gap = 25 + (distance - 40) / 100 * 75;
         var magnetW = 70;
         var leftX = (320 - (magnetW * 2 + gap)) / 2;
         var rightX = leftX + magnetW + gap;
         var curve = [];
-        var minLog = Math.log10(Math.max(1e-6, magnetPairForce(d.pairStrength1, d.pairStrength2, 140)));
-        var maxLog = Math.log10(Math.max(1e-6, magnetPairForce(d.pairStrength1, d.pairStrength2, 40)));
+        var minLog = Math.log10(Math.max(1e-6, magnetPairForce(evidence.strength1, evidence.strength2, 140)));
+        var maxLog = Math.log10(Math.max(1e-6, magnetPairForce(evidence.strength1, evidence.strength2, 40)));
         function graphY(v) {
           var frac = (Math.log10(Math.max(1e-6, v)) - minLog) / Math.max(1e-6, maxLog - minLog);
           return 205 - frac * 56;
         }
         for (var gi = 0; gi <= 25; gi++) {
           var gd = 40 + gi * 4;
-          curve.push((28 + (gd - 40) / 100 * 264).toFixed(1) + ',' + graphY(magnetPairForce(d.pairStrength1, d.pairStrength2, gd)).toFixed(1));
+          curve.push((28 + (gd - 40) / 100 * 264).toFixed(1) + ',' + graphY(magnetPairForce(evidence.strength1, evidence.strength2, gd)).toFixed(1));
         }
         var pointX = 28 + (distance - 40) / 100 * 264;
         var pointY = graphY(force);
-        function arrow(key, x1, x2) {
-          var dir = x2 > x1 ? 1 : -1;
+        var globalMinLog = Math.log10(Math.max(1e-9, magnetPairForce(0.5, 0.5, 140)));
+        var globalMaxLog = Math.log10(Math.max(1e-9, magnetPairForce(3, 3, 40)));
+        var forceLevel = Math.max(0, Math.min(1, (Math.log10(Math.max(1e-9, force)) - globalMinLog) / Math.max(1e-9, globalMaxLog - globalMinLog)));
+        var arrowLength = 21 + forceLevel * 35;
+        var arrowWidth = 1.8 + forceLevel * 2.4;
+        function forceLabel(value) {
+          return value >= 10 ? value.toFixed(1) : value >= 1 ? value.toFixed(2) : value >= 0.1 ? value.toFixed(3) : value.toFixed(4);
+        }
+        function forceArrow(key, origin, dir) {
+          var x2 = origin + dir * arrowLength;
           return h('g', { key: key },
-            h('line', { x1: x1, y1: 23, x2: x2, y2: 23, stroke: '#34d399', strokeWidth: 2.5 }),
+            h('line', { x1: origin, y1: 23, x2: x2, y2: 23, stroke: '#34d399', strokeWidth: arrowWidth, strokeLinecap: 'round' }),
             h('polygon', { points: x2 + ',23 ' + (x2 - dir * 9) + ',18 ' + (x2 - dir * 9) + ',28', fill: '#34d399' }));
         }
-        var leftArrow = d.pairAttract ? arrow('la', leftX + 10, leftX + 58) : arrow('la', leftX + 58, leftX + 10);
-        var rightArrow = d.pairAttract ? arrow('ra', rightX + 60, rightX + 12) : arrow('ra', rightX + 12, rightX + 60);
-        return card('Force bench — distance changes everything', h('div', null,
+        var leftArrow = forceArrow('la', leftX + 35, evidence.attract ? 1 : -1);
+        var rightArrow = forceArrow('ra', rightX + 35, evidence.attract ? -1 : 1);
+        var baselineGraphX = evidence.baseline ? 28 + (evidence.baseline.distance - 40) / 100 * 264 : null;
+        var targetGraphX = evidence.baseline ? 28 + (evidence.baseline.targetDistance - 40) / 100 * 264 : null;
+        var baselineGraphY = evidence.baseline ? graphY(magnetPairForce(evidence.strength1, evidence.strength2, evidence.baseline.distance)) : null;
+        var targetGraphY = evidence.baseline ? graphY(magnetPairForce(evidence.strength1, evidence.strength2, evidence.baseline.targetDistance)) : null;
+        var expectedGap = evidence.baseline ? (evidence.resultCaptured ? evidence.baseline.targetDistance : evidence.baseline.distance) : null;
+        var controlledMatch = !evidence.baseline || (Math.abs(evidence.strength1 - evidence.baseline.strength1) < 0.001 && Math.abs(evidence.strength2 - evidence.baseline.strength2) < 0.001 && Math.abs(distance - expectedGap) < 0.001);
+        function captureForceBaseline() {
+          var baseline = { distance: 60, strength1: evidence.strength1, strength2: evidence.strength2 };
+          upd({ pairDistance: 60, pairStrength1: evidence.strength1, pairStrength2: evidence.strength2, forceBenchBaseline: baseline, forceBenchPrediction: null, forceBenchResultSeen: false, forceBenchUsed: true });
+          announceToSR('Force baseline captured at 60 distance units. Choose how much weaker the force will be at 120 units.');
+        }
+        function chooseForcePrediction(factor) {
+          upd({ forceBenchPrediction: factor, forceBenchResultSeen: false, forceBenchUsed: true });
+          announceToSR('Prediction selected: ' + factor + ' times weaker. The doubled-gap test is ready.');
+        }
+        function runForceChallenge() {
+          if (!evidence.baseline || evidence.prediction == null) return;
+          upd({ pairDistance: evidence.baseline.targetDistance, pairStrength1: evidence.baseline.strength1, pairStrength2: evidence.baseline.strength2, forceBenchResultSeen: true, forceBenchChallengeRuns: (Number(d.forceBenchChallengeRuns) || 0) + 1, forceBenchUsed: true });
+          announceToSR('Doubled-gap result captured. The force is ' + evidence.observedWeakerFactor.toFixed(0) + ' times weaker. Prediction ' + (evidence.prediction === Math.round(evidence.observedWeakerFactor) ? 'confirmed.' : 'revised by the evidence.'));
+        }
+        function restartForceChallenge() {
+          upd({ pairDistance: 60, forceBenchBaseline: null, forceBenchPrediction: null, forceBenchResultSeen: false });
+          announceToSR('Distance Detective reset. Adjust strength or direction, then capture a new 60-unit baseline.');
+        }
+        var nextButton = evidence.phase === 'setup'
+          ? h('button', { type: 'button', onClick: captureForceBaseline, style: btn(true) }, 'Capture baseline')
+          : evidence.phase === 'predict'
+            ? h('span', { className: 'mag-force-next-cue', 'aria-hidden': 'true' }, 'Choose below ↓')
+            : evidence.phase === 'ready'
+              ? h('button', { type: 'button', onClick: runForceChallenge, style: btn(true) }, 'Run 60 → 120 test')
+              : h('button', { type: 'button', onClick: restartForceChallenge, style: btn(false) }, 'Try another run');
+        return card('Force bench — distance changes everything', h('div', { className: 'mag-force-shell' },
           h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } },
             'Test a different kind of graph: bar-magnet force drops approximately with the ', h('b', null, 'fourth power of distance'), ' when the magnets are well separated. Double the gap and the pull or push becomes about 16 times weaker.'),
-          h('svg', { viewBox: '0 0 320 220', width: '100%', style: { maxWidth: 520, display: 'block', margin: '0 auto 10px' }, role: 'img',
-            'aria-label': 'Two magnets ' + distance + ' units apart, set to ' + (d.pairAttract ? 'attract' : 'repel') + ', with relative force ' + force.toFixed(2) + '; a force-versus-distance curve falls steeply' },
-            h('rect', { x: 0, y: 0, width: 320, height: 220, fill: INSTRUMENT, rx: 10 }),
-            h('text', { x: 160, y: 14, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, d.pairAttract ? 'opposite facing poles · attraction' : 'like facing poles · repulsion'),
-            leftArrow, rightArrow,
-            h('rect', { x: leftX, y: 36, width: 35, height: 30, rx: 4, fill: '#3b82f6' }),
-            h('rect', { x: leftX + 35, y: 36, width: 35, height: 30, rx: 4, fill: '#ef4444' }),
-            h('text', { x: leftX + 17.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'S'),
-            h('text', { x: leftX + 52.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'N'),
-            h('rect', { x: rightX, y: 36, width: 35, height: 30, rx: 4, fill: d.pairAttract ? '#3b82f6' : '#ef4444' }),
-            h('rect', { x: rightX + 35, y: 36, width: 35, height: 30, rx: 4, fill: d.pairAttract ? '#ef4444' : '#3b82f6' }),
-            h('text', { x: rightX + 17.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, d.pairAttract ? 'S' : 'N'),
-            h('text', { x: rightX + 52.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, d.pairAttract ? 'N' : 'S'),
-            h('line', { x1: leftX + magnetW, y1: 82, x2: rightX, y2: 82, stroke: '#fbbf24', strokeWidth: 1.5 }),
-            h('line', { x1: leftX + magnetW, y1: 78, x2: leftX + magnetW, y2: 86, stroke: '#fbbf24' }),
-            h('line', { x1: rightX, y1: 78, x2: rightX, y2: 86, stroke: '#fbbf24' }),
-            h('text', { x: (leftX + magnetW + rightX) / 2, y: 96, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, distance + ' distance units'),
-            h('line', { x1: 20, y1: 124, x2: 300, y2: 124, stroke: '#334155' }),
-            h('text', { x: 28, y: 140, fill: SOFT, fontSize: 11 }, 'relative force · log scale'),
-            h('line', { x1: 28, y1: 205, x2: 292, y2: 205, stroke: '#475569' }),
-            h('polyline', { points: curve.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 }),
-            h('line', { x1: pointX, y1: 145, x2: pointX, y2: 207, stroke: 'rgba(251,191,36,.45)', strokeDasharray: '3 3' }),
-            h('circle', { cx: pointX, cy: pointY, r: 5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
-            h('text', { x: 28, y: 216, fill: SOFT, fontSize: 11 }, '40'),
-            h('text', { x: 292, y: 216, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '140 distance')),
-          h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 8 } },
-            h('button', { 'aria-pressed': d.pairAttract ? 'true' : 'false', onClick: function () { upd({ pairAttract: true, sawAttract: true, forceBenchUsed: true }); }, style: btn(d.pairAttract) }, '↔ Attract'),
-            h('button', { 'aria-pressed': !d.pairAttract ? 'true' : 'false', onClick: function () { upd({ pairAttract: false, sawRepel: true, forceBenchUsed: true }); }, style: btn(!d.pairAttract) }, '↔ Repel')),
-          slider('Gap between magnets', d.pairDistance, 40, 140, 5, function (v) { upd({ pairDistance: v, forceBenchUsed: true }); }),
-          slider('Left magnet strength', d.pairStrength1, 0.5, 3, 0.5, function (v) { upd({ pairStrength1: v, forceBenchUsed: true }); }),
-          slider('Right magnet strength', d.pairStrength2, 0.5, 3, 0.5, function (v) { upd({ pairStrength2: v, forceBenchUsed: true }); }),
+          h('section', { className: 'mag-force-challenge', 'data-phase': evidence.phase, 'aria-labelledby': 'mag-force-challenge-title' },
+            h('div', { className: 'mag-force-head' },
+              h('span', null, h('b', { id: 'mag-force-challenge-title' }, 'Distance Detective · 60 → 120'), h('small', null, 'Hold strength fixed. Predict first. Then reveal the evidence.')),
+              h('span', { className: 'mag-force-count' }, evidence.completedCount + '/3 captured')),
+            h('progress', { className: 'mag-force-progress', max: 3, value: evidence.completedCount, 'aria-label': evidence.completedCount + ' of 3 Distance Detective steps completed' }),
+            h('ol', { className: 'mag-force-steps' }, evidence.steps.map(function (step, index) {
+              return h('li', { key: step.key, className: 'mag-force-step', 'data-state': step.state, 'aria-current': step.state === 'current' ? 'step' : null },
+                h('span', { className: 'mag-force-step-index', 'aria-hidden': 'true' }, step.done ? '✓' : String(index + 1)),
+                h('b', null, step.label), h('small', null, step.detail));
+            })),
+            h('div', { className: 'mag-force-next', 'data-complete': evidence.complete ? 'true' : 'false' },
+              h('span', { className: 'mag-force-next-icon', 'aria-hidden': 'true' }, evidence.complete ? '🏁' : '→'),
+              h('span', null, h('b', null, evidence.nextAction.label), h('small', null, evidence.nextAction.detail)), nextButton),
+            evidence.baseline ? h('fieldset', { className: 'mag-force-predictions' },
+              h('legend', null, evidence.resultCaptured ? 'Prediction review' : 'Your prediction · doubling the gap makes force…'),
+              h('div', { className: 'mag-force-prediction-grid' }, evidence.predictions.map(function (option) {
+                var stateText = option.state === 'correct' ? 'model result' : option.state === 'revised' ? 'your prediction, revised' : option.state === 'selected' ? 'your prediction' : 'not selected';
+                return h('button', { key: option.factor, type: 'button', className: 'mag-force-prediction', 'data-state': option.state, disabled: evidence.resultCaptured, 'aria-pressed': option.selected ? 'true' : 'false', 'aria-label': option.label + ': ' + option.detail + '; ' + stateText, onClick: function () { chooseForcePrediction(option.factor); } },
+                  h('span', { className: 'mag-force-prediction-mark', 'aria-hidden': 'true' }, option.state === 'correct' ? '✓' : option.state === 'revised' ? '↺' : option.selected ? '●' : '○'),
+                  h('span', null, h('b', null, option.label), h('small', null, option.detail)));
+              }))) : null,
+            evidence.resultCaptured ? h('div', { id: 'mag-force-verdict', className: 'mag-force-verdict', 'data-result': evidence.predictionCorrect ? 'confirmed' : 'revised', role: 'status' },
+              h('span', { 'aria-hidden': 'true' }, evidence.predictionCorrect ? '✓' : '↺'),
+              h('span', null, h('b', null, evidence.predictionCorrect ? 'Prediction confirmed' : 'Evidence revised the prediction'),
+                'The 2× larger gap produced a ' + evidence.observedWeakerFactor.toFixed(0) + '× weaker force. ' + (evidence.predictionCorrect ? 'Your prediction matched the inverse-fourth-power model.' : 'You chose ' + evidence.prediction + '× weaker; the observed model result is ' + evidence.observedWeakerFactor.toFixed(0) + '× weaker.'))) : null,
+            h('div', { className: 'mag-force-comparison', 'aria-label': 'Controlled distance comparison' },
+              h('article', { className: 'mag-force-reading', 'data-reading': 'baseline' }, h('small', null, 'A · 60-unit baseline'), h('b', null, evidence.baseline ? evidence.baseline.distance + ' units' : '60 units'), h('strong', null, evidence.baseline ? forceLabel(evidence.baseline.force) + ' force' : 'not captured'), h('span', null, evidence.baseline ? 'same strengths locked' : 'capture to lock strengths')),
+              h('div', { className: 'mag-force-bridge', 'data-revealed': evidence.resultCaptured ? 'true' : 'false', 'aria-label': evidence.resultCaptured ? 'Gap times 2 produces force divided by 16' : 'Gap will be doubled; force change is hidden until the test' }, h('small', null, 'change one variable'), h('b', null, 'gap ×2'), h('span', null, evidence.resultCaptured ? 'force ÷16' : 'force ÷ ?')),
+              h('article', { className: 'mag-force-reading', 'data-reading': 'test' }, h('small', null, 'B · doubled gap'), h('b', null, evidence.baseline ? evidence.baseline.targetDistance + ' units' : '120 units'), h('strong', null, evidence.resultCaptured ? forceLabel(evidence.baseline.targetForce) + ' force' : 'result hidden'), h('span', null, evidence.resultCaptured ? 'strengths stayed fixed' : 'run after predicting')))),
+          h('div', { className: 'mag-force-hud', 'aria-label': 'Live Force Bench readings' },
+            h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#fbbf24' } }, h('small', null, 'Live gap'), h('b', null, distance), h('span', null, 'distance units')),
+            h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#a78bfa' } }, h('small', null, 'Strength product'), h('b', null, evidence.strengthProduct.toFixed(2) + '×'), h('span', null, evidence.strength1 + ' × ' + evidence.strength2)),
+            h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#38bdf8' } }, h('small', null, 'Relative force'), h('b', null, forceLabel(force)), h('span', null, evidence.direction)),
+            h('div', { className: 'mag-force-metric', style: { '--mag-force-tone': '#34d399' } }, h('small', null, 'Versus baseline'), h('b', null, evidence.baseline ? (evidence.ratioToBaseline < 1 ? (1 / Math.max(1e-12, evidence.ratioToBaseline)).toFixed(evidence.ratioToBaseline < 0.1 ? 1 : 2) + '× weaker' : evidence.ratioToBaseline.toFixed(2) + '×') : '—'), h('span', null, evidence.currentComparison))),
+          h('figure', { className: 'mag-force-figure' },
+            h('svg', { viewBox: '0 0 320 220', width: '100%', role: 'img',
+              'aria-label': 'Two magnets ' + distance + ' units apart, set to ' + evidence.direction + ', with relative force ' + forceLabel(force) + '. Arrow length and thickness show force magnitude. A force-versus-distance curve falls steeply.' },
+              h('rect', { x: 0, y: 0, width: 320, height: 220, fill: INSTRUMENT, rx: 10 }),
+              h('text', { x: 160, y: 14, fill: SOFT, fontSize: 11, textAnchor: 'middle' }, evidence.attract ? 'opposite facing poles · attraction' : 'like facing poles · repulsion'),
+              leftArrow, rightArrow,
+              h('rect', { x: leftX, y: 36, width: 35, height: 30, rx: 4, fill: '#3b82f6' }),
+              h('rect', { x: leftX + 35, y: 36, width: 35, height: 30, rx: 4, fill: '#ef4444' }),
+              h('text', { x: leftX + 17.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'S'),
+              h('text', { x: leftX + 52.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, 'N'),
+              h('rect', { x: rightX, y: 36, width: 35, height: 30, rx: 4, fill: evidence.attract ? '#3b82f6' : '#ef4444' }),
+              h('rect', { x: rightX + 35, y: 36, width: 35, height: 30, rx: 4, fill: evidence.attract ? '#ef4444' : '#3b82f6' }),
+              h('text', { x: rightX + 17.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, evidence.attract ? 'S' : 'N'),
+              h('text', { x: rightX + 52.5, y: 56, fill: '#fff', fontSize: 11, fontWeight: 800, textAnchor: 'middle' }, evidence.attract ? 'N' : 'S'),
+              h('line', { x1: leftX + magnetW, y1: 82, x2: rightX, y2: 82, stroke: '#fbbf24', strokeWidth: 1.5 }),
+              h('line', { x1: leftX + magnetW, y1: 78, x2: leftX + magnetW, y2: 86, stroke: '#fbbf24' }),
+              h('line', { x1: rightX, y1: 78, x2: rightX, y2: 86, stroke: '#fbbf24' }),
+              h('text', { x: (leftX + magnetW + rightX) / 2, y: 96, fill: '#fbbf24', fontSize: 11, textAnchor: 'middle' }, distance + ' distance units'),
+              h('line', { x1: 20, y1: 124, x2: 300, y2: 124, stroke: '#334155' }),
+              h('text', { x: 28, y: 140, fill: SOFT, fontSize: 11 }, 'relative force · log scale'),
+              h('line', { x1: 28, y1: 205, x2: 292, y2: 205, stroke: '#475569' }),
+              h('polyline', { points: curve.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.5 }),
+              evidence.baseline ? h('circle', { cx: baselineGraphX, cy: baselineGraphY, r: 4.5, fill: INSTRUMENT, stroke: '#a78bfa', strokeWidth: 2 }) : null,
+              evidence.resultCaptured ? h('circle', { cx: targetGraphX, cy: targetGraphY, r: 4.5, fill: INSTRUMENT, stroke: '#34d399', strokeWidth: 2 }) : null,
+              h('line', { x1: pointX, y1: 145, x2: pointX, y2: 207, stroke: 'rgba(251,191,36,.45)', strokeDasharray: '3 3' }),
+              h('circle', { className: 'mag-force-point-ring', cx: pointX, cy: pointY, r: 9, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+              h('circle', { cx: pointX, cy: pointY, r: 5, fill: '#fbbf24', stroke: '#0b1220', strokeWidth: 2 }),
+              h('text', { x: 28, y: 216, fill: SOFT, fontSize: 11 }, '40'),
+              h('text', { x: 292, y: 216, fill: SOFT, fontSize: 11, textAnchor: 'end' }, '140 distance')),
+            h('figcaption', null, h('b', null, 'Live force signature'), 'The vertical axis is logarithmic so both strong and faint interactions remain visible.'),
+            h('div', { className: 'mag-force-legend', 'aria-label': 'Force graph legend' },
+              h('span', null, h('i', { className: 'mag-force-key is-curve', 'aria-hidden': 'true' }), 'distance curve'),
+              h('span', null, h('i', { className: 'mag-force-key is-current', 'aria-hidden': 'true' }), 'live reading'),
+              h('span', null, h('i', { className: 'mag-force-key is-arrow', 'aria-hidden': 'true' }), 'thicker, longer arrows = stronger force'))),
+          h('details', { className: 'mag-force-controls', open: true },
+            h('summary', null, h('b', null, 'Explore freely'), h('span', null, 'Change gap, strength, or pull/push direction')),
+            h('div', { className: 'mag-force-direction', role: 'group', 'aria-label': 'Pair force direction' },
+              h('button', { type: 'button', 'aria-pressed': evidence.attract ? 'true' : 'false', onClick: function () { upd({ pairAttract: true, sawAttract: true, forceBenchUsed: true }); }, style: btn(evidence.attract) }, '↔ Attract'),
+              h('button', { type: 'button', 'aria-pressed': !evidence.attract ? 'true' : 'false', onClick: function () { upd({ pairAttract: false, sawRepel: true, forceBenchUsed: true }); }, style: btn(!evidence.attract) }, '↔ Repel')),
+            slider('Gap between magnets', distance, 40, 140, 5, function (v) { upd({ pairDistance: v, forceBenchUsed: true }); }),
+            slider('Left magnet strength', evidence.strength1, 0.5, 3, 0.5, function (v) { upd({ pairStrength1: v, forceBenchUsed: true }); }),
+            slider('Right magnet strength', evidence.strength2, 0.5, 3, 0.5, function (v) { upd({ pairStrength2: v, forceBenchUsed: true }); }),
+            evidence.baseline && !controlledMatch ? h('p', { className: 'mag-force-control-note', role: 'status' }, evidence.resultCaptured ? 'Live controls moved after the recorded run. The challenge evidence above remains saved.' : 'Live controls differ from the baseline. Running the test will restore the locked strengths and move the gap to ' + evidence.baseline.targetDistance + ' units.') : null),
           h('div', { className: 'mag-observe', role: 'status' },
             h('span', { 'aria-hidden': 'true' }, '📉'),
-            h('span', null, h('b', null, (d.pairAttract ? 'Attractive' : 'Repulsive') + ' force ≈ ' + force.toFixed(force >= 10 ? 1 : force >= 1 ? 2 : 3) + '× reference. '),
+            h('span', null, h('b', null, (evidence.attract ? 'Attractive' : 'Repulsive') + ' force ≈ ' + forceLabel(force) + '× reference. '),
               'Strength changes the amount; pole orientation changes the direction. The curve uses a far-field dipole approximation, so near-contact forces are intentionally not claimed as exact.'))
         ), '#38bdf8');
       }
@@ -3008,6 +4656,106 @@
         _electro3DCanvas = cv; cv._electro3dState = currentElectro3DState(); cv._electro3dCommit = commitElectro3D;
         if (typeof cv._electro3dUpdate === 'function') cv._electro3dUpdate(cv._electro3dState); else initElectro3DCanvas(cv);
       }
+
+      function electromagnetSnapshot() {
+        return { turns: d.turns, current: d.current, core: !!d.core, currentDir: d.currentDir, windingDir: d.windingDir };
+      }
+
+      function electromagnetFieldLabel(field) {
+        var milliTesla = Math.abs(Number(field) || 0) * 1000;
+        return milliTesla.toFixed(milliTesla < 10 ? 2 : milliTesla < 100 ? 1 : 0) + ' mT';
+      }
+
+      function electromagnetFairTestPanel() {
+        var comparison = electromagnetFairTestState(d.electroBaseline, electromagnetSnapshot());
+        function captureBaseline() {
+          upd({ electroBaseline: electromagnetSnapshot(), electroCompareUsed: true });
+          announceToSR('Electromagnet baseline A locked. Change exactly one control to create trial B.');
+        }
+        function restoreBaseline() {
+          if (!comparison.baseline) return;
+          upd({
+            turns: comparison.baseline.turns, current: comparison.baseline.current,
+            core: comparison.baseline.core, currentDir: comparison.baseline.currentDir,
+            windingDir: comparison.baseline.windingDir, electroCompareUsed: true, coilTouched: true
+          });
+          announceToSR('Electromagnet controls restored to baseline A.');
+        }
+        if (!comparison.baseline) {
+          return h('section', { className: 'mag-fair-test', 'aria-label': 'Electromagnet fair-test evidence' },
+            h('div', { className: 'mag-fair-head' },
+              h('span', { className: 'mag-fair-kicker' }, 'A/B fair-test evidence'),
+              h('span', { className: 'mag-fair-badge', 'data-status': 'empty' }, 'Ready to lock A')),
+            h('div', { className: 'mag-fair-feedback' },
+              h('span', { 'aria-hidden': 'true' }, 'A'),
+              h('span', null, h('b', null, 'Start with evidence, not memory. '), 'Lock the current coil as setup A. Then change exactly one control; the live setup becomes B.')),
+            h('div', { className: 'mag-fair-actions' },
+              h('button', { type: 'button', onClick: captureBaseline, style: btn(true) }, 'Lock this setup as A')));
+        }
+
+        var statusLabel = comparison.status === 'fair' ? 'Fair test' : comparison.status === 'confounded' ? 'Too many changes' : 'Baseline locked';
+        var changeLabel = comparison.status === 'fair' ? comparison.changedLabels[0] : comparison.status === 'confounded' ? comparison.changed.length + ' controls' : 'make one change';
+        var headline = 'Change exactly one control to create trial B.';
+        var detail = 'Turns, current, core, current direction, and winding direction are all being watched.';
+        if (comparison.status === 'confounded') {
+          headline = comparison.changed.length + ' controls changed: ' + comparison.changedLabels.join(', ') + '.';
+          detail = 'That makes the cause ambiguous. Restore A, then change only one control.';
+        } else if (comparison.status === 'fair') {
+          if (comparison.changedKey === 'currentDir' || comparison.changedKey === 'windingDir') {
+            if (comparison.baselineField <= 1e-12 && comparison.trialField <= 1e-12) {
+              headline = 'The direction control reversed, but the field stayed at zero.';
+              detail = 'With current at 0 A there are no active poles to swap; turn current on, then repeat this direction test.';
+            } else {
+              headline = 'Direction flipped while field strength stayed at ' + electromagnetFieldLabel(comparison.trialField) + '.';
+              detail = 'Reversing ' + comparison.changedLabels[0] + ' swaps north and south without changing N or I.';
+            }
+          } else if (comparison.baselineField <= 1e-12 && comparison.trialField > 1e-12) {
+            headline = 'The field switched on from a zero-field baseline.';
+            detail = 'Only ' + comparison.changedLabels[0] + ' changed, so it is the supported cause.';
+          } else if (comparison.baselineField <= 1e-12 && comparison.trialField <= 1e-12) {
+            headline = 'The field stayed at zero even though only ' + comparison.changedLabels[0] + ' changed.';
+            detail = 'Current is still 0 A. Turns and core material cannot strengthen an electromagnet until charge is moving.';
+          } else if (comparison.trialField <= 1e-12) {
+            headline = 'The field fell to zero when only ' + comparison.changedLabels[0] + ' changed.';
+            detail = 'A zero-current trial is evidence that the electromagnet needs moving charge.';
+          } else {
+            var factor = comparison.ratio >= 100 ? comparison.ratio.toFixed(0) : comparison.ratio >= 10 ? comparison.ratio.toFixed(1) : comparison.ratio.toFixed(2);
+            headline = 'Field ' + (comparison.ratio >= 1 ? 'rose to ' : 'fell to ') + factor + '× the baseline.';
+            detail = 'Only ' + comparison.changedLabels[0] + ' changed, so the A/B evidence supports that cause.';
+          }
+        }
+        var maxField = Math.max(comparison.baselineField, comparison.trialField, 1e-12);
+        function meterWidth(field) { return field <= 1e-12 ? 0 : Math.max(1.5, Math.min(100, field / maxField * 100)); }
+        function setupNode(kind, label, setup, field) {
+          var direction = setup.currentDir * setup.windingDir > 0 ? 'right' : 'left';
+          return h('div', { className: 'mag-fair-node', 'data-kind': kind },
+            h('small', null, label),
+            h('b', null, electromagnetFieldLabel(field)),
+            h('span', null, 'N ' + setup.turns + ' · I ' + setup.current + ' A · ' + (setup.core ? 'iron core' : 'air core') + ' · field ' + direction));
+        }
+        return h('section', { className: 'mag-fair-test', 'aria-label': 'Electromagnet A/B fair-test evidence' },
+          h('div', { className: 'mag-fair-head' },
+            h('span', { className: 'mag-fair-kicker' }, 'A/B fair-test evidence'),
+            h('span', { className: 'mag-fair-badge', 'data-status': comparison.status }, statusLabel)),
+          h('div', { className: 'mag-fair-flow' },
+            setupNode('baseline', 'A · locked baseline', comparison.baseline, comparison.baselineField),
+            h('div', { className: 'mag-fair-change' },
+              h('i', { 'aria-hidden': 'true' }, '→'),
+              h('span', null, changeLabel)),
+            setupNode('trial', 'B · live trial', comparison.trial, comparison.trialField)),
+          h('div', { className: 'mag-fair-meters', 'aria-label': 'Baseline and trial field-strength comparison; bars share a linear scale' },
+            h('div', { className: 'mag-fair-meter', 'aria-label': 'Baseline A, ' + electromagnetFieldLabel(comparison.baselineField) },
+              h('span', null, 'A'), h('span', { className: 'mag-fair-track', 'aria-hidden': 'true' }, h('i', { className: 'mag-fair-fill', style: { '--mag-fair-color': '#38bdf8', width: meterWidth(comparison.baselineField) + '%' } })), h('strong', null, electromagnetFieldLabel(comparison.baselineField))),
+            h('div', { className: 'mag-fair-meter', 'aria-label': 'Live trial B, ' + electromagnetFieldLabel(comparison.trialField) },
+              h('span', null, 'B'), h('span', { className: 'mag-fair-track', 'aria-hidden': 'true' }, h('i', { className: 'mag-fair-fill', style: { '--mag-fair-color': '#fb7185', width: meterWidth(comparison.trialField) + '%' } })), h('strong', null, electromagnetFieldLabel(comparison.trialField)))),
+          h('div', { className: 'mag-fair-feedback', 'data-status': comparison.status, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('span', { 'aria-hidden': 'true' }, comparison.status === 'fair' ? '✓' : comparison.status === 'confounded' ? '!' : '→'),
+            h('span', null, h('b', null, headline + ' '), detail)),
+          h('div', { className: 'mag-fair-actions' },
+            comparison.status === 'fair' ? h('button', { type: 'button', onClick: captureBaseline, style: btn(true) }, 'Keep B as the new A') : null,
+            comparison.status !== 'unchanged' ? h('button', { type: 'button', onClick: restoreBaseline, style: btn(comparison.status === 'confounded') }, 'Restore baseline A') : null,
+            h('button', { type: 'button', onClick: function () { upd({ electroBaseline: null, electroCompareUsed: true }); announceToSR('Electromagnet A/B comparison cleared.'); }, style: btn() }, 'Clear comparison')));
+      }
       function electro3DCard() {
         var state = currentElectro3DState();
         var material = CORE_MATERIALS[state.material] || CORE_MATERIALS.air;
@@ -3115,7 +4863,8 @@
               'Slide in a soft-iron core'),
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, '🧪'),
-              h('span', null, h('b', null, 'Run a fair test: '), 'hold two controls still and change only one. Double the turns, then reset and double the current. Do both changes multiply the field by the same factor?')),
+              h('span', null, h('b', null, 'Run a fair test: '), 'lock setup A, change exactly one control, then use the live B comparison to decide what caused the result. Try doubling turns; start a new A and double current next.')),
+            electromagnetFairTestPanel(),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.12)', border: '1px solid rgba(244,63,94,0.3)' } },
               h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, 'Field strength ≈ ' + rel.toFixed(1) + '× the starting coil'),
               h('div', { style: { color: SOFT, fontSize: 12, marginTop: 4 } }, 'Calculated interior field ≈ ' + (B * 1000).toFixed(B < 0.01 ? 2 : 0) + ' mT · B = μ₀ · (N / L) · I' + (d.core ? ' × iron core' : '') + ' · field points ' + (fieldDir > 0 ? 'right' : 'left')),
@@ -4616,10 +6365,12 @@
       }
 
       function runInductionTrial(kind) {
+        var speedTrials = Object.assign({}, d.induceSpeedTrials || {});
         if (kind === 'still') {
           var stillTrace = (d.emfTrace || []).concat([0]);
           if (stillTrace.length > 72) stillTrace = stillTrace.slice(stillTrace.length - 72);
-          upd({ inducePrevX: d.induceX, lastEMF: 0, emfTrace: stillTrace, induceTrialMsg: 'Held still: ΔΦ = 0, so the induced voltage is exactly 0.00 V.' });
+          speedTrials.still = { kind: 'still', duration: 0, voltage: 0, turns: d.induceTurns, start: d.induceX, finish: d.induceX };
+          upd({ inducePrevX: d.induceX, lastEMF: 0, emfTrace: stillTrace, induceSpeedTrials: speedTrials, induceTrialMsg: 'Held still: ΔΦ = 0, so the induced voltage is exactly 0.00 V.' });
           announceToSR('Still-magnet trial: zero induced volts because the flux did not change.');
           return;
         }
@@ -4631,8 +6382,9 @@
         if (trialTrace.length > 72) trialTrace = trialTrace.slice(trialTrace.length - 72);
         var trialPeak = Math.max(d.peakEMF || 0, Math.abs(emf));
         var label = kind === 'fast' ? 'Fast' : 'Slow';
+        speedTrials[kind] = { kind: kind, duration: dt, voltage: Math.abs(emf), turns: d.induceTurns, start: -60, finish: -20 };
         upd({ inducePrevX: -60, induceX: -20, lastEMF: emf, peakEMF: trialPeak, emfTrace: trialTrace,
-          induceTrialMsg: label + ' trial: the same flux change in ' + dt.toFixed(2) + ' s produced ' + Math.abs(emf).toFixed(2) + ' V.' });
+          induceSpeedTrials: speedTrials, induceTrialMsg: label + ' trial: the same flux change in ' + dt.toFixed(2) + ' s produced ' + Math.abs(emf).toFixed(2) + ' V.' });
         announceToSR(label + ' induction trial produced ' + Math.abs(emf).toFixed(2) + ' volts.');
       }
 
@@ -5125,6 +6877,67 @@
           }));
       }
 
+      function inductionSpeedEvidencePanel() {
+        var evidence = inductionSpeedEvidenceState(d.induceSpeedTrials);
+        var lockedTrial = evidence.trials.filter(function (trial) { return trial.completed; })[0] || null;
+        var lockedTurns = lockedTrial ? lockedTrial.turns : Number(d.induceTurns) || 0;
+        var liveTurnMismatch = evidence.status === 'collecting' && !!lockedTrial && Math.abs((Number(d.induceTurns) || 0) - lockedTurns) > 1e-9;
+        var specs = {
+          slow: { order: 1, button: 'Slow · 1.00 s', condition: '40-unit move · 1.00 s', color: '#38bdf8' },
+          fast: { order: 2, button: 'Fast · 0.25 s', condition: '40-unit move · 0.25 s', color: '#fb7185' },
+          still: { order: 3, button: 'Hold still', condition: 'No movement · control', color: '#94a3b8' }
+        };
+        var maxVoltage = evidence.trials.reduce(function (largest, trial) { return Math.max(largest, trial.voltage || 0); }, 1e-12);
+        function meterWidth(trial) {
+          if (!trial.completed || trial.voltage <= 1e-12) return 0;
+          return Math.max(1.5, Math.min(100, trial.voltage / maxVoltage * 100));
+        }
+        var headline = 'Next · ' + evidence.nextAction.label;
+        var detail = 'Keep the coil at ' + d.induceTurns + ' turns while the board collects the three runs.';
+        if (evidence.valid) {
+          var ratio = evidence.ratio >= 10 ? evidence.ratio.toFixed(1) : evidence.ratio.toFixed(2);
+          headline = 'Evidence complete · rate of change controls voltage';
+          detail = 'The fast run used one-quarter the time and produced ' + ratio + '× the slow voltage. Holding still produced 0.00 V.';
+        } else if (evidence.status === 'confounded') {
+          headline = 'Fair-test reset needed';
+          detail = evidence.issues.join('; ') + '. Keep turns and the movement path fixed, then repeat all three runs.';
+        } else if (liveTurnMismatch) {
+          headline = 'Restore the locked coil before the next run';
+          detail = 'The saved evidence used N ' + lockedTurns + ', but the live coil is N ' + d.induceTurns + '. Restore it, or rerun the completed setup to establish a new comparison.';
+        }
+        return h('section', { className: 'mag-speed-evidence', 'aria-label': 'Generator speed evidence board' },
+          h('div', { className: 'mag-speed-head' },
+            h('b', null, 'Controlled speed evidence'),
+            h('span', { 'aria-label': evidence.completedCount + ' of 3 generator trials complete' }, evidence.completedCount + '/3 runs')),
+          h('div', { className: 'mag-speed-actions', role: 'group', 'aria-label': 'Generator speed trial actions' },
+            evidence.trials.map(function (trial) {
+              var spec = specs[trial.kind];
+              var primary = !liveTurnMismatch && evidence.nextAction.key === trial.kind;
+              return h('button', { key: 'speed-action-' + trial.kind, type: 'button', onClick: function () { runInductionTrial(trial.kind); }, style: btn(primary) }, (trial.completed ? 'Rerun ' : '') + spec.button);
+            }),
+            liveTurnMismatch ? h('button', { type: 'button', onClick: function () {
+              upd({ induceTurns: lockedTurns });
+              announceToSR('Coil restored to ' + lockedTurns + ' turns for the controlled speed comparison.');
+            }, style: btn(true) }, 'Restore N ' + lockedTurns) : null,
+            evidence.completedCount > 0 ? h('button', { type: 'button', onClick: function () {
+              upd({ induceSpeedTrials: {}, induceTrialMsg: '' });
+              announceToSR('Generator speed evidence cleared. Run the slow trial first.');
+            }, style: btn(evidence.nextAction.key === 'reset') }, evidence.status === 'confounded' ? 'Reset mismatched runs' : 'Clear runs') : null,
+            evidence.valid ? h('button', { type: 'button', onClick: function () { upd({ notebookOpen: true }); announceToSR('Notebook opened to record the completed generator evidence.'); }, style: btn(true) }, 'Record evidence in notebook') : null),
+          h('div', { className: 'mag-speed-grid', 'aria-label': 'Shared-scale voltage comparison' },
+            evidence.trials.map(function (trial) {
+              var spec = specs[trial.kind];
+              return h('div', { key: 'speed-run-' + trial.kind, className: 'mag-speed-run', 'data-status': trial.completed ? 'done' : 'pending', style: { '--mag-speed-color': spec.color } },
+                h('small', null, spec.order + ' · ' + trial.label + (trial.completed ? ' ✓' : '')),
+                h('b', null, trial.completed ? trial.voltage.toFixed(2) + ' V' : 'Not run'),
+                h('span', null, spec.condition + (trial.completed ? ' · N ' + trial.turns : '')),
+                h('span', { className: 'mag-speed-track', 'aria-hidden': 'true' }, h('i', { className: 'mag-speed-fill', style: { '--mag-speed-color': spec.color, width: meterWidth(trial) + '%' } })));
+            })),
+          h('div', { className: 'mag-speed-next', 'data-status': evidence.status, role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('span', { 'aria-hidden': 'true' }, evidence.valid ? '✓' : evidence.status === 'confounded' ? '!' : String(evidence.completedCount + 1)),
+            h('span', null, h('b', null, headline), detail)));
+      }
+
       function induceTab() {
         var emfAbs = Math.abs(d.lastEMF);
         var lenz = d.lastEMF === 0 ? '—' : (d.lastEMF > 0 ? 'counter-clockwise (opposing the rising flux)' : 'clockwise (opposing the falling flux)');
@@ -5145,11 +6958,8 @@
               h('span', { 'aria-hidden': 'true' }, '⏱️'),
               h('div', null,
                 h('b', null, 'Fair speed test: same 40-unit move, same coil, different time.'),
-                h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
-                  h('button', { onClick: function () { runInductionTrial('slow'); }, style: btn() }, 'Slow · 1.00 s'),
-                  h('button', { onClick: function () { runInductionTrial('fast'); }, style: btn(true) }, 'Fast · 0.25 s'),
-                  h('button', { onClick: function () { runInductionTrial('still'); }, style: btn() }, 'Hold still')),
-                d.induceTrialMsg ? h('span', { role: 'status', style: { display: 'block', marginTop: 6, color: TEXT } }, d.induceTrialMsg) : null)),
+                h('span', { style: { display: 'block', marginTop: 3 } }, 'Complete slow, fast, and still. The evidence board keeps each result visible and checks that the comparison stayed controlled.'))),
+            inductionSpeedEvidencePanel(),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)' } },
                 h('div', { style: { color: SOFT, fontSize: 11 } }, 'EMF right now'),
@@ -5461,7 +7271,7 @@
               h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Relative magnetic drag'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, Math.round(bench.forcePercent) + '%')),
               h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Stopping distance'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, bench.stoppingDistance.toFixed(1) + ' rel. m')),
               h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } }, h('div', { style: { color: SOFT, fontSize: 11 } }, 'Eddy-heat share'), h('div', { style: { color: TEXT, fontSize: 16, fontWeight: 800 } }, Math.round(bench.heatShare) + '%'))),
-            h('div', { className: 'mag-legend', 'aria-label': 'Eddy-current brake key' },
+            h('div', { className: 'mag-legend', role: 'group', 'aria-label': 'Eddy-current brake key' },
               h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#7dd3fc' } }), 'closed or broken loop shapes show current paths'),
               h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#fbbf24' } }), 'right arrow is plate motion'),
               h('span', { style: { color: TEXT } }, h('i', { className: 'mag-swatch', 'aria-hidden': 'true', style: { background: '#34d399' } }), 'left arrow is magnetic drag')),
@@ -5491,72 +7301,129 @@
       // Magnetic materials (predict-then-test) ────────────────────────
       function materialsTab() {
         var guesses = d.matGuesses || {};
-        var answered = Object.keys(guesses).length;
-        var allAnswered = answered >= MATERIALS.length;
-        var correct = MATERIALS.filter(function (m) { return guesses[m.id] === m.magnetic; }).length;
+        var evidence = materialSortEvidenceState(guesses, d.matRevealed);
+        var best = Math.max(Number(d.matBest) || 0, d.matPerfect ? MATERIALS.length : 0, d.matRevealed ? evidence.correctCount : 0);
+        function chooseMaterial(id, prediction) {
+          var next = Object.assign({}, guesses); next[id] = !!prediction;
+          upd({ matGuesses: next });
+          announceToSR(itemById(id).name + ' predicted to show ' + (prediction ? 'lift' : 'no pull') + '.');
+        }
+        function materialChip(item, prefix) {
+          var mark = d.matRevealed ? (item.correct ? '✓' : item.correct === false ? '↺' : '·') : '';
+          var chipState = d.matRevealed ? (item.magnetic ? 'lifted' : 'no pull') + (item.correct ? ', prediction confirmed' : item.correct === false ? ', prediction revised' : '') : item.prediction === true ? 'predicted lift' : item.prediction === false ? 'predicted no pull' : 'awaiting prediction';
+          return h('span', { key: prefix + item.id, className: 'mag-material-chip', 'aria-label': item.name + ': ' + chipState },
+            h('span', { 'aria-hidden': 'true' }, item.emoji), item.name.replace(' paperclip', '').replace(' chunk', '').replace(' ruler', '').replace(' pencil', ''), mark ? h('b', { 'aria-hidden': 'true' }, mark) : null);
+        }
+        var lanes = d.matRevealed ? [
+          { id: 'ferromagnetic', title: 'Lifted · ferromagnetic', items: evidence.responseGroups.ferromagnetic, empty: 'No lifted samples' },
+          { id: 'other-metals', title: 'No pull · other metals', items: evidence.responseGroups.otherMetals, empty: 'No other metals' },
+          { id: 'nonmetals', title: 'No pull · nonmetals', items: evidence.responseGroups.nonmetals, empty: 'No nonmetals' }
+        ] : [
+          { id: 'lift', title: 'Predicts lift', items: evidence.predictionGroups.lift, empty: 'No samples yet' },
+          { id: 'waiting', title: 'Awaiting choice', items: evidence.predictionGroups.waiting, empty: 'Every sample classified' },
+          { id: 'no-pull', title: 'Predicts no pull', items: evidence.predictionGroups.noPull, empty: 'No samples yet' }
+        ];
+        var suggested = evidence.items.find(function (item) { return item.id === 'foil' && !item.answered; }) || evidence.nextItem;
+        var action = d.matRevealed
+          ? evidence.perfect
+            ? { icon: '✓', title: 'Pattern secured · 8/8', body: 'Iron, nickel, cobalt, and iron-rich steel formed the lifted group. Metal alone did not.' }
+            : evidence.status === 'metal-trap'
+              ? { icon: '↺', title: 'Revise “all metals”', body: 'Aluminum or copper entered the lift lane, but the field test showed no visible pull.' }
+              : evidence.status === 'family-miss'
+                ? { icon: '↺', title: 'Widen the ferromagnetic family', body: 'A sample containing iron, nickel, or cobalt was predicted not to lift. Use the response map to update the rule.' }
+                : { icon: '↺', title: 'Rebuild the family rule', body: 'Compare both revised predictions with the three response groups, then sort again.' }
+          : evidence.allAnswered
+            ? { icon: '②', title: 'Ready for the field test', body: 'Every prediction is locked. Energize the magnet and compare the three response groups.' }
+            : { icon: '①', title: 'Keep classifying', body: evidence.unansweredCount + ' prediction' + (evidence.unansweredCount === 1 ? '' : 's') + ' remain. ' + (suggested ? 'Try ' + suggested.name.toLowerCase() + ' next.' : '') };
         return h('div', null,
           card('Will it stick? Predict first', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'For each item, predict whether a magnet will grab it — ', h('b', null, 'before'), ' revealing. The common trap: thinking every metal is magnetic.'),
-            MATERIALS.map(function (m) {
-              var g = guesses[m.id]; // true / false / undefined
-              var revealed = d.matRevealed;
-              var right = revealed && g === m.magnetic;
-              var wrong = revealed && g != null && g !== m.magnetic;
-              return h('div', { key: m.id, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 9, marginBottom: 6, background: right ? 'rgba(34,197,94,0.12)' : wrong ? 'rgba(239,68,68,0.12)' : 'rgba(148,163,184,0.06)', border: '1px solid ' + (right ? '#22c55e' : wrong ? '#ef4444' : BORDER) } },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, m.emoji),
-                h('div', { style: { flex: 1 } },
-                  h('div', { style: { color: TEXT, fontSize: 13, fontWeight: 700 } }, m.name),
-                  revealed ? h('div', { style: { color: SOFT, fontSize: 11, lineHeight: 1.4, marginTop: 2 } }, (m.magnetic ? '🧲 Sticks. ' : '🚫 No pull. ') + m.why) : null),
-                !revealed ? h('div', { style: { display: 'flex', gap: 4 } },
-                  h('button', { 'aria-pressed': g === true ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = true; upd({ matGuesses: ng }); },
-                    style: Object.assign({}, btn(g === true), { padding: '5px 9px', fontSize: 12 }) }, 'Sticks'),
-                  h('button', { 'aria-pressed': g === false ? 'true' : 'false', onClick: function () { var ng = Object.assign({}, guesses); ng[m.id] = false; upd({ matGuesses: ng }); },
-                    style: Object.assign({}, btn(g === false), { padding: '5px 9px', fontSize: 12 }) }, 'No pull')
-                ) : h('span', { style: { fontSize: 16 } }, right ? '✓' : wrong ? '✗' : '·'));
-            }),
-            !d.matRevealed ? h('div', { style: { textAlign: 'center', marginTop: 8 } },
-              h('button', { disabled: !allAnswered,
-                onClick: function () {
-                  var perfect = MATERIALS.every(function (m) { return guesses[m.id] === m.magnetic; });
-                  upd({ matRevealed: true, matPerfect: perfect || d.matPerfect });
-                  if (perfect) { awardXP(15); addToast('🔩 Perfect sort! +15 XP', 'success'); }
-                  announceToSR('Revealed: ' + MATERIALS.filter(function (m) { return guesses[m.id] === m.magnetic; }).length + ' of ' + MATERIALS.length + ' correct');
-                },
-                style: Object.assign({}, btn(true), { opacity: allAnswered ? 1 : 0.5 }) }, allAnswered ? '🧲 Test with the magnet!' : 'Predict all ' + MATERIALS.length + ' first (' + answered + '/' + MATERIALS.length + ')'))
-              : h('div', { style: { textAlign: 'center', marginTop: 8 } },
-                h('p', { style: { color: correct === MATERIALS.length ? '#34d399' : TEXT, fontSize: 14, fontWeight: 800, margin: '4px 0 8px' } }, correct + ' / ' + MATERIALS.length + ' correct' + (correct === MATERIALS.length ? ' — perfect!' : '')),
-                h('div', { className: 'mag-observe', style: { textAlign: 'left' } },
-                  h('span', { 'aria-hidden': 'true' }, correct === MATERIALS.length ? '✅' : '🧠'),
-                  h('span', null, correct === MATERIALS.length
-                    ? h('span', null, h('b', null, 'Pattern found: '), 'iron, nickel, cobalt, and iron-rich steel responded. “Metal” alone was not enough to predict the result.')
-                    : h('span', null, h('b', null, 'Revise the rule, not just the answers: '), 'look for iron, nickel, cobalt, or an alloy containing them. Copper and aluminum conduct electricity but are not ferromagnetic.'))),
-                h('button', { onClick: function () { upd({ matGuesses: {}, matRevealed: false }); }, style: btn() }, '↻ Sort again'))
+            h('section', { className: 'mag-material-board' + (d.matRevealed ? ' is-tested' : ''), 'aria-labelledby': 'mag-material-board-title' },
+              h('div', { className: 'mag-material-head' },
+                h('b', { id: 'mag-material-board-title' }, d.matRevealed ? 'Observed magnet response' : 'Live prediction board'),
+                h('span', null, d.matRevealed ? evidence.correctCount + '/8 correct · best ' + best + '/8' : evidence.answeredCount + '/8 predictions')),
+              h('div', { className: 'mag-material-track', role: 'progressbar', 'aria-label': 'Material prediction progress', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': evidence.answeredCount },
+                h('div', { className: 'mag-material-fill', style: { width: (evidence.answeredCount / MATERIALS.length * 100) + '%' } })),
+              h('div', { className: 'mag-material-magnet', role: 'img', 'aria-label': d.matRevealed ? 'Magnet test complete; samples are grouped by observed response' : 'Bar magnet ready; classify every sample before testing' },
+                h('span', null, 'N · TEST'), h('span', null, 'S · FIELD')),
+              h('div', { className: 'mag-material-flow', 'aria-label': d.matRevealed ? 'Observed material response groups' : 'Material prediction groups' },
+                lanes.map(function (lane) {
+                  return h('section', { key: lane.id, className: 'mag-material-lane', 'data-lane': lane.id, 'aria-label': lane.title + ': ' + lane.items.length + ' samples' },
+                    h('div', { className: 'mag-material-lane-title' }, lane.title, h('span', null, lane.items.length)),
+                    h('div', { className: 'mag-material-chips' }, lane.items.length ? lane.items.map(function (item) { return materialChip(item, lane.id + '-'); }) : h('span', { className: 'mag-material-empty' }, lane.empty)));
+                })),
+              h('div', { className: 'mag-material-grid' },
+                evidence.items.map(function (item) {
+                  var choice = item.prediction === true ? 'lift' : item.prediction === false ? 'no-pull' : 'waiting';
+                  var result = d.matRevealed ? (item.correct ? 'confirmed' : item.correct === false ? 'revised' : 'unscored') : 'pending';
+                  var resultText = item.correct ? 'Prediction confirmed' : item.correct === false ? 'Prediction revised' : 'No prediction recorded';
+                  return h('article', { key: item.id, className: 'mag-material-tile', 'data-material-id': item.id, 'data-choice': choice, 'data-result': result,
+                    'aria-label': item.name + ', ' + (item.isMetal ? 'metal' : 'nonmetal') + (d.matRevealed ? ', ' + (item.magnetic ? 'lifted' : 'no pull') + ', ' + resultText.toLowerCase() : '') },
+                    h('div', { className: 'mag-material-tile-head' },
+                      h('span', { className: 'mag-material-emoji', 'aria-hidden': 'true' }, item.emoji),
+                      h('span', { className: 'mag-material-name' }, h('b', null, item.name), h('small', null, item.isMetal ? 'metal sample' : 'nonmetal sample')),
+                      h('span', { className: 'mag-material-mark', 'aria-hidden': 'true' }, d.matRevealed ? (item.correct ? '✓' : item.correct === false ? '↺' : '·') : item.prediction === null ? '·' : '?')),
+                    !d.matRevealed ? h('div', { className: 'mag-material-controls', role: 'group', 'aria-label': 'Prediction for ' + item.name },
+                      h('button', { type: 'button', 'aria-label': 'Predict ' + item.name + ' will lift', 'aria-pressed': item.prediction === true ? 'true' : 'false', onClick: function () { chooseMaterial(item.id, true); }, style: Object.assign({}, btn(item.prediction === true), { padding: '5px 8px', fontSize: 11.5 }) }, '🧲 Will lift'),
+                      h('button', { type: 'button', 'aria-label': 'Predict ' + item.name + ' will show no pull', 'aria-pressed': item.prediction === false ? 'true' : 'false', onClick: function () { chooseMaterial(item.id, false); }, style: Object.assign({}, btn(item.prediction === false), { padding: '5px 8px', fontSize: 11.5 }) }, '— No pull'))
+                      : h('div', null,
+                        h('div', { className: 'mag-material-result' }, resultText + ' · observed ' + (item.magnetic ? '🧲 lift' : '— no pull')),
+                        h('details', null, h('summary', null, 'Why this result?'), h('p', null, item.why))));
+                })),
+              h('div', { className: 'mag-material-action' },
+                h('span', { 'aria-hidden': 'true' }, action.icon),
+                h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, h('b', null, 'Next action · ' + action.title), action.body),
+                !d.matRevealed ? h('button', { type: 'button', disabled: !evidence.allAnswered,
+                  onClick: function () {
+                    var nextBest = Math.max(Number(d.matBest) || 0, evidence.correctCount);
+                    var patch = { matRevealed: true, matPerfect: evidence.perfect || d.matPerfect, matBest: nextBest };
+                    if (evidence.perfect && !d.matRewarded) {
+                      patch.matRewarded = true;
+                      awardXP(15); addToast('🔩 Perfect sort! +15 XP', 'success');
+                    }
+                    upd(patch);
+                    announceToSR('Magnet test complete: ' + evidence.correctCount + ' of ' + MATERIALS.length + ' predictions correct.');
+                  }, style: Object.assign({}, btn(true), { opacity: evidence.allAnswered ? 1 : 0.55 }) }, evidence.allAnswered ? '🧲 Run magnet test' : evidence.answeredCount + '/8 predicted')
+                  : h('button', { type: 'button', onClick: function () { upd({ matGuesses: {}, matRevealed: false }); announceToSR('Material sorter reset. Best score remains ' + best + ' of 8.'); }, style: btn() }, '↻ Sort again')))
           ), '#a3e635'),
-          card('The rule underneath', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
-            'The three familiar strongly ferromagnetic elements at typical room temperature are: ', h('b', { style: { color: TEXT } }, 'iron, nickel, and cobalt'), '. Their atoms are tiny magnets that can lock into alignment. Steel sticks because it is mostly iron; aluminum and copper are metals whose atomic magnets cannot line up this way.'), '#a3e635'),
-          domainsCard()
+          card(d.matRevealed ? 'Transfer the response pattern' : 'Build the rule from evidence', d.matRevealed ? h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 9px', lineHeight: 1.5 } }, h('b', { style: { color: TEXT } }, 'Pattern found: '), 'iron, nickel, and cobalt — plus iron-rich steel — responded. “Metal” alone was not enough to predict the result.'),
+            h('div', { className: 'mag-material-rule' },
+              h('div', null, h('b', null, 'Elemental ferromagnets'), 'Iron · nickel · cobalt. Their domains can align strongly.'),
+              h('div', null, h('b', null, 'Iron-rich alloy'), 'Steel inherits a strong response because iron is its main ingredient.'),
+              h('div', null, h('b', null, 'Not the rule'), 'Aluminum and copper are metals, yet showed no visible pull; plastic and wood did too.')))
+            : h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } }, 'Use the field test to discover a narrower rule than “metal.” Look for a material family shared by every sample that lifts, then explain the exceptions.'), '#a3e635'),
+          d.matRevealed ? domainsCard() : h('details', { className: 'mag-guide', style: { marginBottom: 12 } },
+            h('summary', null, 'Optional theory preview · magnetic domains (contains the explanation)'),
+            h('div', { style: { paddingTop: 9 } }, domainsCard()))
         );
       }
 
       // ── Domain visualizer: WHY iron can be magnetized (and un-) ───────
       function domainsCard() {
-        var presets = {
-          soft: { name: 'Soft iron', coercivity: 0.16, slope: 0.30, saturation: 1, note: 'Narrow loop: easy to magnetize and easy to erase. Ideal for electromagnets.' },
-          hard: { name: 'Hard steel', coercivity: 0.48, slope: 0.18, saturation: 0.96, note: 'Wide loop: needs a stronger reverse field, then remembers. Ideal for permanent magnets.' }
-        };
-        var mat = presets[d.domainMaterial] || presets.soft;
-        var m = d.domainHistory ? hysteresisMagnetization(d.domainField, d.domainBranch, mat.coercivity, mat.slope, mat.saturation) : (d.domainAlign || 0);
-        var alignment = Math.abs(m);
+        var presets = DOMAIN_MATERIALS;
+        var memory = domainMemoryEvidenceState(d.domainMaterial, d.domainField, d.domainBranch, d.domainHistory, d.domainAlign, {
+          saturated: d.domainSaturatedSeen,
+          remanence: d.domainRemanenceSeen,
+          reversed: d.domainReversedSeen
+        });
+        var mat = memory.material;
+        var m = memory.magnetization;
+        var alignment = memory.alignment;
         var COLS = 8, ROWS = 5, CW = 34, CH = 24;
         var arrows = [];
         for (var i = 0; i < COLS * ROWS; i++) {
           var angRad = domainAngle(i, alignment) + (m < 0 ? Math.PI : 0);
           var ang = angRad * 180 / Math.PI;
-          var ax = 14 + (i % COLS) * CW, ay = 14 + Math.floor(i / COLS) * CH;
-          var domainColor = alignment > 0.05 ? 'rgba(244,63,94,' + (0.45 + alignment * 0.55).toFixed(2) + ')' : '#94a3b8';
-          arrows.push(h('g', { key: 'd' + i, transform: 'translate(' + ax + ',' + ay + ') rotate(' + ang.toFixed(1) + ')' },
-            h('line', { x1: -8, y1: 0, x2: 6, y2: 0, stroke: domainColor, strokeWidth: 2.2 }),
-            h('polygon', { points: '10,0 4,-3.4 4,3.4', fill: domainColor })));
+          var ax = 18 + (i % COLS) * CW, ay = 43 + Math.floor(i / COLS) * 22;
+          var domainColor = alignment > 0.05
+            ? (m < 0 ? 'rgba(96,165,250,' + (0.45 + alignment * 0.55).toFixed(2) + ')' : 'rgba(251,113,133,' + (0.45 + alignment * 0.55).toFixed(2) + ')')
+            : '#94a3b8';
+          arrows.push(h('g', { key: 'd' + i, transform: 'translate(' + ax + ',' + ay + ')' },
+            h('rect', { x: -14, y: -9, width: 28, height: 18, rx: 4, fill: 'rgba(148,163,184,.035)', stroke: 'rgba(148,163,184,.12)', strokeWidth: 0.8 }),
+            h('g', { transform: 'rotate(' + ang.toFixed(1) + ')' },
+              h('line', { x1: -8, y1: 0, x2: 6, y2: 0, stroke: domainColor, strokeWidth: 2.2 }),
+              h('polygon', { points: '10,0 4,-3.4 4,3.4', fill: domainColor }))));
         }
 
         var loopUp = [], loopDown = [];
@@ -5564,66 +7431,151 @@
           var hv = -1 + k / 24;
           var mu = hysteresisMagnetization(hv, -1, mat.coercivity, mat.slope, mat.saturation);
           var md = hysteresisMagnetization(hv, 1, mat.coercivity, mat.slope, mat.saturation);
-          loopUp.push((18 + (hv + 1) * 57).toFixed(1) + ',' + (74 - mu * 53).toFixed(1));
-          loopDown.push((18 + (hv + 1) * 57).toFixed(1) + ',' + (74 - md * 53).toFixed(1));
+          loopUp.push((30 + (hv + 1) * 100).toFixed(1) + ',' + (80 - mu * 56).toFixed(1));
+          loopDown.push((30 + (hv + 1) * 100).toFixed(1) + ',' + (80 - md * 56).toFixed(1));
         }
-        var pointX = 18 + (d.domainField + 1) * 57;
-        var pointY = 74 - m * 53;
+        var pointX = 30 + (memory.field + 1) * 100;
+        var pointY = 80 - m * 56;
+        var coerciveLeft = 130 - mat.coercivity * 100;
+        var coerciveRight = 130 + mat.coercivity * 100;
+        function signed(value) { return (value > 0 ? '+' : '') + value + '%'; }
         function setMemory(patch, message) {
           var next = Object.assign({}, patch);
-          var nm = patch.domainHistory === false ? 0 : hysteresisMagnetization(
-            patch.domainField == null ? d.domainField : patch.domainField,
-            patch.domainBranch == null ? d.domainBranch : patch.domainBranch,
-            mat.coercivity, mat.slope, mat.saturation);
-          next.domainAlign = Math.abs(nm);
-          if (Math.abs(nm) >= 0.94 && !d.domainsFull) {
+          var nextEvidence = domainMemoryEvidenceState(
+            patch.domainMaterial == null ? memory.materialKey : patch.domainMaterial,
+            patch.domainField == null ? memory.field : patch.domainField,
+            patch.domainBranch == null ? memory.branch : patch.domainBranch,
+            patch.domainHistory == null ? memory.history : patch.domainHistory,
+            patch.domainAlign == null ? d.domainAlign : patch.domainAlign,
+            {
+              saturated: d.domainSaturatedSeen,
+              remanence: d.domainRemanenceSeen,
+              reversed: d.domainReversedSeen
+            });
+          next.domainAlign = nextEvidence.alignment;
+          next.domainSaturatedSeen = !!(d.domainSaturatedSeen || nextEvidence.phase === 'saturated');
+          next.domainRemanenceSeen = !!(d.domainRemanenceSeen || nextEvidence.phase === 'remanence');
+          next.domainReversedSeen = !!(d.domainReversedSeen || nextEvidence.phase === 'reversed');
+          next.domainErasedSeen = !!(d.domainErasedSeen || (!nextEvidence.history && memory.history && nextEvidence.alignment < 0.05));
+          if (nextEvidence.alignment >= 0.94 && !d.domainsFull) {
             next.domainsFull = true;
             awardXP(10); addToast('Magnetic saturation reached! +10 XP', 'success');
           }
           upd(next);
-          announceToSR(message + ' Net magnetization ' + Math.round(nm * 100) + ' percent.');
+          announceToSR(message + ' Signed net magnetization ' + nextEvidence.signedPercent + ' percent. ' + nextEvidence.phaseLabel + '.');
+        }
+        function selectDomainMaterial(key) {
+          if (!presets[key] || key === memory.materialKey) return;
+          upd({
+            domainMaterial: key, domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0,
+            domainSaturatedSeen: false, domainRemanenceSeen: false, domainReversedSeen: false, domainErasedSeen: false
+          });
+          announceToSR('Selected ' + presets[key].name + '. The three-step magnetic-memory experiment has reset for a fair comparison.');
+        }
+        function runDomainAction(key) {
+          if (key === 'magnetize') setMemory({ domainField: 1, domainBranch: 1, domainHistory: true }, 'Stroked to positive saturation.');
+          else if (key === 'remove') setMemory({ domainField: 0, domainHistory: true }, 'Removed the applied field.');
+          else if (key === 'reverse') setMemory({ domainField: -1, domainBranch: 1, domainHistory: true }, 'Applied a strong reverse field.');
+          else if (key === 'compare') selectDomainMaterial(memory.materialKey === 'soft' ? 'hard' : 'soft');
         }
 
-        return card('Magnetic memory: domains and hysteresis', h('div', null,
-          h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Sweep the applied field H and watch the magnetic domains in the material respond with magnetization M. The path depends on where it has been: that loop is ', h('b', null, 'hysteresis'), ', or magnetic memory.'),
-          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
-            Object.keys(presets).map(function (key) {
-              return h('button', { key: key, 'aria-pressed': d.domainMaterial === key ? 'true' : 'false',
-                onClick: function () { upd({ domainMaterial: key, domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }); },
-                style: btn(d.domainMaterial === key) }, presets[key].name);
+        return card('Magnetic memory: domains and hysteresis', h('div', { className: 'mag-domain-lab' },
+          h('div', { className: 'mag-domain-intro' },
+            h('span', { 'aria-hidden': 'true' }, '🧲'),
+            h('div', null,
+              h('b', null, 'Make magnetic memory visible'),
+              'Sweep the applied field H and watch the domains build magnetization M. The route matters: the loop is ', h('b', null, 'hysteresis'), ', a record of where the material has been.')),
+          h('div', { className: 'mag-domain-materials', 'aria-label': 'Compare magnetic materials' },
+            memory.comparisons.map(function (item) {
+              return h('button', { key: item.id, type: 'button', className: 'mag-domain-material',
+                'data-active': item.active ? 'true' : 'false', 'aria-pressed': item.active ? 'true' : 'false',
+                'aria-label': item.name + ': modeled zero-field memory ' + item.remanencePercent + ' percent; coercive threshold ' + item.coercivityPercent + ' percent',
+                onClick: function () { selectDomainMaterial(item.id); } },
+                h('span', { className: 'mag-domain-material-head' },
+                  h('span', { className: 'mag-domain-material-icon', 'aria-hidden': 'true' }, item.icon),
+                  h('span', null, h('b', null, item.name), h('small', null, item.use)),
+                  item.active ? h('span', { className: 'mag-domain-material-badge' }, 'Testing') : h('span', { className: 'mag-domain-material-badge' }, 'Compare')),
+                h('span', { className: 'mag-domain-properties' },
+                  h('span', { className: 'mag-domain-property' },
+                    h('small', null, 'Memory at H = 0'), h('b', null, item.remanencePercent + '%'),
+                    h('span', { className: 'mag-domain-mini-track', 'aria-hidden': 'true' }, h('span', { className: 'mag-domain-mini-fill', style: { width: item.remanencePercent + '%' } }))),
+                  h('span', { className: 'mag-domain-property' }, h('small', null, 'Coercive threshold'), h('b', null, '|' + item.coercivityPercent + '% H|'))));
             })),
-          h('p', { style: { color: SOFT, fontSize: 12, margin: '0 0 8px' } }, mat.note),
-          h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 10, alignItems: 'center' } },
-            h('svg', { viewBox: '0 0 132 148', width: '100%', role: 'img',
-              'aria-label': mat.name + ' hysteresis loop. Applied field ' + d.domainField.toFixed(2) + ', magnetization ' + m.toFixed(2) + '.' },
-              h('rect', { x: 0, y: 0, width: 132, height: 148, fill: INSTRUMENT, rx: 10 }),
-              h('line', { x1: 18, y1: 74, x2: 122, y2: 74, stroke: BORDER, strokeWidth: 1 }),
-              h('line', { x1: 75, y1: 12, x2: 75, y2: 136, stroke: BORDER, strokeWidth: 1 }),
-              h('polyline', { points: loopDown.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.4 }),
-              h('polyline', { points: loopUp.join(' '), fill: 'none', stroke: '#a78bfa', strokeWidth: 2.4 }),
-              h('circle', { cx: pointX, cy: pointY, r: 4.5, fill: '#fbbf24', stroke: TEXT, strokeWidth: 1 }),
-              h('text', { x: 116, y: 69, fill: SOFT, fontSize: 11, textAnchor: 'end' }, 'H'),
-              h('text', { x: 80, y: 20, fill: SOFT, fontSize: 11 }, 'M'),
-              h('text', { x: 8, y: 145, fill: SOFT, fontSize: 11 }, 'wide loop = stronger memory')),
-            h('svg', { viewBox: '0 0 280 126', width: '100%', role: 'img',
-              'aria-label': 'Grid of 40 magnetic domains with signed net magnetization ' + Math.round(m * 100) + ' percent.' },
-              h('rect', { x: 0, y: 0, width: 280, height: 126, fill: INSTRUMENT, rx: 10 }),
-              arrows)),
-          slider('Applied field H', d.domainField, -1, 1, 0.05, function (v) {
-            setMemory({ domainField: v, domainBranch: v < d.domainField ? 1 : -1, domainHistory: true }, 'Swept the applied field.');
+          h('section', { className: 'mag-domain-experiment', 'aria-label': 'Three-step magnetic memory experiment' },
+            h('div', { className: 'mag-domain-exp-head' }, h('b', null, 'Evidence trail · ' + mat.name), h('span', null, memory.completedCount + '/3 moments captured')),
+            h('progress', { className: 'mag-domain-progress', max: 3, value: memory.completedCount, 'aria-label': memory.completedCount + ' of 3 magnetic memory evidence moments captured' }),
+            h('ol', { className: 'mag-domain-steps' }, memory.steps.map(function (step, index) {
+              return h('li', { key: step.key, className: 'mag-domain-step', 'data-state': step.state, 'aria-current': step.state === 'current' ? 'step' : null },
+                h('span', { className: 'mag-domain-step-index', 'aria-hidden': 'true' }, step.done ? '✓' : String(index + 1)),
+                h('b', null, step.label), h('small', null, step.detail));
+            })),
+            h('div', { className: 'mag-domain-next', 'data-complete': memory.complete ? 'true' : 'false' },
+              h('span', { className: 'mag-domain-next-icon', 'aria-hidden': 'true' }, memory.complete ? '🏁' : '→'),
+              h('span', null, h('b', null, (memory.complete ? 'Compare next · ' : 'Next action · ') + memory.nextAction.label), memory.nextAction.detail),
+              h('button', { type: 'button', onClick: function () { runDomainAction(memory.nextAction.key); }, style: btn(true),
+                'aria-label': (memory.complete ? 'Compare materials: ' : 'Run next experiment step: ') + memory.nextAction.label }, memory.complete ? 'Compare material →' : 'Run this step →'))),
+          h('div', { className: 'mag-domain-hud', 'aria-label': 'Live magnetic evidence readings' },
+            h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#38bdf8' } }, h('small', null, 'Applied field H'), h('b', null, signed(memory.fieldPercent)), h('span', null, memory.fieldDirection === 'off' ? 'field off' : 'points ' + memory.fieldDirection)),
+            h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fbbf24' } }, h('small', null, 'Signed vector M'), h('b', null, signed(memory.signedPercent)), h('span', null, memory.magnetizationDirection === 'mixed' ? 'directions cancel' : 'net points ' + memory.magnetizationDirection)),
+            h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#a78bfa' } }, h('small', null, 'Memory at H = 0'), h('b', null, memory.memoryAtZeroPercent + '%'), h('span', null, 'modeled remanence')),
+            h('div', { className: 'mag-domain-metric', style: { '--mag-domain-tone': '#fb7185' } }, h('small', null, 'Switching threshold'), h('b', null, '|' + memory.coercivityPercent + '%|'), h('span', null, 'modeled coercivity'))),
+          h('div', { className: 'mag-domain-visuals' },
+            h('figure', { className: 'mag-domain-figure' },
+              h('figcaption', null, 'H–M memory loop', h('span', null, 'gold point = now')),
+              h('svg', { viewBox: '0 0 260 170', role: 'img',
+                'aria-label': mat.name + ' hysteresis loop. Applied field ' + memory.field.toFixed(2) + '; signed magnetization ' + m.toFixed(2) + '; coercive threshold ' + mat.coercivity.toFixed(2) + '.' },
+                h('title', null, mat.name + ' magnetic hysteresis loop'),
+                h('rect', { x: 0, y: 0, width: 260, height: 170, fill: INSTRUMENT, rx: 9 }),
+                h('line', { x1: 30, y1: 80, x2: 230, y2: 80, stroke: BORDER, strokeWidth: 1.2 }),
+                h('line', { x1: 130, y1: 15, x2: 130, y2: 146, stroke: BORDER, strokeWidth: 1.2 }),
+                h('line', { x1: coerciveLeft, y1: 24, x2: coerciveLeft, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
+                h('line', { x1: coerciveRight, y1: 24, x2: coerciveRight, y2: 136, stroke: 'rgba(251,113,133,.38)', strokeWidth: 1, strokeDasharray: '4 4' }),
+                h('polyline', { points: loopDown.join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.6 }),
+                h('polyline', { points: loopUp.join(' '), fill: 'none', stroke: '#a78bfa', strokeWidth: 2.6 }),
+                h('circle', { className: 'mag-domain-point-ring', cx: pointX, cy: pointY, r: 9, fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+                h('circle', { cx: pointX, cy: pointY, r: 4.8, fill: '#fbbf24', stroke: TEXT, strokeWidth: 1.2 }),
+                h('text', { x: 232, y: 75, fill: SOFT, fontSize: 10, textAnchor: 'end' }, '+H'),
+                h('text', { x: 28, y: 75, fill: SOFT, fontSize: 10 }, '−H'),
+                h('text', { x: 135, y: 20, fill: SOFT, fontSize: 10 }, '+M'),
+                h('text', { x: 135, y: 143, fill: SOFT, fontSize: 10 }, '−M'),
+                h('text', { x: coerciveLeft, y: 157, fill: '#fb7185', fontSize: 8.5, textAnchor: 'middle' }, '−Hc'),
+                h('text', { x: coerciveRight, y: 157, fill: '#fb7185', fontSize: 8.5, textAnchor: 'middle' }, '+Hc')),
+              h('div', { className: 'mag-domain-legend', 'aria-label': 'Graph legend' },
+                h('span', null, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#38bdf8' }, 'aria-hidden': 'true' }), 'increasing H'),
+                h('span', null, h('i', { className: 'mag-domain-key', style: { '--mag-key': '#a78bfa' }, 'aria-hidden': 'true' }), 'decreasing H'),
+                h('span', null, h('i', { className: 'mag-domain-key is-point', style: { '--mag-key': '#fbbf24' }, 'aria-hidden': 'true' }), 'current state'))),
+            h('figure', { className: 'mag-domain-figure' },
+              h('figcaption', null, 'Inside the material', h('span', null, '40 domain vectors')),
+              h('svg', { viewBox: '0 0 280 150', role: 'img',
+                'aria-label': 'Grid of 40 magnetic domains. Applied field is ' + memory.fieldDirection + '; signed net magnetization is ' + memory.signedPercent + ' percent toward ' + memory.magnetizationDirection + '.' },
+                h('title', null, 'Magnetic domain alignment view'),
+                h('rect', { x: 0, y: 0, width: 280, height: 150, fill: INSTRUMENT, rx: 9 }),
+                h('text', { x: 12, y: 21, fill: SOFT, fontSize: 9.5, fontWeight: 700 }, 'APPLIED H · ' + memory.fieldDirection.toUpperCase()),
+                memory.fieldDirection === 'off'
+                  ? h('g', null, h('line', { x1: 110, y1: 18, x2: 248, y2: 18, stroke: BORDER, strokeWidth: 2, strokeDasharray: '5 4' }), h('text', { x: 252, y: 21, fill: SOFT, fontSize: 9, textAnchor: 'end' }, 'OFF'))
+                  : h('g', null,
+                    h('line', { x1: memory.fieldDirection === 'right' ? 110 : 248, y1: 18, x2: memory.fieldDirection === 'right' ? 248 : 110, y2: 18, stroke: '#fbbf24', strokeWidth: 2.4 }),
+                    h('polygon', { points: memory.fieldDirection === 'right' ? '252,18 244,13.5 244,22.5' : '106,18 114,13.5 114,22.5', fill: '#fbbf24' })),
+                arrows),
+              h('div', { className: 'mag-domain-legend', 'aria-label': 'Domain direction legend' },
+                h('span', null, '↗ Mixed = cancels'), h('span', null, '→ Right = positive M'), h('span', null, '← Left = negative M')))),
+          slider('Applied field H', memory.field, -1, 1, 0.05, function (v) {
+            setMemory({ domainField: v, domainBranch: v < memory.field ? 1 : -1, domainHistory: true }, 'Swept the applied field.');
           }),
-          h('div', { role: 'status', className: 'mag-observe' },
-            h('span', { 'aria-hidden': 'true' }, 'M'),
-            h('span', null, h('b', null, Math.round(Math.abs(m) * 100) + '% net magnetization; vector sum ' + (m >= 0 ? 'right' : 'left') + '. '),
-              Math.abs(d.domainField) < 0.06 && Math.abs(m) > 0.2
-                ? 'The external field is nearly zero, but magnetization remains. That leftover is remanence.'
-                : (Math.sign(m) !== Math.sign(d.domainField) && Math.abs(d.domainField) > 0.06 ? 'The reverse field is fighting the remembered direction but has not crossed the coercive threshold yet.' : 'Track the gold point around the loop as the domains switch.'))),
-          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
-            h('button', { onClick: function () { setMemory({ domainField: 1, domainBranch: -1, domainHistory: true }, 'Stroked to positive saturation.'); }, style: btn(true) }, 'Stroke with magnet'),
-            h('button', { onClick: function () { setMemory({ domainField: 0, domainHistory: true }, 'Removed the applied field.'); }, style: btn() }, 'Remove field'),
-            h('button', { onClick: function () { setMemory({ domainField: -1, domainBranch: 1, domainHistory: true }, 'Applied a strong reverse field.'); }, style: btn() }, 'Reverse strongly'),
-            h('button', { onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Heated past the Curie point; the memory was erased.'); }, style: btn() }, 'Heat it'),
-            h('button', { onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Hammered; domain alignment was disrupted.'); }, style: btn() }, 'Hammer it')),
+          h('div', { role: 'status', className: 'mag-domain-phase', 'data-phase': memory.phase },
+            h('span', { className: 'mag-domain-phase-icon', 'aria-hidden': 'true' }, memory.phaseIcon),
+            h('span', null,
+              h('b', null, memory.phaseLabel + ' · ' + memory.alignmentPercent + '% net magnetization; vector sum ' + memory.magnetizationDirection),
+              h('p', null, memory.phaseDetail))),
+          h('fieldset', { className: 'mag-domain-controls' },
+            h('legend', null, 'Explore freely or erase the memory'),
+            h('div', { className: 'mag-domain-actions' },
+              h('button', { type: 'button', onClick: function () { runDomainAction('magnetize'); }, style: btn(memory.phase === 'saturated') }, 'Stroke with magnet'),
+              h('button', { type: 'button', onClick: function () { runDomainAction('remove'); }, style: btn(memory.phase === 'remanence') }, 'Remove field'),
+              h('button', { type: 'button', onClick: function () { runDomainAction('reverse'); }, style: btn(memory.phase === 'reversed') }, 'Reverse strongly'),
+              h('button', { type: 'button', onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Heated past the Curie point; the memory was erased.'); }, style: btn() }, 'Heat it'),
+              h('button', { type: 'button', onClick: function () { setMemory({ domainField: 0, domainBranch: 1, domainHistory: false, domainAlign: 0 }, 'Hammered; domain alignment was disrupted.'); }, style: btn() }, 'Hammer it')),
+            h('p', { className: 'mag-domain-reset-note' }, d.domainErasedSeen ? '✓ Extra evidence captured: heat or impact can scramble aligned domains without erasing your completed observations.' : 'Extension: after magnetizing, try heat or impact to scramble the domains again.')),
           disclosure('This conceptual M-H loop shows saturation, remanence, and coercivity. Real loops depend on alloy, temperature, shape, sweep rate, and domain-wall pinning.')
         ), '#a3e635');
       }
@@ -5633,25 +7585,34 @@
 
       function craneMove(dir) {
         if (d.craneDone) return;
+        if (d.cranePower && !d.craneHolding) {
+          var stopMsg = 'Switch the field off before moving to a new sample, so each result stays tied to one prediction.';
+          upd({ craneMsg: stopMsg }); announceToSR(stopMsg); return;
+        }
         var ns = Math.max(0, Math.min(BIN_SLOT, d.craneSlot + dir));
         if (ns === d.craneSlot) return;
         var patch = { craneSlot: ns };
-        // A powered magnet passing over steel grabs it — no click needed,
-        // just like a real scrapyard crane sweeping the pile.
         var itemId = (d.craneItems || {})[ns];
-        if (d.cranePower && !d.craneHolding && itemId) {
-          var it = itemById(itemId);
-          if (it && it.magnetic) {
-            var items = Object.assign({}, d.craneItems); delete items[ns];
-            patch.craneItems = items; patch.craneHolding = itemId;
-            patch.craneMsg = 'Clunk! The ' + it.name.toLowerCase() + ' jumped up to the magnet.';
-            announceToSR(patch.craneMsg);
-          } else if (it) {
-            patch.craneMsg = 'No lift: the powered field passes the ' + it.name.toLowerCase() + ', but it is not ferromagnetic.';
-            announceToSR(patch.craneMsg);
-          }
-        }
+        var movedEvidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
+        var itemEvidence = movedEvidence.items.find(function (entry) { return entry.id === itemId; });
+        if (d.craneHolding) patch.craneMsg = 'Carrying the ' + itemById(d.craneHolding).name.toLowerCase() + ' — keep moving toward the recycling bin.';
+        else if (itemEvidence && !itemEvidence.tested && itemEvidence.predicted === null) patch.craneMsg = 'Now over ' + itemEvidence.name.toLowerCase() + '. Predict first, then energize the magnet.';
+        else if (itemEvidence && !itemEvidence.tested) patch.craneMsg = 'Prediction ready for ' + itemEvidence.name.toLowerCase() + '. Switch power on to test it.';
+        else if (itemEvidence) patch.craneMsg = itemEvidence.name + ' already has evidence: ' + (itemEvidence.lifted ? 'lifted' : 'no pull') + '. Repeat the test or inspect another object.';
+        else patch.craneMsg = ns === BIN_SLOT ? 'Recycling bin reached.' : 'Empty ground — move to a sample.';
         upd(patch);
+      }
+
+      function cranePredict(willLift) {
+        if (d.craneDone || d.cranePower || d.craneHolding) return;
+        var itemId = (d.craneItems || {})[d.craneSlot];
+        if (!itemId) return;
+        var evidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
+        var itemEvidence = evidence.items.find(function (entry) { return entry.id === itemId; });
+        if (!itemEvidence || itemEvidence.tested) return;
+        var predictions = Object.assign({}, d.cranePredictions); predictions[itemId] = !!willLift;
+        var msg = 'Prediction locked for ' + itemEvidence.name.toLowerCase() + ': ' + (willLift ? 'will lift' : 'no pull') + '. Now switch power on to test it.';
+        upd({ cranePredictions: predictions, craneMsg: msg }); announceToSR(msg);
       }
 
       function craneTogglePower() {
@@ -5662,12 +7623,25 @@
         var itemId = (d.craneItems || {})[slot];
         if (powerOn && !d.craneHolding && itemId) {
           var it = itemById(itemId);
+          var existing = d.craneTests && d.craneTests[itemId];
+          var testedBefore = !!existing && typeof existing.lifted === 'boolean';
+          var hasPrediction = d.cranePredictions && Object.prototype.hasOwnProperty.call(d.cranePredictions, itemId);
+          if (!testedBefore && !hasPrediction) {
+            var predictMsg = 'Predict first: will the ' + it.name.toLowerCase() + ' lift, or show no pull?';
+            upd({ craneMsg: predictMsg }); announceToSR(predictMsg); return;
+          }
+          var predicted = testedBefore && typeof existing.predicted === 'boolean' ? existing.predicted : !!((d.cranePredictions || {})[itemId]);
+          if (!testedBefore) {
+            var tests = Object.assign({}, d.craneTests); tests[itemId] = { predicted: predicted, lifted: !!it.magnetic };
+            patch.craneTests = tests;
+          }
+          var verdict = testedBefore ? 'Repeat test — ' : predicted === !!it.magnetic ? 'Prediction confirmed — ' : 'Evidence revised the prediction — ';
           if (it.magnetic) {
             var items = Object.assign({}, d.craneItems); delete items[slot];
             patch.craneItems = items; patch.craneHolding = itemId;
-            patch.craneMsg = 'Clunk! The ' + it.name.toLowerCase() + ' jumped up to the magnet.';
+            patch.craneMsg = verdict + 'the ' + it.name.toLowerCase() + ' lifted. Clunk! Carry it to the recycling bin.';
           } else {
-            patch.craneMsg = 'Nothing happens — ' + it.name.toLowerCase() + ' is not ferromagnetic, so the field slides right past it.';
+            patch.craneMsg = verdict + 'no pull. ' + it.name + ' is not ferromagnetic, so the field slides right past it.';
           }
           announceToSR(patch.craneMsg);
         }
@@ -5679,8 +7653,13 @@
             var count = Object.keys(dep).length;
             if (count >= 4) {
               patch.craneDone = true;
-              patch.craneMsg = 'All 4 ferromagnetic items recycled — yard cleared! 🏆';
-              awardXP(15); addToast('🏗️ Junkyard cleared! +15 XP', 'success');
+              var finalEvidence = craneEvidenceState(d.cranePredictions, d.craneTests, dep);
+              patch.craneBestEvidence = { recycledCount: 4, testedCount: finalEvidence.testedCount, accuracy: finalEvidence.accuracy };
+              patch.craneMsg = 'All 4 ferromagnetic items recycled — yard cleared! ' + finalEvidence.testedCount + ' objects tested' + (finalEvidence.accuracy == null ? '.' : ' at ' + finalEvidence.accuracy + '% prediction accuracy. 🏆');
+              if (!d.craneRewarded) {
+                patch.craneRewarded = true;
+                awardXP(15); addToast('🏗️ Junkyard cleared! +15 XP', 'success');
+              }
             } else {
               patch.craneMsg = '+1 recycled (' + count + '/4). Power off = no field = the ' + held.name.toLowerCase() + ' drops.';
             }
@@ -5693,6 +7672,9 @@
             patch.craneMsg = 'No room to drop here — carry it to the bin on the right.';
           }
           announceToSR(patch.craneMsg);
+        } else if (!powerOn) {
+          patch.craneMsg = 'Field off. Move to another sample and make the next prediction.';
+          announceToSR(patch.craneMsg);
         }
         upd(patch);
       }
@@ -5701,8 +7683,10 @@
         var W = 360, HH = 180;
         var slotX = function (s) { return 22 + s * 36; };
         var cx = slotX(d.craneSlot);
+        var evidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
         var kids = [];
         kids.push(h('rect', { key: 'bg', x: 0, y: 0, width: W, height: HH, fill: INSTRUMENT, rx: 10 }));
+        kids.push(h('rect', { key: 'focus', x: cx - 17, y: 102, width: 34, height: 56, rx: 7, fill: 'rgba(249,115,22,0.07)', stroke: '#f97316', strokeWidth: 1.5, strokeDasharray: '4 3' }));
         kids.push(h('rect', { key: 'rail', x: 10, y: 18, width: W - 20, height: 5, rx: 2, fill: '#475569' }));
         // trolley + cable + magnet disc
         kids.push(h('rect', { key: 'trolley', x: cx - 12, y: 12, width: 24, height: 14, rx: 3, fill: '#94a3b8' }));
@@ -5710,11 +7694,11 @@
         kids.push(h('path', { key: 'disc', d: 'M ' + (cx - 14) + ' 62 A 14 14 0 0 1 ' + (cx + 14) + ' 62 L ' + (cx + 14) + ' 70 L ' + (cx - 14) + ' 70 Z',
           fill: d.cranePower ? '#f43f5e' : '#334155', stroke: d.cranePower ? '#fda4af' : '#475569', strokeWidth: 1.5 }));
         if (d.cranePower) {
-          kids.push(h('circle', { key: 'glow', cx: cx, cy: 70, r: 20, fill: 'none', stroke: 'rgba(244,63,94,0.35)', strokeWidth: 4 }));
+          kids.push(h('circle', { key: 'glow', className: 'mag-crane-glow', cx: cx, cy: 70, r: 20, fill: 'none', stroke: 'rgba(244,63,94,0.35)', strokeWidth: 4 }));
           // Schematic field loops make the on/off distinction visible beyond color.
           [0, 1, 2].forEach(function (fi) {
             var spread = 18 + fi * 10;
-            kids.push(h('path', { key: 'field' + fi,
+            kids.push(h('path', { key: 'field' + fi, className: 'mag-crane-field-line',
               d: 'M ' + (cx - 10) + ' 70 C ' + (cx - spread) + ' ' + (88 + fi * 8) + ', ' + (cx - spread) + ' ' + (112 + fi * 5) + ', ' + cx + ' ' + (126 + fi * 3) +
                 ' C ' + (cx + spread) + ' ' + (112 + fi * 5) + ', ' + (cx + spread) + ' ' + (88 + fi * 8) + ', ' + (cx + 10) + ' 70',
               fill: 'none', stroke: 'rgba(244,63,94,' + (0.34 - fi * 0.07) + ')', strokeWidth: 1.2 }));
@@ -5730,20 +7714,49 @@
         CRANE_ORDER.forEach(function (id, i) {
           if (!(d.craneItems || {})[i]) return;
           var it = itemById(id);
+          var itemEvidence = evidence.items[i];
           kids.push(h('text', { key: 'it' + i, x: slotX(i), y: 152, fontSize: 18, textAnchor: 'middle' }, it.emoji));
+          if (itemEvidence.predicted !== null || itemEvidence.tested) {
+            var mark = itemEvidence.tested ? (itemEvidence.correct ? '✓' : '↺') : '?';
+            kids.push(h('circle', { key: 'badgeBg' + i, cx: slotX(i) + 10, cy: 136, r: 6.5, fill: itemEvidence.tested ? (itemEvidence.correct ? '#047857' : '#0369a1') : '#a16207', stroke: '#fff', strokeWidth: 1 }));
+            kids.push(h('text', { key: 'badge' + i, x: slotX(i) + 10, y: 139.3, fill: '#fff', fontSize: 8.5, fontWeight: 900, textAnchor: 'middle' }, mark));
+          }
         });
         // recycling bin
         kids.push(h('rect', { key: 'bin', x: slotX(BIN_SLOT) - 16, y: 128, width: 32, height: 30, rx: 4, fill: '#14532d', stroke: '#22c55e', strokeWidth: 1.5 }));
         kids.push(h('text', { key: 'binl', x: slotX(BIN_SLOT), y: 148, fontSize: 13, textAnchor: 'middle' }, '♻️'));
         kids.push(h('text', { key: 'binc', x: slotX(BIN_SLOT), y: 124, fill: '#22c55e', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, Object.keys(d.craneDeposited || {}).length + '/4'));
-        return h('svg', { viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
-          'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding ? ', carrying ' + itemById(d.craneHolding).name : '') }, kids);
+        var currentItemId = d.craneHolding || (d.craneItems || {})[d.craneSlot];
+        var currentEvidence = evidence.items.find(function (entry) { return entry.id === currentItemId; });
+        var evidenceLabel = currentEvidence ? (currentEvidence.tested ? ', evidence says ' + (currentEvidence.lifted ? 'lifted' : 'no pull') : currentEvidence.predicted !== null ? ', prediction says ' + (currentEvidence.predicted ? 'will lift' : 'no pull') : ', awaiting prediction') : '';
+        return h('svg', { className: 'mag-crane-scene' + (d.cranePower ? ' is-powered' : ''), viewBox: '0 0 ' + W + ' ' + HH, width: '100%', style: { maxWidth: 420 }, role: 'img',
+          'aria-label': 'Junkyard crane at position ' + d.craneSlot + (d.cranePower ? ', magnet powered' : ', magnet off') + (d.craneHolding ? ', carrying ' + itemById(d.craneHolding).name : '') + evidenceLabel }, kids);
       }
 
       function craneTab() {
         var craneOverId = d.craneHolding || (d.craneItems || {})[d.craneSlot];
         var craneOver = craneOverId ? itemById(craneOverId) : null;
         var cranePositionText = d.craneSlot === BIN_SLOT ? 'recycling bin' : (craneOver ? craneOver.name : 'empty ground');
+        var evidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
+        var currentEvidence = evidence.items.find(function (entry) { return entry.id === craneOverId; });
+        var predictionNeeded = !!(!d.cranePower && !d.craneHolding && currentEvidence && !currentEvidence.tested && currentEvidence.predicted === null);
+        var showPrediction = !!(!d.craneDone && !d.cranePower && !d.craneHolding && currentEvidence && !currentEvidence.tested);
+        var moveLocked = !!(d.cranePower && !d.craneHolding);
+        var next = d.craneDone
+          ? { icon: '🏆', title: 'Evidence applied', body: 'The ferromagnetic set is recycled. Reset to replay with new predictions.' }
+          : d.craneHolding && d.craneSlot === BIN_SLOT
+            ? { icon: '④', title: 'Release into the bin', body: 'Switch power off. With no current, the electromagnet loses its field and drops the item.' }
+            : d.craneHolding
+              ? { icon: '③', title: 'Carry the lifted item', body: 'Keep the field on and move right until the crane is over the recycling bin.' }
+              : d.cranePower
+                ? { icon: '③', title: 'Switch the field off', body: 'This sample showed no pull. Power off before moving so the evidence stays tied to it.' }
+                : currentEvidence && !currentEvidence.tested && currentEvidence.predicted === null
+                  ? { icon: '①', title: 'Predict before testing', body: 'Choose “will lift” or “no pull” for ' + currentEvidence.name.toLowerCase() + '.' }
+                  : currentEvidence && !currentEvidence.tested
+                    ? { icon: '②', title: 'Test the prediction', body: 'The prediction is locked. Switch power on and watch for lift or no pull.' }
+                    : currentEvidence
+                      ? { icon: '↻', title: 'Evidence recorded', body: 'This object showed ' + (currentEvidence.lifted ? 'lift' : 'no pull') + '. Repeat it or move to an untested sample.' }
+                      : { icon: '◀', title: 'Return to the lineup', body: 'Move left from the recycling bin to inspect another sample.' };
         return h('div', null,
           card('Junkyard challenge: recycle the steel', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'Real scrapyards use switchable electromagnets to lift ', h('b', null, 'ferromagnetic'), ' material — power on to grab, power off to release. In this mixed lineup, find the iron, steel, nickel, and cobalt items and carry them to the ♻️ bin.'),
@@ -5751,18 +7764,49 @@
             h('div', { className: 'mag-observe' },
               h('span', { 'aria-hidden': 'true' }, d.cranePower ? '🧲' : '🔎'),
               h('span', null, h('b', null, 'Crane is over: '), cranePositionText + '. ' +
-                (d.craneHolding ? 'The field is holding it; move to the bin and switch off.' : d.craneSlot === BIN_SLOT ? 'Switch off here to release a held item.' : 'Predict whether it will jump before switching on.'))),
+                (d.craneHolding ? 'The field is holding it; move to the bin and switch off.' : d.cranePower ? 'The field is on; switch it off before moving.' : d.craneSlot === BIN_SLOT ? 'Move left to return to the samples.' : currentEvidence && currentEvidence.tested ? 'Its result is already in the evidence board.' : 'Predict whether it will jump before switching on.'))),
+            h('section', { className: 'mag-crane-evidence', 'aria-labelledby': 'mag-crane-evidence-title' },
+              h('div', { className: 'mag-crane-head' },
+                h('b', { id: 'mag-crane-evidence-title' }, 'Prediction → test evidence'),
+                h('span', null, evidence.testedCount + '/8 objects tested')),
+              h('div', { className: 'mag-crane-track', role: 'progressbar', 'aria-label': 'Crane evidence progress', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': evidence.testedCount },
+                h('div', { className: 'mag-crane-fill', style: { width: (evidence.testedCount / 8 * 100) + '%' } })),
+              h('div', { className: 'mag-crane-metrics' },
+                h('div', { className: 'mag-crane-metric' }, h('small', null, 'Tested'), h('b', null, evidence.testedCount + ' / 8')),
+                h('div', { className: 'mag-crane-metric' }, h('small', null, 'Prediction accuracy'), h('b', null, evidence.accuracy == null ? '—' : evidence.accuracy + '%')),
+                h('div', { className: 'mag-crane-metric' }, h('small', null, 'Recycled'), h('b', null, evidence.recycledCount + ' / 4'))),
+              h('ol', { className: 'mag-crane-ledger', 'aria-label': 'Object prediction and test evidence' },
+                evidence.items.map(function (item) {
+                  var state = item.recycled ? 'recycled' : item.tested ? (item.correct ? 'confirmed' : 'revised') : item.predicted !== null ? 'predicted' : 'untested';
+                  var status = item.recycled
+                    ? 'Recycled · lifted · ' + (item.correct ? 'confirmed' : 'prediction revised')
+                    : item.tested
+                      ? (item.lifted ? 'Lifted' : 'No pull') + ' · ' + (item.correct ? 'confirmed' : 'prediction revised')
+                      : item.predicted !== null ? 'Predicts ' + (item.predicted ? 'lift' : 'no pull') : 'Awaiting prediction';
+                  var mark = item.recycled ? '♻' : item.tested ? (item.correct ? '✓' : '↺') : item.predicted !== null ? '?' : '·';
+                  return h('li', { key: item.id, className: 'mag-crane-tile', 'data-state': state, 'data-current': currentEvidence && currentEvidence.id === item.id ? 'true' : 'false', 'aria-label': item.name + ': ' + status },
+                    h('div', { className: 'mag-crane-tile-top' }, h('span', { className: 'mag-crane-tile-emoji', 'aria-hidden': 'true' }, item.emoji), h('span', { className: 'mag-crane-tile-mark', 'aria-hidden': 'true' }, mark)),
+                    h('b', { title: item.name }, item.name), h('small', null, status));
+                }))),
+            h('div', { className: 'mag-crane-next' },
+              h('span', { 'aria-hidden': 'true' }, next.icon),
+              h('span', null, h('b', null, 'Next action · ' + next.title), next.body)),
+            showPrediction ? h('fieldset', { className: 'mag-crane-predict' },
+              h('legend', null, 'Prediction for ' + currentEvidence.name),
+              h('div', null,
+                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === true ? 'true' : 'false', onClick: function () { cranePredict(true); }, style: btn(currentEvidence.predicted === true) }, '🧲 Will lift'),
+                h('button', { type: 'button', 'aria-pressed': currentEvidence.predicted === false ? 'true' : 'false', onClick: function () { cranePredict(false); }, style: btn(currentEvidence.predicted === false) }, '— No pull'))) : null,
             h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 8 } },
-              h('button', { 'aria-label': 'Move crane left', onClick: function () { craneMove(-1); }, style: btn() }, '◀ Move'),
-              h('button', { 'aria-pressed': d.cranePower ? 'true' : 'false', onClick: craneTogglePower, style: btn(d.cranePower) }, d.cranePower ? '⚡ Power OFF' : '⚡ Power ON'),
-              h('button', { 'aria-label': 'Move crane right', onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
+              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot <= 0 || moveLocked, 'aria-label': 'Move crane left', onClick: function () { craneMove(-1); }, style: btn() }, '◀ Move'),
+              h('button', { type: 'button', disabled: d.craneDone || predictionNeeded, 'aria-describedby': predictionNeeded ? 'mag-crane-evidence-title' : undefined, 'aria-pressed': d.cranePower ? 'true' : 'false', onClick: craneTogglePower, style: btn(d.cranePower) }, d.cranePower ? '⚡ Power OFF' : '⚡ Power ON'),
+              h('button', { type: 'button', disabled: d.craneDone || d.craneSlot >= BIN_SLOT || moveLocked, 'aria-label': 'Move crane right', onClick: function () { craneMove(1); }, style: btn() }, 'Move ▶')),
             h('div', { role: 'status', 'aria-live': 'polite', style: { minHeight: 34, textAlign: 'center', color: d.craneDone ? '#34d399' : TEXT, fontSize: 13, fontWeight: 600, padding: '4px 8px' } }, d.craneMsg || 'Move over an object, predict, then test it with the field.'),
             d.craneDone ? h('div', { style: { textAlign: 'center' } },
               h('button', { onClick: function () {
                   upd({ craneSlot: 0, cranePower: false, craneHolding: null, craneMsg: '',
                     craneItems: { 0: 'nail', 1: 'foil', 2: 'clip', 3: 'penny', 4: 'nickel', 5: 'ruler', 6: 'cobalt', 7: 'pencil' },
-                    craneDeposited: {}, craneDone: false });
-                }, style: btn() }, '↻ Reset the yard')) : null
+                    craneDeposited: {}, cranePredictions: {}, craneTests: {}, craneDone: false });
+                }, style: btn() }, '↻ Reset yard & evidence')) : null
           ), '#f97316'),
           card('Why this works', h('p', { style: { color: SOFT, fontSize: 13, margin: 0, lineHeight: 1.5 } },
             'An electromagnet is a magnet with an off switch — that is its superpower. Cranes, relays, speakers, and many industrial separators use controlled current so the field can change on demand. Aluminum and copper are not lifted this way; recycling systems can separate those conductive metals with eddy currents instead.'), '#f97316')
@@ -5784,6 +7828,10 @@
 
       function mazeMove(dx, dy) {
         if (d.mazeWon) return;
+        var priorBearing = mazeBearingAt(d.mazePx, d.mazePy);
+        var priorPoint = mazeCellToField(d.mazePx, d.mazePy);
+        var priorField = fieldAt(priorPoint.x, priorPoint.y, [mazeMagnet()]);
+        var followedField = priorBearing.dx === dx && priorBearing.dy === dy;
         var nx = Math.max(0, Math.min(MAZE_COLS - 1, d.mazePx + dx));
         var ny = Math.max(0, Math.min(MAZE_ROWS - 1, d.mazePy + dy));
         if (nx === d.mazePx && ny === d.mazePy) return;
@@ -5791,6 +7839,11 @@
         if (trail.length > 200) trail = trail.slice(trail.length - 200);
         var patch = { mazePx: nx, mazePy: ny, mazeSteps: (d.mazeSteps || 0) + 1, mazeTrail: trail };
         var f = mazeCellToField(nx, ny);
+        var nextField = fieldAt(f.x, f.y, [mazeMagnet()]);
+        var priorStrength = Math.hypot(priorField.x, priorField.y);
+        var nextStrength = Math.hypot(nextField.x, nextField.y);
+        var signalChange = nextStrength > priorStrength * 1.08 ? 'the signal rose' : nextStrength < priorStrength * 0.92 ? 'the signal fell' : 'the signal stayed nearly level';
+        var moveEvidence = followedField ? 'Your step followed the red tip and ' : 'Your step crossed the red-tip direction and ';
         var poles = mazePoles(d.mazeRound || 0);
         var dS = Math.hypot(f.x - poles.s.x, f.y - poles.s.y);
         var dN = Math.hypot(f.x - poles.n.x, f.y - poles.n.y);
@@ -5798,12 +7851,12 @@
           patch.mazeWon = true;
           patch.mazeWins = (d.mazeWins || 0) + 1;
           if ((d.mazeWins || 0) === 0) { awardXP(15); addToast('🧭 Found it by field alone! +15 XP', 'success'); }
-          announceToSR('Found the hidden magnet in ' + patch.mazeSteps + ' steps! You arrived at its SOUTH pole.');
+          announceToSR('Found the hidden magnet in ' + patch.mazeSteps + ' steps! ' + moveEvidence + signalChange + '. You arrived at its SOUTH pole.');
         } else if (dN < MAZE_CELL * 1.2) {
-          announceToSR('You are at the NORTH pole — the red needle end points away from here. Walk the way the red end points.');
+          announceToSR(moveEvidence + signalChange + '. You are at the NORTH pole — the red needle end points away from here. Walk the way the red end points.');
         } else {
           var nextBearing = mazeBearingAt(nx, ny);
-          announceToSR('Moved to column ' + (nx + 1) + ', row ' + (ny + 1) + '. The red needle’s strongest direction is now ' + nextBearing.word + '.');
+          announceToSR('Moved to column ' + (nx + 1) + ', row ' + (ny + 1) + '. ' + moveEvidence + signalChange + '. The red needle’s strongest direction is now ' + nextBearing.word + '.');
         }
         upd(patch);
       }
@@ -5863,8 +7916,48 @@
         announceToSR('New round — the magnet is hidden somewhere new.');
       }
 
+      function mazeRestartRound() {
+        var st = mazeRoundDef().start;
+        upd({ mazePx: st[0], mazePy: st[1], mazeSteps: 0, mazeWon: false, mazeTrail: [] });
+        announceToSR('Route restarted. The hidden magnet stayed in the same place; your signal trail is clear.');
+      }
+
+      function mazeSignalSVG(evidence) {
+        var W = 340, H = 88, left = 42, right = 10, top = 10, bottom = 20;
+        var chartWidth = W - left - right, chartHeight = H - top - bottom;
+        var samples = evidence.samples;
+        var points = samples.map(function (sample, index) {
+          var x = left + (samples.length === 1 ? 0 : index / (samples.length - 1) * chartWidth);
+          var y = top + (100 - sample.signalPercent) / 100 * chartHeight;
+          return { x: x, y: y };
+        });
+        var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: W, height: H, rx: 9, fill: INSTRUMENT })];
+        [0, 50, 100].forEach(function (level) {
+          var y = top + (100 - level) / 100 * chartHeight;
+          kids.push(h('line', { key: 'grid-' + level, x1: left, y1: y, x2: W - right, y2: y, stroke: BORDER, strokeWidth: 1, opacity: level === 0 ? 0.9 : 0.48 }));
+        });
+        kids.push(h('text', { key: 'strong', x: left - 6, y: top + 4, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'strong'));
+        kids.push(h('text', { key: 'faint', x: left - 6, y: top + chartHeight, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'faint'));
+        if (points.length > 1) {
+          var area = [left + ',' + (top + chartHeight)].concat(points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); })).concat([points[points.length - 1].x.toFixed(1) + ',' + (top + chartHeight)]).join(' ');
+          kids.push(h('polygon', { key: 'area', points: area, fill: 'rgba(56,189,248,.11)' }));
+          kids.push(h('polyline', { key: 'line', points: points.map(function (point) { return point.x.toFixed(1) + ',' + point.y.toFixed(1); }).join(' '), fill: 'none', stroke: '#38bdf8', strokeWidth: 2.4, strokeLinejoin: 'round', strokeLinecap: 'round' }));
+        }
+        var firstPoint = points[0], lastPoint = points[points.length - 1];
+        kids.push(h('circle', { key: 'first', cx: firstPoint.x, cy: firstPoint.y, r: 3.2, fill: '#fbbf24', stroke: INSTRUMENT, strokeWidth: 1.5 }));
+        if (points.length > 1) kids.push(h('circle', { key: 'last', cx: lastPoint.x, cy: lastPoint.y, r: 4, fill: '#fb7185', stroke: INSTRUMENT, strokeWidth: 1.5 }));
+        kids.push(h('text', { key: 'start', x: left, y: H - 6, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'start' }, 'start'));
+        kids.push(h('text', { key: 'now', x: W - right, y: H - 6, fill: SOFT, fontSize: 10, fontWeight: 700, textAnchor: 'end' }, 'now'));
+        var ratioText = evidence.signalRatio >= 100 ? evidence.signalRatio.toFixed(0) : evidence.signalRatio >= 10 ? evidence.signalRatio.toFixed(1) : evidence.signalRatio.toFixed(2);
+        return h('svg', { className: 'mag-maze-chart', viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+          'aria-label': 'Magnetic signal trail across ' + samples.length + ' sampled position' + (samples.length === 1 ? '' : 's') + '. Current signal is ' + ratioText + ' times the starting signal and is ' + evidence.signalTrend + '.' }, kids);
+      }
+
       function mazeTab() {
         var bearing = mazeBearingAt(d.mazePx, d.mazePy);
+        var evidence = fieldWalkEvidenceState(d.mazeRound, d.mazeTrail);
+        var ratioText = evidence.signalRatio >= 100 ? evidence.signalRatio.toFixed(0) : evidence.signalRatio >= 10 ? evidence.signalRatio.toFixed(1) : evidence.signalRatio.toFixed(2);
+        var trendText = evidence.signalTrend === 'rising' ? 'The magnetic signal rose from the previous square.' : evidence.signalTrend === 'falling' ? 'The magnetic signal fell from the previous square.' : evidence.signalTrend === 'steady' ? 'The magnetic signal stayed nearly level.' : 'This first reading is the signal baseline.';
         function mazePadStyle(dx, dy) {
           var recommended = d.learningMode !== 'challenge' && bearing.dx === dx && bearing.dy === dy;
           return { width: 44, height: 44, borderRadius: 9, border: '2px solid ' + (recommended ? '#fbbf24' : BORDER),
@@ -5888,9 +7981,29 @@
               h('span', null, ''),
               h('button', { 'aria-label': 'Walk down' + (d.learningMode !== 'challenge' && bearing.dy === 1 ? ', closest to the red needle direction' : ''), onClick: function () { mazeMove(0, 1); }, style: mazePadStyle(0, 1) }, '↓'),
               h('span', null, '')),
+            h('div', { className: 'mag-maze-evidence' },
+              h('div', { className: 'mag-maze-head' },
+                h('b', null, 'Navigation evidence'),
+                h('span', null, evidence.samples.length + ' sampled position' + (evidence.samples.length === 1 ? '' : 's') + ' · log signal scale')),
+              mazeSignalSVG(evidence),
+              h('div', { className: 'mag-maze-metrics' },
+                h('div', { className: 'mag-maze-metric', style: { '--mag-maze-tone': '#38bdf8' } },
+                  h('small', null, 'Signal gain'), h('b', null, ratioText + '×'), h('span', null, evidence.signalLabel + ' · relative to start')),
+                h('div', { className: 'mag-maze-metric', style: { '--mag-maze-tone': '#34d399' } },
+                  h('small', null, 'Followed field'), h('b', null, evidence.alignmentPercent == null ? '—' : evidence.alignmentPercent + '%'), h('span', null, evidence.moveCount ? evidence.alignedCount + '/' + evidence.moveCount + ' moves matched the red tip' : 'make a move to begin')),
+                h('div', { className: 'mag-maze-metric', style: { '--mag-maze-tone': '#fbbf24' } },
+                  h('small', null, 'Trail coverage'), h('b', null, evidence.uniqueCount + ' unique'), h('span', null, evidence.revisits ? evidence.revisits + ' revisit' + (evidence.revisits === 1 ? '' : 's') + ' recorded' : 'no loops yet'))),
+              h('div', { className: 'mag-maze-feedback', 'data-state': evidence.lastMoveAligned == null ? 'start' : evidence.lastMoveAligned ? 'aligned' : 'cross', role: 'status', 'aria-live': evidence.moveCount ? 'polite' : 'off', 'aria-atomic': 'true' },
+                h('span', { 'aria-hidden': 'true' }, evidence.lastMoveAligned == null ? '◉' : evidence.lastMoveAligned ? '✓' : '↗'),
+                h('span', null,
+                  h('b', null, evidence.lastMoveAligned == null ? 'Start the evidence trail' : evidence.lastMoveAligned ? 'Aligned with the field' : 'Cross-field move'),
+                  evidence.lastMoveAligned == null ? 'Your first square is the 1.00× baseline. Move once to compare direction and strength.' : (evidence.lastMoveAligned ? 'Your last step matched the red tip at the prior square. ' : 'Your last step did not match the red tip at the prior square. That is useful evidence, not a penalty. ') + trendText)),
+              d.mazeSteps > 0 && !d.mazeWon ? h('div', { className: 'mag-maze-actions' },
+                h('button', { onClick: mazeRestartRound, style: btn() }, '↻ Restart this route')) : null),
             d.mazeWon ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid #22c55e', marginBottom: 8 } },
               h('p', { style: { color: TEXT, fontSize: 13, fontWeight: 700, margin: '0 0 6px' } }, '🏆 Found in ' + d.mazeSteps + ' steps!'),
               h('p', { style: { color: SOFT, fontSize: 12.5, margin: 0, lineHeight: 1.5 } }, 'Notice WHERE you arrived: the ', h('b', { style: { color: '#3b82f6' } }, 'SOUTH pole'), '. Field lines flow into south poles, so following the red end always lands you there. This is Earth’s great naming joke — a compass points “north” because the spot we call the north magnetic pole is, magnetically, a ', h('b', null, 'south'), ' pole.'),
+              h('p', { style: { color: SOFT, fontSize: 11.5, margin: '7px 0 0', lineHeight: 1.45 } }, 'Route evidence: ' + (evidence.alignmentPercent == null ? 'no scored moves' : evidence.alignmentPercent + '% field-aligned') + ' · ' + evidence.uniqueCount + ' unique squares · ' + evidence.revisits + ' revisits · needle-following benchmark ' + evidence.referenceSteps + ' steps.'),
               h('div', { style: { textAlign: 'center', marginTop: 8 } },
                 h('button', { onClick: mazeNextRound, style: btn(true) }, '▶ Next round'))) : null,
             h('p', { style: { color: SOFT, fontSize: 12, margin: 0, lineHeight: 1.5 } }, 'Rounds won: ' + (d.mazeWins || 0) + '. The needle does NOT point straight at the magnet — it follows the curved field line through your square. Your breadcrumb trail will show the curve you walked.')
@@ -5947,9 +8060,64 @@
       function transformerTab() {
         var turnsRatio = d.xfmrN2 / d.xfmrN1;
         var currentRatio = 1 / turnsRatio;
-        var load = transformerLoad(120, d.xfmrN1, d.xfmrN2, d.xfmrAC, d.xfmrLoad, d.xfmrEfficiency / 100);
+        var design = transformerDesignState(120, d.xfmrN1, d.xfmrN2, d.xfmrAC, d.xfmrLoad, d.xfmrEfficiency / 100, d.xfmrMission);
+        var load = design.load;
         var brightness = Math.max(0, Math.min(1, load.pout / 240));
         var heatLevel = Math.max(0, Math.min(100, load.loss / Math.max(1, load.pin) * 100));
+        var missionWins = d.xfmrMissionWins && typeof d.xfmrMissionWins === 'object' ? d.xfmrMissionWins : {};
+        var missionWon = !!missionWins[design.mission.id];
+        var solvedCount = TRANSFORMER_DESIGN_MISSIONS.filter(function (mission) { return !!missionWins[mission.id]; }).length;
+        function selectTransformerMission(index) {
+          var mission = TRANSFORMER_DESIGN_MISSIONS[index];
+          upd({ xfmrMission: index, xfmrChecked: false });
+          announceToSR('Engineering brief selected: ' + mission.label + '.');
+        }
+        function nextTransformerMission() {
+          var next = (design.index + 1) % TRANSFORMER_DESIGN_MISSIONS.length;
+          for (var offset = 1; offset <= TRANSFORMER_DESIGN_MISSIONS.length; offset++) {
+            var candidate = (design.index + offset) % TRANSFORMER_DESIGN_MISSIONS.length;
+            if (!missionWins[TRANSFORMER_DESIGN_MISSIONS[candidate].id]) { next = candidate; break; }
+          }
+          selectTransformerMission(next);
+        }
+        function validateTransformerDesign() {
+          if (!design.allMet) {
+            upd({ xfmrChecked: true });
+            announceToSR('Design check: ' + design.metCount + ' of 3 constraints met. Next, ' + design.nextAction.label.toLowerCase() + '. ' + design.nextAction.detail);
+            return;
+          }
+          var nextWins = Object.assign({}, missionWins);
+          var firstWin = !nextWins[design.mission.id];
+          nextWins[design.mission.id] = true;
+          upd({ xfmrChecked: true, xfmrMissionWins: nextWins, xfmrTouched: true });
+          if (firstWin) { awardXP(10); addToast(design.mission.icon + ' Transformer brief solved! +10 XP', 'success'); }
+          announceToSR('Design validated. All three constraints are met for ' + design.mission.label + '.');
+        }
+        function transformerGoal(criterion) {
+          var scale = Math.max(1e-9, criterion.scaleMax);
+          var marker = Math.max(0, Math.min(100, criterion.value / scale * 100));
+          var bandLeft = Math.max(0, Math.min(100, criterion.min / scale * 100));
+          var bandRight = Math.max(bandLeft, Math.min(100, criterion.max / scale * 100));
+          var display = criterion.value.toFixed(criterion.digits) + ' ' + criterion.unit;
+          return h('div', { key: criterion.key, className: 'mag-xfmr-goal', 'data-pass': criterion.met ? 'true' : 'false' },
+            h('div', { className: 'mag-xfmr-goal-head' },
+              h('small', null, criterion.label),
+              h('i', { 'aria-hidden': 'true' }, criterion.met ? '\u2713 MET' : '\u2022 TUNE')),
+            h('b', { className: 'mag-xfmr-reading' }, display),
+            h('div', { className: 'mag-xfmr-track', role: 'meter', 'aria-label': criterion.label,
+                'aria-valuemin': 0, 'aria-valuemax': +scale.toFixed(2), 'aria-valuenow': +Math.min(criterion.value, scale).toFixed(2),
+                'aria-valuetext': display + '; target ' + criterion.target + '; ' + (criterion.met ? 'met' : 'not met') },
+              h('span', { className: 'mag-xfmr-band', 'aria-hidden': 'true', style: { left: bandLeft.toFixed(1) + '%', width: (bandRight - bandLeft).toFixed(1) + '%' } }),
+              h('span', { className: 'mag-xfmr-marker', 'aria-hidden': 'true', style: { left: marker.toFixed(1) + '%' } })),
+            h('span', { className: 'mag-xfmr-target' }, 'Target ' + criterion.target + ' · blue band'));
+        }
+        var feedbackStatus = design.allMet ? (missionWon ? 'won' : 'ready') : design.status;
+        var feedbackTitle = design.allMet
+          ? (missionWon ? 'Mission secured · replay still meets the brief' : 'All targets aligned · ready to validate')
+          : (d.xfmrChecked ? design.metCount + '/3 constraints met' : 'Live design score · ' + design.metCount + '/3');
+        var feedbackDetail = design.allMet
+          ? (missionWon ? 'This configuration still balances voltage, useful power, and heat. Move on or keep experimenting.' : design.nextAction.detail)
+          : design.nextAction.label + '. ' + design.nextAction.detail;
         return h('div', null,
           card('Turns ratio: voltage and current trade', h('div', null,
             h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 10px', lineHeight: 1.5 } }, 'AC in the primary makes changing core flux. The secondary shares that flux, so V2/V1 = N2/N1. Add a load to reveal the current and power that the voltage-only view hides.'),
@@ -5969,10 +8137,33 @@
                 ? h('span', null, h('b', null, 'No power multiplier: '), 'stepping voltage up reduces available current by the inverse ratio, so power does not multiply. The turns ratio changes the form of energy transfer, not the amount.')
                 : h('span', null, h('b', null, 'Switching moment only: '), 'DC can produce a brief pulse when switched because the flux changes once, but not a continuous output.')))
           ), '#38bdf8'),
-          card('Load, lamp, and efficiency', h('div', null,
-            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Lower resistance draws more secondary current. Real windings and cores warm up, so input power must exceed useful output power.'),
-            slider('Load resistance (ohms)', d.xfmrLoad, 20, 240, 10, function (v) { upd({ xfmrLoad: v, xfmrTouched: true }); }),
-            slider('Transformer efficiency (%)', d.xfmrEfficiency, 80, 99, 1, function (v) { upd({ xfmrEfficiency: v, xfmrTouched: true }); }),
+          card('Engineering power-delivery challenge', h('div', null,
+            h('p', { style: { color: SOFT, fontSize: 13, margin: '0 0 8px', lineHeight: 1.5 } }, 'Load, lamp, and efficiency work together: use the turns above, then tune the load and component quality below. A successful transformer must hit all three targets at once: voltage, useful power, and heat.'),
+            h('div', { className: 'mag-xfmr-challenge' },
+              h('div', { className: 'mag-xfmr-head' },
+                h('b', null, 'Choose an engineering brief'),
+                h('span', null, solvedCount + '/' + TRANSFORMER_DESIGN_MISSIONS.length + ' missions solved')),
+              h('div', { className: 'mag-xfmr-missions', role: 'group', 'aria-label': 'Transformer engineering briefs' },
+                TRANSFORMER_DESIGN_MISSIONS.map(function (mission, index) {
+                  var selected = index === design.index;
+                  return h('button', { key: mission.id, 'aria-pressed': selected ? 'true' : 'false',
+                    onClick: function () { selectTransformerMission(index); }, style: btn(selected) },
+                    mission.icon + ' ' + mission.targetVoltage + ' V' + (missionWins[mission.id] ? ' \u2713' : ''));
+                })),
+              h('div', { className: 'mag-xfmr-brief' },
+                h('span', { 'aria-hidden': 'true' }, design.mission.icon),
+                h('span', null, h('b', null, design.mission.label), design.mission.brief)),
+              slider('Load resistance (ohms)', d.xfmrLoad, 20, 240, 10, function (v) { upd({ xfmrLoad: v, xfmrTouched: true }); }),
+              slider('Transformer efficiency (%)', d.xfmrEfficiency, 80, 99, 1, function (v) { upd({ xfmrEfficiency: v, xfmrTouched: true }); }),
+              h('div', { className: 'mag-xfmr-goals', role: 'group', 'aria-label': design.mission.label + ' live constraint scorecard' }, design.criteria.map(transformerGoal)),
+              h('div', { className: 'mag-xfmr-feedback', 'data-status': feedbackStatus, role: 'status', 'aria-live': d.xfmrChecked || design.allMet ? 'polite' : 'off', 'aria-atomic': 'true' },
+                h('span', { 'aria-hidden': 'true' }, design.allMet ? '\u2713' : design.active ? '\u2192' : '\u26A0'),
+                h('span', null, h('b', null, feedbackTitle), feedbackDetail)),
+              h('div', { className: 'mag-xfmr-actions' },
+                design.allMet && missionWon
+                  ? h('button', { onClick: nextTransformerMission, style: btn(true) }, solvedCount === TRANSFORMER_DESIGN_MISSIONS.length ? '\u21BB Replay next mission' : '\u25B6 Next unsolved mission')
+                  : h('button', { onClick: validateTransformerDesign, style: btn(design.allMet) }, design.allMet ? '\u2713 Lock in design' : (d.xfmrChecked ? 'Check again' : 'Check design')),
+                d.xfmrChecked && !design.allMet ? h('span', { style: { alignSelf: 'center', color: SOFT, fontSize: 11 } }, 'Next focus: ' + design.nextAction.label) : null)),
             h('div', { className: 'mag-sim-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8, margin: '10px 0' } },
               h('div', { style: { padding: 9, border: '1px solid ' + BORDER, borderRadius: 9, textAlign: 'center' } },
                 h('div', { style: { color: SOFT, fontSize: 11 } }, 'Secondary current'),
@@ -6300,80 +8491,133 @@
         );
       }      // ── Quiz ──────────────────────────────────────────────────────────
       function quizTab() {
+        var evidence = quizEvidenceState(d.quizIdx, d.quizScore, d.quizPicked, d.quizMissed, d.quizDone);
+        var TAB_LABELS = {};
+        TABS.forEach(function (t) { TAB_LABELS[t.id] = t.label; });
         if (d.quizDone) {
-          // "Study this" loop: map every missed question to the tab that
-          // teaches it, dedup, and offer one jump button per weak topic.
-          var TAB_LABELS = {};
-          TABS.forEach(function (t) { TAB_LABELS[t.id] = t.label; });
-          var missedTabs = [];
-          (d.quizMissed || []).forEach(function (qi) {
-            var tb = QUIZ_TABS[qi];
-            if (tb && missedTabs.indexOf(tb) === -1) missedTabs.push(tb);
-          });
-          return card('Quiz complete', h('div', null,
-            h('div', { style: { fontSize: 30, textAlign: 'center', marginBottom: 6 } }, d.quizScore >= QUIZ_PASS ? '🏆' : '🧲'),
-            h('p', { style: { color: TEXT, fontSize: 16, fontWeight: 800, textAlign: 'center', margin: '0 0 4px' } }, 'You scored ' + d.quizScore + ' / ' + QUIZ.length),
-            h('p', { style: { color: SOFT, fontSize: 13, textAlign: 'center', margin: '0 0 12px' } }, d.quizScore >= QUIZ_PASS ? 'Field mastery unlocked — nicely done.' : 'Solid start — study the topics below and try again to reach ' + QUIZ_PASS + '+.'),
-            missedTabs.length ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.08)', border: '1px dashed #f59e0b', marginBottom: 12 } },
-              h('p', { style: { color: TEXT, fontSize: 12.5, fontWeight: 700, margin: '0 0 8px' } }, '📚 Your missed questions came from:'),
-              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-                missedTabs.map(function (tb) {
-                  return h('button', { key: tb, onClick: function () { upd({ tab: tb }); announceToSR('Opened the ' + tb + ' section to review'); }, style: btn() }, 'Study: ' + (TAB_LABELS[tb] || tb));
-                }))) : null,
-            h('div', { style: { textAlign: 'center' } },
-              h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizMissed: [] }); }, style: btn() }, '↻ Try again'))
+          var bestScore = Math.max(Number(d.quizBest) || 0, evidence.score);
+          var scoreAngle = Math.round((evidence.score / evidence.total) * 360) + 'deg';
+          return card('Quiz complete', h('div', { className: 'mag-quiz-results', 'data-pass': evidence.pass ? 'true' : 'false' },
+            h('div', { className: 'mag-quiz-results-hero' },
+              h('div', { className: 'mag-quiz-ring', role: 'img', 'aria-label': 'Quiz score ' + evidence.score + ' out of ' + evidence.total, style: { '--mag-quiz-score-angle': scoreAngle } },
+                h('div', { className: 'mag-quiz-ring-core' },
+                  h('span', { 'aria-hidden': 'true' }, evidence.pass ? '🏆' : '🧲'),
+                  h('b', null, evidence.score + '/' + evidence.total),
+                  h('small', null, Math.round((evidence.score / evidence.total) * 100) + '%'))),
+              h('div', { className: 'mag-quiz-results-copy' },
+                h('h3', null, evidence.pass ? 'Field mastery unlocked' : 'Your field model is taking shape'),
+                h('p', null, evidence.pass ? 'Field mastery unlocked — nicely done. Use the topic map to make every idea even stronger.' : 'Solid start — review the evidence marked below and try again to reach ' + QUIZ_PASS + '+.'),
+                h('p', { style: { marginTop: 5, color: TEXT, fontWeight: 800 } }, 'You scored ' + evidence.score + ' / ' + evidence.total))),
+            h('div', { className: 'mag-quiz-result-metrics', role: 'group', 'aria-label': 'Quiz result summary' },
+              h('div', { className: 'mag-quiz-result-metric' }, h('small', null, 'Best score'), h('b', null, bestScore + '/' + evidence.total)),
+              h('div', { className: 'mag-quiz-result-metric' }, h('small', null, 'Mastery target'), h('b', null, QUIZ_PASS + '/' + evidence.total)),
+              h('div', { className: 'mag-quiz-result-metric' }, h('small', null, 'Best streak'), h('b', null, evidence.bestStreak + ' correct'))),
+            evidence.reviewTopics.length ? h('div', { className: 'mag-quiz-review-note' },
+              h('span', { 'aria-hidden': 'true' }, '📚'),
+              h('span', null,
+                h('b', null, 'Your missed questions came from these labs:'),
+                evidence.reviewTopics.length + ' topic' + (evidence.reviewTopics.length === 1 ? ' has' : 's have') + ' a direct study link below.')) : null,
+            !evidence.historyComplete ? h('div', { className: 'mag-quiz-review-note', role: 'status' },
+              h('span', { 'aria-hidden': 'true' }, 'ℹ️'),
+              h('span', null, h('b', null, 'Partial response history'), 'Topic cards show the evidence available in this restored session. Your total score remains authoritative.')) : null,
+            h('section', { 'aria-labelledby': 'mag-quiz-topic-title' },
+              h('div', { className: 'mag-quiz-topic-head' },
+                h('h3', { id: 'mag-quiz-topic-title' }, 'Topic mastery map'),
+                h('span', null, evidence.reviewTopics.length ? evidence.reviewTopics.length + ' to revisit' : 'All topics secure')),
+              h('div', { className: 'mag-quiz-topics' }, evidence.topics.map(function (topic) {
+                var topicLabel = TAB_LABELS[topic.id] || topic.label;
+                var stateText = topic.needsReview ? '↺ Review' : '✓ Secure';
+                return h('article', { key: topic.id, className: 'mag-quiz-topic-card', 'data-status': topic.status },
+                  h('div', { className: 'mag-quiz-topic-card-head' },
+                    h('b', null, topicLabel),
+                    h('span', { className: 'mag-quiz-topic-state' }, stateText)),
+                  h('div', { className: 'mag-quiz-topic-score' },
+                    h('span', null, topic.needsReview ? topic.missed + ' to revisit' : 'Evidence secured'),
+                    h('strong', null, topic.correct + '/' + topic.total)),
+                  h('div', { className: 'mag-quiz-topic-track', role: 'progressbar', 'aria-label': topicLabel + ' mastery: ' + topic.correct + ' of ' + topic.total + ' correct', 'aria-valuemin': 0, 'aria-valuemax': topic.total, 'aria-valuenow': topic.correct },
+                    h('span', { className: 'mag-quiz-topic-fill', style: { width: topic.percent + '%' } })),
+                  topic.needsReview ? h('button', { onClick: function () { upd({ tab: topic.id }); announceToSR('Opened ' + topicLabel + ' to review'); }, style: btn() }, 'Study: ' + topicLabel) : null);
+              }))),
+            h('div', { className: 'mag-quiz-results-actions' },
+              h('button', { onClick: function () { upd({ quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizMissed: [] }); announceToSR('Quiz restarted'); }, style: btn(true) }, '↻ Try again'))
           ));
         }
-        var item = QUIZ[d.quizIdx];
-        var quizTopic = QUIZ_TABS[d.quizIdx] || 'field';
-        var quizTopicDef = TABS.find(function (t) { return t.id === quizTopic; });
-        var quizTopicLabel = quizTopicDef ? quizTopicDef.label : quizTopic;
+        var item = QUIZ[evidence.index];
+        var quizTopic = QUIZ_TABS[evidence.index] || 'field';
+        var quizTopicLabel = TAB_LABELS[quizTopic] || quizTopic;
         var pickedRight = d.quizPicked != null && d.quizPicked === item.c;
-        return h('div', null,
-          card('Question ' + (d.quizIdx + 1) + ' of ' + QUIZ.length, h('div', null,
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', color: SOFT, fontSize: 11.5, marginBottom: 5 } },
-              h('span', null, 'Topic · ' + quizTopicLabel),
-              h('span', null, Math.round(((d.quizIdx + 1) / QUIZ.length) * 100) + '% through')),
-            h('progress', { value: d.quizIdx + 1, max: QUIZ.length, 'aria-label': 'Quiz progress: question ' + (d.quizIdx + 1) + ' of ' + QUIZ.length,
-              style: { width: '100%', height: 8, accentColor: '#f43f5e', marginBottom: 12 } }),
-            h('p', { style: { color: TEXT, fontSize: 15, fontWeight: 700, margin: '0 0 12px', lineHeight: 1.5 } }, item.q),
-            item.a.map(function (opt, i) {
-              var picked = d.quizPicked === i;
-              var reveal = d.quizPicked != null;
-              var correct = i === item.c;
-              var bg = 'transparent', bd = BORDER;
-              if (reveal && correct) { bg = 'rgba(34,197,94,0.18)'; bd = '#22c55e'; }
-              else if (reveal && picked && !correct) { bg = 'rgba(239,68,68,0.18)'; bd = '#ef4444'; }
-              return h('button', { key: i, disabled: reveal, 'aria-pressed': picked ? 'true' : 'false',
-                onClick: function () {
-                  if (d.quizPicked != null) return;
-                  var right = i === item.c;
-                  upd({ quizPicked: i, quizScore: d.quizScore + (right ? 1 : 0), quizMissed: right ? (d.quizMissed || []) : (d.quizMissed || []).concat([d.quizIdx]) });
-                  announceToSR(right ? 'Correct. ' + item.why : 'Not quite. ' + item.why);
-                },
-                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 12px', marginBottom: 8, borderRadius: 9, border: '1px solid ' + bd, background: bg, color: TEXT, fontSize: 13, cursor: reveal ? 'default' : 'pointer' } },
-                opt + (reveal && correct ? '  ✓' : (reveal && picked && !correct ? '  ✗' : '')));
-            }),
+        var optionLetters = ['A', 'B', 'C', 'D'];
+        return h('div', { className: 'mag-quiz-shell' },
+          card('Question ' + (evidence.index + 1) + ' of ' + QUIZ.length, h('div', null,
+            h('div', { className: 'mag-quiz-head' },
+              h('span', { className: 'mag-quiz-topic' }, 'Topic · ' + quizTopicLabel),
+              h('span', { className: 'mag-quiz-position' }, 'Question ' + (evidence.index + 1) + ' / ' + evidence.total)),
+            h('div', { className: 'mag-quiz-evidence-head' },
+              h('b', null, 'Live quiz evidence'),
+              h('span', null, evidence.answeredCount + '/' + evidence.total + ' responses locked')),
+            h('div', { className: 'mag-quiz-hud', role: 'group', 'aria-label': 'Live quiz evidence' },
+              h('div', { className: 'mag-quiz-metric', style: { '--mag-quiz-tone': '#34d399' } }, h('small', null, 'Score'), h('b', null, evidence.score + '/' + evidence.total), h('span', null, 'evidence points')),
+              h('div', { className: 'mag-quiz-metric', style: { '--mag-quiz-tone': '#fbbf24' } }, h('small', null, 'Current streak'), h('b', null, evidence.currentStreak), h('span', null, evidence.currentStreak === 1 ? 'claim confirmed' : 'claims confirmed')),
+              h('div', { className: 'mag-quiz-metric', style: { '--mag-quiz-tone': '#f43f5e' } }, h('small', null, 'Mastery target'), h('b', null, evidence.pass ? 'Reached' : evidence.neededForPass + ' more'), h('span', null, QUIZ_PASS + ' correct unlocks'))),
+            h('progress', { className: 'mag-quiz-progress', value: evidence.answeredCount, max: evidence.total, 'aria-label': 'Quiz evidence: ' + evidence.answeredCount + ' of ' + evidence.total + ' responses confirmed', 'aria-valuemin': 0, 'aria-valuemax': evidence.total, 'aria-valuenow': evidence.answeredCount }),
+            h('ol', { className: 'mag-quiz-trail', 'aria-label': 'Question evidence trail' }, evidence.progress.map(function (step) {
+              var mark = step.state === 'confirmed' ? '✓' : (step.state === 'revised' ? '↺' : step.number);
+              var stateLabel = step.state === 'confirmed' ? 'confirmed' : (step.state === 'revised' ? 'needs review' : (step.state === 'current' ? 'current question' : 'upcoming'));
+              return h('li', { key: step.index, className: 'mag-quiz-step', 'data-state': step.state, 'aria-label': 'Question ' + step.number + ', ' + stateLabel, title: 'Question ' + step.number + ' · ' + stateLabel }, mark);
+            })),
+            h('section', { className: 'mag-quiz-question', 'aria-labelledby': 'mag-quiz-question-text' },
+              h('p', { className: 'mag-quiz-kicker' }, 'Build the strongest claim'),
+              h('h3', { id: 'mag-quiz-question-text' }, item.q),
+              h('fieldset', { className: 'mag-quiz-answers' },
+                h('legend', { className: 'mag-quiz-legend' }, 'Choose one answer. Your evidence locks after selection.'),
+                item.a.map(function (opt, i) {
+                  var picked = d.quizPicked === i;
+                  var reveal = d.quizPicked != null;
+                  var correct = i === item.c;
+                  var optionState = 'idle';
+                  var statusText = 'Choose';
+                  if (reveal && correct) { optionState = 'correct'; statusText = '✓ Model answer'; }
+                  else if (reveal && picked) { optionState = 'revised'; statusText = '↺ Revise'; }
+                  else if (reveal) { optionState = 'unselected'; statusText = 'Not selected'; }
+                  var accessibleStatus = !reveal ? '' : (correct ? '. Correct model answer' : (picked ? '. Selected answer, revise' : '. Not selected'));
+                  return h('button', { key: i, type: 'button', className: 'mag-quiz-option', 'data-state': optionState, disabled: reveal, 'aria-pressed': picked ? 'true' : 'false', 'aria-label': 'Option ' + optionLetters[i] + ': ' + opt + accessibleStatus,
+                    onClick: function () {
+                      if (d.quizPicked != null) return;
+                      var right = i === item.c;
+                      var missed = Array.isArray(d.quizMissed) ? d.quizMissed.slice() : [];
+                      if (!right && missed.indexOf(evidence.index) === -1) missed.push(evidence.index);
+                      upd({ quizPicked: i, quizScore: evidence.score + (right ? 1 : 0), quizMissed: missed });
+                      announceToSR(right ? 'Correct. ' + item.why : 'Not quite. ' + item.why);
+                    } },
+                    h('span', { className: 'mag-quiz-letter', 'aria-hidden': 'true' }, optionLetters[i]),
+                    h('span', { className: 'mag-quiz-option-copy' }, opt),
+                    h('span', { className: 'mag-quiz-option-status', 'aria-hidden': 'true' }, statusText));
+                }))),
             d.quizPicked != null ? h('div', null,
-              h('div', { className: 'mag-observe', role: 'status' },
-                h('span', { 'aria-hidden': 'true' }, pickedRight ? '✅' : '🔁'),
+              h('div', { className: 'mag-quiz-feedback', 'data-state': pickedRight ? 'correct' : 'revised', role: 'status' },
+                h('span', { className: 'mag-quiz-feedback-icon', 'aria-hidden': 'true' }, pickedRight ? '✅' : '🔁'),
                 h('span', null,
-                  h('b', null, pickedRight ? 'Your evidence matches. ' : 'Revise the claim. '),
-                  item.why,
-                  !pickedRight ? h('span', null, ' The highlighted answer is the model to carry forward; revisit ' + quizTopicLabel + ' after the quiz if this still feels surprising.') : null)),
-              h('button', { onClick: function () {
-                  if (d.quizIdx + 1 >= QUIZ.length) {
-                    var best = Math.max(d.quizBest || 0, d.quizScore);
-                    upd({ quizDone: true, quizBest: best });
-                    if (d.quizScore >= QUIZ_PASS) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
+                  h('b', null, pickedRight ? 'Evidence confirmed' : 'Claim revised · Revise the claim.'),
+                  h('p', null, item.why),
+                  h('span', { className: 'mag-quiz-next-cue' }, pickedRight ? 'Next: carry this model into the next question.' : 'Next: use the highlighted model answer; ' + quizTopicLabel + ' is saved for review.')),
+                h('button', { onClick: function () {
+                  if (evidence.index + 1 >= QUIZ.length) {
+                    var previousBest = Number(d.quizBest) || 0;
+                    var best = Math.max(previousBest, evidence.score);
+                    var quizPassed = evidence.score >= QUIZ_PASS;
+                    var rewardNow = quizPassed && !d.quizRewarded && previousBest < QUIZ_PASS;
+                    upd({ quizDone: true, quizBest: best, quizRewarded: !!d.quizRewarded || quizPassed || previousBest >= QUIZ_PASS });
+                    announceToSR('Quiz complete. You scored ' + evidence.score + ' out of ' + evidence.total + '.');
+                    if (rewardNow) { awardXP(20); addToast('🏆 Quiz passed! +20 XP', 'success'); }
                   } else {
-                    upd({ quizIdx: d.quizIdx + 1, quizPicked: null });
+                    upd({ quizIdx: evidence.index + 1, quizPicked: null });
+                    announceToSR('Question ' + (evidence.index + 2) + ' of ' + evidence.total);
                   }
-                }, style: btn(true) }, d.quizIdx + 1 >= QUIZ.length ? 'See results →' : 'Next question →')
-            ) : null
+                }, style: btn(true) }, evidence.index + 1 >= QUIZ.length ? 'See mastery map →' : 'Next question →')
+            )) : null
           )),
-          h('div', { style: { textAlign: 'center', color: SOFT, fontSize: 12 } },
-            'Evidence collected: ' + d.quizScore + ' correct across ' + (d.quizIdx + (d.quizPicked != null ? 1 : 0)) + ' answered')
+          h('div', { className: 'mag-quiz-evidence-summary' },
+            'Evidence collected: ' + evidence.score + ' correct across ' + evidence.answeredCount + ' answered')
         );
       }
 
@@ -6399,7 +8643,7 @@
 
       // ── shared UI atoms ───────────────────────────────────────────────
       function poleLegend(northLabel, southLabel) {
-        return h('div', { className: 'mag-pole-key', 'aria-label': 'Magnetic pole key' },
+        return h('div', { className: 'mag-pole-key', role: 'group', 'aria-label': 'Magnetic pole key' },
           h('span', null, h('i', { className: 'mag-pole-chip', 'aria-hidden': 'true', style: { background: ACTIVE } }, 'N'), northLabel || 'North pole'),
           h('span', null, h('i', { className: 'mag-pole-chip', 'aria-hidden': 'true', style: { background: '#1d4ed8' } }, 'S'), southLabel || 'South pole'));
       }
@@ -6440,7 +8684,7 @@
           h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.5 } }, 'ℹ️ ' + text));
       }
       function learningModeSwitch() {
-        return h('div', { role: 'group', 'aria-label': 'Learning support level', style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 } },
+        return h('div', { role: 'group', 'aria-label': 'Learning support level', style: { display: 'flex', gap: 7, flexWrap: 'wrap', alignItems: 'center' } },
           h('span', { style: { color: SOFT, fontSize: 11.5, fontWeight: 700 } }, 'Support level'),
           h('button', { 'aria-pressed': d.learningMode === 'guided' ? 'true' : 'false', onClick: function () {
             upd({ learningMode: 'guided' }); announceToSR('Guided mode: prediction, test, and explanation prompts are visible.');
@@ -6450,10 +8694,58 @@
           }, style: btn(d.learningMode === 'challenge') }, 'Challenge'));
       }
 
+      function activeModelLabel() {
+        if (d.tab === 'field') {
+          if (d.fieldView === 'hunt') return 'ideal 2-D inverse model · relative units';
+          if (d.fieldView === 'map') return 'quantitative dipole model · relative units';
+          if (d.fieldView === '3d') return 'ideal 3-D dipole model';
+          return 'ideal 2-D field model';
+        }
+        return ({
+          electro: 'finite-solenoid teaching model', motor: 'linked force-and-motion model',
+          induce: 'Faraday–Lenz teaching model', materials: 'domain-response model',
+          crane: 'materials application', maze: 'local-vector navigation model',
+          transformer: 'ideal transformer + load model', earth: 'schematic planetary model',
+          quiz: 'evidence retrieval'
+        })[d.tab] || 'interactive teaching model';
+      }
+
+      function labToolbar() {
+        var g = STATION_GUIDES[d.tab] || STATION_GUIDES.field;
+        if (d.tab === 'field' && d.fieldView === 'hunt') g = { icon: '\uD83E\uDDED', phase: 'Infer a hidden source' };
+        var progress = missionProgressState(d.missionId, d);
+        var feedback = CAUSAL_FEEDBACK[d.magLastChange];
+        return h('section', { className: 'mag-lab-toolbar', 'aria-label': 'Lab command bar' },
+          h('div', { className: 'mag-lab-context' },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
+            h('span', null, g.phase),
+            h('span', { className: 'mag-model-badge' }, activeModelLabel())),
+          h('span', { className: 'mag-model-badge', 'aria-label': progress.mission.label + ' mission progress: ' + progress.doneCount + ' of ' + progress.total }, progress.mission.icon + ' ' + progress.doneCount + '/' + progress.total),
+          learningModeSwitch(),
+          h('button', { type: 'button', 'aria-pressed': d.labFocus ? 'true' : 'false', onClick: function () {
+            upd({ labFocus: !d.labFocus, missionPanelOpen: false });
+            announceToSR(!d.labFocus ? 'Focus Lab on. The active experiment is wider and supporting panels are hidden.' : 'Focus Lab off. Mission and guidance panels are visible.');
+          }, style: btn(!!d.labFocus) }, d.labFocus ? 'Exit Focus Lab' : 'Focus Lab'),
+          feedback ? h('div', { key: 'mag-change-' + (Number(d.magChangeSeq) || 0), className: 'mag-causal-strip', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+            h('span', { 'aria-hidden': 'true' }, '\u2192'),
+            h('span', null, h('b', null, 'What changed: ' + feedback.cause + ' \u2192 '), feedback.effect + '.')) : null
+        );
+      }
+
       function notebookSnapshot() {
         var station = (STATION_GUIDES[d.tab] || STATION_GUIDES.field).phase;
         var motorLoadTrial = d.tab === 'motor' ? motorLoadTrialState(d.motorLoadSamples, d.motorLoadPrediction) : null;
         var motorLoadNote = motorLoadTrial && motorLoadTrial.bracketed ? '; load sweep observed ' + motorLoadTrial.observed.toFixed(2) + 'x vs predicted ' + motorLoadTrial.predicted.toFixed(2) + 'x' : '';
+        if (d.tab === 'field' && d.fieldView === 'hunt') {
+          var huntProbe = Object.assign({ x: 100, y: 0 }, d.fieldHuntProbe || {});
+          var huntReading = fieldProbeReading(huntProbe.x, huntProbe.y, [fieldHuntTarget(d.fieldHuntRound)], 0);
+          var huntSamples = Array.isArray(d.fieldHuntSamples) ? d.fieldHuntSamples : [];
+          var huntFit = fieldHuntEstimate(huntSamples);
+          var huntSurvey = fieldHuntSurveyQuality(huntSamples);
+          var huntResult = d.fieldHuntChecked ? fieldHuntEvaluation(d.fieldHuntGuess || { x: 0, y: 0 }, fieldHuntTarget(d.fieldHuntRound), huntFit) : null;
+          return { station: 'Magnetometer hunt', setup: 'Hidden-source survey at (' + huntProbe.x.toFixed(0) + ', ' + huntProbe.y.toFixed(0) + '), ' + huntSamples.length + ' recorded vectors, coverage quality ' + huntSurvey.score + '/100',
+            result: 'live |B| ' + huntReading.magnitude.toFixed(2) + ' relative field units; ' + (huntFit.error == null ? huntSurvey.advice : 'fit error ' + huntFit.error.toFixed(3) + '; ' + huntSurvey.advice + (huntResult ? '; guess ' + huntResult.distance.toFixed(1) + ' units away' : '')) };
+        }
         if (d.tab === 'field' && d.fieldView === 'map') {
           var mapMagnet = { x: 0, y: 0, angle: 0, polarity: 1, strength: Number(d.fieldMapStrength) || 1 };
           var mapProbe = Object.assign({ x: 90, y: 0 }, d.fieldMapProbe || {});
@@ -6461,7 +8753,7 @@
           var mapSamples = d.fieldMapSamples || [];
           var mapFit = fieldPowerLawFit(mapSamples);
           return { station: 'Quantitative field mapping lab', setup: 'Hall probe (' + mapProbe.x.toFixed(0) + ', ' + mapProbe.y.toFixed(0) + '), magnet strength ' + mapMagnet.strength.toFixed(1) + ', uncertainty ' + (Number(d.fieldMapNoise) || 0).toFixed(0) + '%, ' + mapSamples.length + ' recorded points',
-            result: '|B| ' + mapReading.measuredMagnitude.toFixed(2) + ' rel. µT; Bx ' + mapReading.measuredBx.toFixed(2) + ', By ' + mapReading.measuredBy.toFixed(2) + (mapFit.exponent == null ? '; run a scan to fit the distance law' : '; fitted exponent ' + mapFit.exponent.toFixed(2) + ', R² ' + mapFit.rSquared.toFixed(3)) };
+            result: '|B| ' + mapReading.measuredMagnitude.toFixed(2) + ' relative field units; Bx ' + mapReading.measuredBx.toFixed(2) + ', By ' + mapReading.measuredBy.toFixed(2) + (mapFit.exponent == null ? '; run a scan to fit the distance law' : '; fitted exponent ' + mapFit.exponent.toFixed(2) + ', R² ' + mapFit.rSquared.toFixed(3)) };
         }        if (d.tab === 'field' && d.fieldView === '3d') {
           var p3 = d.field3dProbe || { x: 0, y: 1.8, z: 1.2 };
           var b3 = fieldAt3D(p3.x, p3.y, p3.z, d.field3dMagnets || []);
@@ -6469,8 +8761,17 @@
             result: 'B = (' + b3.x.toFixed(3) + ', ' + b3.y.toFixed(3) + ', ' + b3.z.toFixed(3) + '), magnitude ' + Math.hypot(b3.x, b3.y, b3.z).toFixed(3) };
         }
         if (d.tab === 'field') {
-          return { station: station, setup: 'gap ' + d.pairDistance + ', strengths ' + d.pairStrength1 + ' and ' + d.pairStrength2 + ', ' + (d.pairAttract ? 'attract' : 'repel'),
-            result: magnetPairForce(d.pairStrength1, d.pairStrength2, d.pairDistance).toFixed(3) + '× relative pair force' };
+          var forceEvidence = forceBenchEvidenceState(d.pairStrength1, d.pairStrength2, d.pairDistance, d.pairAttract, d.forceBenchBaseline, d.forceBenchPrediction, d.forceBenchResultSeen);
+          var forceSetup = 'gap ' + forceEvidence.distance + ', strengths ' + forceEvidence.strength1 + ' and ' + forceEvidence.strength2 + ', ' + forceEvidence.direction;
+          var forceResult = forceEvidence.force.toFixed(3) + '× relative pair force';
+          if (forceEvidence.baseline) {
+            forceSetup += '; controlled baseline ' + forceEvidence.baseline.distance + ' → doubled gap ' + forceEvidence.baseline.targetDistance;
+            forceResult += '; baseline ' + forceEvidence.baseline.force.toFixed(3) + '×';
+          }
+          if (forceEvidence.resultCaptured) {
+            forceResult += '; doubled-gap force ' + forceEvidence.baseline.targetForce.toFixed(3) + '×, observed ' + forceEvidence.observedWeakerFactor.toFixed(0) + '× weaker; prediction ' + forceEvidence.prediction + '× was ' + (forceEvidence.predictionCorrect ? 'confirmed' : 'revised');
+          }
+          return { station: station, setup: forceSetup, result: forceResult };
         }
         if (d.tab === 'electro' && d.electroView === '3d') {
           var e3 = currentElectro3DState();
@@ -6480,8 +8781,21 @@
         }        if (d.tab === 'electro') {
           var eDir = d.currentDir * d.windingDir > 0 ? 'right' : 'left';
           var eB = solenoidField(d.turns, d.current, 0.1, d.core ? 600 : 1) * 1000;
-          return { station: station, setup: d.turns + ' turns, ' + d.current + ' A, ' + (d.core ? 'iron' : 'air') + ' core, field ' + eDir,
-            result: eB.toFixed(eB < 10 ? 2 : 0) + ' mT interior field' };
+          var eSetup = d.turns + ' turns, ' + d.current + ' A, ' + (d.core ? 'iron' : 'air') + ' core, field ' + eDir;
+          var eResult = eB.toFixed(eB < 10 ? 2 : 0) + ' mT interior field';
+          if (d.electroBaseline) {
+            var eCompare = electromagnetFairTestState(d.electroBaseline, d);
+            var eBase = eCompare.baseline;
+            eSetup = 'A: ' + eBase.turns + ' turns, ' + eBase.current + ' A, ' + (eBase.core ? 'iron' : 'air') + ' core; B: ' + eSetup;
+            if (eCompare.status === 'fair') {
+              eResult += '; fair test changed only ' + eCompare.changedLabels[0] + (eCompare.ratio == null ? '' : '; B/A field ' + eCompare.ratio.toFixed(2) + '×');
+            } else if (eCompare.status === 'confounded') {
+              eResult += '; comparison confounded by ' + eCompare.changed.length + ' changed controls';
+            } else {
+              eResult += '; baseline locked, no control changed yet';
+            }
+          }
+          return { station: station, setup: eSetup, result: eResult };
         }
         if (d.tab === 'motor' && d.motorMode === 'analyzer') {
           var analyzerItem = ANALYZER_SPECIES[d.analyzerSpecies] || ANALYZER_SPECIES.deuteron;
@@ -6535,11 +8849,32 @@
             result: Math.round(eddyState.forcePercent) + '% relative drag, stopping distance ' + eddyState.stoppingDistance.toFixed(1) + ', ' + Math.round(eddyState.heatShare) + '% modeled eddy-heat share' };
         }
         if (d.tab === 'induce') {
-          return { station: 'Hand generator', setup: d.induceTurns + ' turns, magnet position ' + Math.round(d.induceX), result: Math.abs(d.lastEMF).toFixed(2) + ' V induced' };
+          var handEvidence = inductionSpeedEvidenceState(d.induceSpeedTrials);
+          var handSetup = d.induceTurns + ' turns, magnet position ' + Math.round(d.induceX) + (handEvidence.completedCount ? ', speed evidence ' + handEvidence.completedCount + '/3 runs' : '');
+          var handResult = Math.abs(d.lastEMF).toFixed(2) + ' V induced';
+          if (handEvidence.valid) handResult += '; fast/slow voltage ' + handEvidence.ratio.toFixed(2) + '×; still control 0.00 V';
+          else if (handEvidence.status === 'confounded') handResult += '; fair-test issue: ' + handEvidence.issues.join('; ');
+          return { station: 'Hand generator', setup: handSetup, result: handResult };
+        }
+        if (d.tab === 'maze') {
+          var walkEvidence = fieldWalkEvidenceState(d.mazeRound, d.mazeTrail);
+          return { station: station, setup: 'round ' + (walkEvidence.round + 1) + ', ' + walkEvidence.moveCount + ' moves, ' + walkEvidence.uniqueCount + ' unique squares',
+            result: walkEvidence.signalRatio.toFixed(2) + '× starting signal, ' + (walkEvidence.alignmentPercent == null ? 'no alignment score yet' : walkEvidence.alignmentPercent + '% field-aligned') + ', ' + walkEvidence.revisits + ' revisits' };
         }
         if (d.tab === 'materials') {
-          return { station: station, setup: Object.keys(d.matGuesses || {}).length + ' materials predicted, domain alignment ' + Math.round((d.domainAlign || 0) * 100) + '%',
-            result: d.matRevealed ? MATERIALS.filter(function (m) { return d.matGuesses[m.id] === m.magnetic; }).length + '/8 classifications correct' : 'predictions not revealed yet' };
+          var materialEvidence = materialSortEvidenceState(d.matGuesses, d.matRevealed);
+          var domainEvidence = domainMemoryEvidenceState(d.domainMaterial, d.domainField, d.domainBranch, d.domainHistory, d.domainAlign, {
+            saturated: d.domainSaturatedSeen,
+            remanence: d.domainRemanenceSeen,
+            reversed: d.domainReversedSeen
+          });
+          return { station: 'Material response sorter', setup: materialEvidence.answeredCount + '/8 materials predicted, ' + materialEvidence.predictionGroups.lift.length + ' in the lift lane, ' + domainEvidence.material.name + ' phase: ' + domainEvidence.phaseLabel,
+            result: (d.matRevealed ? materialEvidence.correctCount + '/8 classifications correct; ' + materialEvidence.metalFalsePositives.length + ' other-metal trap(s), ' + materialEvidence.ferromagneticMisses.length + ' ferromagnetic family miss(es)' : 'predictions not revealed yet; ' + materialEvidence.unansweredCount + ' remain') + '; H ' + domainEvidence.field.toFixed(2) + ', M ' + domainEvidence.magnetization.toFixed(2) + ', modeled zero-field memory ' + domainEvidence.memoryAtZeroPercent + '%' };
+        }
+        if (d.tab === 'crane') {
+          var craneEvidence = craneEvidenceState(d.cranePredictions, d.craneTests, d.craneDeposited);
+          return { station: 'Junkyard prediction crane', setup: craneEvidence.predictionCount + ' predictions locked, ' + craneEvidence.testedCount + '/8 objects field-tested',
+            result: craneEvidence.recycledCount + '/4 recycled; ' + (craneEvidence.accuracy == null ? 'prediction accuracy appears after the first test' : craneEvidence.accuracy + '% prediction accuracy; ' + craneEvidence.liftedCount + ' lift and ' + craneEvidence.noPullCount + ' no-pull responses') };
         }
         if (d.tab === 'earth') {
           var earthState = magnetosphereTeachingState(d.earthSolarWind);
@@ -6551,8 +8886,9 @@
             result: earthState.activity + ' conditions; dayside boundary ' + earthState.daysideRadiusRE.toFixed(1) + ' R⊕ and auroral oval ' + earthState.auroralLatitude.toFixed(0) + '° magnetic latitude' };
         }
         if (d.tab === 'transformer') {
-          return { station: station, setup: 'N₁ ' + d.xfmrN1 + ', N₂ ' + d.xfmrN2 + ', ' + (d.xfmrAC ? 'AC' : 'DC'),
-            result: transformerOut(120, d.xfmrN1, d.xfmrN2, d.xfmrAC).toFixed(0) + ' V output' };
+          var transformerEvidence = transformerDesignState(120, d.xfmrN1, d.xfmrN2, d.xfmrAC, d.xfmrLoad, d.xfmrEfficiency / 100, d.xfmrMission);
+          return { station: station, setup: transformerEvidence.mission.label + '; N₁ ' + d.xfmrN1 + ', N₂ ' + d.xfmrN2 + ', ' + (d.xfmrAC ? 'AC' : 'DC') + ', load ' + d.xfmrLoad + ' Ω',
+            result: transformerEvidence.load.vout.toFixed(0) + ' V, ' + transformerEvidence.load.pout.toFixed(1) + ' W useful, ' + transformerEvidence.load.loss.toFixed(1) + ' W heat; ' + transformerEvidence.metCount + '/3 design constraints met' };
         }
         return { station: station, setup: 'current station state', result: 'observation recorded' };
       }
@@ -6779,7 +9115,20 @@
         var xs = [48, 188, 328, 468];
         var missionStatus = progress.completed ? 'Mission complete. You have evidence for every step.' : (started ? progress.doneCount + ' of ' + progress.total + ' steps complete. Next: ' + next.label + '.' : 'Start the mission, then use the existing stations to collect evidence.');
         var timelineAria = mission.label + ' mission timeline. ' + progress.doneCount + ' of ' + progress.total + ' steps complete. ' + progress.steps.map(function (step) { return step.label + (step.done ? ', done' : ', not done'); }).join('; ') + '.';
+        var panelOpen = !!d.missionPanelOpen;
         return card('Mission Control', h('div', null,
+          h('div', { className: 'mag-mission-summary' },
+            h('div', null,
+              h('div', { className: 'mag-kicker' }, 'Current design mission'),
+              h('div', { style: { color: TEXT, fontSize: 14, fontWeight: 800, lineHeight: 1.35 } }, mission.icon + ' ' + mission.label + ' · ' + progress.doneCount + '/' + progress.total),
+              h('div', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.4, marginTop: 2 } }, progress.completed ? 'Evidence complete. Review the claim or transfer the idea to another mission.' : 'Next evidence: ' + next.label + '. ' + next.hint)),
+            h('div', { className: 'mag-mission-summary-actions' },
+              progress.completed ? h('span', { className: 'mag-model-badge', style: { color: '#22c55e' } }, 'Evidence complete ✓') : h('button', { type: 'button', onClick: function () { openStep(next); }, style: btn(true) }, started ? 'Open next: ' + next.label : 'Start: ' + next.label),
+              h('button', { type: 'button', 'aria-expanded': panelOpen ? 'true' : 'false', 'aria-controls': 'mag-mission-details', onClick: function () {
+                upd({ missionPanelOpen: !panelOpen, missionSeen: true });
+                announceToSR(!panelOpen ? 'Mission details expanded.' : 'Mission details collapsed.');
+              }, style: btn(panelOpen) }, panelOpen ? 'Hide mission details' : 'Mission details'))),
+          h('div', { id: 'mag-mission-details', className: 'mag-mission-body', hidden: !panelOpen },
           h('div', { className: 'viz-controls', role: 'group', 'aria-label': 'Mission selection', style: { display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap', marginBottom: 8 } },
             h('div', { style: { flex: '1 1 260px', minWidth: 0 } },
               h('label', { className: 'form-label', htmlFor: 'mag-mission-select', style: { display: 'block', color: TEXT, fontSize: 12.5, fontWeight: 700, marginBottom: 4 } }, 'Choose a design target'),
@@ -6818,6 +9167,7 @@
               h('b', { style: { color: TEXT } }, 'Evidence proves: '), review.synthesis, ' ', review.claimStatus)),
           missionReplayPanel(),
           missionReportPanel()
+          )
         ), '#fbbf24');
       }
 
@@ -6882,7 +9232,7 @@
         : d.tab === 'earth' ? earthTab()
         : quizTab();
 
-      return h('div', { className: 'mag-root', style: { maxWidth: 780, margin: '0 auto', color: TEXT,
+      return h('div', { className: 'mag-root' + (d.labFocus ? ' is-focus' : ''), 'data-learning-mode': d.learningMode, style: { maxWidth: d.labFocus ? 1040 : 780, margin: '0 auto', color: TEXT,
         // Own the ground (2026-08-23): every ink here is themed through the
         // --allo-stem tokens, but the root painted nothing, so dark-resolved
         // inks floated on the host's white content card. The same token that
@@ -6890,21 +9240,21 @@
         background: 'var(--allo-stem-deeper, var(--allo-stem-panel, transparent))', borderRadius: 12, padding: 12 } },
         wcagStyles(),
         h('div', { className: 'mag-sronly', role: 'status', 'aria-live': 'polite' }, ''),
-        h('header', { className: 'mag-hero' },
+        d.labFocus ? h('h2', { className: 'mag-sronly' }, 'Magnetism & Electromagnetism · Focus Lab') : h('div', { className: 'mag-hero' },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 } },
             h('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: 44, height: 44, borderRadius: 13, background: 'rgba(244,63,94,0.18)', fontSize: 27 } }, '🧲'),
             h('div', { style: { minWidth: 0 } },
               h('div', { className: 'mag-kicker' }, 'Interactive physics studio · NGSS MS-PS2'),
               h('h2', { style: { margin: 0, fontSize: 20, fontWeight: 800, color: TEXT, lineHeight: 1.25 } }, 'Magnetism & Electromagnetism'),
               h('p', { style: { margin: '3px 0 0', fontSize: 12.5, color: SOFT, lineHeight: 1.4 } }, 'Reveal an invisible field, build it with current, and turn motion into electricity.')))),
-        missionControl(),
-        journeyStrip(),
-        learningModeSwitch(),
+        d.labFocus ? null : missionControl(),
+        labToolbar(),
         tabBar(),
-        stationGuide(),
+        d.labFocus ? null : stationGuide(),
         d.tab !== 'quiz' ? investigationNotebook() : null,
         h('div', { id: 'mag-panel-' + d.tab, role: 'tabpanel', 'aria-labelledby': 'mag-tab-' + d.tab }, body),
         d.tab !== 'quiz' ? askBox() : null,
+        d.labFocus ? null : journeyStrip(),
         factStrip()
       );
     }
@@ -6912,6 +9262,28 @@
 
   // Expose pure helpers for the test suite (no-op in the browser bundle).
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, fieldProbeReading: fieldProbeReading, fieldScanSeries: fieldScanSeries, fieldPowerLawFit: fieldPowerLawFit, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, wireForceVectorState: wireForceVectorState, motorPowerBridgeState: motorPowerBridgeState, motorTorqueFactor: motorTorqueFactor, motorLoadState: motorLoadState, motorLoadTrialState: motorLoadTrialState, motorSpatialState: motorSpatialState, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, ANALYZER_SPECIES: ANALYZER_SPECIES, velocitySelectorState: velocitySelectorState, chargedParticleTrajectory: chargedParticleTrajectory, chargedParticleHelix: chargedParticleHelix, chargedParticleMirror: chargedParticleMirror, magnetosphereTeachingState: magnetosphereTeachingState, chargedParticleComparison: chargedParticleComparison, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, rotatingPhaseState: rotatingPhaseState, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, eddyBrakeState: eddyBrakeState, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MISSION_DEFS: MISSION_DEFS, missionProgressState: missionProgressState, missionEvidenceReviewState: missionEvidenceReviewState, missionReplayState: missionReplayState, notebookMetricSnapshot: notebookMetricSnapshot, missionReportState: missionReportState, missionCERState: missionCERState, MU0: MU0 };
+    module.exports = { CORE_MATERIALS: CORE_MATERIALS, coreAdjustedField: coreAdjustedField, finiteSolenoidCenterField: finiteSolenoidCenterField, solenoidWireLength: solenoidWireLength, solenoidHeatingIndex: solenoidHeatingIndex, solenoidFieldAt3D: solenoidFieldAt3D, traceSolenoidLine3D: traceSolenoidLine3D, coilNormal3D: coilNormal3D, coilFlux3D: coilFlux3D, inducedVoltage3D: inducedVoltage3D, inductionPass3D: inductionPass3D, dipoleMoment3D: dipoleMoment3D, dipoleFieldAt3D: dipoleFieldAt3D, fieldAt3D: fieldAt3D, fieldComponentsAt3D: fieldComponentsAt3D, traceLine3D: traceLine3D, findFieldNull3D: findFieldNull3D, dipoleFieldAt: dipoleFieldAt, fieldAt: fieldAt, fieldComponentsAt: fieldComponentsAt, fieldProbeReading: fieldProbeReading, fieldScanSeries: fieldScanSeries, fieldPowerLawFit: fieldPowerLawFit, traceLine: traceLine, solenoidField: solenoidField, wireForce: wireForce, wireForceVectorState: wireForceVectorState, motorPowerBridgeState: motorPowerBridgeState, motorTorqueFactor: motorTorqueFactor, motorLoadState: motorLoadState, motorLoadTrialState: motorLoadTrialState, motorSpatialState: motorSpatialState, motorGeneratorBench: motorGeneratorBench, motorGeneratorTransientStep: motorGeneratorTransientStep, motorGeneratorSimulate: motorGeneratorSimulate, evaluateMotorGeneratorMission: evaluateMotorGeneratorMission, describeMotorGeneratorTrialChange: describeMotorGeneratorTrialChange, magnetPairForce: magnetPairForce, ANALYZER_SPECIES: ANALYZER_SPECIES, velocitySelectorState: velocitySelectorState, chargedParticleTrajectory: chargedParticleTrajectory, chargedParticleHelix: chargedParticleHelix, chargedParticleMirror: chargedParticleMirror, magnetosphereTeachingState: magnetosphereTeachingState, chargedParticleComparison: chargedParticleComparison, rotatingFlux: rotatingFlux, rotatingEMF: rotatingEMF, rotatingPhaseState: rotatingPhaseState, fluxAt: fluxAt, induceEMF: induceEMF, transformerOut: transformerOut, transformerLoad: transformerLoad, TRANSFORMER_DESIGN_MISSIONS: TRANSFORMER_DESIGN_MISSIONS, transformerDesignState: transformerDesignState, hysteresisMagnetization: hysteresisMagnetization, eddyBrakeFactor: eddyBrakeFactor, eddyBrakeState: eddyBrakeState, CRANE_ORDER: CRANE_ORDER, BIN_SLOT: BIN_SLOT, domainAngle: domainAngle, countCycles: countCycles, MAZE_ROUNDS: MAZE_ROUNDS, mazeCellToField: mazeCellToField, mazePoles: mazePoles, MATERIALS: MATERIALS, QUIZ: QUIZ, QUIZ_TABS: QUIZ_TABS, QUIZ_PASS: QUIZ_PASS, MISSION_DEFS: MISSION_DEFS, missionProgressState: missionProgressState, missionEvidenceReviewState: missionEvidenceReviewState, missionReplayState: missionReplayState, notebookMetricSnapshot: notebookMetricSnapshot, missionReportState: missionReportState, missionCERState: missionCERState, MU0: MU0 };
+  }
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports.FIELD_HUNT_ROUNDS = FIELD_HUNT_ROUNDS;
+    module.exports.fieldHuntTarget = fieldHuntTarget;
+    module.exports.fieldHuntEstimate = fieldHuntEstimate;
+    module.exports.fieldHuntEvaluation = fieldHuntEvaluation;
+    module.exports.fieldHuntSurveyQuality = fieldHuntSurveyQuality;
+    module.exports.fieldHuntCoverageHull = fieldHuntCoverageHull;
+    module.exports.fieldHuntNextSample = fieldHuntNextSample;
+    module.exports.fieldHuntUncertainty = fieldHuntUncertainty;
+    module.exports.fieldHuntProgressState = fieldHuntProgressState;
+    module.exports.electromagnetFairTestState = electromagnetFairTestState;
+    module.exports.inductionSpeedEvidenceState = inductionSpeedEvidenceState;
+    module.exports.fieldWalkReferenceSteps = fieldWalkReferenceSteps;
+    module.exports.fieldWalkEvidenceState = fieldWalkEvidenceState;
+    module.exports.craneEvidenceState = craneEvidenceState;
+    module.exports.materialSortEvidenceState = materialSortEvidenceState;
+    module.exports.quizEvidenceState = quizEvidenceState;
+    module.exports.DOMAIN_MATERIALS = DOMAIN_MATERIALS;
+    module.exports.domainMemoryEvidenceState = domainMemoryEvidenceState;
+    module.exports.FORCE_BENCH_PREDICTIONS = FORCE_BENCH_PREDICTIONS;
+    module.exports.forceBenchEvidenceState = forceBenchEvidenceState;
   }
 })();

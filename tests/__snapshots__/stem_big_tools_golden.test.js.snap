@@ -123,11 +123,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for solarSystem 1`] = `
 {
-  "buttons": 24,
+  "buttons": 34,
   "inputs": 1,
-  "lengthBucket": 80,
+  "lengthBucket": 181,
   "selects": 0,
-  "sha": "992cdbed9229e633",
+  "sha": "e7c342a293bc7532",
   "svgs": 0,
 }
 `;

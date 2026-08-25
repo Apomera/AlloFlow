@@ -12,13 +12,18 @@ not require an AlloFlow account, institution account, Cloudflare Worker, or paid
 5. The Gemini key is optional. Deterministic tools such as PDF/UA validation, text extraction,
    redaction, structure checks, contrast repair, form conversion, alternative-format export, and
    resource-pack generation work without it.
+6. Full remediation can also run without a Gemini key through the agent-bridge tools. In that mode,
+   document-derived prompts and rendered page images pass through the MCP client conversation to
+   that client's model provider. Review the provider/account boundary before using student records.
 
 ## Privacy boundary
 
-Local/keyless tools keep document processing on the machine. Tools described as requiring Gemini
-send the selected document or content to Google's Gemini API under the user's own key. Installing
-this extension does not make third-party processing FERPA compliant. Review PRIVACY.md before using
-AI-dependent tools with education records.
+Deterministic local tools make no model-provider request, although their returned results still enter
+the MCP client conversation. Tools described as requiring Gemini send the selected document or
+derived content to Google's Gemini API under the user's own key. The keyless agent-bridge path sends
+document-derived prompts and page images to the MCP client's model provider instead of Gemini.
+Installing this extension does not make either third-party path FERPA compliant. Review PRIVACY.md
+before using model-dependent tools with education records.
 
 ## Verify the download
 
@@ -47,3 +52,5 @@ a separate explicit maintainer action after the GitHub release has passed proven
 - Convert this accessible HTML to EPUB, DAISY, or uncontracted Braille.
 - Remediate this document thoroughly. Before sending anything to Gemini, tell me what will leave my
   computer and ask for confirmation.
+- Remediate this document using the agent bridge. Before starting, tell me which document content
+  will enter this conversation and which model provider processes it.

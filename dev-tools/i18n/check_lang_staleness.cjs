@@ -53,6 +53,36 @@ const RATCHET = argv.includes('--ratchet');
 const GUARDED = ['sidebar', 'tools', 'glossary', 'visuals', 'universal', 'launch_pad', 'storage', 'alignment_graph', 'guided', 'hints'];
 const WATERMARK_PATH = path.join(__dirname, 'lang_staleness_watermark.json');
 
+// OneDrive can briefly return UNKNOWN/EPERM while it is syncing a JSON file.
+// Keep ratchet updates recoverable without weakening the gate or using a
+// non-atomic direct overwrite.
+function writeFileWithRetry(file, text) {
+  const temporary = `${file}.staleness-${process.pid}.tmp`;
+  const transientCodes = new Set(['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN']);
+  let lastError;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      fs.writeFileSync(temporary, text, 'utf8');
+      try {
+        fs.renameSync(temporary, file);
+      } catch (error) {
+        if (!transientCodes.has(error.code)) throw error;
+        fs.copyFileSync(temporary, file);
+      }
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!transientCodes.has(error.code) || attempt === 7) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 350);
+    } finally {
+      if (fs.existsSync(temporary)) {
+        try { fs.unlinkSync(temporary); } catch (error) { lastError = error; }
+      }
+    }
+  }
+  throw lastError;
+}
+
 if (!fs.existsSync(L.BASELINE_PATH)) {
   console.log('check_lang_staleness: no baseline yet — run  node dev-tools/i18n/bless_lang_sources.cjs  first.');
   console.log('  (Without a baseline there is nothing to compare reworded English against.)');
@@ -110,7 +140,7 @@ if (withStale.length) {
     for (const s of withStale) console.log(`  ${s.slug.padEnd(24)} ${String(s.stale).padStart(5)} stale`);
   }
   console.log(`\n${GATE ? '❌' : '⚠'} ${totalStale} stale translation(s) across ${withStale.length} pack(s). ` +
-    `Re-translate, then  bless_lang_sources.cjs --key <key>  to clear.`);
+    `Re-translate and record per-pack reviews, or use bless_lang_sources.cjs --key <key> only after every affected pack is current.`);
   console.log(`  Details: dev-tools/i18n/lang_staleness/<lang>.json`);
   if (GATE) process.exit(1);
 } else {
@@ -143,7 +173,7 @@ if (RATCHET) {
     try { watermark = JSON.parse(fs.readFileSync(WATERMARK_PATH, 'utf8')); } catch (e) { watermark = null; }
   }
   if (!watermark || typeof watermark.totalStaleEntries !== 'number') {
-    fs.writeFileSync(WATERMARK_PATH, JSON.stringify({ totalStaleEntries: totalStale, note: 'High-water mark for check_lang_staleness --ratchet. Auto-lowers when the count drops; a count ABOVE it fails the gate. Do not raise by hand — re-translate or bless instead.' }, null, 2) + '\n');
+    writeFileWithRetry(WATERMARK_PATH, JSON.stringify({ totalStaleEntries: totalStale, note: 'High-water mark for check_lang_staleness --ratchet. Auto-lowers when the count drops; a count ABOVE it fails the gate. Do not raise by hand — re-translate or bless instead.' }, null, 2) + '\n');
     console.log(`ratchet: watermark initialised at ${totalStale}.`);
   } else if (totalStale > watermark.totalStaleEntries) {
     failed = true;
@@ -151,7 +181,7 @@ if (RATCHET) {
     console.error(`   An English edit landed without its re-translation. See lang_staleness/_summary.json`);
     console.error(`   (changedKeys) for what moved; re-translate + bless, or revert the English edit.`);
   } else if (totalStale < watermark.totalStaleEntries) {
-    fs.writeFileSync(WATERMARK_PATH, JSON.stringify({ ...watermark, totalStaleEntries: totalStale }, null, 2) + '\n');
+    writeFileWithRetry(WATERMARK_PATH, JSON.stringify({ ...watermark, totalStaleEntries: totalStale }, null, 2) + '\n');
     if (!QUIET) console.log(`✓ ratchet: stale count dropped ${watermark.totalStaleEntries} -> ${totalStale}; watermark lowered.`);
   } else if (!QUIET) {
     console.log(`✓ ratchet: stale count holding at the watermark (${totalStale}).`);

@@ -9,28 +9,28 @@ beforeEach(() => {
   loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
 });
 
-describe('Queen-to-Drone prediction check', () => {
-  it('turns inherited route modifiers into a testable flight hypothesis', () => {
+describe('Colony-to-Drone prediction check', () => {
+  it('turns colony condition into a controlled flight hypothesis', () => {
     const html = renderTool('beehive', {
-      beehive: { viewMode: 'drone', queen: { result: 'victory' } },
+      beehive: { viewMode: 'drone', colonyHealth: 90, varroaLevel: 5, honey: 100 },
     });
 
     expect(html).toContain('data-drone-carryover-hypothesis="true"');
     expect(html).toContain('Prediction to test');
-    expect(html).toContain('A victory route should preserve more energy');
-    expect(html).toContain('Measure: DCA arrival energy and predator encounters.');
+    expect(html).toContain('A well-provisioned colony should launch a drone with more usable energy');
+    expect(html).toContain('Measure: Launch energy, DCA arrival energy, and route efficiency.');
   });
 
-  it('provides distinct predictions for recovery and baseline routes', () => {
-    const recovery = renderTool('beehive', {
-      beehive: { viewMode: 'drone', queen: { result: 'defeat' } },
+  it('provides distinct predictions for stressed and watch-list launch conditions', () => {
+    const stressed = renderTool('beehive', {
+      beehive: { viewMode: 'drone', colonyHealth: 35, varroaLevel: 45, honey: 2 },
     });
-    const baseline = renderTool('beehive', {
-      beehive: { viewMode: 'drone', queen: {} },
+    const watch = renderTool('beehive', {
+      beehive: { viewMode: 'drone', colonyHealth: 60, varroaLevel: 25, honey: 20 },
     });
 
-    expect(recovery).toContain('energy budgeting the limiting factor');
-    expect(baseline).toContain('Use this baseline route as a control');
+    expect(stressed).toContain('A stressed colony should launch a drone with less usable energy');
+    expect(watch).toContain('Changing colony condition should change launch energy');
     expect(source).toContain("'aria-labelledby': 'drone-carryover-hypothesis-title'");
     expect(source).toContain("'aria-describedby': 'drone-carryover-hypothesis-text'");
   });

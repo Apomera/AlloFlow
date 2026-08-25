@@ -15,11 +15,12 @@ const domains = [
   { id: 'd1', label: 'Planning', components: [['1a', 'x'], ['1b', 'y']] },
   { id: 'd2', label: 'Environment', components: [['2a', 'x']] },
 ];
-const workspace = (ratings, evidence) => ({
+const workspace = (ratings, evidence, observations = []) => ({
   teachers: [{ id: 't1', ratings: { domains: ratings } }],
-  walkthroughs: evidence || [], observations: [],
+  walkthroughs: evidence || [], observations,
 });
 const piece = (tags, published = true) => ({ teacherId: 't1', publishedAt: published ? 'yes' : null, componentTags: tags });
+const formal = (tags, published = true) => ({ teacherId: 't1', evidencePublishedAt: published ? 'yes' : null, componentTags: tags });
 
 describe('evidence sufficiency', () => {
   it('flags an adverse rating carrying no evidence at all', () => {
@@ -38,6 +39,20 @@ describe('evidence sufficiency', () => {
   it('stays quiet when an adverse rating is well documented', () => {
     const found = check(workspace({ d1: 1 }, [piece(['1a']), piece(['1b'])]), 't1', { domains });
     expect(found.some((item) => item.code === 'adverse-on-thin-evidence')).toBe(false);
+  });
+
+  it('counts a published formal observation and ignores an unpublished one', () => {
+    const published = check(workspace({ d1: 0 }, [], [formal(['1a'])]), 't1', { domains });
+    expect(published.some((item) => item.code === 'rated-without-evidence')).toBe(false);
+    const draft = check(workspace({ d1: 0 }, [], [formal(['1a'], false)]), 't1', { domains });
+    expect(draft.some((item) => item.code === 'rated-without-evidence')).toBe(true);
+  });
+
+  it('counts one multi-tag record once within a domain', () => {
+    const found = check(workspace({ d1: 0 }, [piece(['1a', '1b'])]), 't1', { domains });
+    const hit = found.find((item) => item.code === 'adverse-on-thin-evidence');
+    expect(hit).toBeTruthy();
+    expect(hit.message).toContain('1 published evidence record');
   });
 
   it('does not police favourable ratings for thin evidence', () => {

@@ -48,6 +48,25 @@ service cloud.firestore {
             && progress.attempts is int && progress.attempts >= 0 && progress.attempts <= 10000
             && progress.at is number && progress.at > 0;
         }
+        function validActivityProgress(progress) {
+          return progress is map
+            && progress.keys().hasAll(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
+            && progress.keys().hasOnly(['version', 'activityId', 'kind', 'status', 'completed', 'total', 'at'])
+            && progress.version == 1
+            && progress.activityId is string
+            && progress.activityId.size() >= 1
+            && progress.activityId.size() <= 160
+            && progress.activityId.matches('^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$')
+            && progress.kind is string
+            && progress.kind.size() >= 1
+            && progress.kind.size() <= 40
+            && progress.kind.matches('^[a-z][a-z0-9_]{0,39}$')
+            && progress.status in ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused']
+            && progress.completed is int && progress.completed >= 0 && progress.completed <= 100000
+            && progress.total is int && progress.total >= 0 && progress.total <= 100000
+            && progress.completed <= progress.total
+            && progress.at is number && progress.at > 0;
+        }
         function rosterOnlySelf() {
           // Students may only touch their OWN roster entry. Nested fields are
           // deliberately not enumerated here (the client/mailbox validators
@@ -66,7 +85,9 @@ service cloud.firestore {
               || request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('viewingResourceStatus', '')
                 in ['loading', 'ready', 'failed'])
             && (!('organizerProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
-              || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)));
+              || validOrganizerProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('organizerProgress', null)))
+            && (!('activityProgress' in request.resource.data.get('roster', {}).get(request.auth.uid, {}))
+              || validActivityProgress(request.resource.data.get('roster', {}).get(request.auth.uid, {}).get('activityProgress', null)));
         }
         function quizNestedOnlySelf(field) {
           return !(field in resource.data.get('quizState', {})

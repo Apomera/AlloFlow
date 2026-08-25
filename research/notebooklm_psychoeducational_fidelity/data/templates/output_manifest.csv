@@ -1,0 +1,2 @@
+output_id,case_id,study_stage,prompt_condition,prompt_version,repetition,collection_order,collection_date,account_code,account_tier,product_label,visible_model_info,settings_summary,source_bundle_hash,prompt_hash,raw_output_path,citation_capture_path,response_status,refused,truncated,platform_failure,collector_code,notes
+

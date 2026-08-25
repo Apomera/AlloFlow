@@ -432,7 +432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   ];
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 5: REPAIR SCENARIOS — 7 step-by-step jobs
+  // SECTION 5: REPAIR SCENARIOS — 12 step-by-step jobs
   // Each scenario: difficulty (1–4), time, tools needed, safety prerequisites,
   // step list, common gotchas, and a clear "DIY vs shop" verdict for Maine.
   // ─────────────────────────────────────────────────────────
@@ -493,7 +493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       gotchas: [
         'Maine rust: caliper bolts are often seized. Soak with PB Blaster the night before. A 6-point socket grips better than 12-point.',
         'If a brake-line bleed-screw snaps off (common in salt-rust), the brake line needs replacing — that becomes a shop job mid-stream.',
-        'Asbestos: brake dust on older vehicles may contain asbestos. Don\'t blow it off with compressed air. Wipe with brake cleaner + rag, mask up.',
+        'Asbestos: brake dust on older vehicles may contain asbestos. Never dry-brush or blow it. Use an OSHA-compliant HEPA-vacuum or low-pressure wet-cleaning method; if you lack the equipment or training, use a shop.',
         'New pads on grooved rotors will squeal and wear unevenly. Resurfacing is cheap; new rotors are often only $25–40 each.'
       ],
       verdict: 'Doable DIY but the rust and the bleed-screw risk make this a "learn it from someone the first time." After that — straightforward. Failed bleeders push it to a shop.'
@@ -774,6 +774,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       verdict: 'DIY for a basic radiator-only flush. Shop for a full machine-flush ($100–200) if you want every drop replaced.'
     }
   ];
+
+  var REPAIR_SAFETY_LABELS = {
+    'jack-stands-required': 'Support the vehicle on rated jack stands; never work under a hydraulic jack alone.',
+    'hot-oil-burn-risk': 'Warm oil drains well, but hot oil and exhaust parts can cause serious burns.',
+    'engine-cool-30min': 'Shut the engine off and allow at least 20–30 minutes of cooling before going underneath.',
+    'wheels-chocked-rear': 'Chock the rear wheels and set the parking brake before lifting the front.',
+    'brake-fluid-corrosive-paint': 'Brake fluid damages paint; contain drips and clean spills immediately.',
+    'asbestos-old-pads-mask': 'Treat old brake dust as asbestos: never dry-brush or blow it; use an OSHA-compliant HEPA-vacuum or low-pressure wet-cleaning method.',
+    'battery-disconnect-required': 'Disconnect battery negative first and reconnect it last to reduce short-circuit risk.',
+    'jack-stands-if-bottom-mount': 'If access is from below, support the vehicle on rated stands at manufacturer-approved points.',
+    'tensioner-spring-load': 'The belt tensioner is spring-loaded; control the tool and keep fingers out of the belt path.',
+    'wheels-chocked': 'Chock the wheels that remain on the ground so the vehicle cannot roll.',
+    'none-significant': 'No unusual hazard is expected, but keep the vehicle parked, the engine off, and follow the owner\'s manual.',
+    'epa-section-609-rules': 'Do not intentionally vent refrigerant. EPA Section 608 prohibits it for most MVAC refrigerants; paid service also requires Section 609 certification and approved equipment.',
+    'frostbite-skin-contact': 'Escaping refrigerant can freeze skin and eyes; avoid all contact.',
+    'eye-protection-required': 'Wear safety glasses before opening, disconnecting, or cleaning components.',
+    'engine-running-belts-spinning': 'A/C testing may require a running engine; stay clear of belts, fans, and pulleys.',
+    'interference-engine-warning': 'Verify whether the engine is interference-type; one timing error can bend valves.',
+    'crank-pulley-bolt-very-tight': 'Plan for the specified crank-holding tool and torque procedure; do not improvise leverage.',
+    'service-manual-mandatory': 'Use the exact factory-equivalent procedure, timing marks, and torque specifications for this engine.',
+    'long-job-secure-vehicle': 'Secure the vehicle for the full job and never leave it supported by a jack alone.',
+    'acid-burn-risk': 'Battery electrolyte is corrosive; avoid damaged or leaking cases and protect skin and eyes.',
+    'spark-near-fuel-risk': 'Keep sparks, flames, smoking materials, and metal tools away from battery terminals and fuel vapors.',
+    'engine-cool-required': 'Wait until the engine is fully cool before opening the system or working in aluminum threads.',
+    'plug-thread-fragile': 'Spark-plug threads in an aluminum head are fragile; start every plug by hand.',
+    'no-cross-thread': 'Stop if a fastener does not turn freely by hand; never force crossed threads.',
+    'windshield-spring-back-risk': 'Keep control of the bare wiper arm so its spring cannot slam it into the glass.',
+    'bulb-glass-skin-oils-burn-out': 'Handle a halogen bulb only by its base; skin oil on the glass creates a hot spot.',
+    'engine-cool-cooler-better': 'Work with the engine and lamp area cool to avoid burns.',
+    'antifreeze-toxic-pets': 'Capture every coolant spill immediately; antifreeze is highly toxic to people and animals.',
+    'cap-pressure-on-hot': 'Never remove a radiator or pressure cap while the cooling system is hot.'
+  };
+
+  function arRepairSafetyLabel(code) {
+    if (REPAIR_SAFETY_LABELS[code]) return REPAIR_SAFETY_LABELS[code];
+    return String(code || 'Safety precaution').replace(/-/g, ' ').replace(/^./, function(ch) { return ch.toUpperCase(); }) + '.';
+  }
+
+  function arRepairSafetyStatus(required, confirmed) {
+    var need = Array.isArray(required) ? required.filter(function(code, index, all) {
+      return !!code && all.indexOf(code) === index;
+    }) : [];
+    var checks = confirmed && typeof confirmed === 'object' ? confirmed : {};
+    var done = need.reduce(function(total, code) { return total + (checks[code] === true ? 1 : 0); }, 0);
+    return { done: done, total: need.length, complete: done === need.length };
+  }
+
+  function arRepairStepProgress(totalSteps, viewed) {
+    var total = typeof totalSteps === 'number' && totalSteps > 0 ? Math.floor(totalSteps) : 0;
+    var checks = viewed && typeof viewed === 'object' ? viewed : {};
+    var done = 0;
+    while (done < total && checks[done + 1] === true) done++;
+    return { done: done, total: total, next: done < total ? done + 1 : null, complete: done === total };
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 6: TOOLS LIBRARY — what each tool is, what it does, when you need it
@@ -1924,41 +1978,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   var BREAKDOWN_PROTOCOL = [
     { phase: 'IMMEDIATE', step: 1,
       title: 'Get safely off the road',
-      do: 'Hazard lights ON immediately. Coast to the right shoulder if possible. Steeper shoulder = less safe, but better than a lane.',
-      avoid: 'Don\'t stop in an active travel lane unless physically impossible to move.' },
+      do: 'Hazard lights ON immediately. If the vehicle still controls normally, move as far out of the traveled way as possible and stop in the safest available refuge.',
+      avoid: 'Do not stop in an active travel lane unless the vehicle cannot move. If you are blocking traffic or face an immediate danger, call 911.' },
     { phase: 'IMMEDIATE', step: 2,
       title: 'Stay in the car if traffic is heavy',
-      do: 'Buckle up + stay inside. The car is a steel cage between you and a 60mph distracted driver. In Maine winter cold, the engine still has heat for a while.',
-      avoid: 'Don\'t stand outside near traffic. Don\'t walk on the shoulder of an interstate.' },
+      do: 'Buckle up + stay inside. The car is a steel cage between you and a 60 mph distracted driver. In Maine winter cold, the engine still has heat for a while.',
+      avoid: 'Do not stand outside near traffic. Do not walk on the shoulder of an interstate.' },
     { phase: 'IMMEDIATE', step: 3,
-      title: 'Set out reflective triangles or flares',
-      do: 'If you DO need to be outside (e.g., changing a tire on a residential road), set triangles 50–100 ft behind the car so traffic sees you with time to react.',
-      avoid: 'Don\'t place them in a way that lures traffic toward your work zone.' },
+      title: 'Use warning devices only when it is safe',
+      do: 'On a low-speed road with a safe path away from traffic, place reflective devices according to their instructions. On a high-speed shoulder, wait for trained responders to establish warning.',
+      avoid: 'Do not step into a travel lane or expose yourself to traffic just to place a triangle or flare.' },
     { phase: 'ASSESS', step: 4,
-      title: 'What\'s wrong?',
-      do: 'Use this tool\'s Decision Tree if needed. Common: dead battery, flat tire, run out of gas, overheating, no-start.',
-      avoid: 'Don\'t try to fix something you don\'t understand on the side of an interstate. Tow.' },
+      title: 'What is wrong?',
+      do: 'Use this tool\'s Decision Tree if needed. Common causes include a dead battery, flat tire, empty fuel tank, overheating, or a no-start.',
+      avoid: 'Do not try to diagnose or repair an unfamiliar problem beside high-speed traffic. Arrange a tow.' },
     { phase: 'ASSESS', step: 5,
-      title: 'Can I drive it (slowly) somewhere safer?',
-      do: 'Limp to the nearest exit / gas station / wide-shoulder. Going 30mph with hazards on a slow-traffic shoulder is often safer than waiting on an interstate.',
-      avoid: 'Driving on a flat tire ruins the rim ($300+). Driving overheating ruins the engine ($3000+). Know which limp is worth it.' },
+      title: 'Can I move only to a safer refuge?',
+      do: 'If the vehicle steers and brakes normally and has no flat, overheating, smoke, fire, fluid loss, or red warning, move only as far as needed to reach a safer refuge. Otherwise stop.',
+      avoid: 'Never drive on a flat or overheating vehicle, and do not use the shoulder as a travel lane. When uncertain, stop and call for help.' },
     { phase: 'CALL', step: 6,
-      title: 'Call for help (in this order)',
-      do: '1) AAA if you have it — towing is the cheapest way out. 2) Insurance roadside — many policies include it. 3) Friend with truck + tow strap (small jobs). 4) Local tow company.',
-      avoid: 'Don\'t accept "help" from random tow trucks that pull up uninvited. Some are scams that hold the car hostage.' },
+      title: 'Call the right help',
+      do: 'For fire, injuries, a power line, a fuel spill, or a vehicle blocking traffic, call 911. Otherwise call your roadside plan, insurer, or a reputable local tow service.',
+      avoid: 'Do not accept an unrequested tow without confirming the company, destination, and price. Never use a tow strap in active roadside traffic.' },
     { phase: 'CALL', step: 7,
       title: 'Tell them WHERE',
-      do: 'Give location FIRST. Mile marker, exit number, GPS coordinates from your phone, nearest cross street. Help can roll while you explain the rest.',
-      avoid: 'Don\'t describe the problem before the location. Lost-call after location-first = help is already coming.' },
+      do: 'Give location FIRST: road and direction, mile marker or exit, nearest cross street, and GPS coordinates if available. Then describe the vehicle and problem.',
+      avoid: 'Do not make the dispatcher guess your location. A precise location gets the right help moving sooner.' },
     { phase: 'WAIT', step: 8,
       title: 'Stay warm + visible',
-      do: 'Maine winter: blanket on, hand warmers if cold, run engine for 10 min/hour for heat (CHECK exhaust isn\'t snow-blocked = CO risk). Phone on charger.',
-      avoid: 'Don\'t run engine if exhaust pipe is buried in snow. CO accumulates in cabin.' },
+      do: 'If stranded in snow, stay with the vehicle. Clear snow from the exhaust pipe before running the engine; then run it about 10 minutes each hour with a downwind window cracked slightly. Make the car visible.',
+      avoid: 'Do not idle continuously or run the engine with a snow-blocked exhaust. Carbon monoxide can enter the cabin.' },
     { phase: 'WAIT', step: 9,
       title: 'Tell someone where you are',
-      do: 'Text a family member or friend your location, ETA of help, and a check-in time. Especially important on rural roads.',
-      avoid: 'Don\'t go silent. People worry; protocols exist for a reason.' }
+      do: 'Text a family member or friend your location, the help provider and ETA, and a check-in time. Preserve phone power between updates.',
+      avoid: 'Do not go silent. If conditions change or help does not arrive, update the dispatcher and your contact.' }
   ];
+
+  // Four condition-based cases: there is no single safe sequence for every
+  // roadside emergency. Each answer is based on linked U.S. government guidance.
+  var ROADSIDE_DECISION_CASES = [
+    {
+      id: 'highway-shoulder',
+      icon: '\uD83D\uDEE3\uFE0F',
+      title: 'Flat tire beside 65 mph traffic',
+      scene: 'The car is fully on a narrow interstate shoulder. The flat is on the traffic side. Everyone is unhurt, and there is no smoke or fire.',
+      prompt: 'What is the safest first move?',
+      sourceLabel: 'Federal Highway Administration',
+      sourceUrl: 'https://ops.fhwa.dot.gov/publications/fhwahop10014/s4.htm',
+      choices: [
+        { id: 'change-now', label: 'Get out on the passenger side and begin the tire change immediately.', correct: false, feedback: 'A high-speed shoulder is not a safe workshop, especially when the repair is on the traffic side. Wait for trained roadside help.' },
+        { id: 'protect-call', label: 'Turn on hazards, stay buckled inside, share the exact location, and call roadside help.', correct: true, feedback: 'Correct. Staying with the vehicle and away from travel lanes reduces exposure while trained help responds. Call 911 if the car is in a lane or there is immediate danger.' },
+        { id: 'walk-exit', label: 'Walk along the shoulder to the next exit so the car is not left alone.', correct: false, feedback: 'People walking beside a high-speed roadway face extreme risk. Stay with the vehicle and use the phone to bring help to you.' }
+      ],
+      takeaway: 'Hazards on, occupants protected from traffic, exact location shared, and roadside help called before any repair attempt.'
+    },
+    {
+      id: 'vehicle-fire',
+      icon: '\uD83D\uDD25',
+      title: 'Smoke and flames under the hood',
+      scene: 'While driving, you see smoke and then a small flame at the hood seam. The vehicle still responds to steering and braking.',
+      prompt: 'What is the safest response?',
+      sourceLabel: 'U.S. Fire Administration',
+      sourceUrl: 'https://www.usfa.fema.gov/prevention/vehicle-fires/',
+      choices: [
+        { id: 'open-hood', label: 'Pull over, open the hood, and use a small extinguisher on the flame.', correct: false, feedback: 'Opening the hood can feed the fire and expose you to flames or a hood-strut failure. Do not try to fight a vehicle fire.' },
+        { id: 'exit-distance', label: 'Pull over, turn off the engine, get everyone out, move at least 100 feet away and away from traffic, then call 911.', correct: true, feedback: 'Correct. The U.S. Fire Administration says to get out, stay out, keep at least 100 feet away and away from traffic, and call 911.' },
+        { id: 'stay-buckled', label: 'Stop on the shoulder but remain buckled inside until firefighters arrive.', correct: false, feedback: 'A burning vehicle is the exception to the usual stay-inside guidance. Everyone must exit and move well away from both the car and traffic.' }
+      ],
+      takeaway: 'Engine off, everyone out, stay out, move at least 100 feet away and away from traffic, and call 911. Never open the hood or trunk.'
+    },
+    {
+      id: 'winter-stranded',
+      icon: '\u2744\uFE0F',
+      title: 'Snow-stranded with a drifting tailpipe',
+      scene: 'Heavy snow has stranded the car on a rural road. The cabin is getting cold, and drifting snow is beginning to cover the exhaust pipe.',
+      prompt: 'What should you do while waiting for rescue?',
+      sourceLabel: 'National Weather Service',
+      sourceUrl: 'https://www.weather.gov/safety/winter-during',
+      choices: [
+        { id: 'idle-sealed', label: 'Keep the engine running continuously with every window closed.', correct: false, feedback: 'Continuous idling wastes fuel, and a blocked exhaust can send deadly carbon monoxide into the cabin.' },
+        { id: 'walk-help', label: 'Leave the vehicle and walk toward the nearest house before visibility gets worse.', correct: false, feedback: 'In severe winter conditions, the vehicle is shelter and is easier for rescuers to find. Do not leave unless a safe destination is very close and visible.' },
+        { id: 'stay-clear-cycle', label: 'Stay with the car, clear the exhaust, crack a downwind window, run the engine about 10 minutes each hour, and make the car visible.', correct: true, feedback: 'Correct. This follows National Weather Service guidance for conserving fuel, reducing carbon-monoxide risk, and helping rescuers find you.' }
+      ],
+      takeaway: 'Stay with the vehicle, clear the exhaust before running the engine, crack a downwind window, use short heat cycles, and stay visible.'
+    },
+    {
+      id: 'power-line',
+      icon: '\u26A1',
+      title: 'A power line falls across the car',
+      scene: 'After a storm, a wire drops onto the stopped car. There is no smoke or fire, and no one is injured.',
+      prompt: 'What is the safest first move?',
+      sourceLabel: 'Presidio Trust (U.S. government)',
+      sourceUrl: 'https://presidio.gov/explore/blog/how-to-respond-to-downed-power-lines',
+      choices: [
+        { id: 'step-out', label: 'Open the door and step onto the ground without touching the outside of the car.', correct: false, feedback: 'The ground and vehicle exterior may be energized. Touching the car and ground, or taking a normal step through different voltages, can be fatal.' },
+        { id: 'stay-call-warn', label: 'Remain inside, call 911, and warn everyone nearby to stay away from the car and wire.', correct: true, feedback: 'Correct. With no fire, stay inside and wait for the utility or emergency responders to confirm the line is de-energized.' },
+        { id: 'move-wire', label: 'Use a dry wooden object to push the wire away from the vehicle.', correct: false, feedback: 'Never touch or move a downed line with any object. Treat every wire as energized and keep other people away.' }
+      ],
+      takeaway: 'No fire: stay inside, call 911, and warn others away. If fire forces an exit, jump clear without touching car and ground together, then shuffle away.'
+    }
+  ];
+
+  function arEvaluateRoadsideDecision(caseDef, choiceId) {
+    var choices = caseDef && Array.isArray(caseDef.choices) ? caseDef.choices : [];
+    var choice = choices.find(function(item) { return item.id === choiceId; }) || null;
+    var correctChoice = choices.find(function(item) { return item.correct === true; }) || null;
+    if (!choice || !correctChoice) {
+      return { valid: false, correct: false, feedback: 'Choose one of the listed actions.', correctId: correctChoice ? correctChoice.id : null };
+    }
+    return { valid: true, correct: choice.correct === true, feedback: choice.feedback, correctId: correctChoice.id };
+  }
 
   // ─────────────────────────────────────────────────────────
   // SECTION 9.87: SHOP BUSINESS BASICS — for the future shop owner / mobile
@@ -3792,6 +3921,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     'lower2', 'loosen', 'traffic', 'brake', 'mount', 'place', 'torqueup', 'lower1', 'check'
   ];
 
+  // Five-lug practice pattern, with lugs numbered clockwise from the top.
+  // Any lug can be the real-world starting point; fixing the start at lug 1
+  // makes the exercise deterministic while preserving the cross-hub rule.
+  var TIRE_LUG_PATTERN = [0, 2, 4, 1, 3];
+
+  function arEvaluateLugChoice(sequence, lugIndex) {
+    var current = Array.isArray(sequence) ? sequence.slice() : [];
+    var alreadyComplete = current.length >= TIRE_LUG_PATTERN.length;
+    var expected = alreadyComplete ? null : TIRE_LUG_PATTERN[current.length];
+
+    if (alreadyComplete) {
+      return { accepted: false, kind: 'complete', sequence: current, expected: null, complete: true };
+    }
+    if (typeof lugIndex !== 'number' || lugIndex % 1 !== 0 || lugIndex < 0 || lugIndex >= TIRE_LUG_PATTERN.length) {
+      return { accepted: false, kind: 'invalid', sequence: current, expected: expected, complete: false };
+    }
+    if (current.indexOf(lugIndex) !== -1) {
+      return { accepted: false, kind: 'repeat', sequence: current, expected: expected, complete: false };
+    }
+    if (lugIndex !== expected) {
+      return { accepted: false, kind: 'wrong', sequence: current, expected: expected, complete: false };
+    }
+
+    var next = current.concat([lugIndex]);
+    var complete = next.length >= TIRE_LUG_PATTERN.length;
+    return {
+      accepted: true,
+      kind: complete ? 'complete' : 'correct',
+      sequence: next,
+      expected: complete ? null : TIRE_LUG_PATTERN[next.length],
+      complete: complete
+    };
+  }
+
   // -- Wheel-corner scene content --
   // Phase-driven: `api.phase` is how many steps are done, and the scene shows
   // that state — chock appears, jack goes under, car lifts, wheel comes off,
@@ -4951,13 +5114,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               var l = Math.floor(Math.random() * (k + 1));
               var t2 = nextChoices[k]; nextChoices[k] = nextChoices[l]; nextChoices[l] = t2;
             }
-            upd({ dxQuizCueId: target.id, dxQuizChoices: nextChoices, dxQuizPicked: null });
+            updMulti({ dxQuizCueId: target.id, dxQuizChoices: nextChoices, dxQuizPicked: null });
           }
           function pickAnswer(choiceId) {
             if (picked) return;
             var correct = choiceId === cueId;
             var nextStreak = correct ? streak + 1 : 0;
-            upd({
+            updMulti({
               dxQuizPicked: choiceId,
               dxQuizScore: score + (correct ? 1 : 0),
               dxQuizAttempts: attempts + 1,
@@ -5014,7 +5177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 streak > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, h('span', null, '🔥 streak ' + streak))
               ),
               attempts > 0 && h('button', { 'data-ar-focusable': true,
-                onClick: function() { upd({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
+                onClick: function() { updMulti({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
                 style: Object.assign({}, btnSecondary(), { fontSize: 11 })
               }, __alloT('stem.autorepair.reset_score', '↺ Reset score'))
             ),
@@ -5174,7 +5337,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
-      // REPAIR view — 7 scenario walkthroughs
+      // REPAIR view — 12 safety-gated scenario walkthroughs
       // ─────────────────────────────────────────
       function renderRepair() {
         var picked = d.repairPicked || null;
@@ -5188,8 +5351,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         if (pickedRepair) {
           var viewedForThis = stepsViewed[pickedRepair.id] || {};
           var totalSteps = pickedRepair.steps.length;
-          var doneSteps = Object.keys(viewedForThis).length;
+          var safetyChecks = d.repairSafetyFor === pickedRepair.id && d.repairSafetyChecks && typeof d.repairSafetyChecks === 'object'
+            ? d.repairSafetyChecks : {};
+          var safetyStatus = arRepairSafetyStatus(pickedRepair.safety, safetyChecks);
+          var progress = arRepairStepProgress(totalSteps, viewedForThis);
+          var doneSteps = progress.done;
           var pct = Math.round((doneSteps / totalSteps) * 100);
+
+          function toggleRepairSafety(code) {
+            var next = Object.assign({}, safetyChecks);
+            if (next[code]) delete next[code];
+            else next[code] = true;
+            var nextStatus = arRepairSafetyStatus(pickedRepair.safety, next);
+            updMulti({ repairSafetyFor: pickedRepair.id, repairSafetyChecks: next });
+            arAnnounce(nextStatus.complete
+              ? (progress.complete
+                  ? 'Safety check complete. This walkthrough is already marked reviewed.'
+                  : 'Safety check complete. Step ' + progress.next + ' is ready for review.')
+              : 'Safety item ' + (next[code] ? 'confirmed: ' : 'unchecked: ') + arRepairSafetyLabel(code));
+          }
+
+          function reviewRepairStep(step) {
+            if (step.n <= progress.done) {
+              arAnnounce('Step ' + step.n + ' was already reviewed.');
+              return;
+            }
+            if (!safetyStatus.complete) {
+              arAnnounce('Complete every safety item before marking procedure steps reviewed.');
+              return;
+            }
+            if (step.n !== progress.next) {
+              arAnnounce('Review step ' + progress.next + ' before step ' + step.n + '.');
+              return;
+            }
+            var nv = Object.assign({}, viewedForThis);
+            nv[step.n] = true;
+            var all = Object.assign({}, stepsViewed);
+            all[pickedRepair.id] = nv;
+            var nextProgress = arRepairStepProgress(totalSteps, nv);
+            upd('stepsViewed', all);
+            arAnnounce(nextProgress.complete
+              ? 'Walkthrough complete: ' + pickedRepair.name
+              : 'Step ' + step.n + ' reviewed. Step ' + nextProgress.next + ' is ready.');
+            if (nextProgress.complete) {
+              awardBadge('rep-' + pickedRepair.id, 'Completed walkthrough: ' + pickedRepair.name);
+            }
+          }
+
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
               h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
@@ -5245,33 +5453,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               pickedRepair.consumables && h('div', { style: { marginTop: 8, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.text } }, 'Consumables: '), pickedRepair.consumables)
             ),
-            h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 14 } },
-              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: '#fed7aa' } }, __alloT('stem.autorepair.safety_prerequisites', '🛡️ Safety prerequisites')),
-              h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: '#fed7aa', lineHeight: 1.6 } },
-                pickedRepair.safety.map(function(s, i) { return h('li', { key: i }, s.replace(/-/g, ' ')); })
-              )
+            h('section', { 'aria-labelledby': 'ar-repair-safety-title',
+              style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid ' + (safetyStatus.complete ? '#86efac' : '#ea580c'), marginBottom: 14 } },
+              h('h4', { id: 'ar-repair-safety-title', style: { margin: '0 0 6px', fontSize: 13, color: '#fed7aa' } },
+                __alloT('stem.autorepair.safety_check', '🛡️ Safety check — clear before step review')),
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#ffedd5', lineHeight: 1.55 } },
+                __alloT('stem.autorepair.safety_check_intro', 'Actively acknowledge each condition. This learning check cannot verify a real vehicle or replace its service manual.')),
+              h('div', { role: 'status', 'aria-live': 'polite',
+                style: { marginBottom: 8, fontSize: 12, color: safetyStatus.complete ? '#bbf7d0' : '#fed7aa', fontWeight: 800 } },
+                __alloT('stem.autorepair.safety_check_progress', 'Safety check: ') + safetyStatus.done + ' / ' + safetyStatus.total +
+                  (safetyStatus.complete ? __alloT('stem.autorepair.safety_check_ready', ' understood — step review unlocked.') : __alloT('stem.autorepair.safety_check_locked', ' understood — step review locked.'))),
+              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 7 } },
+                pickedRepair.safety.map(function(code) {
+                  var checked = safetyChecks[code] === true;
+                  var label = arRepairSafetyLabel(code);
+                  return h('div', { key: code, role: 'listitem' },
+                    h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-safety-item': code,
+                      'aria-pressed': checked,
+                      'aria-label': (checked ? 'Unconfirm' : 'Confirm') + ' safety item: ' + label,
+                      onClick: function() { toggleRepairSafety(code); },
+                      style: { width: '100%', minHeight: 44, textAlign: 'left', padding: '9px 11px', borderRadius: 8,
+                        background: checked ? '#14532d' : '#431407', border: '1px solid ' + (checked ? '#86efac' : '#fdba74'),
+                        color: checked ? '#dcfce7' : '#ffedd5', cursor: 'pointer', display: 'flex', gap: 9, alignItems: 'flex-start', lineHeight: 1.45 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontWeight: 900, flexShrink: 0 } }, checked ? '✓' : '○'),
+                      h('span', { style: { fontSize: 12.5, fontWeight: checked ? 700 : 600 } }, __alloT('stem.autorepair.i_understand', 'I understand: '), label))
+                  );
+                })
+              ),
+              safetyStatus.done > 0 && h('button', { type: 'button', 'data-ar-focusable': true,
+                onClick: function() { upd('repairSafetyChecks', {}); arAnnounce('Safety check reset.'); },
+                style: { minHeight: 40, marginTop: 8, padding: '6px 10px', borderRadius: 7, border: '1px solid #fdba74', background: 'transparent', color: '#ffedd5', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                __alloT('stem.autorepair.reset_safety_check', 'Reset safety check'))
             ),
             h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
                 h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.step_by_step', '📋 Step-by-step')),
-                h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, doneSteps + ' / ' + totalSteps + ' viewed (' + pct + '%)')
+                h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, doneSteps + ' / ' + totalSteps + ' reviewed (' + pct + '%)')
               ),
+              h('p', { id: 'ar-repair-step-help', style: { margin: '0 0 9px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                __alloT('stem.autorepair.repair_step_help', 'Read the entire procedure before touching a vehicle. In this learning walkthrough, mark each step reviewed in order after clearing the safety check.')),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 pickedRepair.steps.map(function(s) {
-                  var viewed = !!viewedForThis[s.n];
-                  return h('div', { key: s.n, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
-                    'aria-label': 'Step ' + s.n + (viewed ? ' (viewed)' : ''),
-                    onClick: function() {
-                      var nv = Object.assign({}, viewedForThis); nv[s.n] = true;
-                      var all = Object.assign({}, stepsViewed); all[pickedRepair.id] = nv;
-                      upd('stepsViewed', all);
-                      if (Object.keys(nv).length === totalSteps) {
-                        awardBadge('rep-' + pickedRepair.id, 'Walked through: ' + pickedRepair.name);
-                      }
-                    },
-                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: viewed ? T.cardAlt : T.bg, border: '1px solid ' + (viewed ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start' } },
-                    h('span', { 'aria-hidden': 'true', style: { background: viewed ? T.accent : T.dim, color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.n),
-                    h('span', { style: { fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do)
+                  var viewed = s.n <= progress.done;
+                  var isNext = s.n === progress.next;
+                  var locked = !viewed && (!safetyStatus.complete || !isNext);
+                  var stepState = viewed ? 'reviewed' : (safetyStatus.complete && isNext ? 'next' : (safetyStatus.complete ? 'locked-order' : 'locked-safety'));
+                  var stateLabel = viewed ? 'Reviewed' : (stepState === 'next' ? 'Ready to review' : (stepState === 'locked-safety' ? 'Locked until the safety check is complete' : 'Locked until step ' + progress.next + ' is reviewed'));
+                  return h('div', { key: s.n, role: 'listitem' }, h('button', { type: 'button', 'data-ar-focusable': true,
+                    'data-ar-repair-step': s.n, 'data-ar-step-state': stepState,
+                    'aria-disabled': locked, 'aria-describedby': 'ar-repair-step-help',
+                    'aria-label': 'Step ' + s.n + ': ' + stateLabel,
+                    onClick: function() { reviewRepairStep(s); },
+                    style: { width: '100%', minHeight: 48, textAlign: 'left', padding: 10, borderRadius: 8,
+                      background: viewed ? T.cardAlt : T.bg, border: '1px solid ' + (viewed ? T.accent : (isNext && safetyStatus.complete ? T.accentHi : T.border)),
+                      color: T.text, cursor: locked ? 'not-allowed' : 'pointer', opacity: locked ? 0.72 : 1, display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                    h('span', { 'aria-hidden': 'true', style: { background: viewed ? T.accent : (isNext && safetyStatus.complete ? T.warn : T.dim), color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, viewed ? '✓' : s.n),
+                    h('span', { style: { flex: 1 } },
+                      h('span', { style: { display: 'block', fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do),
+                      h('span', { style: { display: 'block', marginTop: 4, fontSize: 10.5, color: viewed ? T.good : (stepState === 'next' ? T.accentHi : T.dim), fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' } }, stateLabel))
                   ));
                 })
               )
@@ -5298,7 +5537,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             REPAIR_SCENARIOS.map(function(s) {
               return h('button', { key: s.id, 'data-ar-focusable': true,
                 'aria-label': s.name,
-                onClick: function() { upd('repairPicked', s.id); },
+                onClick: function() {
+                  updMulti({ repairPicked: s.id, repairSafetyFor: s.id, repairSafetyChecks: {} });
+                  arAnnounce('Opened ' + s.name + '. Complete the safety check before reviewing steps.');
+                },
                 style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer' } },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
                 h('div', { style: { fontWeight: 700, fontSize: 15, color: T.text, marginBottom: 4 } }, s.name),
@@ -6510,25 +6752,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ROADSIDE EMERGENCY view — trunk kit + breakdown protocol
       // ─────────────────────────────────────────
       function renderRoadside() {
-        var rsView = d.rsView || 'overview';
+        var RS_TAB_IDS = ['overview', 'kit', 'protocol', 'decide'];
+        var rsView = RS_TAB_IDS.indexOf(d.rsView) >= 0 ? d.rsView : 'overview';
+
+        function rsTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % RS_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + RS_TAB_IDS.length) % RS_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = RS_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
         function tabBtn(id, label) {
           var active = rsView === id;
           return h('button', { 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-roadside-tab-' + id,
+            'aria-controls': 'autorepair-roadside-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
-            onClick: function() { upd('rsView', id); },
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { rsTabKeyDown(e, RS_TAB_IDS.indexOf(id)); },
+            onClick: function() { upd('rsView', id); arAnnounce(label + ' roadside tab'); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
         }
 
         function rsOverview() {
           return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.if_you_break_down_on_a_maine_road', '🚨 If you break down on a Maine road...')),
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.if_you_break_down_on_a_maine_road', '\uD83D\uDEA8 If you break down on a Maine road...')),
             h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-              __alloT('stem.autorepair.maine_rural_breakdowns_can_become_surv', 'Maine rural breakdowns can become survival situations in winter. Below-zero temperatures + 30+ minute tow waits + sparse cell coverage = real risk. Two parts: '),
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_s_in_your_trunk', 'what\'s in your trunk')), __alloT('stem.autorepair.kit_tab_and', ' (Kit tab) and '),
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_you_do', 'what you do')), __alloT('stem.autorepair.protocol_tab', ' (Protocol tab).')),
+              'Maine rural breakdowns can become winter survival situations. Use the ',
+              h('strong', { style: { color: T.accentHi } }, 'Kit'), ' tab to prepare, the ',
+              h('strong', { style: { color: T.accentHi } }, 'Protocol'), ' tab for the general order, and ',
+              h('strong', { style: { color: T.accentHi } }, 'Practice'), ' for emergencies where the first move changes with the hazard.'),
             h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 13, color: '#fed7aa', lineHeight: 1.55 } },
-              h('strong', null, __alloT('stem.autorepair.critical_maine_winter_rule', '⚠️ Critical Maine winter rule: ')),
-              __alloT('stem.autorepair.if_your_exhaust_pipe_is_buried_in_snow', 'If your exhaust pipe is buried in snow, DO NOT idle the engine to stay warm. Carbon monoxide accumulates in the cabin in minutes. Clear the exhaust before idling, OR run engine 10 minutes per hour with a window cracked.'))
+              h('strong', null, '\u26A0\uFE0F Critical winter rule: '),
+              'If stranded in snow, stay with the vehicle. Clear snow from the exhaust pipe before running the engine. Then run it about 10 minutes each hour with a downwind window cracked slightly; never idle continuously.')
           );
         }
 
@@ -6539,9 +6802,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (done === total) awardBadge('kit-packed', 'Trunk Kit Packed');
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_winter_trunk_kit', '🎒 Maine winter trunk kit')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_winter_trunk_kit', '\uD83C\uDF92 Maine winter trunk kit')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.tap_each_item_as_you_pack_it_total_kit', 'Tap each item as you pack it. Total kit cost: ~$300–$600. '),
+                __alloT('stem.autorepair.tap_each_item_as_you_pack_it_total_kit', 'Tap each item as you pack it. Total kit cost: ~$300-$600. '),
                 h('strong', null, 'Done: '), done + ' / ' + total)
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
@@ -6558,7 +6821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 20 } }, it.icon),
                     h('strong', { style: { fontSize: 13, color: isPacked ? '#d1fae5' : T.text, flex: 1 } }, it.name),
-                    isPacked && h('span', { style: { fontSize: 14, color: T.good } }, '✓')
+                    isPacked && h('span', { style: { fontSize: 14, color: T.good } }, '\u2713')
                   ),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, it.why),
                   h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700 } }, it.cost)
@@ -6577,9 +6840,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           };
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.breakdown_response_protocol', '🛣️ Breakdown response protocol')),
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '\uD83D\uDEE3\uFE0F Breakdown response protocol'),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.9_steps_in_4_phases_order_matters_get_', '9 steps in 4 phases. Order matters — get safe first, then assess.'))
+                '9 steps in 4 phases. Order matters: get safe first, then assess.')
             ),
             h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               BREAKDOWN_PROTOCOL.map(function(p) {
@@ -6591,26 +6854,177 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     h('strong', { style: { fontSize: 14, color: T.text, flex: 1 } }, p.title)
                   ),
                   h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
-                    h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.do', '✅ Do: ')), p.do),
+                    h('strong', { style: { color: T.good } }, '\u2705 Do: '), p.do),
                   h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-                    h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.avoid', '❌ Avoid: ')), p.avoid)
+                    h('strong', { style: { color: T.bad } }, '\u274C Avoid: '), p.avoid)
                 );
               })
             )
           );
         }
 
+        function rsDecide() {
+          var total = ROADSIDE_DECISION_CASES.length;
+          var passScore = Math.ceil(total * 0.75);
+          var savedIndex = parseInt(d.rsDecisionIndex, 10);
+          var index = isNaN(savedIndex) ? 0 : Math.max(0, Math.min(total, savedIndex));
+          var savedScore = parseInt(d.rsDecisionScore, 10);
+          var score = isNaN(savedScore) ? 0 : Math.max(0, Math.min(total, savedScore));
+          var complete = index >= total;
+
+          function resetRoadsideDecisions() {
+            updMulti({
+              rsDecisionIndex: 0,
+              rsDecisionFor: null,
+              rsDecisionPicked: null,
+              rsDecisionScore: 0,
+              rsDecisionAttempts: 0
+            });
+            arAnnounce('Roadside decision practice reset.');
+          }
+
+          if (complete) {
+            var passed = score >= passScore;
+            return h('div', { 'data-ar-roadside-summary': passed ? 'passed' : 'review',
+              style: { padding: 16, borderRadius: 10, background: T.card, border: '2px solid ' + (passed ? T.good : T.warn) } },
+              h('h3', { style: { margin: '0 0 8px', color: T.text, fontSize: 17 } }, '\uD83D\uDEA8 Practice complete'),
+              h('div', { style: { fontSize: 30, fontWeight: 900, color: passed ? T.good : T.warn, marginBottom: 8 } }, score + ' / ' + total),
+              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                passed
+                  ? 'Roadside Decision Ready earned. You recognized at least three of the four safest first moves.'
+                  : 'Review the missed cases and try again. In a roadside emergency, choosing the hazard-specific first move matters more than speed.'),
+              h('h4', { style: { margin: '0 0 6px', color: T.accentHi, fontSize: 13 } }, 'Official guidance used'),
+              h('ul', { style: { margin: '0 0 14px', paddingLeft: 20, color: T.muted, fontSize: 12, lineHeight: 1.7 } },
+                ROADSIDE_DECISION_CASES.map(function(caseDef) {
+                  return h('li', { key: caseDef.id },
+                    h('a', { href: caseDef.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+                      style: { color: T.link, textDecoration: 'underline' } }, caseDef.sourceLabel + ': ' + caseDef.title));
+                })
+              ),
+              h('button', { 'data-ar-focusable': true, onClick: resetRoadsideDecisions, style: btnPrimary() }, '\u21BA Run the four cases again')
+            );
+          }
+
+          var caseDef = ROADSIDE_DECISION_CASES[index];
+          var pickedId = d.rsDecisionFor === caseDef.id ? d.rsDecisionPicked : null;
+          var evaluation = pickedId ? arEvaluateRoadsideDecision(caseDef, pickedId) : null;
+          var answered = !!(evaluation && evaluation.valid);
+
+          function chooseRoadsideDecision(choiceId) {
+            if (answered) {
+              arAnnounce('Answer locked. Continue to the next case or reset the practice.');
+              return;
+            }
+            var next = arEvaluateRoadsideDecision(caseDef, choiceId);
+            if (!next.valid) {
+              arAnnounce(next.feedback);
+              return;
+            }
+            var nextScore = score + (next.correct ? 1 : 0);
+            var attempts = Math.max(0, parseInt(d.rsDecisionAttempts, 10) || 0) + 1;
+            updMulti({
+              rsDecisionIndex: index,
+              rsDecisionFor: caseDef.id,
+              rsDecisionPicked: choiceId,
+              rsDecisionScore: nextScore,
+              rsDecisionAttempts: attempts
+            });
+            if (index === total - 1 && nextScore >= passScore) {
+              awardBadge('roadside-decisions', 'Roadside Decision Ready');
+            }
+            arAnnounce((next.correct ? '' : 'Not the safest first move. ') + next.feedback);
+          }
+
+          function advanceRoadsideDecision() {
+            if (!answered) {
+              arAnnounce('Choose an action before continuing.');
+              return;
+            }
+            updMulti({
+              rsDecisionIndex: index + 1,
+              rsDecisionFor: null,
+              rsDecisionPicked: null
+            });
+            arAnnounce(index === total - 1 ? 'Roadside practice complete.' : 'Next roadside case.');
+          }
+
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, caseDef.icon),
+                h('div', { style: { flex: 1, minWidth: 190 } },
+                  h('div', { style: { color: T.dim, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4 } }, 'Case ' + (index + 1) + ' of ' + total),
+                  h('h3', { style: { margin: '2px 0 0', color: T.text, fontSize: 16 } }, caseDef.title)
+                ),
+                h('span', { 'aria-label': 'Current score ' + score + ' out of ' + index,
+                  style: { padding: '4px 9px', borderRadius: 999, border: '1px solid ' + T.border, color: T.accentHi, fontSize: 11, fontWeight: 800 } },
+                  'Score ' + score + ' / ' + index)
+              ),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, caseDef.scene),
+              h('strong', { id: 'autorepair-roadside-question-' + caseDef.id, style: { color: T.accentHi, fontSize: 13 } }, caseDef.prompt)
+            ),
+            h('div', { role: 'group', 'aria-labelledby': 'autorepair-roadside-question-' + caseDef.id,
+              style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              caseDef.choices.map(function(choice, choiceIndex) {
+                var selected = pickedId === choice.id;
+                var correctAnswer = answered && choice.correct === true;
+                var selectedWrong = answered && selected && !choice.correct;
+                var state = !answered ? 'available' : correctAnswer ? 'correct-answer' : selectedWrong ? 'selected-incorrect' : 'locked';
+                var resultLabel = correctAnswer ? ' Correct answer.' : selectedWrong ? ' Your choice; not the safest first move.' : '';
+                return h('button', { key: choice.id, 'data-ar-focusable': true,
+                  'data-ar-roadside-choice': choice.id,
+                  'data-ar-choice-state': state,
+                  'aria-pressed': selected ? 'true' : 'false',
+                  'aria-disabled': answered ? 'true' : 'false',
+                  'aria-label': 'Option ' + (choiceIndex + 1) + ': ' + choice.label + resultLabel,
+                  onClick: function() { chooseRoadsideDecision(choice.id); },
+                  style: { width: '100%', minHeight: 52, textAlign: 'left', padding: 12, borderRadius: 8,
+                    background: T.cardAlt, color: T.text, cursor: answered ? 'default' : 'pointer',
+                    border: '2px solid ' + (correctAnswer ? T.good : selectedWrong ? T.bad : selected ? T.accent : T.border),
+                    opacity: answered && !correctAnswer && !selected ? 0.72 : 1,
+                    display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                  h('span', { 'aria-hidden': 'true', style: { color: correctAnswer ? T.good : selectedWrong ? T.bad : T.accentHi, fontWeight: 900, minWidth: 22 } },
+                    correctAnswer ? '\u2713' : selectedWrong ? '!' : String(choiceIndex + 1)),
+                  h('span', { style: { fontSize: 13, lineHeight: 1.5, fontWeight: selected ? 800 : 600 } }, choice.label)
+                );
+              })
+            ),
+            answered && h('div', { role: 'status', 'aria-live': 'polite',
+              'data-ar-roadside-feedback': evaluation.correct ? 'correct' : 'incorrect',
+              style: { marginTop: 12, padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + (evaluation.correct ? T.good : T.warn) } },
+              h('strong', { style: { display: 'block', color: evaluation.correct ? T.good : T.warn, marginBottom: 5, fontSize: 13 } },
+                evaluation.correct ? 'Correct first move.' : 'Safer move:'),
+              h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.55, marginBottom: 6 } }, evaluation.feedback),
+              h('div', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, 'Remember: '), caseDef.takeaway)
+            ),
+            answered && h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 10 } },
+              h('a', { 'data-ar-roadside-source': caseDef.id, href: caseDef.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+                style: { color: T.link, fontSize: 12, textDecoration: 'underline' } }, 'Read official guidance: ' + caseDef.sourceLabel),
+              h('button', { 'data-ar-focusable': true, onClick: advanceRoadsideDecision, style: btnPrimary() },
+                index === total - 1 ? 'See results' : 'Next case \u2192')
+            )
+          );
+        }
+
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🚨 Roadside emergency'),
+          backBar('\uD83D\uDEA8 Roadside emergency'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.roadside_sub_modes', 'Roadside sub-modes'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
-            tabBtn('kit', '🎒 Trunk kit'),
-            tabBtn('protocol', '🛣️ Protocol')
+            tabBtn('kit', '\uD83C\uDF92 Trunk kit'),
+            tabBtn('protocol', '\uD83D\uDEE3\uFE0F Protocol'),
+            tabBtn('decide', '\uD83D\uDEA8 Practice')
           ),
-          rsView === 'overview' && rsOverview(),
-          rsView === 'kit' && rsKit(),
-          rsView === 'protocol' && rsProtocol(),
+          h('div', { role: 'tabpanel',
+            id: 'autorepair-roadside-panel-' + rsView,
+            'aria-labelledby': 'autorepair-roadside-tab-' + rsView,
+            tabIndex: 0 },
+            rsView === 'overview' ? rsOverview() :
+            rsView === 'kit' ? rsKit() :
+            rsView === 'protocol' ? rsProtocol() :
+            rsDecide()
+          ),
           disclaimerFooter()
         );
       }
@@ -9242,6 +9656,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var violations = d.tcViolations || [];
         var last = d.tcLast || null;
         var sel = d.tcSel || null;
+        var lugOrder = Array.isArray(d.tcLugOrder) ? d.tcLugOrder : [];
+        var lugWrong = d.tcLugWrong || 0;
+        var lugLast = d.tcLugLast || null;
         var finished = doneIds.length >= TIRE_STEPS.length;
 
         function stepById(id) {
@@ -9254,6 +9671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         var nextStep = TIRE_STEPS[doneIds.length] || null;
+        var lugPracticeActive = !!(d.tcLugActive && nextStep && nextStep.id === 'tighten');
 
         function choose(id) {
           if (finished) return;
@@ -9268,6 +9686,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var st = stepById(id);
           if (!st) return;
           if (nextStep && st.id === nextStep.id) {
+            if (st.id === 'tighten') {
+              updMulti({ tcLugActive: true, tcLugOrder: [], tcLugWrong: 0, tcLugLast: null, tcLast: null });
+              arAnnounce('Star-pattern practice started. Begin with lug 1 at 12 o’clock, then cross the center each time.');
+              return;
+            }
             var nd = doneIds.concat([id]);
             updMulti({ tcDone: nd, tcLast: { kind: 'ok', id: id } });
             arAnnounce('Correct. ' + st.label + '. ' + st.why);
@@ -9280,6 +9703,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           arAnnounce('Not yet. ' + st.tooEarly);
         }
 
+
+        function chooseLug(lugIndex) {
+          if (!lugPracticeActive || finished) return;
+          var result = arEvaluateLugChoice(lugOrder, lugIndex);
+          if (!result.accepted) {
+            var expectedLabel = result.expected == null ? '' : String(result.expected + 1);
+            var missMessage = result.kind === 'repeat'
+              ? 'That lug is already snug. Cross the hub to lug ' + expectedLabel + '.'
+              : result.kind === 'invalid'
+                ? 'Choose one of the five numbered lugs.'
+                : 'That move stays on the same side of the hub. Cross to lug ' + expectedLabel + '.';
+            updMulti({
+              tcLugOrder: result.sequence,
+              tcLugWrong: lugWrong + 1,
+              tcWrong: wrong + 1,
+              tcLugLast: { kind: result.kind, lug: lugIndex, expected: result.expected }
+            });
+            arAnnounce(missMessage);
+            return;
+          }
+
+          if (result.complete) {
+            var nd = doneIds.concat(['tighten']);
+            updMulti({
+              tcDone: nd,
+              tcLast: { kind: 'ok', id: 'tighten' },
+              tcLugActive: false,
+              tcLugOrder: result.sequence,
+              tcLugLast: { kind: 'complete', lug: lugIndex, expected: null }
+            });
+            arAnnounce('Star pattern complete. All five lugs are evenly snugged. Continue the wheel-change procedure.');
+            return;
+          }
+
+          updMulti({
+            tcLugOrder: result.sequence,
+            tcLugLast: { kind: 'correct', lug: lugIndex, expected: result.expected }
+          });
+          arAnnounce('Lug ' + (lugIndex + 1) + ' snug. Cross the center for the next lug.');
+        }
         // Only TIRE3D is mounted in this view; UH3D was torn down by its own
         // ref callback when the under-hood container unmounted.
         TIRE3D.sync({
@@ -9311,6 +9774,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         else if (violations.length > 0) grade = 'D';
         else if (wrong >= 3) grade = 'C';
         else if (wrong > 0) grade = 'B';
+
+        function renderLugPattern() {
+          var positions = [
+            { left: '50%', top: '8%', clock: '12 o\'clock' },
+            { left: '84%', top: '34%', clock: '2 o\'clock' },
+            { left: '71%', top: '77%', clock: '5 o\'clock' },
+            { left: '29%', top: '77%', clock: '7 o\'clock' },
+            { left: '16%', top: '34%', clock: '10 o\'clock' }
+          ];
+          var lugStatus = null;
+          if (lugLast && lugLast.kind === 'correct') {
+            lugStatus = { tone: T.good, text: 'Good — lug ' + (lugLast.lug + 1) + ' is snug. Keep crossing the center.' };
+          } else if (lugLast && lugLast.kind === 'repeat') {
+            lugStatus = { tone: T.warn, text: 'That lug is already snug. Continue at lug ' + (lugLast.expected + 1) + '.' };
+          } else if (lugLast && (lugLast.kind === 'wrong' || lugLast.kind === 'invalid')) {
+            lugStatus = { tone: T.warn, text: lugLast.kind === 'invalid'
+              ? 'Choose one of the five numbered lug buttons.'
+              : 'That was an adjacent lug. Cross the hub to lug ' + (lugLast.expected + 1) + '.' };
+          }
+
+          return h('section', { 'aria-labelledby': 'tc-lug-title',
+            style: { marginTop: 16, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+            h('h2', { id: 'tc-lug-title', style: { margin: '0 0 6px', fontSize: 16, color: T.accentHi } },
+              __alloT('stem.autorepair.tc_lug_title', '⭐ Five-lug star-pattern practice')),
+            h('p', { id: 'tc-lug-instructions', style: { margin: '0 0 12px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+              __alloT('stem.autorepair.tc_lug_instructions', 'Any lug can be first on a real wheel. For this numbered practice, start at lug 1 (12 o’clock), then choose the farthest untightened lug each time. Do not move to the adjacent lug.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, alignItems: 'center' } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.autorepair.tc_lug_group', 'Five lug nuts arranged around a wheel'),
+                'aria-describedby': 'tc-lug-instructions',
+                style: { position: 'relative', width: 260, height: 260, maxWidth: '100%', margin: '0 auto', borderRadius: '50%', background: 'radial-gradient(circle, ' + T.cardAlt + ' 0 30%, ' + T.border + ' 31% 33%, ' + T.card + ' 34% 68%, ' + T.border + ' 69% 71%, transparent 72%)' } },
+                h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: '50%', top: '50%', width: 70, height: 70, transform: 'translate(-50%, -50%)', borderRadius: '50%', display: 'grid', placeItems: 'center', background: T.cardAlt, border: '2px solid ' + T.border, color: T.dim, fontSize: 11, fontWeight: 800, textAlign: 'center' } }, 'WHEEL', h('br'), 'HUB'),
+                positions.map(function(pos, lugIndex) {
+                  var doneAt = lugOrder.indexOf(lugIndex);
+                  var tightened = doneAt !== -1;
+                  return h('button', { key: lugIndex, type: 'button', 'data-ar-focusable': true,
+                    disabled: tightened,
+                    'aria-pressed': tightened ? 'true' : 'false',
+                    'aria-label': 'Lug ' + (lugIndex + 1) + ', ' + pos.clock + (tightened ? ', tightened ' + (doneAt + 1) + ' in the sequence' : ', not tightened'),
+                    onClick: function() { chooseLug(lugIndex); },
+                    style: { position: 'absolute', left: pos.left, top: pos.top, transform: 'translate(-50%, -50%)', width: 50, height: 50, borderRadius: '50%', cursor: tightened ? 'default' : 'pointer', background: tightened ? T.good : T.cardAlt, color: tightened ? '#0f172a' : T.text, border: '2px solid ' + (tightened ? T.good : T.border), fontSize: 15, fontWeight: 900 } },
+                    String(lugIndex + 1),
+                    tightened && h('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 9, lineHeight: 1 } }, '✓' + (doneAt + 1))
+                  );
+                })
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.05em', color: T.accentHi, marginBottom: 5 } },
+                  __alloT('stem.autorepair.tc_lug_progress', 'Pattern progress: ') + lugOrder.length + ' / ' + TIRE_LUG_PATTERN.length),
+                h('div', { style: { minHeight: 34, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, color: T.text, fontSize: 14, fontWeight: 800, fontFamily: 'monospace', marginBottom: 8 } },
+                  lugOrder.length ? lugOrder.map(function(index) { return index + 1; }).join(' → ') : __alloT('stem.autorepair.tc_lug_start', 'Start with lug 1')),
+                h('p', { style: { margin: '0 0 8px', fontSize: 11.5, color: T.muted, lineHeight: 1.55 } },
+                  __alloT('stem.autorepair.tc_lug_real_note', 'On a real wheel, use several gradual passes in this same cross pattern and finish at the vehicle manufacturer’s torque specification. Never guess the torque.')),
+                lugStatus && h('div', { role: 'status', 'aria-live': 'polite', style: { padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + lugStatus.tone, color: T.text, fontSize: 12, lineHeight: 1.5, marginBottom: 8 } }, lugStatus.text),
+                lugOrder.length > 0 && h('button', { type: 'button', 'data-ar-focusable': true,
+                  onClick: function() { updMulti({ tcLugOrder: [], tcLugLast: null }); arAnnounce('Star pattern restarted at lug 1.'); },
+                  style: btnGhost({ fontSize: 11 }) }, __alloT('stem.autorepair.tc_lug_restart', '↺ Restart this pattern'))
+              )
+            )
+          );
+        }
 
         return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.tc_title_aria', 'Roadside tyre change'), style: { padding: 20, maxWidth: 1040, margin: '0 auto', color: T.text } },
           backBar(__alloT('stem.autorepair.tc_title', '🛞 Change a tyre')),
@@ -9363,13 +9886,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             )
           ),
 
+          lugPracticeActive && renderLugPattern(),
+
           // Action pool
-          !finished && h('div', { style: { marginTop: 16 } },
+          !finished && !lugPracticeActive && h('div', { style: { marginTop: 16 } },
             h('h2', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } },
               __alloT('stem.autorepair.tc_whats_next', 'What do you do next?')),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
               TIRE_POOL_ORDER.map(function (id) {
                 if (doneIds.indexOf(id) !== -1) return null;
+
                 var st = stepById(id);
                 var hz = st ? null : hazardById(id);
                 var item = st || hz;
@@ -9407,7 +9933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               __alloT('stem.autorepair.tc_now_real_body', 'Find your jack, your wrench and your spare, and check the spare actually holds air. Read your manual for where the jack points are on your car. A driveway on a dry afternoon is a much better place to learn this than a dark verge in February.')),
             h('div', { style: { display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' } },
               h('button', { 'data-ar-focusable': true,
-                onClick: function () { updMulti({ tcDone: [], tcWrong: 0, tcViolations: [], tcLast: null, tcSel: null }); arAnnounce('Reset'); },
+                onClick: function () { updMulti({ tcDone: [], tcWrong: 0, tcViolations: [], tcLast: null, tcSel: null, tcLugActive: false, tcLugOrder: [], tcLugWrong: 0, tcLugLast: null }); arAnnounce('Reset'); },
                 style: btnSecondary() }, __alloT('stem.autorepair.tc_again', '↺ Run it again')),
               h('button', { 'data-ar-focusable': true, onClick: function () { setView('menu'); },
                 style: btnPrimary() }, __alloT('stem.autorepair.tc_menu', 'Back to menu')))
@@ -9427,6 +9953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'inspection-prep', icon: '🌲', name: __alloT('stem.autorepair.inspection_self_walk', 'Inspection Self-Walk'), how: 'Complete all 8 Maine inspection self-checks.' },
             { id: 'winter-prep', icon: '🌨️', name: __alloT('stem.autorepair.maine_winter_prepped', 'Maine Winter Prepped'), how: 'Complete all 12 cold-weather prep items.' },
             { id: 'kit-packed', icon: '🎒', name: __alloT('stem.autorepair.trunk_kit_packed', 'Trunk Kit Packed'), how: 'Pack all 16 roadside-emergency kit items.' },
+            { id: 'roadside-decisions', icon: '🚨', name: 'Roadside Decision Ready', how: 'Score at least 3 out of 4 in Roadside Emergency practice.' },
             { id: 'first-car-30day', icon: '🚗', name: __alloT('stem.autorepair.30_day_plan_complete', '30-Day Plan Complete'), how: 'Finish all 17 first-car-owner tasks.' },
             { id: 'underhood-tour', icon: '🔎', name: __alloT('stem.autorepair.under_hood_navigator', 'Under-Hood Navigator'), how: 'Explore all 12 parts in the 3D under-hood tour.' },
             { id: 'tyre-change-clean', icon: '🛞', name: __alloT('stem.autorepair.roadside_ready', 'Roadside Ready'), how: 'Change a tyre with every step in the right order and no unsafe actions.' },

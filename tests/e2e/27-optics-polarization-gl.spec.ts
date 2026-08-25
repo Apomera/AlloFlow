@@ -28,7 +28,7 @@ const MIME: Record<string, string> = {
 
 const HARNESS = `<!doctype html>
 <html><head><meta charset="utf-8"><title>optics harness</title>
-<style>html,body{margin:0;height:100%;background:#0f172a}#wrap{width:900px}</style></head>
+<style>html,body{margin:0;height:100%;background:#0f172a}#wrap{width:min(900px,100%)}</style></head>
 <body><div id="wrap"></div>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
@@ -88,6 +88,8 @@ const HARNESS = `<!doctype html>
   window.__gl = function () { return window.__alloOpticsGL ? window.__alloOpticsGL.debug() : null; };
   window.__win = function () { return window.__alloOpticsWindowGL ? window.__alloOpticsWindowGL.debug() : null; };
   window.__lens = function () { return window.__alloOpticsLensGL ? window.__alloOpticsLensGL.debug() : null; };
+  window.__mirror = function () { return window.__alloOpticsMirrorGL ? window.__alloOpticsMirrorGL.debug() : null; };
+  window.__refr = function () { return window.__alloOpticsRefractionGL ? window.__alloOpticsRefractionGL.debug() : null; };
   window.__set = function (patch) {
     window.__toolData = Object.assign({}, window.__toolData);
     window.__toolData.opticsLab = Object.assign({}, window.__toolData.opticsLab, patch);
@@ -96,6 +98,8 @@ const HARNESS = `<!doctype html>
   window.__bucket = function () { return window.__toolData.opticsLab; };
   window.__canvasCount = function () { return document.querySelectorAll('canvas[data-optics-gl]').length; };
   window.__lensCanvasCount = function () { return document.querySelectorAll('canvas[data-optics-lens-gl]').length; };
+  window.__mirrorCanvasCount = function () { return document.querySelectorAll('canvas[data-optics-mirror-gl]').length; };
+  window.__refrCanvasCount = function () { return document.querySelectorAll('canvas[data-optics-refraction-gl]').length; };
   window.__text = function () { return document.body.innerText; };
 </script>
 </body></html>`;
@@ -140,7 +144,352 @@ async function mount(page: Pg, bucket: Record<string, unknown> = {}) {
   await page.waitForTimeout(400);
 }
 
+async function mountUi(page: Pg, bucket: Record<string, unknown> = {}) {
+  await page.goto(`${base}/__harness`);
+  await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+  await page.evaluate((b) => (window as any).__mount(b), Object.assign({ mode: 'home' }, bucket));
+  await page.waitForSelector('[data-opticslab-tool="true"]');
+}
+
 test.describe.configure({ timeout: 180_000 });
+
+test.describe('Optics Lab workflow and responsive navigation', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  test('returns from an expanded reference page to the core benches', async ({ page }) => {
+    await mountUi(page, { mode: 'phenomena', showOpticsLibrary: false });
+    const back = page.getByRole('button', { name: 'Return to core benches' });
+    await expect(back).toBeVisible();
+    await back.click();
+    await expect(page.locator('#op-panel-home')).toBeVisible();
+    const bucket = await page.evaluate(() => (window as any).__bucket());
+    expect(bucket.mode).toBe('home');
+    expect(bucket.showOpticsLibrary).toBe(false);
+  });
+
+  test('keeps navigation and the guided workflow compact on a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mountUi(page, {
+      mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25,
+      opPredictionNotes: { lenses: 'The real image will be inverted.' }
+    });
+
+    const strip = page.locator('[data-opticslab-tab-strip="true"]');
+    const stripLayout = await strip.evaluate((node) => {
+      const style = getComputedStyle(node);
+      return { flexWrap: style.flexWrap, overflowX: style.overflowX, scrollWidth: node.scrollWidth, clientWidth: node.clientWidth };
+    });
+    expect(stripLayout.flexWrap).toBe('nowrap');
+    expect(['auto', 'scroll']).toContain(stripLayout.overflowX);
+    expect(stripLayout.scrollWidth).toBeGreaterThan(stripLayout.clientWidth);
+
+    await expect(page.locator('.opticslab-focus-panel--compact .opticslab-route-grid')).toBeHidden();
+    const mobileColumns = await page.evaluate(() => ({
+      flow: getComputedStyle(document.querySelector('.opticslab-flow')!).gridTemplateColumns,
+      guided: getComputedStyle(document.querySelector('.opticslab-guided-grid')!).gridTemplateColumns
+    }));
+    expect(mobileColumns.flow.trim().split(/\s+/)).toHaveLength(3);
+    expect(mobileColumns.guided.trim().split(/\s+/)).toHaveLength(1);
+    await expect(page.getByText('Saved ✓', { exact: true })).toBeHidden();
+    await expect(page.getByRole('button', { name: /Predict/ })).toContainText('✓');
+
+    await page.getByRole('button', { name: /Explore/ }).click();
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('op-explore-lenses');
+  });
+
+  test('completes and persists the predict-observe-explain notebook', async ({ page }) => {
+    await mountUi(page, { mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25 });
+
+    await page.getByRole('button', { name: /Predict/ }).click();
+    await page.getByLabel('Your prediction for the lenses experiment').fill('The image will become virtual and upright inside the focal point.');
+    await page.getByRole('button', { name: 'Save prediction' }).click();
+    await page.getByRole('button', { name: 'Magnifier', exact: true }).click();
+    await page.getByLabel('Your observation for the lenses experiment').fill('The ray extensions met on the object side, and the calculation reported a virtual upright image.');
+    await page.getByRole('button', { name: 'Save observation' }).click();
+    await page.getByRole('button', { name: /Explain/ }).click();
+    await page.locator('#op-ai-lenses').fill('Because the object is inside the focal length, the outgoing rays diverge and their backward extensions meet on the object side, so the observed image is virtual and upright.');
+    await page.getByRole('button', { name: 'Check with offline rubric' }).click();
+
+    await expect(page.getByText(/Local rubric estimate:/)).toBeVisible();
+    await expect(page.getByLabel('Experiment results notebook').getByText('Observation saved ✓', { exact: true })).toBeVisible();
+    const bucket = await page.evaluate(() => (window as any).__bucket());
+    expect(bucket.opTopicTouched.lenses).toBe(true);
+    expect(bucket.opTopicSnapshots.lenses.before.lensDo).toBe(25);
+    expect(bucket.opTopicSnapshots.lenses.after.lensDo).toBe(7);
+    expect(bucket.opObservationNotes.lenses).toContain('ray extensions');
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Download lab note' }).click();
+    expect((await download).suggestedFilename()).toBe('optics-lab-lenses-note.json');
+
+    await page.waitForFunction(() => !!localStorage.getItem('opticsLab.state.v1'));
+    await page.reload();
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(() => (window as any).__mount({ mode: 'lenses' }));
+    await page.getByRole('button', { name: /Predict/ }).click();
+    await expect(page.getByText(/Saved: The image will become virtual/)).toBeVisible();
+    await expect(page.getByLabel('Experiment results notebook').getByText('Observation saved ✓', { exact: true })).toBeVisible();
+  });
+
+  test('filters grouped library tabs and remembers recent destinations', async ({ page }) => {
+    await mountUi(page, { mode: 'home', showOpticsLibrary: true, opticsLibraryGroup: 'explore' });
+    await page.getByRole('button', { name: 'People', exact: true }).click();
+    await page.getByRole('searchbox', { name: 'Search library tabs' }).fill('career');
+    await expect(page.locator('#op-tab-careers')).toBeVisible();
+    await expect(page.locator('#op-tab-scientists')).toHaveCount(0);
+    await page.locator('#op-tab-careers').click();
+    const recent = await page.evaluate(() => (window as any).__bucket());
+    expect(recent.opticsRecentModes[0]).toBe('careers');
+  });
+
+  test('does not create horizontal page overflow at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 760 });
+    await mountUi(page, { mode: 'phenomena_db', showOpticsLibrary: true, opticsLibraryGroup: 'reference' });
+    const size = await page.evaluate(() => ({
+      body: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+      tool: document.querySelector('[data-opticslab-tool]')!.scrollWidth,
+      toolClient: document.querySelector('[data-opticslab-tool]')!.clientWidth
+    }));
+    expect(size.body).toBeLessThanOrEqual(size.viewport + 1);
+    expect(size.tool).toBeLessThanOrEqual(size.toolClient + 1);
+  });
+
+  test('directly manipulates the wave bench and explains the causal result', async ({ page }) => {
+    await mountUi(page, {
+      mode: 'interference', intLambda: 600, intSlitSep: 0.1, intScreenL: 1, intSlitWidth: 50,
+    });
+
+    const slit = page.getByRole('slider', { name: 'Drag to change slit separation' });
+    await slit.press('ArrowDown');
+    await page.waitForFunction(() => (window as any).__bucket().intSlitSep === 0.09);
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'true');
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toContainText('Fringe spacing is inversely proportional');
+
+    const detector = page.getByRole('slider', { name: 'Interference screen detector position' });
+    await detector.press('ArrowUp');
+    await page.waitForFunction(() => (window as any).__bucket().intScreenProbeMm === 0.5);
+    await expect(page.locator('[data-op-screen-probe-readout="interference"]')).toContainText('y = +0.5 mm');
+    await expect(page.locator('[data-op-screen-probe-readout="interference"]')).toContainText('I / I₀ =');
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'true');
+    await detector.press('0');
+    await page.waitForFunction(() => (window as any).__bucket().intScreenProbeMm === 0);
+
+    await page.locator('[data-op-detector-target="dark-half"]').click();
+    await expect(page.locator('[data-op-screen-probe-readout="interference"]')).toContainText('dark fringe');
+    await page.locator('[data-op-detector-target="center"]').click();
+    await page.waitForFunction(() => (window as any).__bucket().intScreenProbeMm === 0);
+
+    const screen = page.getByRole('slider', { name: 'Drag to change screen distance' });
+    await screen.press('End');
+    await page.waitForFunction(() => (window as any).__bucket().intScreenL === 3);
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'false');
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toContainText('isolate one control');
+
+    await page.getByRole('button', { name: 'Set current as baseline' }).click();
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveCount(0);
+    await screen.press('ArrowLeft');
+    await page.waitForFunction(() => (window as any).__bucket().intScreenL === 2.9);
+    await expect(page.locator('[data-op-causal-insight="interference"]')).toHaveAttribute('data-isolated-variable', 'true');
+  });
+
+  test('keeps reflected light in front of a plane mirror and construction lines behind it', async ({ page }) => {
+    await mountUi(page, {
+      mode: 'reflection', reflMirrorType: 'plane', reflDo: 25, reflObjH: 6,
+    });
+
+    const diagram = page.locator('svg[aria-label^="Mirror ray diagram"]');
+    await expect(diagram).toBeVisible();
+    await expect(diagram.locator('[data-op-mirror-angle]')).toHaveCount(2);
+    await expect(diagram.locator('[data-op-mirror-normal="true"]')).toHaveCount(1);
+
+    const geometry = await diagram.evaluate((svg) => {
+      const n = (value: string | null) => Number(value);
+      const mirror = svg.querySelector('[data-op-mirror-surface="true"]');
+      const image = svg.querySelector('[data-op-mirror-image="virtual"]');
+      const reflected = [...svg.querySelectorAll('[data-op-mirror-ray="reflected"]')];
+      const extensions = [...svg.querySelectorAll('[data-op-mirror-ray="virtual-extension"]')];
+      const mirrorX = n(mirror?.getAttribute('x1') || null);
+      return {
+        mirrorX,
+        width: (svg as SVGSVGElement).viewBox.baseVal.width,
+        imageX: n(image?.getAttribute('x1') || null),
+        reflected: reflected.map((ray) => ({ x1: n(ray.getAttribute('x1')), x2: n(ray.getAttribute('x2')) })),
+        extensions: extensions.map((ray) => ({ x1: n(ray.getAttribute('x1')), x2: n(ray.getAttribute('x2')) })),
+      };
+    });
+
+    expect(geometry.reflected).toHaveLength(2);
+    expect(geometry.extensions).toHaveLength(2);
+    expect(geometry.reflected.every((ray) => ray.x1 === geometry.mirrorX && ray.x2 < geometry.mirrorX)).toBe(true);
+    expect(geometry.extensions.every((ray) => ray.x1 === geometry.mirrorX && ray.x2 > geometry.mirrorX)).toBe(true);
+    expect(geometry.imageX).toBeGreaterThan(geometry.mirrorX);
+    expect(geometry.imageX).toBeLessThan(geometry.width);
+
+    const summary = page.locator('[data-op-mirror-path-summary="plane"]');
+    await expect(summary).toContainText('both 13.5 degrees');
+    await page.evaluate(() => (window as any).__set({ reflDo: 10 }));
+    await expect(summary).toContainText('both 31.0 degrees');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('makes lens virtual constructions and the focal-boundary transition explicit', async ({ page }) => {
+    await mountUi(page, {
+      mode: 'lenses', lensType: 'converging', lensFocal: 10, lensDo: 5, lensObjH: 5,
+    });
+
+    const diagram = page.locator('#op-panel-lenses svg.opticslab-core-svg');
+    const summary = page.locator('[data-op-lens-path-summary]');
+    await expect(diagram).toBeVisible();
+    await expect(summary).toHaveAttribute('data-op-lens-path-summary', 'virtual');
+    await expect(summary).toContainText('no physical light travels along those dashed lines');
+    await expect(diagram.locator('[data-op-lens-virtual-extension]')).toHaveCount(2);
+    await expect(diagram.locator('[data-op-lens-image="virtual"]')).toHaveCount(1);
+
+    const magnifierGeometry = await diagram.evaluate((svg) => {
+      const n = (node: Element, name: string) => Number(node.getAttribute(name));
+      const outputs = [...svg.querySelectorAll('[data-op-lens-ray="output"]')];
+      const extensions = [...svg.querySelectorAll('[data-op-lens-virtual-extension]')];
+      const image = svg.querySelector('[data-op-lens-image="virtual"]');
+      const lensX = n(outputs[0], 'x1');
+      return {
+        lensX,
+        imageX: image ? n(image, 'x1') : NaN,
+        outputs: outputs.map((ray) => ({ x1: n(ray, 'x1'), x2: n(ray, 'x2') })),
+        extensions: extensions.map((ray) => ({ x1: n(ray, 'x1'), x2: n(ray, 'x2') })),
+      };
+    });
+    expect(magnifierGeometry.outputs.every((ray) => ray.x2 > ray.x1)).toBe(true);
+    expect(magnifierGeometry.extensions.every((ray) => ray.x2 < ray.x1)).toBe(true);
+    expect(magnifierGeometry.imageX).toBeLessThan(magnifierGeometry.lensX);
+
+    await page.evaluate(() => (window as any).__set({ lensDo: 10.5 }));
+    await expect(summary).toHaveAttribute('data-op-lens-path-summary', 'real');
+    await expect(summary).toContainText('physically converge 210.0 cm');
+    await expect(diagram.locator('[data-op-lens-image-offscale="real"]')).toContainText('dᵢ = +210.0 cm');
+    await expect(diagram.locator('[data-op-lens-virtual-extension]')).toHaveCount(0);
+
+    await page.evaluate(() => (window as any).__set({ lensDo: 10 }));
+    await expect(summary).toHaveAttribute('data-op-lens-path-summary', 'infinity');
+    const focalOutputs = diagram.locator('[data-lens-focal-ray="outgoing"]');
+    await expect(focalOutputs).toHaveCount(3);
+    const slopes = await focalOutputs.evaluateAll((rays) => rays.map((ray) => {
+      const x1 = Number(ray.getAttribute('x1')); const y1 = Number(ray.getAttribute('y1'));
+      const x2 = Number(ray.getAttribute('x2')); const y2 = Number(ray.getAttribute('y2'));
+      return (y2 - y1) / (x2 - x1);
+    }));
+    expect(Math.max(...slopes) - Math.min(...slopes)).toBeLessThan(0.001);
+
+    await page.evaluate(() => (window as any).__set({ lensType: 'diverging', lensDo: 20 }));
+    await expect(summary).toHaveAttribute('data-op-lens-path-summary', 'virtual');
+    await expect(diagram.locator('[data-op-lens-principal-ray="far-focus"]')).toHaveCount(2);
+    await expect(diagram.locator('[data-op-lens-virtual-extension]')).toHaveCount(2);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('keeps grating aperture physics synchronized across 2D, detector, and 3D views', async ({ page }) => {
+    await mountUi(page, {
+      mode: 'diffraction', diffMode: 'grating', diffLambda: 600, diffGrating: 600,
+      diffGratingDuty: 50, diffScreenL: 1, diffScreenProbeMm: 385, diffShowWavefield3D: true,
+    });
+
+    const duty = page.getByRole('slider', { name: 'Grating open fraction' });
+    const detector = page.getByRole('slider', { name: 'Diffraction screen detector position' });
+    const aperture = page.locator('[data-op-wavefield-aperture="grating"]');
+    const wavefieldDetector = page.locator('[data-op-wavefield-detector="diffraction"]');
+    const wavefield = page.locator('[data-op-wavefield-3d="diffraction"]');
+    const profile = page.locator('[data-op-intensity-profile="diffraction"]');
+    const profileDetector = page.locator('[data-op-intensity-profile-detector="diffraction"]');
+    const centerTarget = page.locator('[data-op-detector-target="center"]');
+    const firstOrderTarget = page.locator('[data-op-detector-target="order-1"]');
+    const detectorIntensity = async () => {
+      const value = await detector.getAttribute('aria-valuetext');
+      const match = value?.match(/relative intensity ([\d.]+) percent/);
+      return Number(match?.[1]);
+    };
+    const openingSpan = () => aperture.locator('line').first().evaluate((line) => {
+      const x1 = Number(line.getAttribute('x1'));
+      const y1 = Number(line.getAttribute('y1'));
+      const x2 = Number(line.getAttribute('x2'));
+      const y2 = Number(line.getAttribute('y2'));
+      return Math.hypot(x2 - x1, y2 - y1);
+    });
+
+    await expect(duty).toHaveValue('50');
+    await expect(duty).toHaveAttribute('aria-valuetext', /opening width 0\.83 micrometers/);
+    await expect(page.getByRole('slider', { name: 'Slit width' })).toHaveCount(0);
+    await expect(page.locator('[data-op-grating-aperture="true"]')).toHaveAttribute('data-op-grating-duty', '50');
+    await expect(page.locator('[data-op-grating-order="1"]')).toHaveCount(1);
+    await expect(page.locator('[data-op-diffraction-order-ray="1"]')).toHaveCount(1);
+    await expect(detector).toHaveAttribute('aria-valuetext', /resolved order m = \+1/);
+    await expect(page.locator('[data-op-screen-probe-readout="diffraction"]')).toHaveAttribute('aria-live', 'polite');
+    await expect(aperture).toHaveAttribute('data-op-grating-opening-count', '9');
+    await expect(wavefield).toHaveAttribute('data-op-wavefield-height', 'relative-intensity');
+    await expect(wavefieldDetector).toHaveAttribute('data-op-detector-mm', '385.000');
+    await expect(wavefieldDetector).toHaveAttribute('data-op-detector-visible', 'true');
+    await expect(profile).toBeVisible();
+    await expect(profile.locator('[data-axis="x"]')).toContainText('screen position y (mm)');
+    await expect(profile.locator('[data-axis="y"]')).toContainText('I / I₀');
+    await expect(profileDetector).toHaveAttribute('data-op-detector-mm', '385.000');
+    await expect(firstOrderTarget).toHaveAttribute('aria-pressed', 'true');
+    const intensityAt50 = await detectorIntensity();
+    const spanAt50 = await openingSpan();
+
+    await centerTarget.click();
+    await page.waitForFunction(() => (window as any).__bucket().diffScreenProbeMm === 0);
+    await expect(centerTarget).toHaveAttribute('aria-pressed', 'true');
+    await expect(detector).toHaveAttribute('aria-valuetext', /resolved order m = 0/);
+    await expect(wavefieldDetector).toHaveAttribute('data-op-detector-mm', '0.000');
+    await expect(profileDetector).toHaveAttribute('data-op-detector-mm', '0.000');
+
+    await firstOrderTarget.click();
+    await page.waitForFunction(() => {
+      const value = (window as any).__bucket().diffScreenProbeMm;
+      return value > 385 && value < 387;
+    });
+    await expect(firstOrderTarget).toHaveAttribute('aria-pressed', 'true');
+    await expect(detector).toHaveAttribute('aria-valuetext', /resolved order m = \+1/);
+    await expect(wavefieldDetector).toHaveAttribute('data-op-detector-mm', /^38[56]\./);
+    await expect(profileDetector).toHaveAttribute('data-op-detector-mm', /^38[56]\./);
+    const profileYAt50 = Number(await profileDetector.getAttribute('cy'));
+
+    await duty.fill('25');
+    await page.waitForFunction(() => (window as any).__bucket().diffGratingDuty === 25);
+    await expect(duty).toHaveAttribute('aria-valuetext', /opening width 0\.42 micrometers/);
+    await expect(page.locator('[data-op-grating-aperture="true"]')).toHaveAttribute('data-op-grating-duty', '25');
+    await expect(page.locator('[data-op-causal-insight="diffraction"]')).toHaveAttribute('data-isolated-variable', 'true');
+    await expect(page.locator('[data-op-causal-insight="diffraction"]')).toContainText('without moving the ideal order angles');
+    await expect(page.locator('[data-op-grating-order="1"]')).toHaveCount(1);
+    await expect(detector).toHaveAttribute('aria-valuetext', /resolved order m = \+1/);
+
+    expect(await openingSpan()).toBeLessThan(spanAt50);
+    expect(await detectorIntensity()).toBeGreaterThan(intensityAt50);
+    expect(Number(await profileDetector.getAttribute('cy'))).toBeLessThan(profileYAt50);
+  });
+
+  test('probes the 3D wavefield without overflowing a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 760 });
+    await mountUi(page, {
+      mode: 'interference', intShowWavefield3D: true, intWavefieldProbe: 0.4,
+    });
+
+    const probe = page.getByRole('slider', { name: 'interference wavefield depth probe' });
+    await expect(probe).toHaveValue('0.4');
+    await expect(page.locator('[data-op-wavefield-probe="true"]')).toHaveCount(1);
+    await expect(page.getByText('probe 40%', { exact: true })).toBeVisible();
+    await expect(page.locator('[data-op-intensity-profile="interference"]')).toBeVisible();
+    const size = await page.evaluate(() => ({
+      body: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+      tool: document.querySelector('[data-opticslab-tool]')!.scrollWidth,
+      toolClient: document.querySelector('[data-opticslab-tool]')!.clientWidth,
+    }));
+    expect(size.body).toBeLessThanOrEqual(size.viewport + 1);
+    expect(size.tool).toBeLessThanOrEqual(size.toolClient + 1);
+  });
+});
 
 test.describe('Optics Lab polarization — real WebGL', () => {
   test.afterEach(async ({ page }) => {
@@ -276,6 +625,143 @@ test.describe('Optics Lab polarization — real WebGL', () => {
   });
 });
 
+test.describe('Optics Lab evidence journal', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+  test('captures and restores trials', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(() => (window as any).__mount({
+      mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5, lensShow3D: false,
+      opTopicTouched: { lenses: true }, opTrialRuns: {},
+      opPredictionNotes: { lenses: 'A farther object should move the image closer to the focal plane.' }
+    }));
+    const capture = page.locator('[data-op-trial-capture="lenses"]');
+    await capture.click();
+    await page.waitForFunction(() => (window as any).__bucket().opTrialRuns?.lenses?.length === 1);
+    await page.evaluate(() => (window as any).__set({ lensDo: 35 }));
+    await capture.click();
+    await page.waitForFunction(() => (window as any).__bucket().opTrialRuns?.lenses?.length === 2);
+    await expect(page.locator('[data-op-trial-journal="lenses"]')).toContainText('2 / 20 trials');
+    await expect(page.locator('[data-op-trial-journal="lenses"]')).toContainText('Latest comparison:');
+    await expect(page.locator('.opticslab-trial-plot svg')).toHaveAttribute('aria-label', /2 finite trials/);
+    await page.getByRole('button', { name: 'Restore trial 1 setup' }).click();
+    await page.waitForFunction(() => (window as any).__bucket().lensDo === 25);
+    const downloadPromise = page.waitForEvent('download');
+    await page.locator('[data-op-trial-export="lenses"]').click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('optics-lab-lenses-trials.csv');
+    const csvPath = await download.path();
+    const csv = csvPath ? await readFile(csvPath, 'utf8') : '';
+    expect(csv).toContain('"captured_at","topic","series"');
+    expect(csv.match(/"lenses"/g)).toHaveLength(2);
+    await page.waitForFunction(() => JSON.parse(localStorage.getItem('opticsLab.state.v1') || '{}').opTrialRuns?.lenses?.length === 2);
+    await page.reload();
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(() => (window as any).__mount({ mode: 'lenses' }));
+    await expect(page.locator('[data-op-trial-journal="lenses"]')).toContainText('2 / 20 trials');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+});
+
+test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  async function mountRefraction(page: Pg, bucket: Record<string, unknown> = {}) {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(
+      (b) => (window as any).__mount(b),
+      Object.assign({ mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 }, bucket)
+    );
+    await page.waitForSelector('canvas[data-optics-refraction-gl="true"]', { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).__refr()?.state === 'ready', null, { timeout: 30000 });
+    await page.waitForTimeout(400);
+  }
+
+  test('builds a spatial Snell ray fan with the calculated angle', async ({ page }) => {
+    await mountRefraction(page);
+    const gl = await page.evaluate(() => (window as any).__refr());
+    expect(gl.state).toBe('ready');
+    expect(gl.contextLost).toBe(false);
+    expect(gl.rays).toBe(3);
+    expect(gl.theta1Deg).toBeCloseTo(30, 2);
+    expect(gl.theta2Deg).toBeCloseTo(19.2, 1);
+    expect(gl.tir).toBe(false);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('keeps the Fresnel power split synchronized across 2D, calculator, and 3D', async ({ page }) => {
+    await mountRefraction(page, { refrN1: 1, refrN2: 1.5, refrTheta1: 0 });
+    const split = page.locator('[data-op-fresnel-split="refraction"]');
+    const reflectedRay = page.locator('[data-op-refraction-ray="reflected"]');
+    const transmittedRay = page.locator('[data-op-refraction-ray="transmitted"]');
+
+    await expect(split).toHaveAttribute('data-reflectance', '0.040000');
+    await expect(split).toHaveAttribute('data-transmittance', '0.960000');
+    await expect(reflectedRay).toHaveAttribute('data-power-fraction', '0.040000');
+    await expect(transmittedRay).toHaveAttribute('data-power-fraction', '0.960000');
+    await expect(page.locator('[data-op-refraction-3d-energy="true"]')).toContainText('R 4.0% · T 96.0%');
+    let gl = await page.evaluate(() => (window as any).__refr());
+    expect(gl.reflectance).toBeCloseTo(0.04, 6);
+    expect(gl.transmittance).toBeCloseTo(0.96, 6);
+
+    await page.evaluate(() => (window as any).__set({ refrN1: 1.5, refrN2: 1, refrTheta1: 40 }));
+    await page.waitForFunction(() => Math.abs((window as any).__refr()?.reflectance - 0.2452912043) < 1e-6);
+    const belowCritical = await page.evaluate(() => (window as any).__refr().reflectance);
+
+    await page.evaluate(() => (window as any).__set({ refrTheta1: 41.7 }));
+    await page.waitForFunction(() => (window as any).__refr()?.reflectance > 0.68);
+    gl = await page.evaluate(() => (window as any).__refr());
+    expect(gl.reflectance).toBeGreaterThan(belowCritical);
+    expect(gl.reflectance + gl.transmittance).toBeCloseTo(1, 8);
+    await expect(split).toHaveAttribute('data-reflectance', '0.689661');
+    await expect(page.locator('[data-op-refraction-3d-energy="true"]')).toContainText('R 69.0% · T 31.0%');
+
+    await page.evaluate(() => (window as any).__set({ refrTheta1: 60 }));
+    await page.waitForFunction(() => (window as any).__refr()?.tir === true && (window as any).__refr()?.reflectance === 1);
+    await expect(split).toHaveAttribute('data-reflectance', '1.000000');
+    await expect(split).toHaveAttribute('data-transmittance', '0.000000');
+    await expect(split.locator('[data-op-fresnel-status="tir"]')).toContainText('100.0% reflected and 0.0% transmitted');
+    await expect(page.locator('[data-op-refraction-ray="transmitted"]')).toHaveCount(0);
+    gl = await page.evaluate(() => (window as any).__refr());
+    expect(gl.transmittance).toBe(0);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('supports keyboard orbit and a deterministic camera reset', async ({ page }) => {
+    await mountRefraction(page);
+    const control = page.locator('[data-op-refraction-3d-control="true"]');
+    await expect(control).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0');
+    await control.focus();
+    await control.press('ArrowRight');
+    await page.waitForFunction(() => (window as any).__bucket().refr3DRot?.rotY === 42);
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
+    await page.locator('[data-op-refraction-3d-reset="true"]').click();
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.refr3DRot?.rotY === 36 && bucket.refr3DRot?.rotX === 12 && bucket.refr3DZoom === 1;
+    });
+  });
+
+  test('switches to total internal reflection and disposes when hidden', async ({ page }) => {
+    await mountRefraction(page);
+    await page.evaluate(() => (window as any).__set({ refrN1: 1.5, refrN2: 1, refrTheta1: 60 }));
+    await page.waitForTimeout(450);
+    const tir = await page.evaluate(() => (window as any).__refr());
+    expect(tir.tir).toBe(true);
+    expect(tir.theta2Deg).toBeNull();
+
+    await page.evaluate(() => (window as any).__set({ refrShow3D: false }));
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => (window as any).__refrCanvasCount())).toBe(0);
+    expect((await page.evaluate(() => (window as any).__refr())).state).toBe('idle');
+  });
+});
+
 /**
  * Snell's window — the refraction tab.
  *
@@ -406,17 +892,95 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(1);
   });
 
+  test('moves a physical screen through focus and keeps 2D and 3D synchronized', async ({ page }) => {
+    await mountLens(page, {
+      lensFocal: 10, lensDo: 30, lensObjH: 5, lensScreenCm: 25
+    });
+    const screenTest = page.locator('[data-op-lens-screen-test]');
+    const screenRange = page.getByRole('slider', { name: 'Screen position' });
+    const screenHandle = page.locator('[data-op-lens-screen-handle="true"]');
+
+    await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'blurred');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
+    await expect(screenTest).toContainText('10.0 cm beyond the real image plane');
+    let gl = await page.evaluate(() => (window as any).__lens());
+    expect(gl.screenDistance).toBe(25);
+    expect(gl.screenBundleRatio).toBeCloseTo(2 / 3, 6);
+    expect(gl.screenFocused).toBe(false);
+    expect(gl.screenCapturable).toBe(true);
+    expect(gl.realRaysContinuePastFocus).toBe(true);
+
+    await screenRange.fill('20');
+    await page.waitForFunction(() => Math.abs((window as any).__lens()?.screenBundleRatio - (1 / 3)) < 1e-6);
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.333333');
+    await screenHandle.focus();
+    await screenHandle.press('ArrowLeft');
+    await page.waitForFunction(() => (window as any).__bucket().lensScreenCm === 19.5);
+
+    await page.locator('[data-op-place-screen-at-image="true"]').click();
+    await page.waitForFunction(() => (window as any).__lens()?.screenFocused === true);
+    await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'sharp');
+    await expect(screenTest).toHaveAttribute('data-screen-distance', '15.000000');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
+    await expect(page.locator('[data-op-lens-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'true');
+    await expect(page.locator('[data-op-lens-3d-screen="true"]')).toContainText('sharp focus');
+
+    await page.evaluate(() => (window as any).__set({ lensDo: 5, lensScreenCm: 20 }));
+    await page.waitForFunction(() => (window as any).__lens()?.screenCapturable === false);
+    await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'virtual');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(page.locator('[data-op-place-screen-at-image="true"]')).toHaveCount(0);
+
+    await page.evaluate(() => (window as any).__set({ lensDo: 10 }));
+    await page.waitForFunction(() => (window as any).__lens()?.screenBundleRatio === 1);
+    await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'infinity');
+    await expect(screenTest).toContainText('No finite screen focus');
+
+    await page.setViewportSize({ width: 320, height: 760 });
+    await page.waitForTimeout(150);
+    const widths = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      page: document.documentElement.scrollWidth,
+      tool: document.querySelector('[data-opticslab-tool]')!.scrollWidth,
+      toolClient: document.querySelector('[data-opticslab-tool]')!.clientWidth
+    }));
+    expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
+    expect(widths.tool).toBeLessThanOrEqual(widths.toolClient + 1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
   test('draws virtual-image extensions and handles the focal-plane limit', async ({ page }) => {
     await mountLens(page, { lensType: 'diverging' });
     expect(await page.evaluate(() => (window as any).__lens().rayCount)).toBe(9);
     expect(await page.evaluate(() => (window as any).__text())).toContain('Dashed pink lines are backward extensions');
 
-    await page.evaluate(() => (window as any).__set({ lensType: 'converging', lensDo: 12 }));
+    await page.evaluate(() => (window as any).__set({ lensType: 'converging', lensDo: 12, lensShowMath: true }));
     await page.waitForTimeout(450);
     const focal = await page.evaluate(() => (window as any).__lens());
     expect(focal.rayCount).toBe(9);
     expect(focal.imageVisible).toBe(false);
-    expect(await page.evaluate(() => (window as any).__text())).toContain('image at infinity');
+    const focalText = await page.evaluate(() => (window as any).__text());
+    expect(focalText).toContain('image at infinity');
+    expect(focalText).toContain('Parallel / collimated after lens');
+    expect(focalText).toContain('1/d_i = 0');
+    await expect(page.locator('svg[aria-label*="focal plane"]')).toHaveCount(1);
+    const outgoingSlopes = await page.locator('line[data-lens-focal-ray="outgoing"]').evaluateAll((lines) =>
+      lines.map((line) => {
+        const x1 = Number(line.getAttribute('x1'));
+        const y1 = Number(line.getAttribute('y1'));
+        const x2 = Number(line.getAttribute('x2'));
+        const y2 = Number(line.getAttribute('y2'));
+        return (y2 - y1) / (x2 - x1);
+      })
+    );
+    expect(outgoingSlopes).toHaveLength(3);
+    expect(Math.max(...outgoingSlopes) - Math.min(...outgoingSlopes)).toBeLessThan(1e-9);
+
+    const height = page.getByLabel('Object height');
+    await height.fill('7');
+    await expect(height).toHaveValue('7');
+    await expect(height).toHaveAttribute('aria-valuetext', /Outgoing bundle angle/);
+    expect(await page.evaluate(() => (window as any).__bucket().lensObjH)).toBe(7);
   });
 
   test('supports keyboard orbit and disposes when switched off', async ({ page }) => {
@@ -432,5 +996,167 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(0);
     expect(await page.evaluate(() => (window as any).__lens().state)).toBe('idle');
+  });
+});
+
+/**
+ * Mirror ray-space bench. These checks enforce the mirror sign convention:
+ * physical reflected light stays on the incident side, while only dashed
+ * construction extensions pass behind the mirror for virtual images.
+ */
+test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  async function mountMirror(page: Pg, bucket: Record<string, unknown> = {}) {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(
+      (b) => (window as any).__mount(b),
+      Object.assign({
+        mode: 'reflection', reflShow3D: true, reflMirrorType: 'concave',
+        reflFocal: 10, reflDo: 30, reflObjH: 5
+      }, bucket)
+    );
+    await page.waitForSelector('canvas[data-optics-mirror-gl="true"]', { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).__mirror()?.state === 'ready', null, { timeout: 30000 });
+    await page.waitForTimeout(400);
+  }
+
+  test('builds a real concave-mirror bundle that crosses focus and continues', async ({ page }) => {
+    await mountMirror(page);
+    const gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.state).toBe('ready');
+    expect(gl.contextLost).toBe(false);
+    expect(gl.mirrorType).toBe('concave');
+    expect(gl.rayCount).toBe(9);
+    expect(gl.virtualExtensionCount).toBe(0);
+    expect(gl.imageType).toBe('real');
+    expect(gl.imageSide).toBe('incident');
+    expect(gl.imageDistance).toBeCloseTo(15, 8);
+    expect(gl.imageVisible).toBe(true);
+    expect(gl.physicalRaysStayIncidentSide).toBe(true);
+    expect(gl.realRaysContinuePastFocus).toBe(true);
+    expect(await page.evaluate(() => (window as any).__mirrorCanvasCount())).toBe(1);
+    await expect(page.locator('[data-op-mirror-3d-outcome="real"]'))
+      .toHaveAttribute('data-image-side', 'incident');
+    await expect(page.locator('[data-op-mirror-3d-outcome="real"]')).toContainText('real · incident side · inverted');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('moves a sampling screen through mirror focus and keeps 2D and 3D synchronized', async ({ page }) => {
+    await mountMirror(page, {
+      reflMirrorType: 'concave', reflFocal: 10, reflDo: 30,
+      reflObjH: 5, reflScreenCm: 25
+    });
+    const screenTest = page.locator('[data-op-mirror-screen-test]');
+    const screenRange = page.getByRole('slider', { name: 'Mirror sampling screen position' });
+    const screenHandle = page.locator('[data-op-mirror-screen-handle="true"]');
+
+    await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'blurred');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
+    await expect(screenTest).toContainText('10.0 cm beyond the real image plane');
+    let gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.screenDistance).toBe(25);
+    expect(gl.screenBundleRatio).toBeCloseTo(2 / 3, 6);
+    expect(gl.screenFocused).toBe(false);
+    expect(gl.screenCapturable).toBe(true);
+    await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'false');
+
+    await screenRange.fill('20');
+    await page.waitForFunction(() => Math.abs((window as any).__mirror()?.screenBundleRatio - (1 / 3)) < 1e-6);
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.333333');
+    await screenHandle.focus();
+    await screenHandle.press('ArrowLeft');
+    await page.waitForFunction(() => (window as any).__bucket().reflScreenCm === 20.5);
+
+    await page.locator('[data-op-place-mirror-screen-at-image="true"]').click();
+    await page.waitForFunction(() => (window as any).__mirror()?.screenFocused === true);
+    await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'sharp');
+    await expect(screenTest).toHaveAttribute('data-screen-distance', '15.000000');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
+    await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'true');
+    await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toContainText('sharp focus');
+
+    await page.evaluate(() => (window as any).__set({ reflDo: 5, reflScreenCm: 20 }));
+    await page.waitForFunction(() => (window as any).__mirror()?.screenCapturable === false);
+    await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'virtual');
+    await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(page.locator('[data-op-place-mirror-screen-at-image="true"]')).toHaveCount(0);
+
+    await page.evaluate(() => (window as any).__set({ reflDo: 10 }));
+    await page.waitForFunction(() => (window as any).__mirror()?.screenBundleRatio === 1);
+    await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'infinity');
+    await expect(screenTest).toContainText('No finite screen focus');
+
+    await page.setViewportSize({ width: 320, height: 760 });
+    await page.waitForTimeout(150);
+    const widths = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      page: document.documentElement.scrollWidth,
+      tool: document.querySelector('[data-opticslab-tool]')!.scrollWidth,
+      toolClient: document.querySelector('[data-opticslab-tool]')!.clientWidth
+    }));
+    expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
+    expect(widths.tool).toBeLessThanOrEqual(widths.toolClient + 1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('separates virtual construction lines, plane symmetry, and the focal limit', async ({ page }) => {
+    await mountMirror(page, { reflMirrorType: 'convex', reflFocal: 10, reflDo: 20 });
+    let gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.mirrorType).toBe('convex');
+    expect(gl.rayCount).toBe(9);
+    expect(gl.virtualExtensionCount).toBe(9);
+    expect(gl.imageType).toBe('virtual');
+    expect(gl.imageSide).toBe('behind');
+    expect(gl.imageDistance).toBeCloseTo(-20 / 3, 8);
+    expect(gl.physicalRaysStayIncidentSide).toBe(true);
+    expect(gl.virtualExtensionsBehindMirror).toBe(true);
+    await expect(page.locator('[data-op-mirror-3d-outcome="virtual"]'))
+      .toHaveAttribute('data-mirror-type', 'convex');
+    expect(await page.evaluate(() => (window as any).__text())).toContain('Dashed pink lines are backward extensions behind the mirror');
+
+    await page.evaluate(() => (window as any).__set({ reflMirrorType: 'plane', reflDo: 25 }));
+    await page.waitForFunction(() => (window as any).__mirror()?.mirrorType === 'plane');
+    gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.imageType).toBe('virtual');
+    expect(gl.imageDistance).toBe(-25);
+    expect(gl.virtualExtensionCount).toBe(9);
+    expect(gl.physicalRaysStayIncidentSide).toBe(true);
+    await expect(page.locator('[data-op-mirror-3d-host="true"]'))
+      .toHaveAttribute('aria-label', /Equal spacing: object 25\.0 cm in front and image 25\.0 cm behind/);
+
+    await page.evaluate(() => (window as any).__set({ reflMirrorType: 'concave', reflFocal: 10, reflDo: 10 }));
+    await page.waitForFunction(() => (window as any).__mirror()?.imageType === 'infinity');
+    gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.rayCount).toBe(9);
+    expect(gl.virtualExtensionCount).toBe(0);
+    expect(gl.imageSide).toBe('at-infinity');
+    expect(gl.imageVisible).toBe(false);
+    expect(gl.physicalRaysStayIncidentSide).toBe(true);
+    await expect(page.locator('[data-op-mirror-3d-outcome="infinity"]')).toContainText('parallel reflected bundle');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('supports camera presets and keyboard orbit, then disposes when hidden', async ({ page }) => {
+    await mountMirror(page);
+    const host = page.locator('[data-op-mirror-3d-host="true"]');
+    await host.press('ArrowRight');
+    await page.waitForFunction(() => (window as any).__bucket().reflGlRot?.rotY === 40);
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
+
+    await page.getByRole('button', { name: 'Normal' }).click();
+    await page.waitForFunction(() => (window as any).__bucket().reflGlCamera === 'normal');
+    expect(await page.evaluate(() => (window as any).__bucket().reflGlRot)).toEqual({ rotY: -90, rotX: 0 });
+    await host.press('0');
+    await page.waitForFunction(() => (window as any).__bucket().reflGlCamera === 'oblique');
+    expect(await page.evaluate(() => (window as any).__bucket().reflGlRot)).toEqual({ rotY: 34, rotX: 18 });
+
+    await page.evaluate(() => (window as any).__set({ reflShow3D: false }));
+    await page.waitForTimeout(400);
+    expect(await page.evaluate(() => (window as any).__mirrorCanvasCount())).toBe(0);
+    expect(await page.evaluate(() => (window as any).__mirror().state)).toBe('idle');
   });
 });

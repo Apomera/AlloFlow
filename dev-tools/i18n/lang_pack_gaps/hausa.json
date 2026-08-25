@@ -1,10 +1,10 @@
 {
   "langName": "hausa",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
-  "totalEnglishKeys": 1427,
-  "translatedKeys": 1421,
+  "totalEnglishKeys": 1430,
+  "translatedKeys": 1422,
   "missingKeys": 0,
-  "passthroughKeys": 6,
-  "coveragePct": 99.6,
+  "passthroughKeys": 8,
+  "coveragePct": 99.4,
   "missing": {}
 }

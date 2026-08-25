@@ -129,11 +129,17 @@ describe('Art Studio Artist & Traditions Explorer', () => {
   it('normalizes legacy parent-view tab values so group, tab, and panel stay aligned', () => {
     loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
     const html = renderTool('artStudio', { artStudio: { tab: 'explore' } });
+    const host = document.createElement('div');
+    host.innerHTML = html;
 
-    expect(html).toContain('aria-pressed="true" class="min-h-[42px] shrink-0 rounded-lg px-3 text-xs font-black transition-all bg-slate-900 text-white shadow-md">🎨 Paint &amp; color');
-    expect(html).toContain('id="artstudio-tab-colorWheel"');
-    expect(html).toContain('aria-selected="true"');
-    expect(html).toContain('id="artstudio-panel-colorWheel"');
+    const groupBar = host.querySelector('[role="group"][aria-label="Art Studio tool groups"]');
+    const activeGroup = groupBar.querySelector('[aria-pressed="true"]');
+    const activeTab = host.querySelector('[role="tab"][aria-selected="true"]');
+
+    expect(activeGroup.textContent).toContain('Paint & color');
+    expect(activeTab.id).toBe('artstudio-tab-colorWheel');
+    expect(activeTab.getAttribute('aria-controls')).toBe('artstudio-panel-colorWheel');
+    expect(host.querySelector('#artstudio-panel-colorWheel')).not.toBeNull();
   });
 
   it('frames living and culturally specific practices as inquiry rather than style imitation', () => {

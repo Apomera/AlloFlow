@@ -64,6 +64,24 @@ const _classifyMiscUpload = (file) => {
     };
 };
 
+// Tell the host when selecting a file expresses document-pipeline intent.
+// Keep this decision beside the canonical MIME/extension classifier so the
+// lazy-loader seam cannot drift from the intake routes below.
+const docPipelineIntentForUpload = (file) => {
+    const fileInfo = _classifyMiscUpload(file);
+    if (fileInfo.kind === 'spreadsheet') return 'await';
+    if (fileInfo.kind === 'transcript'
+        || fileInfo.kind === 'pdf'
+        || fileInfo.kind === 'docx'
+        || fileInfo.kind === 'pptx'
+        || fileInfo.kind === 'audio'
+        || fileInfo.kind === 'video'
+        || (fileInfo.kind === 'image' && _MISC_REMEDIATION_IMAGE_MIMES.has(fileInfo.mime))) {
+        return 'prewarm';
+    }
+    return 'none';
+};
+
 // Copyable diagnostics must not retain filenames, document/model excerpts,
 // custom instructions, or arbitrary Error.message bodies. Preserve only a
 // bounded error identity, stable code/status, and coarse failure category.
@@ -1445,6 +1463,7 @@ window.AlloModules.MiscHandlers = { runAutoFixLoop,
   handleRestoreView,
   cancelProjectLoad,
   cancelFileIntakeOperations,
+  docPipelineIntentForUpload,
   detectClimaxArchetype,
 };
 // The script loader tracks this file as `MiscHandlersModule`, while legacy

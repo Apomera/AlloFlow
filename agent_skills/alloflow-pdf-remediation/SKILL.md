@@ -16,7 +16,9 @@ Call `remediation_capabilities` before opening a document. Follow
 `onboarding` when `actionRequired` is true, then classify the intended tool
 through `dataHandling`:
 
-- `offlineToolNames` make no external network request.
+- `offlineToolNames` make no external request from the connector process. Tool results still enter
+  the MCP client conversation; agent-bridge results deliberately carry document-derived prompts and
+  optional page images to the client's model provider.
 - `publicDependencyDownloadToolNames` fetch Chromium or pinned exporter
   libraries without intentionally including document content.
 - `geminiDocumentEgressToolNames` send the document or derived content to
@@ -119,6 +121,11 @@ request; you answer, it continues.
    invent issues, scores, or passes; if the content shown doesn't support a
    claim, don't make it. Vision requests include the rendered page images —
    describe what is actually there.
+   If `promptNextOffset` is non-null, page the selected prompt with
+   `request_id` + `prompt_offset` and concatenate it before answering. If
+   `omittedImages` is present, fetch each transportable image with its
+   `request_id` + `image_index`; do not answer a vision request without all
+   required images.
 4. Tell the user before starting that document content will pass through this
    conversation (that is where the "model calls" go), and expect roughly
    10–40 requests. Text-first documents are the sweet spot.

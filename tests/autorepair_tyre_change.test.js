@@ -29,11 +29,27 @@ function extractArray(name) {
   return new Function('return ' + SRC.slice(open, end + 1))();
 }
 
+function extractFunction(name, prelude) {
+  const start = SRC.indexOf('function ' + name + '(');
+  expect(start, name + ' not found').toBeGreaterThan(-1);
+  const open = SRC.indexOf('{', start);
+  let depth = 0, end = -1;
+  for (let i = open; i < SRC.length; i++) {
+    if (SRC[i] === '{') depth++;
+    else if (SRC[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  expect(end, name + ' closing brace not found').toBeGreaterThan(open);
+  // eslint-disable-next-line no-new-func
+  return new Function((prelude || '') + '\n' + SRC.slice(start, end + 1) + '\nreturn ' + name + ';')();
+}
+
 const STEPS = extractArray('TIRE_STEPS');
 const HAZARDS = extractArray('TIRE_HAZARDS');
 const POOL = extractArray('TIRE_POOL_ORDER');
 const PARTS = extractArray('TIRE_PARTS');
 const order = STEPS.map((s) => s.id);
+const LUG_PATTERN = extractArray('TIRE_LUG_PATTERN');
+const evaluateLugChoice = extractFunction('arEvaluateLugChoice', 'var TIRE_LUG_PATTERN = ' + JSON.stringify(LUG_PATTERN) + ';');
 
 function tyre(extra) {
   return renderTool(ID, { autoRepair: Object.assign({ view: 'tyre' }, extra || {}) });
@@ -298,5 +314,75 @@ describe('tyre change — shares one viewer with the other modules', () => {
     expect(body).not.toMatch(/\bctx\./);
     expect(body).not.toMatch(/React\./);
     expect(body).not.toMatch(/\bupd\(|\bh\(/);
+  });
+});
+
+describe('tyre change — five-lug star-pattern practice', () => {
+  const beforeTighten = () => order.slice(0, order.indexOf('tighten'));
+
+  it('uses the standard five-lug cross-hub order for its numbered practice', () => {
+    expect(LUG_PATTERN).toEqual([0, 2, 4, 1, 3]);
+    expect(LUG_PATTERN.map((index) => index + 1)).toEqual([1, 3, 5, 2, 4]);
+  });
+
+  it('accepts the whole pattern one lug at a time and reports completion', () => {
+    let sequence = [];
+    LUG_PATTERN.forEach((lugIndex, step) => {
+      const result = evaluateLugChoice(sequence, lugIndex);
+      expect(result.accepted, 'step ' + step).toBe(true);
+      expect(result.sequence).toEqual(LUG_PATTERN.slice(0, step + 1));
+      expect(result.complete).toBe(step === LUG_PATTERN.length - 1);
+      sequence = result.sequence;
+    });
+  });
+
+  it('rejects adjacent, repeated, and invalid choices without mutating progress', () => {
+    const seed = [0];
+    const adjacent = evaluateLugChoice(seed, 1);
+    const repeated = evaluateLugChoice(seed, 0);
+    const invalid = evaluateLugChoice(seed, 9);
+
+    expect(adjacent).toMatchObject({ accepted: false, kind: 'wrong', expected: 2, sequence: [0] });
+    expect(repeated).toMatchObject({ accepted: false, kind: 'repeat', expected: 2, sequence: [0] });
+    expect(invalid).toMatchObject({ accepted: false, kind: 'invalid', expected: 2, sequence: [0] });
+    expect(seed).toEqual([0]);
+  });
+
+  it('gates the tighten step behind the star-pattern exercise', () => {
+    const start = SRC.indexOf("if (st.id === 'tighten')");
+    const normalAdvance = SRC.indexOf('var nd = doneIds.concat([id]);', start);
+    const startBranch = SRC.slice(start, normalAdvance);
+    expect(startBranch).toContain('tcLugActive: true');
+    expect(startBranch).not.toContain('tcDone:');
+
+    const chooserStart = SRC.indexOf('function chooseLug(');
+    const chooser = SRC.slice(chooserStart, SRC.indexOf('TIRE3D.sync(', chooserStart));
+    expect(chooser).toContain("doneIds.concat(['tighten'])");
+    expect(chooser).toContain('tcLugActive: false');
+  });
+
+  it('renders five accessible spatial controls when tightening begins', () => {
+    const html = tyre({ tcDone: beforeTighten(), tcLugActive: true });
+    expect(html).toContain('Five-lug star-pattern practice');
+    expect(html).not.toContain('What do you do next?');
+    expect((html.match(/aria-label="Lug [1-5],/g) || [])).toHaveLength(5);
+    for (const clock of ['12 o&#x27;clock', '2 o&#x27;clock', '5 o&#x27;clock', '7 o&#x27;clock', '10 o&#x27;clock']) {
+      expect(html).toContain(clock);
+    }
+    expect(html).toContain('farthest untightened lug');
+    expect(html).toContain('manufacturer’s torque specification');
+  });
+
+  it('shows progress and corrective feedback without revealing the whole route', () => {
+    const html = tyre({
+      tcDone: beforeTighten(),
+      tcLugActive: true,
+      tcLugOrder: [0],
+      tcLugLast: { kind: 'wrong', lug: 1, expected: 2 },
+    });
+    expect(html).toContain('Pattern progress: 1 / 5');
+    expect(html).toContain('That was an adjacent lug. Cross the hub to lug 3.');
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('Restart this pattern');
   });
 });

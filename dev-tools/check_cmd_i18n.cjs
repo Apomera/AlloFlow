@@ -59,5 +59,5 @@ checkDir(LANG, 'lang', true);
 checkDir(MIRROR, 'mirror', false); // mirror = warn only; resync via: node dev-tools/i18n/merge_cmd_keys.cjs --lang-dir=desktop/web-app/public/lang
 
 if (!failed) info('✓ check_cmd_i18n: command palette i18n complete + manifest fresh.');
-else console.error('\nFix: (A) re-extract → `node dev-tools/i18n/extract_cmd_keys.cjs`; (B) translate the delta then `node dev-tools/i18n/merge_cmd_keys.cjs`. See the project_ctrlk_palette memory for the pipeline.');
+else console.error('\nFix: (A) re-extract → `node dev-tools/i18n/extract_cmd_keys.cjs`; (B) run `node dev-tools/i18n/reconcile_cmd_pack_coverage.cjs --apply` for safe coverage, then merge reviewed translations with `merge_cmd_keys.cjs`. See dev-tools/i18n/README.md.');
 process.exit(failed ? 1 : 0);

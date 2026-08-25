@@ -16058,8 +16058,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           },
           {
             id: 'macroInquiry', title: __alloT('stem.nutritionlab.macro_inquiry', 'Macro Inquiry'), icon: '🔬',
-            subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios', 'Predict energy state from macro ratios'),
-            desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib', 'Move four sliders (carb / protein / fat / fiber). Predict how the macro pattern shifts the energy state — ketogenic, low-carb, balanced, high-carb, sugar-dominant. Includes a satiety estimate and a fiber-adjusted glycemic index proxy. Discrete states, no score, no reveal — you mark your own understanding.'),
+            subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios', 'Explore energy state from macro ratios'),
+            desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib', 'Move the carbohydrate, protein, fat, and fiber controls and observe how the modeled energy state changes. The live model also shows a satiety estimate and fiber-adjusted glycemic-index proxy; record a hypothesis or pattern you notice.'),
             color: 'from-teal-500 to-emerald-700',
             ring: 'ring-teal-500/40',
             ready: true
@@ -19944,10 +19944,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           return 'M' + x0 + ',' + y0 + ' A' + r + ',' + r + ' 0 ' + large + ',1 ' + x1 + ',' + y1 + ' L' + x1i + ',' + y1i + ' A' + ir + ',' + ir + ' 0 ' + large + ',0 ' + x0i + ',' + y0i + ' Z';
         }
         return h('div', { className: 'p-4' },
-          h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state', 'Macro Inquiry — Predict the Energy State') }),
+          h(BackBar, { icon: '🔬', title: __alloT('stem.nutritionlab.macro_inquiry_predict_the_energy_state', 'Macro Inquiry — Explore the Energy State') }),
           h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5', maxWidth: 720, margin: '0 auto' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.nutritionlab.macro_inquiry_widget', '🔬 Macro Inquiry Widget')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.nutritionlab.set_carbohydrate_protein_fat_grams_plu', 'Set carbohydrate, protein, fat (grams) plus fiber. Predict the energy state before reading it. No score, no reveal.')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.nutritionlab.set_carbohydrate_protein_fat_grams_plu', 'Set carbohydrate, protein, fat, and fiber, then observe how the modeled energy state changes. The result updates live; record a hypothesis or pattern you notice.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ' + (pC * 100).toFixed(0) + '% carb / ' + (pP * 100).toFixed(0) + '% protein / ' + (pF * 100).toFixed(0) + '% fat'),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 } },

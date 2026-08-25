@@ -8,8 +8,9 @@
 // and the Live Session Center dock renders per-student progress chips.
 //
 // These are source pins (same style as session_soft_end_terminal.test.js)
-// plus a FUNCTIONAL check of the shape validators, extracted verbatim from
-// the shell source so the mailbox server mirror can't drift silently.
+// plus a FUNCTIONAL check of the Mailbox server shape validators. The browser
+// shell embeds the Mailbox source as a compressed artifact, so its own write
+// gate is pinned separately instead of requiring duplicated server functions.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -77,12 +78,12 @@ describe('Tier-1 allowlist + write-path source pins (AlloFlowANTI.txt)', () => {
   });
 
   it('student self-open honors the saved lesson-plan sequence', () => {
-    expect(anti).toMatch(/_selfOpenSeq/);
-    expect(anti).toMatch(/setWordSoundsActivity\(_selfOpenSeq\.length > 0 \? _selfOpenSeq\[0\] : 'counting'\)/);
+    expect(anti).toMatch(/const initialActivity = sequence\[0\] \|\| 'counting';/);
+    expect(anti).toMatch(/setWordSoundsActivity\(initialActivity\)/);
   });
 });
 
-describe('shape validators (functional, shell + mailbox server mirror)', () => {
+describe('shape validators (functional Mailbox server contract)', () => {
   const cases = (v) => {
     // wsProgress: valid shapes
     expect(v.validWsProgressValue(null)).toBe(true);
@@ -101,22 +102,19 @@ describe('shape validators (functional, shell + mailbox server mirror)', () => {
     expect(v.validWsProbeResultValue({ itemsPerMin: 'fast' })).toBe(false);
   };
 
-  it('shell (AlloFlowANTI.txt) validators accept valid shapes and refuse free text', () => {
-    cases(buildValidators(anti, 'AlloFlowANTI.txt'));
-  });
-
   it('mailbox server (Code.gs) mirror behaves identically', () => {
     cases(buildValidators(codegs, 'Code.gs'));
   });
 
-  it('both validators gate the roster patch surface (rosterFields includes the new leaves)', () => {
-    for (const src of [anti, codegs]) {
-      const map = src.slice(src.indexOf('var rosterFields = {'), src.indexOf('};', src.indexOf('var rosterFields = {')));
-      expect(map).toContain('wsProgress: 1');
-      expect(map).toContain('wsProbeResult: 1');
-      expect(src).toMatch(/if \(field === 'wsProgress'\) return validWsProgressValue\(value\);/);
-      expect(src).toMatch(/if \(field === 'wsProbeResult'\) return validWsProbeResultValue\(value\);/);
-    }
+  it('Mailbox roster patches and the shell write gate include the progress leaves', () => {
+    const map = codegs.slice(codegs.indexOf('var rosterFields = {'), codegs.indexOf('};', codegs.indexOf('var rosterFields = {')));
+    expect(map).toContain('wsProgress: 1');
+    expect(map).toContain('wsProbeResult: 1');
+    expect(codegs).toMatch(/if \(field === 'wsProgress'\) return validWsProgressValue\(value\);/);
+    expect(codegs).toMatch(/if \(field === 'wsProbeResult'\) return validWsProbeResultValue\(value\);/);
+    expect(anti).toContain("'wsProgress'");
+    expect(anti).toContain("'wsProbeResult'");
+    expect(anti).toContain('sync:REFUSED-invalid-activity-progress');
   });
 });
 

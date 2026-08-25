@@ -126,22 +126,74 @@ function alloTeacherStableId(prefix) {
   if (!value) value = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 14);
   return prefix + "-" + value;
 }
+var ALLO_TEACHER_READING_THEME_OPTIONS = [
+  { id: "default", label: "Default" },
+  { id: "warm", label: "Warm" },
+  { id: "sepia", label: "Sepia" },
+  { id: "dark", label: "Dark" },
+  { id: "highContrast", label: "Contrast" },
+  { id: "blue", label: "Blue" },
+  { id: "green", label: "Green" },
+  { id: "rose", label: "Rose" },
+  { id: "dyslexia", label: "Easy Read" },
+  { id: "dim", label: "Dim" }
+];
+var ALLO_TEACHER_READING_THEME_IDS = ALLO_TEACHER_READING_THEME_OPTIONS.map(function(option) {
+  return option.id;
+});
+function alloNormalizeTeacherReadingTheme(value, fallback) {
+  return ALLO_TEACHER_READING_THEME_IDS.indexOf(value) >= 0 ? value : fallback;
+}
+function alloNormalizeTeacherReadingFavorites(value) {
+  var seen = {};
+  return (Array.isArray(value) ? value : []).filter(function(themeId) {
+    if (ALLO_TEACHER_READING_THEME_IDS.indexOf(themeId) < 0 || seen[themeId]) return false;
+    seen[themeId] = true;
+    return true;
+  }).slice(0, ALLO_TEACHER_READING_THEME_IDS.length);
+}
+function alloNormalizeTeacherLearnerPreference(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  var readingTheme = alloNormalizeTeacherReadingTheme(value.readingTheme, "");
+  var favoriteReadingThemes = alloNormalizeTeacherReadingFavorites(value.favoriteReadingThemes);
+  if (!readingTheme && favoriteReadingThemes.length === 0) return null;
+  var normalized = {};
+  if (readingTheme) normalized.readingTheme = readingTheme;
+  if (favoriteReadingThemes.length) normalized.favoriteReadingThemes = favoriteReadingThemes;
+  if (typeof value.updatedAt === "string" && value.updatedAt.trim()) normalized.updatedAt = value.updatedAt.trim().slice(0, 48);
+  return normalized;
+}
 function alloEnsureTeacherRosterIdentity(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
   var students = value.students && typeof value.students === "object" && !Array.isArray(value.students) ? value.students : {};
   var legacyClassId = value.submissionKey && typeof value.submissionKey.classId === "string" ? value.submissionKey.classId.trim() : "";
   var classId = typeof value.classId === "string" && value.classId.trim() ? value.classId.trim() : legacyClassId || alloTeacherStableId("CLS");
   var currentIds = value.learnerIds && typeof value.learnerIds === "object" && !Array.isArray(value.learnerIds) ? value.learnerIds : {};
+  var currentPreferences = value.learnerPreferences && typeof value.learnerPreferences === "object" && !Array.isArray(value.learnerPreferences) ? value.learnerPreferences : {};
   var learnerIds = {};
-  var changed = classId !== value.classId;
+  var learnerPreferences = {};
+  var readingThemeDefault = alloNormalizeTeacherReadingTheme(value.readingThemeDefault, "default");
+  var changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault;
   Object.keys(students).forEach(function(codename) {
     var existing = typeof currentIds[codename] === "string" ? currentIds[codename].trim() : "";
-    learnerIds[codename] = existing || alloTeacherStableId("LRN");
+    var learnerId = existing || alloTeacherStableId("LRN");
+    learnerIds[codename] = learnerId;
     if (!existing) changed = true;
+    var preferenceSource = Object.prototype.hasOwnProperty.call(currentPreferences, learnerId) ? currentPreferences[learnerId] : currentPreferences[codename];
+    var preference = alloNormalizeTeacherLearnerPreference(preferenceSource);
+    if (preference) learnerPreferences[learnerId] = preference;
+    if (preferenceSource && JSON.stringify(preferenceSource) !== JSON.stringify(preference)) changed = true;
+    if (preferenceSource && !Object.prototype.hasOwnProperty.call(currentPreferences, learnerId)) changed = true;
   });
   if (Object.keys(currentIds).length !== Object.keys(learnerIds).length) changed = true;
+  if (Object.keys(currentPreferences).length !== Object.keys(learnerPreferences).length) changed = true;
   if (!changed) return value;
-  return Object.assign({}, value, { classId, learnerIds });
+  return Object.assign({}, value, {
+    classId,
+    learnerIds,
+    learnerPreferences,
+    readingThemeDefault
+  });
 }
 const rosterSessionCsvCell = (value) => {
   const raw = value === null || value === void 0 ? "" : String(value);
@@ -348,6 +400,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const [newStudentGroup, setNewStudentGroup] = useState("");
   const [expandedGroup, setExpandedGroup] = useState(null);
+  const [readingPreferencesStudent, setReadingPreferencesStudent] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [showBatchConfig, setShowBatchConfig] = useState(false);
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, "sentence-frames": false, brainstorm: false, faq: false, outline: false, adventure: false, "concept-sort": false, image: false, timeline: false });
@@ -382,6 +435,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (!isOpen || typeof setRosterKey !== "function") return;
     setRosterKey((previous) => alloEnsureTeacherRosterIdentity(previous));
   }, [isOpen, setRosterKey]);
+  useEffect(() => {
+    if (readingPreferencesStudent && !rosterKey?.students?.[readingPreferencesStudent] && rosterKey?.students?.[readingPreferencesStudent] !== "") {
+      setReadingPreferencesStudent(null);
+    }
+  }, [readingPreferencesStudent, rosterKey?.students]);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -476,6 +534,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             groups: asRecord(data.groups),
             students: asRecord(data.students),
             learnerIds: asRecord(data.learnerIds),
+            learnerPreferences: asRecord(data.learnerPreferences),
+            readingThemeDefault: alloNormalizeTeacherReadingTheme(data.readingThemeDefault, "default"),
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
             sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : [],
@@ -634,10 +694,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleRemoveStudent = (name) => {
     setRosterKey((prev) => {
+      const learnerId = prev.learnerIds?.[name];
       const ns = { ...prev.students };
       delete ns[name];
       const ni = { ...prev.learnerIds || {} };
       delete ni[name];
+      const nr = { ...prev.learnerPreferences || {} };
+      if (learnerId) delete nr[learnerId];
+      delete nr[name];
       const nd = { ...prev.displayNames || {} };
       delete nd[name];
       const np = { ...prev.progressHistory || {} };
@@ -668,12 +732,48 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         else delete nextSession.organizerActivity;
         return nextSession;
       });
-      return { ...prev, students: ns, learnerIds: ni, displayNames: nd, progressHistory: np, sessionHistory: nh };
+      return { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
   };
   const handleMoveStudent = (name, toGroup) => {
     setRosterKey((prev) => ({ ...prev, students: { ...prev.students, [name]: toGroup } }));
   };
+  const getLearnerReadingPreference = (name) => {
+    const learnerId = rosterKey?.learnerIds?.[name];
+    return alloNormalizeTeacherLearnerPreference(learnerId ? rosterKey?.learnerPreferences?.[learnerId] : null) || {};
+  };
+  const updateLearnerReadingPreference = (name, updater) => {
+    setRosterKey((previous) => {
+      const normalizedRoster = alloEnsureTeacherRosterIdentity(previous || { groups: {}, students: {} });
+      const learnerId = normalizedRoster?.learnerIds?.[name];
+      if (!learnerId) return normalizedRoster;
+      const current = alloNormalizeTeacherLearnerPreference(normalizedRoster.learnerPreferences?.[learnerId]) || {};
+      const candidate = typeof updater === "function" ? updater(current) : updater;
+      const next = alloNormalizeTeacherLearnerPreference({ ...candidate, updatedAt: (/* @__PURE__ */ new Date()).toISOString() });
+      const learnerPreferences = { ...normalizedRoster.learnerPreferences || {} };
+      if (next) learnerPreferences[learnerId] = next;
+      else delete learnerPreferences[learnerId];
+      return { ...normalizedRoster, learnerPreferences };
+    });
+  };
+  const handleSetLearnerReadingTheme = (name, readingTheme) => {
+    updateLearnerReadingPreference(name, (current) => {
+      const next = { ...current };
+      if (readingTheme) next.readingTheme = alloNormalizeTeacherReadingTheme(readingTheme, "");
+      else delete next.readingTheme;
+      return next;
+    });
+  };
+  const handleToggleLearnerReadingFavorite = (name, readingTheme) => {
+    updateLearnerReadingPreference(name, (current) => {
+      const favorites = alloNormalizeTeacherReadingFavorites(current.favoriteReadingThemes);
+      return {
+        ...current,
+        favoriteReadingThemes: favorites.includes(readingTheme) ? favorites.filter((themeId) => themeId !== readingTheme) : favorites.concat(readingTheme)
+      };
+    });
+  };
+  const handleResetLearnerReadingPreference = (name) => updateLearnerReadingPreference(name, null);
   const COLORS = ["#4F46E5", "#059669", "#D97706", "#DC2626", "#7C3AED", "#0891B2", "#BE185D", "#65A30D"];
   const GRADE_OPTIONS = ["Pre-K", "Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade", "6th Grade", "7th Grade", "8th Grade", "9th Grade", "10th Grade", "11th Grade", "12th Grade"];
   const LANG_OPTIONS = ["English", "Spanish", "French", "Arabic", "Somali", "Vietnamese", "Portuguese", "Mandarin", "Korean", "Tagalog", "Russian", "Japanese"];
@@ -686,7 +786,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2014"),
-    options.map((o) => /* @__PURE__ */ React.createElement("option", { key: o, value: o }, o))
+    options.map((o) => {
+      const optionValue = typeof o === "object" ? o.id : o;
+      const optionLabel = typeof o === "object" ? o.label : o;
+      return /* @__PURE__ */ React.createElement("option", { key: optionValue, value: optionValue }, optionLabel);
+    })
   ) : type === "range" ? /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -751,7 +855,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     "\u{1FA91} ",
     t("roster.seating_chart") || "Seating Chart"
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-2 sm:grid-cols-[1fr_auto]" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -759,9 +863,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       onChange: (e) => setRosterKey((prev) => ({ ...prev || { groups: {}, students: {} }, className: e.target.value })),
       placeholder: t("common.placeholder_ms_smith_period_3"),
       "aria-label": t("roster.class_name") || "Class name",
-      className: "flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+      className: "min-w-0 flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm font-normal normal-case tracking-normal focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
-  )), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Students join with codenames; optional real names stay in this teacher-side roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), groupIds.map((gId) => {
+  )), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }, "Reading default:"), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: alloNormalizeTeacherReadingTheme(rosterKey?.readingThemeDefault, "default"),
+      onChange: (event) => setRosterKey((previous) => ({ ...alloEnsureTeacherRosterIdentity(previous || { groups: {}, students: {} }), readingThemeDefault: alloNormalizeTeacherReadingTheme(event.target.value, "default") })),
+      "aria-label": "Class reading theme default",
+      className: "min-h-9 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+    },
+    ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label))
+  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Students join with codenames; optional real names stay in this teacher-side roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), groupIds.map((gId) => {
     const group = groups[gId];
     const gStudents = getStudentsInGroup(gId);
     const isExpanded = expandedGroup === gId;
@@ -795,7 +908,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         "aria-label": (t("roster.set_group_color") || "Set group color") + " " + c,
         "aria-pressed": group.color === c
       }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleMoveStudent(name, ""), className: "w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
+    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: "Reading theme", value: group.profile?.readingThemeDefault, field: "readingThemeDefault", gId, type: "select", options: ALLO_TEACHER_READING_THEME_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleMoveStudent(name, ""), className: "w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
   }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -912,7 +1025,18 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-100 bg-white p-2", "aria-label": "Saved session history filters" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Focus", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryFocus, onChange: (event) => setSessionHistoryFocus(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by follow-up focus" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved sessions"), /* @__PURE__ */ React.createElement("option", { value: "follow_up" }, "Needs follow-up"), /* @__PURE__ */ React.createElement("option", { value: "revision" }, "Revision opportunities"), /* @__PURE__ */ React.createElement("option", { value: "celebrate" }, "Celebrate progress"), /* @__PURE__ */ React.createElement("option", { value: "planned" }, "Has follow-up plan"))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Activity", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryActivityKind, onChange: (event) => setSessionHistoryActivityKind(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by activity type" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All activity types"), sessionActivityKinds.map((kind) => /* @__PURE__ */ React.createElement("option", { key: kind, value: kind }, kind.replace(/_/g, " "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, filteredSessionHistory.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-cyan-100 bg-white p-3 text-xs text-slate-600" }, "No saved sessions match these filters."), filteredSessionHistory.slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50/60 p-2", "data-session-follow-up-planner": session.id }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-violet-900" }, "Post-session follow-up"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-700" }, "Private planning only. Nothing is sent or assigned until you choose an action."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-bold text-slate-700" }, "Private note", /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-amber-100 hover:text-amber-950 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), readingPreferencesStudent && (() => {
+    const preference = getLearnerReadingPreference(readingPreferencesStudent);
+    const favorites = alloNormalizeTeacherReadingFavorites(preference.favoriteReadingThemes);
+    const groupId = students[readingPreferencesStudent];
+    const groupDefault = alloNormalizeTeacherReadingTheme(groups[groupId]?.profile?.readingThemeDefault, "");
+    const fallbackTheme = groupDefault || alloNormalizeTeacherReadingTheme(rosterKey?.readingThemeDefault, "default");
+    const fallbackLabel = ALLO_TEACHER_READING_THEME_OPTIONS.find((option) => option.id === fallbackTheme)?.label || "Default";
+    return /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border-2 border-violet-200 bg-violet-50/70 p-4", "aria-labelledby": "roster-reading-preferences-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "roster-reading-preferences-title", className: "text-sm font-black text-violet-950" }, "Reading preferences \xB7 ", readingPreferencesStudent), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-violet-800" }, "Use neutral preferences only. The learner can privately change these choices at any time.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(null), className: "min-h-9 min-w-9 inline-flex items-center justify-center rounded-full bg-white text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500", "aria-label": "Close reading preferences" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("label", { className: "mt-3 block text-xs font-bold text-violet-950" }, "Preferred reading theme", /* @__PURE__ */ React.createElement("select", { value: preference.readingTheme || "", onChange: (event) => handleSetLearnerReadingTheme(readingPreferencesStudent, event.target.value), className: "mt-1 min-h-10 w-full rounded-lg border border-violet-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Use group/class default (", fallbackLabel, ")"), ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label)))), /* @__PURE__ */ React.createElement("fieldset", { className: "mt-3" }, /* @__PURE__ */ React.createElement("legend", { className: "text-xs font-bold text-violet-950" }, "Favorite themes"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-800" }, "Favorites appear first in this learner's reading-theme picker."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => {
+      const selected = favorites.includes(option.id);
+      return /* @__PURE__ */ React.createElement("button", { type: "button", key: option.id, onClick: () => handleToggleLearnerReadingFavorite(readingPreferencesStudent, option.id), "aria-pressed": selected, className: `min-h-9 rounded-full border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selected ? "border-violet-700 bg-violet-700 text-white" : "border-violet-300 bg-white text-violet-900 hover:bg-violet-100"}` }, selected ? "\u2605 " : "\u2606 ", option.label);
+    }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex items-center justify-between gap-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-violet-800" }, "Choice priority: learner \u2192 saved preference \u2192 group \u2192 class \u2192 device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleResetLearnerReadingPreference(readingPreferencesStudent), className: "min-h-9 shrink-0 rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 hover:bg-violet-100" }, "Reset to defaults")));
+  })(), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-100 bg-white p-2", "aria-label": "Saved session history filters" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Focus", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryFocus, onChange: (event) => setSessionHistoryFocus(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by follow-up focus" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved sessions"), /* @__PURE__ */ React.createElement("option", { value: "follow_up" }, "Needs follow-up"), /* @__PURE__ */ React.createElement("option", { value: "revision" }, "Revision opportunities"), /* @__PURE__ */ React.createElement("option", { value: "celebrate" }, "Celebrate progress"), /* @__PURE__ */ React.createElement("option", { value: "planned" }, "Has follow-up plan"))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Activity", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryActivityKind, onChange: (event) => setSessionHistoryActivityKind(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by activity type" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All activity types"), sessionActivityKinds.map((kind) => /* @__PURE__ */ React.createElement("option", { key: kind, value: kind }, kind.replace(/_/g, " "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, filteredSessionHistory.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-cyan-100 bg-white p-3 text-xs text-slate-600" }, "No saved sessions match these filters."), filteredSessionHistory.slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50/60 p-2", "data-session-follow-up-planner": session.id }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-violet-900" }, "Post-session follow-up"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-700" }, "Private planning only. Nothing is sent or assigned until you choose an action."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-bold text-slate-700" }, "Private note", /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: noteDraftFor(session),
@@ -5303,7 +5427,9 @@ window.AlloModules.LearnerProgressView = LearnerProgressView;
 window.AlloModules.TeacherDashboard = TeacherDashboard;
 
 window.AlloModules.RosterIdentityInternals = {
-  ensureRosterIdentity: alloEnsureTeacherRosterIdentity
+  ensureRosterIdentity: alloEnsureTeacherRosterIdentity,
+  normalizeLearnerReadingPreference: alloNormalizeTeacherLearnerPreference,
+  readingThemeIds: ALLO_TEACHER_READING_THEME_IDS.slice()
 };
 window.AlloModules.TeacherModule = true;
 // Test seam (read-only): expose the pure teacher-analytics functions for

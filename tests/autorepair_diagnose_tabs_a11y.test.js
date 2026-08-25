@@ -34,4 +34,15 @@ describe('AutoRepair Diagnose tabs accessibility', () => {
     expect(source).toContain("'aria-label': __alloT('stem.autorepair.hypothesis_input', 'Engine timing hypothesis')");
     expect(source).toContain("'aria-label': __alloT('stem.autorepair.explanation_input', 'Engine timing explanation')");
   });
+
+  it('writes listening-quiz rounds, scores, and resets atomically', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const start = source.indexOf('function dxListenQuiz()');
+    const end = source.indexOf('function dxFluid()', start);
+    const quiz = source.slice(start, end);
+    expect(quiz).toContain('updMulti({ dxQuizCueId: target.id');
+    expect(quiz).toContain('updMulti({\n              dxQuizPicked: choiceId');
+    expect(quiz).toContain('updMulti({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 });');
+    expect(quiz).not.toMatch(/\bupd\(\{\s*dxQuiz/);
+  });
 });

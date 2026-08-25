@@ -281,7 +281,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       var setStemLabTool = ctx.setStemLabTool;
       var announceToSR = typeof ctx.announceToSR === 'function' ? ctx.announceToSR : function() {};
       var awardXP = function(n, why) { if (ctx.awardXP) ctx.awardXP('paperTrail', n, why); };
-      var isDark = !!ctx.isDark || !!ctx.isContrast;
+      // Dark app chrome still places plugin content on a white card. Palette
+      // tokens therefore follow the content substrate, not the app chrome.
+      var isDark = !!ctx.isContrast || ctx.theme === 'contrast';
 
       var d = labToolData.paperTrail || {};
       function setPT(patch) {

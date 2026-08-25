@@ -129,6 +129,18 @@ const { EXTRACTED_VIEW_ADDITIONS, EXTRACTED_VIEW_KEYS } = require('./extracted_v
 Object.assign(ENGLISH_ADDITIONS, EXTRACTED_VIEW_ADDITIONS);
 const EXTRACTED_VIEW_KEY_SET = new Set(EXTRACTED_VIEW_KEYS);
 
+// Small runtime namespaces whose leaves are consumed directly by shipped
+// modules and whose packs are otherwise complete. Keeping these prefixes in
+// the contract catches newly added labels without promoting the enormous,
+// intentionally sparse STEM/simulation catalogs to a false all-pack gate.
+const RUNTIME_REQUIRED_PREFIXES = [
+  'a11y.', 'alignment_graph.', 'allohaven.', 'brainstorm.', 'canvas_settings.',
+  'checkpoint.', 'class_goals.', 'educator_hub.', 'glossary.', 'hints.',
+  'learner.', 'meta.', 'platform_diag.', 'probes.', 'roles.', 'saved_work.',
+  'session.', 'status_steps.', 'throughline.', 'toasts.', 'toolbar.', 'tour.',
+  'universal.',
+];
+
 const LANGUAGE_CODES = {
   acholi: 'ach', amharic: 'am', arabic: 'ar', bengali: 'bn', burmese: 'my',
   chinese_simplified: 'zh-CN', chinese_traditional: 'zh-TW', chin_falam: 'cfm', chin_hakha: 'cnh',
@@ -146,6 +158,7 @@ const LANGUAGE_CODES = {
 
 function isMainUiKey(key) {
   return EXTRACTED_VIEW_KEY_SET.has(key)
+    || RUNTIME_REQUIRED_PREFIXES.some((prefix) => key.startsWith(prefix))
     || key.startsWith('readinglib_')
     || key.startsWith('sidebar.tool_finder_')
     || key.startsWith('export_menu.')
@@ -165,10 +178,86 @@ function isMainUiKey(key) {
     || key === 'header.voice_volume';
 }
 
+// A small number of user-facing strings live outside the main-shell namespaces
+// above but are consumed by runtime modules with a literal translation key and
+// must still be seeded in every pack. Keep this list explicit so the parity
+// gate cannot silently shrink back to only the shell catalog.
+const PACK_REQUIRED_KEYS = [
+  'stem.trajectorycomputing.feedback_sequence_mismatch',
+  'guided.completed_toast',
+  'guided.engaged_announcement',
+  'guided.full_lesson_title',
+  'guided.history_back_to_step',
+  'guided.history_still_running',
+  'guided.resumed',
+  'guided.started_from_header',
+  'guided.step_cost_differentiated',
+  'guided.tab_example',
+  'guided.tab_how',
+  'storage.canvas_namespaces_title',
+  'storage.checking_canvas_note',
+  'storage.checking_short',
+  'storage.checking_title',
+  'storage.device_storage_approved_your_restored_settings',
+  'storage.device_storage_is_approved_reload_alloflow',
+  'storage.export_a_readable_copy_this_file',
+  'storage.import_project',
+  'storage.manage_saved',
+  'storage.managed_data_title',
+  'storage.no_restorable',
+  'storage.not_reread',
+  'storage.omitted_assets',
+  'storage.panel_eyebrow',
+  'storage.persistence_label',
+  'storage.recovery_target',
+  'storage.recovery_workspaces_label',
+  'storage.remediation_open',
+  'storage.retention_currently',
+  'storage.retention_intro',
+  'storage.retention_note',
+  'storage.retention_over_target',
+  'storage.retention_title',
+  'storage.retry_device_storage',
+  'storage.saved_label',
+  'storage.saved_summary',
+  'storage.saved_workspace_erased_from_this_device',
+  'storage.some',
+  'storage.start_fresh',
+  'storage.status_note',
+  'storage.status_title',
+  'storage.work_without_recovery',
+  'common.adapted_text',
+  'common.toggle_blueprint_mode',
+  'directions.body_aria',
+  'directions.body_placeholder',
+  'directions.due_aria',
+  'directions.due_placeholder',
+  'directions.title_aria',
+  'directions.title_placeholder',
+  'math_create.open_aria',
+  'math_create.open_button',
+  'math_create.pointer',
+  'math_create.pointer_aria',
+  'math_create.subtitle',
+  'math_create.title',
+  'voice_control.no_chat_surface',
+  'voice_control.offer_lead',
+  'voice_control.offer_lead_topic',
+  'voice_control.offer_tail',
+  'voice_control.paused',
+  'voice_control.speaking',
+  'voice_control.starting',
+  'voice_control.thinking',
+  'tour.tool_finder_title',
+  'tour.tool_finder_text',
+  'tour.directions_title',
+  'tour.directions_text',
+];
+
 // AlloBot has its own additive pass because its catalog grows independently
 // of the navigation/setup strings audited by the main-shell parity check.
 // Keeping this predicate separate lets CI report the AlloBot gap without
 // masking unrelated main-shell localization regressions.
 const isAlloBotKey = (key) => key.startsWith('tips.') || key.startsWith('bot_events.');
 
-module.exports = { ENGLISH_ADDITIONS, LANGUAGE_CODES, isMainUiKey, isAlloBotKey };
+module.exports = { ENGLISH_ADDITIONS, LANGUAGE_CODES, RUNTIME_REQUIRED_PREFIXES, isMainUiKey, isAlloBotKey, PACK_REQUIRED_KEYS };

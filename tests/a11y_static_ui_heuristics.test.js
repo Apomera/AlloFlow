@@ -96,6 +96,23 @@ describe('static audit UI heuristics', () => {
     const report = scanFixture("const icon = h('svg', { viewBox: '0 0 20 20' });");
     expect(report).toContain('SVG-001');
   });
+  it('recognizes an SVG excluded by its immediate aria-hidden parent', () => {
+    const report = scanFixture([
+      "return h('span', { className: 'thumbnail', style: { color: accent }, 'aria-hidden': 'true' },",
+      "  h('svg', { viewBox: '0 0 20 20' },",
+      "    h('path', { d: 'M0 0L20 20' })",
+      '  )',
+      ');',
+    ].join('\n'));
+    expect(report).not.toContain('SVG-001');
+  });
+  it('does not borrow aria-hidden from a closed sibling before an SVG', () => {
+    const report = scanFixture([
+      "h('span', { 'aria-hidden': 'true' }, 'Decorative marker'),",
+      "h('svg', { viewBox: '0 0 20 20' });",
+    ].join('\n'));
+    expect(report).toContain('SVG-001');
+  });
   it('does not report an SVG mentioned only in source documentation', () => {
     const report = scanFixture("// Rendered with React.createElement('svg', ...) after the library loads.");
     expect(report).not.toContain('SVG-001');

@@ -27,10 +27,10 @@ describe('Beehive campaign intelligence and coaching', () => {
     expect(html).toContain('Best counter');
   });
 
-  it('carries command-map evidence into the Drone briefing', () => {
-    const html = renderTool('beehive', { beehive: { viewMode: 'drone', queen: { result: 'victory', territory: 72, rival: { health: 0 } } } });
-    expect(html).toContain('data-drone-command-evidence="command"');
-    expect(html).toContain('Forage 72% - rival 0% health');
+  it('carries colony field evidence into the Drone briefing', () => {
+    const html = renderTool('beehive', { beehive: { viewMode: 'drone', colonyHealth: 82, varroaLevel: 12, honey: 45 } });
+    expect(html).toContain('data-drone-command-evidence="field"');
+    expect(html).toContain('Health 75% · Varroa 12% · Honey 45 lb');
   });
 
   it('ships prioritized flight diagnoses, experiments, criteria, and colony consequences', () => {

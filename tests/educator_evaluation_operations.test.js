@@ -68,7 +68,7 @@ describe('educator evaluation district operations center', () => {
     bypass.config.organization = 'Unreviewed District';
     expect(harness.invokeError('saveWorkspace', { expectedVersion: before.revision, workspace: bypass, mutation: { event: 'CONFIG_UPDATED' } }).code).toBe('review_required');
 
-    const candidate = { ...before.workspace.config, organization: 'Reviewed District', frameworkProfile: 'maine_pepg', pepgPracticeWeight: 75, aiReflectionEnabled: true };
+    const candidate = { ...before.workspace.config, organization: 'Reviewed District', frameworkProfile: 'pa_act13', pepgPracticeWeight: null, aiReflectionEnabled: true };
     const reviewed = harness.invoke('reviewPortalWorkspaceConfiguration', { config: candidate }).review;
     expect(reviewed.changes).toEqual(expect.arrayContaining([
       expect.objectContaining({ field: 'organization', current: 'Sample School District', candidate: 'Reviewed District' }),
@@ -80,7 +80,7 @@ describe('educator evaluation district operations center', () => {
     const result = harness.invoke('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token, acknowledgeImpact: true });
     expect(result).toMatchObject({ ok: true, status: 'completed', recoveryPending: false });
     const after = harness.invoke('bootstrap');
-    expect(after.workspace.config).toMatchObject({ organization: 'Reviewed District', frameworkProfile: 'maine_pepg', frameworkVersion: 'me-pepg-local', pepgPracticeWeight: 75, aiReflectionEnabled: true });
+    expect(after.workspace.config).toMatchObject({ organization: 'Reviewed District', frameworkProfile: 'pa_act13', frameworkVersion: 'pa-act13-classroom-2021', pepgPracticeWeight: null, aiReflectionEnabled: true });
     expect(after.workspace.audit).toContainEqual(expect.objectContaining({ event: 'CONFIGURATION_UPDATED', entityType: 'workspace_configuration', entityId: 'configuration' }));
     expect(harness.rows('Audit').some(row => row[2] === 'CONFIGURATION_UPDATED')).toBe(true);
     expect(harness.invokeError('performPortalWorkspaceConfiguration', { reviewToken: reviewed.token, acknowledgeImpact: true }).code).toBe('review_required');

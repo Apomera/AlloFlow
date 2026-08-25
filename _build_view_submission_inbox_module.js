@@ -70,6 +70,9 @@ ${compiled}
       normalizeDueDate: siAlloSheetDueDate,
       parseDueAt: siAlloSheetDueAt,
       deriveLateStatus: siAlloSheetLateStatus,
+      responseManifestSchemaVersion: SI_RESPONSE_MANIFEST_SCHEMA_VERSION,
+      responseEntryModels: siResponseEntryModels,
+      responseRequiresManualReview: siResponseRequiresManualReview,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
       buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope

@@ -17,6 +17,10 @@ const apBiologyBuildPath = path.join(root, 'dev-tools', 'build_ap_biology_50_ban
 const apBiologyQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_biology_foundation.cjs');
 const apChemistryBuildPath = path.join(root, 'dev-tools', 'build_ap_chemistry_foundation.cjs');
 const apChemistryQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_chemistry_foundation.cjs');
+const apPhysics1BuildPath = path.join(root, 'dev-tools', 'build_ap_physics_1_foundation.cjs');
+const apPhysics1QaScriptPath = path.join(root, 'dev-tools', 'qa_ap_physics_1_foundation.cjs');
+const apCalculusAbBuildPath = path.join(root, 'dev-tools', 'build_ap_calculus_ab_foundation.cjs');
+const apCalculusAbQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_calculus_ab_foundation.cjs');
 const apUsGovernmentBuildPath = path.join(root, 'dev-tools', 'build_ap_us_government_100_bank.cjs');
 const apUsGovernmentQaScriptPath = path.join(root, 'dev-tools', 'qa_ap_us_government_foundation.cjs');
 const apStatisticsBuildPath = path.join(root, 'dev-tools', 'build_ap_statistics_100_bank.cjs');
@@ -332,6 +336,8 @@ if (manifestOnly) {
   if (!fs.existsSync(epppPartOnePackBuildPath) || !fs.existsSync(epppNativeQaScriptPath)) fail('EPPP Part 1 pack/QA builder is missing.');
   if (!fs.existsSync(apBiologyBuildPath) || !fs.existsSync(apBiologyQaScriptPath)) fail('AP Biology foundation pilot builder/QA generator is missing.');
   if (!fs.existsSync(apChemistryBuildPath) || !fs.existsSync(apChemistryQaScriptPath)) fail('AP Chemistry foundation pilot builder/QA generator is missing.');
+  if (!fs.existsSync(apPhysics1BuildPath) || !fs.existsSync(apPhysics1QaScriptPath)) fail('AP Physics 1 foundation pilot builder/QA generator is missing.');
+  if (!fs.existsSync(apCalculusAbBuildPath) || !fs.existsSync(apCalculusAbQaScriptPath)) fail('AP Calculus AB foundation pilot builder/QA generator is missing.');
   if (!fs.existsSync(apUsHistoryBuildPath) || !fs.existsSync(apUsHistoryQaScriptPath)) fail('AP U.S. History foundation pilot builder/QA generator is missing.');
   if (!fs.existsSync(apUsGovernmentBuildPath) || !fs.existsSync(apUsGovernmentQaScriptPath)) fail('AP U.S. Government foundation pilot builder/QA generator is missing.');
   if (!fs.existsSync(apStatisticsBuildPath) || !fs.existsSync(apStatisticsQaScriptPath)) fail('AP Statistics foundation pilot builder/QA generator is missing.');
@@ -339,6 +345,8 @@ if (manifestOnly) {
   execFileSync(process.execPath, [epppNativeQaScriptPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apBiologyBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apChemistryBuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [apPhysics1BuildPath], { cwd: root, stdio: 'inherit' });
+  execFileSync(process.execPath, [apCalculusAbBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apUsHistoryBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apUsGovernmentBuildPath], { cwd: root, stdio: 'inherit' });
   execFileSync(process.execPath, [apStatisticsBuildPath], { cwd: root, stdio: 'inherit' });
@@ -354,6 +362,14 @@ if (manifestOnly) {
   if (manifest.entries.some((entry) => entry.id === 'ap-chemistry-foundation-pilot')) {
     if (!fs.existsSync(apChemistryQaScriptPath)) fail('AP Chemistry foundation pilot QA generator is missing.');
     execFileSync(process.execPath, [apChemistryQaScriptPath], { cwd: root, stdio: 'inherit' });
+  }
+  if (manifest.entries.some((entry) => entry.id === 'ap-physics-1-foundation-pilot')) {
+    if (!fs.existsSync(apPhysics1QaScriptPath)) fail('AP Physics 1 foundation pilot QA generator is missing.');
+    execFileSync(process.execPath, [apPhysics1QaScriptPath], { cwd: root, stdio: 'inherit' });
+  }
+  if (manifest.entries.some((entry) => entry.id === 'ap-calculus-ab-foundation-pilot')) {
+    if (!fs.existsSync(apCalculusAbQaScriptPath)) fail('AP Calculus AB foundation pilot QA generator is missing.');
+    execFileSync(process.execPath, [apCalculusAbQaScriptPath], { cwd: root, stdio: 'inherit' });
   }
   if (manifest.entries.some((entry) => entry.id === 'ap-us-history-foundation-pilot')) {
     if (!fs.existsSync(apUsHistoryQaScriptPath)) fail('AP U.S. History foundation pilot QA generator is missing.');

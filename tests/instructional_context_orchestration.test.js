@@ -74,7 +74,7 @@ describe('instructional context orchestration', () => {
     const revised = service.revise(blueprint, { setDirectives: { simplified: 'Revised direction' } });
     expect(revised.ok).toBe(true);
     expect(revised.value.instructionalContext.standardsFingerprint).toBe('txt-approved-standards');
-    expect(revised.value.plan[0]).toMatchObject({
+    expect(revised.value.plan.find((row) => row.tool === 'simplified')).toMatchObject({
       directive: 'Revised direction',
       instructionalText: { role: 'supplemental', form: 'adapted' },
     });
@@ -179,7 +179,8 @@ describe('instructional context orchestration', () => {
     const blueprintCard = readFileSync(resolve(root, 'persona_ui_source.jsx'), 'utf8');
 
     expect(fullPack).toContain("const essentials = ['analysis', 'lesson-plan'];");
-    expect(fullPack).toContain("_activeInstructionalContext.primaryTextPolicy === 'preserve-primary'");
+    expect(fullPack).toContain("_activeInstructionalContext.adaptedTextPolicy !== 'include'");
+    expect(fullPack).toContain('setFullPackPlanAdaptedTextPolicy');
     expect(fullPack).toContain('instructionalText: _cloneFullPackValue(item.instructionalText)');
     expect(fullPack).toContain('standardsFingerprint: _activeInstructionalContext.standardsFingerprint');
     expect(fullPack).toContain('removeFullPackPlanResource');
@@ -191,7 +192,7 @@ describe('instructional context orchestration', () => {
     expect(chat).toContain('instructionalContext,');
     expect(blueprintCard).toContain('instructionalText: getPlanInstructionalText(type');
     expect(blueprintCard).toContain('instructionalText: getPlanInstructionalText(i.type, i.instructionalText)');
-    expect(blueprintCard).toContain("instructionalText: getPlanInstructionalText('simplified', null)");
+    expect(blueprintCard).toContain('instructionalText: getPlanInstructionalText(defaultType, null)');
   });
 
   it('makes a reviewed Full Pack row removable without mutating the approved draft', () => {

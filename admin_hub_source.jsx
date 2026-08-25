@@ -269,6 +269,24 @@ function AdminHubPanel(props) {
     }
     return fallback;
   }, [t]);
+  const openHubTool = React.useCallback((toolId) => {
+    if (toolId !== 'rewards') { openTool(toolId); return; }
+    let portalUrl = '';
+    try {
+      const candidate = new URL(String(window.localStorage.getItem('allo_school_rewards_portal_url_v1') || '').trim());
+      if (candidate.protocol === 'https:' && candidate.hostname === 'script.google.com' && !candidate.port && !candidate.username && !candidate.password && !candidate.search && !candidate.hash && /^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(candidate.pathname)) portalUrl = candidate.origin + candidate.pathname;
+    } catch (_) {}
+    if (!portalUrl) {
+      addToast(tt('adminhub.rewards_connect_first', 'Connect School Rewards in Project Settings first.'), 'info');
+      return;
+    }
+    try {
+      const popup = window.open(portalUrl, '_blank', 'noopener,noreferrer');
+      if (!popup) { addToast(tt('adminhub.rewards_popup_blocked', 'School Rewards was blocked. Allow pop-ups and try again.'), 'error'); return; }
+      popup.opener = null;
+      onClose();
+    } catch (_) { addToast(tt('adminhub.rewards_open_failed', 'School Rewards could not open.'), 'error'); }
+  }, [addToast, onClose, openTool, tt]);
   const dialogRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -323,7 +341,14 @@ function AdminHubPanel(props) {
       title: tt('adminhub.evaluation_title', 'Educator Evaluation'),
       desc: tt('adminhub.evaluation_desc', 'Opens your connected district evaluation portal; otherwise your private on-device workspace — completion and weighting views, walkthroughs, formal observations, SPM / SLO, dialogue, receipts, and audit history, with framework profiles for PA Act 13 and Maine PEPG.'),
       accent: 'from-blue-50 to-indigo-50 border-blue-700', titleCls: 'text-blue-900', descCls: 'text-blue-800',
-    },    {
+    },
+    {
+      id: 'rewards', icon: '\uD83C\uDF9F\uFE0F',
+      title: tt('adminhub.rewards_title', 'School Rewards & Store'),
+      desc: tt('adminhub.rewards_desc', 'Open the connected Google Education rewards ledger for staff recognition, private student balance emails, prize previews, and locked trimester store checkout.'),
+      accent: 'from-emerald-50 to-teal-50 border-emerald-700', titleCls: 'text-emerald-900', descCls: 'text-emerald-800',
+    },
+    {
       id: 'walkthrough', icon: '🚪',
       title: tt('adminhub.walkthrough_title', 'UDL Walkthrough'),
       desc: tt('adminhub.walkthrough_desc', 'Growth-framed classroom visits scored against UDL 3.0 look-fors — feedback cards for teachers, a building heatmap, trends, and inter-rater checks for research use.'),
@@ -374,7 +399,7 @@ function AdminHubPanel(props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {TOOLS.map((tool) => (
             <button key={tool.id} type="button" data-help-key="adminhub_tool_card"
-              onClick={() => openTool(tool.id)}
+              onClick={() => openHubTool(tool.id)}
               className={'flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left ' + tool.accent}>
               <span className="text-3xl mt-1" aria-hidden="true">{tool.icon}</span>
               <div>

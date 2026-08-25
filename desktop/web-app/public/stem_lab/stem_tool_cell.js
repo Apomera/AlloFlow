@@ -1420,7 +1420,7 @@ var d = labToolData.cell || {};
       }
 
       // ── Extended state for badges ──
-      var cellExtDefaults = { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false };
+      var cellExtDefaults = { badges: [], totalFood: 0, organismsObserved: [], organellesClicked: [], quizCorrect: 0, playModeUsed: false, successByOrganism: {}, tutorialsSeen: {}, completedMissions: {} };
       function normalizeCellExt(raw) {
         raw = raw || {};
         return Object.assign({}, cellExtDefaults, raw, {
@@ -1429,7 +1429,10 @@ var d = labToolData.cell || {};
           organellesClicked: (raw.organellesClicked || []).slice(),
           totalFood: Number(raw.totalFood) || 0,
           quizCorrect: Number(raw.quizCorrect) || 0,
-          playModeUsed: !!raw.playModeUsed
+          playModeUsed: !!raw.playModeUsed,
+          successByOrganism: Object.assign({}, raw.successByOrganism || {}),
+          tutorialsSeen: Object.assign({}, raw.tutorialsSeen || {}),
+          completedMissions: Object.assign({}, raw.completedMissions || {})
         });
       }
       var ext = normalizeCellExt(d._cellExt);
@@ -1489,12 +1492,66 @@ var d = labToolData.cell || {};
           return nextExt;
         });
       }
+      function recordCellTutorialSeen(organismId) {
+        if (!organismId) return;
+        updateCellExtFunctional(function(nextExt) {
+          nextExt.tutorialsSeen[organismId] = true;
+          return nextExt;
+        });
+      }
+      function beginCellPlayMission(organismId) {
+        if (!organismId) return;
+        updateCellDataFunctional(function(cel) {
+          var nextExt = normalizeCellExt(cel._cellExt);
+          cel.playAsOrganism = organismId;
+          cel.selectedOrganism = organismId;
+          cel.showPlayInstructions = true;
+          cel.playFeedback = null;
+          cel.playMission = {
+            organismId: organismId,
+            startSuccess: Number(nextExt.successByOrganism[organismId]) || 0
+          };
+          nextExt.playModeUsed = true;
+          if (nextExt.organismsObserved.indexOf(organismId) === -1) nextExt.organismsObserved.push(organismId);
+          cel._cellExt = nextExt;
+          return cel;
+        });
+      }
+      function recordCellPlayReflection(organismId) {
+        if (!organismId) return;
+        updateCellDataFunctional(function(cel) {
+          var nextExt = normalizeCellExt(cel._cellExt);
+          if (cel.playMission && cel.playMission.organismId === organismId) {
+            cel.playMission = Object.assign({}, cel.playMission, { reflected: true });
+            nextExt.completedMissions[organismId] = true;
+            cel._cellExt = nextExt;
+          }
+          return cel;
+        });
+      }
       function recordCanvasXP(xp, label) {
         var amt = Number(xp) || 0;
         updateCellDataFunctional(function(cel) {
           cel.xpEarned = (Number(cel.xpEarned) || 0) + amt;
-          var orgDef = ORGANISMS.find(function (o) { return o.activity === label || o.id === cel.selectedOrganism; });
+          var activeOrganismId = cel.playAsOrganism || cel.selectedOrganism;
+          var orgDef = ORGANISMS.find(function (o) { return o.id === activeOrganismId; }) || ORGANISMS.find(function (o) { return o.activity === label; });
           if (orgDef) {
+            var nextExt = normalizeCellExt(cel._cellExt);
+            var nextSuccessCount = (Number(nextExt.successByOrganism[orgDef.id]) || 0) + 1;
+            nextExt.successByOrganism[orgDef.id] = nextSuccessCount;
+            cel._cellExt = nextExt;
+            var activeMission = cel.playMission && cel.playMission.organismId === orgDef.id ? cel.playMission : null;
+            if (cel.playAsOrganism === orgDef.id && activeMission) {
+              var runSuccessCount = Math.max(1, nextSuccessCount - (Number(activeMission.startSuccess) || 0));
+              var successTutorial = cellPlayTutorialFor(orgDef);
+              cel.playFeedback = {
+                organismId: orgDef.id,
+                count: Math.min(3, runSuccessCount),
+                serial: (Number(cel.playFeedback && cel.playFeedback.serial) || 0) + 1,
+                text: successTutorial ? successTutorial.evidence : 'That success is evidence of a structure helping the organism perform its function.',
+                evidenceComplete: runSuccessCount >= 3
+              };
+            }
             var disc = (cel.discoveries || []).slice();
             var undisc = orgDef.facts.map(function (f, i) { return orgDef.id + '_' + i; }).filter(function (k) { return disc.indexOf(k) === -1; });
             if (undisc.length > 0) cel.discoveries = disc.concat([undisc[Math.floor(Math.random() * undisc.length)]]);
@@ -17586,7 +17643,7 @@ var d = labToolData.cell || {};
 
               anatomy: [
 
-                { name: 'Flagellum', fn: 'Long whip-like microtubule appendage emerging from the anterior reservoir. Rotates in a helical pattern to pull the cell forward through the water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
+                { name: 'Flagellum', fn: 'Long whip-like microtubule appendage emerging from the anterior reservoir. Beats in a helical pattern to pull the cell forward through the water.', icon: '\u{1F4A8}', lx: 2.2, ly: -0.2 },
 
                 { name: 'Eyespot (Stigma)', fn: 'Red-orange carotenoid pigment shield that blocks light from certain angles, allowing the adjacent photoreceptor to detect light direction for phototaxis (swimming toward light).', icon: '\uD83D\uDD34', lx: 0.8, ly: -0.15 },
 
@@ -17622,7 +17679,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#a16707', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Binary Fission', activityDesc: 'Grow and divide!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Reproduce every 20 minutes in ideal conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
+              id: 'bacterium', label: 'Bacterium', icon: '\u{1F9EB}', color: '#a16707', bodyColor: 'rgba(245,158,11,0.35)', desc: 'Prokaryotic cell - no nucleus. Has cell wall, flagella, and reproduces by binary fission.', speed: 0.9, size: 10, activity: 'Flagellar Foraging', activityDesc: 'Use run-and-tumble movement to collect nutrients!', xp: 5, facts: ['No membrane-bound nucleus (prokaryote)', 'Cell wall made of peptidoglycan', 'Some have flagella for movement', 'Some bacteria can divide in about 20 minutes under ideal lab conditions', 'Plasmids carry extra DNA for antibiotic resistance'],
 
               anatomy: [
 
@@ -17642,7 +17699,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#51820a', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Organelle Tour', activityDesc: 'Zoom in to explore!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Shares many organelles with animal cells, but most plant cells lack centrioles and typical lysosomes', 'Connected to neighbors via plasmodesmata'],
+              id: 'plantcell', label: 'Plant Cell', icon: '\u{1F33B}', color: '#51820a', bodyColor: 'rgba(101,163,13,0.25)', desc: 'Eukaryotic cell with cell wall, chloroplasts, and large central vacuole.', speed: 0, size: 35, activity: 'Structure Survey', activityDesc: 'Locate structures and connect each one to its function!', xp: 2, facts: ['Rigid cell wall made of cellulose', 'Large central vacuole stores water', 'Chloroplasts convert light to energy', 'Shares many organelles with animal cells, but most plant cells lack centrioles and typical lysosomes', 'Connected to neighbors via plasmodesmata'],
 
               anatomy: [
 
@@ -17722,7 +17779,7 @@ var d = labToolData.cell || {};
 
             {
 
-              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#b83bca', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Some species survive severe dehydration and brief extreme exposures by entering cryptobiosis; active tardigrades are much less tolerant.', speed: 0.2, size: 20, activity: 'Cryptobiosis', activityDesc: 'Enter and leave the tun state!', xp: 7, facts: ['Cryptobiosis reduces metabolism to near-undetectable levels', 'Some species survived direct exposure to space', 'Extreme-temperature survival depends on species, state, and exposure time', 'Have eight unjointed legs with claws', 'They are stress-tolerant, not indestructible'],
+              id: 'tardigrade', label: 'Tardigrade', icon: '\u{1F43B}', color: '#b83bca', bodyColor: 'rgba(217,70,239,0.25)', desc: 'Microscopic multicellular animal with eight lobopod legs. Some species can survive severe dehydration by entering cryptobiosis.', speed: 0.2, size: 20, activity: 'Lobopod Crawl', activityDesc: 'Coordinate eight legs to reach food!', xp: 7, facts: ['Cryptobiosis reduces metabolism to near-undetectable levels', 'Some species survived direct exposure to space', 'Extreme-temperature survival depends on species, state, and exposure time', 'Have eight unjointed legs with claws', 'They are stress-tolerant, not indestructible'],
 
               anatomy: [
 
@@ -17761,6 +17818,64 @@ var d = labToolData.cell || {};
           ];
 
 
+
+          // Organism-specific play briefings connect each control to an observable biology concept.
+          // The free-moving dish is a learning model: a plant tissue cell, neutrophil, and tardigrade are not free-living unicellular microbes.
+          var CELL_PLAY_TUTORIALS = {
+            amoeba: { classification: 'Single-celled protist', movement: 'Pseudopods', control: 'Steer with WASD, arrow keys, or the on-screen direction pad. Each turn reshapes the flexible cell edge.', objective: 'Engulf 3 green food particles.', target: 'Green particles', targetKind: 'food', connection: 'Touching a particle models phagocytosis: pseudopods surround it and a food vacuole forms.', watch: 'The outline continuously changes as the amoeba crawls.', note: 'Real engulfment takes many coordinated membrane and cytoskeleton changes.' },
+            paramecium: { classification: 'Single-celled ciliate', movement: 'Coordinated cilia', control: 'Steer through the dish; your input represents thousands of cilia changing their beat together.', objective: 'Sweep through 3 green food particles.', target: 'Green particles', targetKind: 'food', connection: 'Cilia propel the cell and also direct particles toward the oral groove.', watch: 'Compare its quick, smooth turns with the amoeba\'s slow shape changes.', note: 'A real paramecium steers by changing ciliary beat, not by choosing a compass direction.' },
+            euglena: { classification: 'Photosynthetic protist', movement: 'Flagellum + phototaxis', control: 'Steer into a glowing yellow light zone, then remain there while the energy meter fills.', objective: 'Complete 3 light-energy cycles.', target: 'Yellow light zones', targetKind: 'light', connection: 'The eyespot helps orient the flagellum toward light; chloroplasts capture that light for photosynthesis.', watch: 'Energy rises only while the cell is inside enough light.', note: 'The eyespot senses light direction; it does not form an image.' },
+            wbc: { classification: 'Human immune cell (neutrophil)', movement: 'Amoeboid crawling + chemotaxis', control: 'Steer toward the red pathogen targets, representing movement along chemical signals from an infection.', objective: 'Engulf 3 pathogen targets.', target: 'Red pathogen targets', targetKind: 'pathogen', connection: 'Surface receptors help detect targets; pseudopods enclose them and lysosomes help break them down.', watch: 'Its flexible outline resembles amoeboid movement even though this is an animal cell.', note: 'Targets are simplified particles, and many bacteria are harmless or beneficial.' },
+            bacterium: { classification: 'Prokaryotic cell', movement: 'Rotary flagellum', control: 'Steer through green nutrient particles; each turn stands in for changes between a straight run and a tumble.', objective: 'Collect 3 nutrient particles.', target: 'Green nutrients', targetKind: 'food', connection: 'Chemoreceptors influence flagellar rotation, helping many motile bacteria move through chemical gradients.', watch: 'Its small size and fast turns contrast with larger eukaryotic cells.', note: 'Bacterial species vary widely; many are non-motile or use different structures.' },
+            plantcell: { classification: 'Eukaryotic plant tissue cell', movement: 'Stationary; supported by turgor', control: 'Zoom in and select labeled structures. This organism uses inspection controls instead of movement controls.', objective: 'Locate 3 different structures.', target: 'Cell wall, vacuole, chloroplasts, and more', targetKind: 'structure', connection: 'The rigid wall and water-filled vacuole help support the cell; chloroplasts capture light energy.', watch: 'Compare the large central vacuole with the smaller compartments in other cells.', note: 'This is a magnified cross-section of one cell within plant tissue.', stationary: true },
+            diatom: { classification: 'Single-celled photosynthetic alga', movement: 'Drift or raphe gliding', control: 'Gently steer through green nutrient particles; the slow response represents drifting and surface gliding.', objective: 'Collect 3 nutrient particles.', target: 'Green nutrients', targetKind: 'food', connection: 'Pores in the silica frustule permit exchange, while some diatoms glide by secreting material through a raphe.', watch: 'Notice the glass-like shell and slow movement.', note: 'Steering is exaggerated so the slow-moving cell remains playable.' },
+            volvox: { classification: 'Colonial green alga', movement: 'Coordinated flagella', control: 'Steer the colony into yellow light and hold position while its cells coordinate their flagella.', objective: 'Complete 3 light-energy cycles.', target: 'Yellow light zones', targetKind: 'light', connection: 'Many surface cells coordinate swimming and use eyespots to support colony-level phototaxis.', watch: 'The whole sphere rotates as many cells act together.', note: 'One input represents coordinated behavior across hundreds or thousands of cells.' },
+            stentor: { classification: 'Single-celled ciliate', movement: 'Body cilia + holdfast', control: 'Steer the trumpet-shaped cell through green particles, representing cilia-driven feeding currents.', objective: 'Sweep in 3 food particles.', target: 'Green particles', targetKind: 'food', connection: 'The membranellar band creates currents that carry food toward the oral opening.', watch: 'Its broad oral end and narrow holdfast give feeding and anchoring different roles.', note: 'The game moves the whole cell; attached stentors often pull nearby food inward instead.' },
+            tardigrade: { classification: 'Microscopic multicellular animal', movement: 'Eight lobopod legs', control: 'Steer with the direction controls; the slow response represents coordinated crawling by eight legs.', objective: 'Reach 3 green food particles.', target: 'Green food particles', targetKind: 'food', connection: 'Whole-animal locomotion uses muscles and claws, unlike cilia, flagella, or pseudopods.', watch: 'Compare this animal\'s repeated body segments with single-celled organisms.', note: 'This active crawl does not simulate cryptobiosis; extreme tolerance depends on species, state, and exposure.' },
+            spirillum: { classification: 'Spiral-shaped prokaryote', movement: 'Bipolar flagella', control: 'Steer through green nutrient particles; the direction controls represent helical propulsion through water.', objective: 'Collect 3 nutrient particles.', target: 'Green nutrients', targetKind: 'food', connection: 'Flagella at both poles rotate while the rigid spiral body advances with a corkscrew motion.', watch: 'Its whole body appears to twist along its path.', note: 'Rigid spirilla differ from flexible spirochetes.' }
+          };
+          var CELL_PLAY_REFLECTIONS = {
+            amoeba: 'How does reshaping the cell membrane help with both movement and feeding?',
+            paramecium: 'How can the same cilia support both movement and feeding?',
+            euglena: 'Why must light detection, movement, and chloroplast function work together?',
+            wbc: 'How do receptors, pseudopods, and lysosomes act in sequence during engulfment?',
+            bacterium: 'How can flagellar rotation help a bacterium follow a nutrient gradient?',
+            plantcell: 'How do the cell wall and central vacuole work together to support plant tissue?',
+            diatom: 'How can a porous silica shell protect a diatom without isolating it?',
+            volvox: 'What makes colony movement an example of coordination among many cells?',
+            stentor: 'How do the holdfast and cilia divide the jobs of anchoring and feeding?',
+            tardigrade: 'How does legged animal locomotion differ from cilia, flagella, or pseudopods?',
+            spirillum: 'How do bipolar flagella and a rigid spiral shape work together during motion?'
+          };
+          var CELL_PLAY_EVIDENCE = {
+            amoeba: 'Particle engulfed: the flexible membrane and pseudopods model phagocytosis and food-vacuole formation.',
+            paramecium: 'Particle captured: coordinated cilia model both propulsion and feeding currents toward the oral groove.',
+            euglena: 'Light-energy cycle complete: phototaxis positioned the chloroplasts where light can power photosynthesis.',
+            wbc: 'Pathogen engulfed: receptors, pseudopods, and lysosomes model a detect, enclose, and digest sequence.',
+            bacterium: 'Nutrient reached: changes in flagellar rotation model run-and-tumble chemotaxis through a chemical gradient.',
+            plantcell: 'Structure located: its position links the cell wall, central vacuole, or chloroplast to support or energy capture.',
+            diatom: 'Nutrient reached: pores in the silica frustule allow exchange while the shell protects the cell.',
+            volvox: 'Light-energy cycle complete: many surface cells model coordinated flagella and colony-level phototaxis.',
+            stentor: 'Particle captured: the ciliary band models a feeding current that carries food toward the oral opening.',
+            tardigrade: 'Food reached: coordinated muscles and eight lobopod legs model whole-animal crawling.',
+            spirillum: 'Nutrient reached: bipolar flagella and a rigid spiral body model corkscrew propulsion through water.'
+          };
+          var CELL_PLAY_FOCUS_STRUCTURES = {
+            amoeba: ['Pseudopods', 'Cell Membrane', 'Food Vacuole'],
+            paramecium: ['Cilia', 'Oral Groove'],
+            euglena: ['Flagellum', 'Eyespot (Stigma)', 'Chloroplasts'],
+            wbc: ['Surface Receptors', 'Pseudopods', 'Lysosomes'],
+            bacterium: ['Flagellum', 'Peptidoglycan Wall'],
+            diatom: ['Frustule', 'Raphe'],
+            volvox: ['Somatic Cells', 'Cytoplasmic Bridges'],
+            stentor: ['Membranellar Band', 'Holdfast', 'Body Cilia'],
+            tardigrade: ['Lobopod Legs', 'Cuticle'],
+            spirillum: ['Bipolar Flagella', 'Rigid Spiral Body', 'Polar Membrane']
+          };
+          function cellPlayTutorialFor(organism) {
+            if (!organism || !CELL_PLAY_TUTORIALS[organism.id]) return null;
+            return Object.assign({}, CELL_PLAY_TUTORIALS[organism.id], { reflect: CELL_PLAY_REFLECTIONS[organism.id] || 'What did your control represent in the organism\'s biology?', evidence: CELL_PLAY_EVIDENCE[organism.id] || 'That success is evidence of a structure helping the organism perform its function.', focusStructures: (CELL_PLAY_FOCUS_STRUCTURES[organism.id] || []).slice() });
+          }
 
           // Every authored question lists its correct answer FIRST, so the quiz
           // was answerable without reading it (10/10 at slot 1, slots 2-4 never
@@ -17841,7 +17956,7 @@ var d = labToolData.cell || {};
 
             { q: 'Which organism can regenerate from tiny fragments?', a: 'stentor', hint: 'The trumpet-shaped one - one of the largest single cells.' },
 
-            { q: 'What organism can survive in outer space?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Also called a water bear - nearly indestructible!', concept: 'cytoplasm', wrongFeedback: ['', 'Amoebas are extremely sensitive to dehydration and radiation.', 'While some bacterial spores can survive extreme conditions, the active bacterium cannot survive space unprotected.', 'Paramecia are fragile freshwater protists that dry up and die instantly in dry or extreme environments.'] },
+            { q: 'Which organism has survived brief direct exposure to space in experiments?', a: 'tardigrade', options: ['tardigrade', 'amoeba', 'bacterium', 'paramecium'], hint: 'Some water bear species can enter a highly resistant cryptobiotic state.', concept: 'cytoplasm', wrongFeedback: ['', 'Amoebas are generally vulnerable to dehydration and high radiation.', 'Some bacterial spores tolerate extreme conditions, but this question refers to an experimentally tested animal.', 'Paramecia are freshwater protists that are generally vulnerable to drying and extreme environments.'] },
 
             { q: 'Which bacterium moves with a corkscrew spiral motion?', a: 'spirillum', hint: 'Look for the spiral orange one spinning through the medium.' },
 
@@ -17849,7 +17964,7 @@ var d = labToolData.cell || {};
 
             { q: 'What does Stentor use its holdfast for?', a: 'anchoring', options: ['anchoring', 'swimming', 'reproduction', 'feeding'], hint: 'The narrow end attaches to a surface while the trumpet end feeds.', concept: 'cytoplasm', wrongFeedback: ['', 'Swimming is done via cilia around the trumpet crown, not the holdfast.', 'Stentors reproduce via binary fission or conjugation, unrelated to the holdfast.', 'Feeding is done by creating a vortex with cilia near the oral mouth, not by the anchoring holdfast.'] },
 
-            { q: 'What unique protein protects tardigrade DNA from radiation?', a: 'Dsup', options: ['Dsup', 'p53', 'BRCA1', 'Rad51'], hint: 'Damage Suppressor protein - discovered in 2016.', concept: 'nucleus', wrongFeedback: ['', 'p53 is a tumor suppressor protein in humans that regulates cell cycle, not a tardigrade specific protective protein.', 'BRCA1 is a human DNA repair gene, not a unique tardigrade damage suppressor.', 'Rad51 is a conserved recombinase involved in double-strand break repair in many species, not the unique Dsup.'] }
+            { q: 'In some tardigrade species, which protein can help protect DNA from radiation damage?', a: 'Dsup', options: ['Dsup', 'p53', 'BRCA1', 'Rad51'], hint: 'Damage Suppressor protein - first described in 2016.', concept: 'nucleus', wrongFeedback: ['', 'p53 is a tumor suppressor protein in humans that regulates cell cycle, not a tardigrade-specific protective protein.', 'BRCA1 is a human DNA repair gene, not a tardigrade damage suppressor.', 'Rad51 is a conserved recombinase involved in double-strand break repair in many species, not Dsup.'] }
 
           ];
 
@@ -18088,6 +18203,31 @@ var d = labToolData.cell || {};
               var sz = o.size * cam.zoom * dpr;
 
               var def = o.def;
+              // Keep the controlled organism unmistakable at every zoom level.
+              if (playAsOrg === o) {
+                var playerTutorial = cellPlayTutorialFor(def);
+                cctx.save();
+                var playerPulse = 1 + 0.06 * Math.sin(world.tick * 0.09);
+                cctx.beginPath();
+                cctx.arc(p.x, p.y, sz * 1.35 * playerPulse, 0, Math.PI * 2);
+                cctx.strokeStyle = o._successFlash > 0 ? '#fef08a' : '#ffffff';
+                cctx.lineWidth = (o._successFlash > 0 ? 4 : 2.25) * dpr;
+                cctx.shadowColor = o._successFlash > 0 ? '#fde047' : def.color;
+                cctx.shadowBlur = (o._successFlash > 0 ? 22 : 12) * dpr;
+                cctx.stroke();
+                var playerTag = 'YOU  |  ' + (playerTutorial ? playerTutorial.movement.toUpperCase() : def.label.toUpperCase());
+                cctx.font = '800 ' + (7.5 * dpr) + 'px Inter, system-ui, sans-serif';
+                cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
+                var playerTagW = cctx.measureText(playerTag).width + 12 * dpr;
+                var playerTagY = p.y - sz * 1.55 - 13 * dpr;
+                cctx.fillStyle = 'rgba(15,23,42,0.92)';
+                cctx.fillRect(p.x - playerTagW / 2, playerTagY, playerTagW, 17 * dpr);
+                cctx.strokeStyle = def.color; cctx.lineWidth = 1 * dpr;
+                cctx.strokeRect(p.x - playerTagW / 2, playerTagY, playerTagW, 17 * dpr);
+                cctx.fillStyle = '#ffffff';
+                cctx.fillText(playerTag, p.x, playerTagY + 8.5 * dpr);
+                cctx.restore();
+              }
 
               cctx.save();
 
@@ -19088,8 +19228,14 @@ var d = labToolData.cell || {};
               var labelShadowColor = 'rgba(2,6,23,0.38)';
 
               var labelBoxes = [];
+              var visibleAnatomy = def.anatomy;
+              var activeLabelTutorial = playAsOrg === o ? cellPlayTutorialFor(def) : null;
+              if (activeLabelTutorial && !activeLabelTutorial.stationary && activeLabelTutorial.focusStructures.length) {
+                var focusedAnatomy = def.anatomy.filter(function (a) { return activeLabelTutorial.focusStructures.indexOf(a.name) !== -1; });
+                if (focusedAnatomy.length) visibleAnatomy = focusedAnatomy;
+              }
 
-              def.anatomy.forEach(function (a, i) {
+              visibleAnatomy.forEach(function (a, i) {
 
                 if (typeof a.lx === 'undefined') return;
 
@@ -19117,7 +19263,7 @@ var d = labToolData.cell || {};
 
                 var labelDist = sz * 1.5 + fontSize * 2;
 
-                var spreadAngle = -Math.PI * 0.7 + (i / (def.anatomy.length - 0.01)) * Math.PI * 1.4;
+                var spreadAngle = -Math.PI * 0.7 + (i / (visibleAnatomy.length - 0.01)) * Math.PI * 1.4;
 
                 var targetLx = sx + Math.cos(spreadAngle) * labelDist;
 
@@ -19133,7 +19279,7 @@ var d = labToolData.cell || {};
 
                 // Smooth lerp: labels follow slowly instead of snapping
 
-                var lerpKey = o.def.id + '_' + i;
+                var lerpKey = o.def.id + '_' + a.name;
 
                 if (!_labelPositions[lerpKey]) _labelPositions[lerpKey] = { x: targetLx, y: targetLy };
 
@@ -19344,6 +19490,7 @@ var d = labToolData.cell || {};
 
 
             function updateOrganism(o) {
+              if (o._successFlash > 0) o._successFlash--;
 
               var def = o.def;
 
@@ -19351,9 +19498,9 @@ var d = labToolData.cell || {};
 
                 // Player-controlled
 
-                var spd = def.speed * 1.5;
+                var spd = def.id === 'plantcell' ? 0 : def.speed * 1.5;
 
-                if (spd < 0.3) spd = 0.3; // minimum speed for playable organisms
+                if (spd < 0.3 && def.id !== 'plantcell') spd = 0.3; // minimum speed for mobile playable organisms
 
                 o.vx = ((playerKeys['ArrowRight'] || playerKeys['d'] ? 1 : 0) - (playerKeys['ArrowLeft'] || playerKeys['a'] ? 1 : 0)) * spd;
 
@@ -19614,6 +19761,11 @@ var d = labToolData.cell || {};
               }
 
               o.x += o.vx; o.y += o.vy;
+              if (playAsOrg === o && def.id !== 'plantcell' && (Math.abs(o.vx) + Math.abs(o.vy) > 0.02) && world.tick % 4 === 0) {
+                o._playerTrail = o._playerTrail || [];
+                o._playerTrail.push({ x: o.x, y: o.y });
+                if (o._playerTrail.length > 28) o._playerTrail.shift();
+              }
 
               // Bounce off walls
 
@@ -19627,9 +19779,10 @@ var d = labToolData.cell || {};
 
 
 
-              // Player food collection (phagocytosis / ciliary sweep)
+              // Player target collection: the organism tutorial supplies the biological meaning.
+              var activeTutorial = playAsOrg === o ? cellPlayTutorialFor(def) : null;
 
-              if (playAsOrg === o && (def.id === 'amoeba' || def.id === 'paramecium' || def.id === 'wbc' || def.id === 'stentor' || def.id === 'tardigrade')) {
+              if (playAsOrg === o && activeTutorial && (activeTutorial.targetKind === 'food' || activeTutorial.targetKind === 'pathogen')) {
 
                 world.food.forEach(function (f) {
 
@@ -19640,6 +19793,7 @@ var d = labToolData.cell || {};
                     if (canvasEl._onFood) canvasEl._onFood();
 
                     o.energy = Math.min(100, o.energy + 10);
+                    o._successFlash = 45;
 
                     // Dispatch XP event
 
@@ -19651,9 +19805,9 @@ var d = labToolData.cell || {};
 
               }
 
-              // Euglena in light zone = photosynthesis
+              // Photosynthetic players earn progress by remaining in a light zone.
 
-              if (playAsOrg === o && def.id === 'euglena') {
+              if (playAsOrg === o && activeTutorial && activeTutorial.targetKind === 'light') {
 
                 world.lightZones.forEach(function (lz) {
 
@@ -19662,8 +19816,9 @@ var d = labToolData.cell || {};
                     if (world.tick % 60 === 0) {
 
                       o.energy = Math.min(100, o.energy + 5);
+                      o._successFlash = 45;
 
-                      if (canvasEl._onXP) canvasEl._onXP(def.xp, 'Photosynthesis');
+                      if (canvasEl._onXP) canvasEl._onXP(def.xp, def.activity);
 
                       if (canvasEl._onPhotosynthesis) canvasEl._onPhotosynthesis();
 
@@ -19824,6 +19979,15 @@ var d = labToolData.cell || {};
                 cctx.strokeStyle = 'rgba(234,179,8,' + (0.15 + 0.1 * Math.sin(world.tick * 0.02)) + ')';
 
                 cctx.lineWidth = 1.5 * dpr; cctx.stroke();
+                var zoneTutorial = playAsOrg ? cellPlayTutorialFor(playAsOrg.def) : null;
+                if (zoneTutorial && zoneTutorial.targetKind === 'light' && r > 28 * dpr) {
+                  cctx.save();
+                  cctx.font = '800 ' + (7 * dpr) + 'px Inter, system-ui, sans-serif';
+                  cctx.textAlign = 'center'; cctx.textBaseline = 'middle';
+                  cctx.fillStyle = 'rgba(113,63,18,0.9)';
+                  cctx.fillText('LIGHT ZONE  |  PHOTOSYNTHESIS', p.x, p.y);
+                  cctx.restore();
+                }
 
               });
 
@@ -19838,14 +20002,16 @@ var d = labToolData.cell || {};
                 var p = toScreen(f.x, f.y);
 
                 var sz = f.size * cam.zoom * dpr;
+                var foodTutorial = playAsOrg ? cellPlayTutorialFor(playAsOrg.def) : null;
+                var isPathogenTarget = foodTutorial && foodTutorial.targetKind === 'pathogen';
 
                 var fGrad = cctx.createRadialGradient(p.x - sz * 0.2, p.y - sz * 0.2, 0, p.x, p.y, sz);
 
-                fGrad.addColorStop(0, 'rgba(74,222,128,0.85)');
+                fGrad.addColorStop(0, isPathogenTarget ? 'rgba(254,202,202,0.95)' : 'rgba(74,222,128,0.85)');
 
-                fGrad.addColorStop(0.6, 'rgba(34,197,94,0.6)');
+                fGrad.addColorStop(0.6, isPathogenTarget ? 'rgba(239,68,68,0.82)' : 'rgba(34,197,94,0.6)');
 
-                fGrad.addColorStop(1, 'rgba(22,163,74,0.3)');
+                fGrad.addColorStop(1, isPathogenTarget ? 'rgba(153,27,27,0.5)' : 'rgba(22,163,74,0.3)');
 
                 cctx.beginPath(); cctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
 
@@ -20043,6 +20209,20 @@ var d = labToolData.cell || {};
 
 
 
+              // A short fading path makes movement style and direction easier to read.
+              if (playAsOrg && playAsOrg._playerTrail && playAsOrg._playerTrail.length > 1) {
+                cctx.save();
+                cctx.lineCap = 'round'; cctx.lineJoin = 'round';
+                for (var pti = 1; pti < playAsOrg._playerTrail.length; pti++) {
+                  var trailA = toScreen(playAsOrg._playerTrail[pti - 1].x, playAsOrg._playerTrail[pti - 1].y);
+                  var trailB = toScreen(playAsOrg._playerTrail[pti].x, playAsOrg._playerTrail[pti].y);
+                  cctx.beginPath(); cctx.moveTo(trailA.x, trailA.y); cctx.lineTo(trailB.x, trailB.y);
+                  cctx.globalAlpha = pti / playAsOrg._playerTrail.length * 0.42;
+                  cctx.strokeStyle = playAsOrg.def.color; cctx.lineWidth = 2.5 * dpr;
+                  cctx.stroke();
+                }
+                cctx.restore();
+              }
               // Organisms
 
               world.organisms.forEach(function (o) { drawOrganism(o); });
@@ -20499,7 +20679,7 @@ var d = labToolData.cell || {};
 
                 cctx.save();
 
-                var bx = 8 * dpr, by = 8 * dpr, bw = 90 * dpr, bh = 10 * dpr, br = 5 * dpr;
+                var bx = 8 * dpr, by = 84 * dpr, bw = 116 * dpr, bh = 13 * dpr, br = 6.5 * dpr;
 
                 // Background pill
 
@@ -20563,9 +20743,9 @@ var d = labToolData.cell || {};
 
                 }
 
-                cctx.fillStyle = '#fff'; cctx.font = 'bold ' + (6 * dpr) + 'px sans-serif'; cctx.textAlign = 'left';
+                cctx.fillStyle = '#fff'; cctx.font = 'bold ' + (7 * dpr) + 'px sans-serif'; cctx.textAlign = 'left';
 
-                cctx.fillText('\u26A1 ' + Math.round(playAsOrg.energy) + '%', bx + 4 * dpr, by + 7.5 * dpr);
+                cctx.fillText('\u26A1 ENERGY ' + Math.round(playAsOrg.energy) + '%', bx + 6 * dpr, by + 9.5 * dpr);
 
                 cctx.restore();
 
@@ -20746,9 +20926,18 @@ var d = labToolData.cell || {};
               return null;
             }
 
+            function rewardPlantStructure(o, anatomy) {
+              if (!o || !anatomy || playAsOrg !== o || o.def.id !== 'plantcell') return;
+              o._playStructures = o._playStructures || {};
+              if (o._playStructures[anatomy.name]) return;
+              o._playStructures[anatomy.name] = true;
+              o._successFlash = 45;
+              if (canvasEl._onXP) canvasEl._onXP(o.def.xp, o.def.activity);
+            }
             function showOrganelleLabelTooltip(hitLabel) {
               world._tooltip = { anatomy: hitLabel.anatomy, def: hitLabel.def, x: hitLabel.x, y: hitLabel.y, alpha: 0, startTick: world.tick, startTime: canvasNow() };
               if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(hitLabel.anatomy.name);
+              rewardPlantStructure(hitLabel.org, hitLabel.anatomy);
               if (canvasEl._cellSimPaused) renderStaticFrame();
             }
 
@@ -20892,13 +21081,25 @@ var d = labToolData.cell || {};
 
 
             // External API
+            canvasEl._cellSimMoveKey = function (key, pressed) {
+              if (!isMovementKey(key)) return;
+              var normalizedKey = key.length === 1 ? key.toLowerCase() : key;
+              playerKeys[normalizedKey] = !!pressed;
+              if (normalizedKey !== key) playerKeys[key] = !!pressed;
+            };
 
-            canvasEl._cellSimSetPlayAs = function (orgId) {
+            canvasEl._cellSimSetPlayAs = function (orgId, resetMission) {
 
               playAsOrg = orgId ? world.organisms.find(function (o) { return o.def.id === orgId; }) : null;
 
               playerKeys = {};
 
+              if (playAsOrg && resetMission) {
+                playAsOrg._playStructures = {};
+                playAsOrg._playerTrail = [];
+                playAsOrg.energy = 50;
+                playAsOrg._successFlash = 0;
+              }
               if (playAsOrg) { cam.x = playAsOrg.x; cam.y = playAsOrg.y; cam.zoom = 3; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); }
 
               canvasEl.style.cursor = playAsOrg ? 'crosshair' : 'grab';
@@ -21103,6 +21304,7 @@ var d = labToolData.cell || {};
               cellSound('select');
 
               if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(a.name);
+              rewardPlantStructure(o, a);
 
               if (canvasEl._cellSimPaused) renderStaticFrame();
 
@@ -21290,7 +21492,49 @@ var d = labToolData.cell || {};
 
 
           var selDef = d.selectedOrganism ? ORGANISMS.find(function (o) { return o.id === d.selectedOrganism; }) : null;
+          var selectedPlayTutorial = cellPlayTutorialFor(selDef);
+          var activePlayDef = d.playAsOrganism ? ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; }) : null;
+          var activePlayTutorial = cellPlayTutorialFor(activePlayDef);
+          var activePlayLifetimeSuccesses = activePlayDef ? (Number((ext.successByOrganism || {})[activePlayDef.id]) || 0) : 0;
+          var activePlayMission = activePlayDef && d.playMission && d.playMission.organismId === activePlayDef.id ? d.playMission : null;
+          var activePlayMissionStart = activePlayMission ? (Number(activePlayMission.startSuccess) || 0) : 0;
+          var activePlaySuccesses = activePlayDef ? Math.max(0, activePlayLifetimeSuccesses - activePlayMissionStart) : 0;
+          var activePlayProgress = Math.min(3, activePlaySuccesses);
+          var activeMissionEvidenceComplete = activePlayProgress >= 3;
+          var activeReflectionComplete = !!(activePlayMission && activePlayMission.reflected);
+          var activeMissionComplete = activeMissionEvidenceComplete && activeReflectionComplete;
+          var completedCellMissions = ext.completedMissions || {};
+          var completedCellMissionCount = ORGANISMS.filter(function (o) { return !!completedCellMissions[o.id]; }).length;
+          var activePlayFeedback = activePlayDef && d.playFeedback && d.playFeedback.organismId === activePlayDef.id ? d.playFeedback : null;
+          var nextCellMissionDef = activeMissionComplete ? ORGANISMS.find(function (o) { return o.id !== activePlayDef.id && !completedCellMissions[o.id]; }) : null;
+          var activeTargetVisual = activePlayTutorial ? (
+            activePlayTutorial.targetKind === 'light' ? { color: '#facc15', ring: '#fef08a', glyph: '\u2600', label: 'Light zone' } :
+            activePlayTutorial.targetKind === 'pathogen' ? { color: '#ef4444', ring: '#fecaca', glyph: '\u25C9', label: 'Pathogen target' } :
+            activePlayTutorial.targetKind === 'structure' ? { color: '#38bdf8', ring: '#bae6fd', glyph: '\u25A3', label: 'Structure label' } :
+            { color: '#22c55e', ring: '#bbf7d0', glyph: '\u25CF', label: 'Food or nutrient' }
 
+          ) : null;
+          function launchCellPlayMission(orgId, resetMission) {
+            if (!orgId) return;
+            if (resetMission) beginCellPlayMission(orgId);
+            else { upd("playAsOrganism", orgId); upd("showPlayInstructions", true); }
+            recordCanvasPlayModeUsed();
+            var cv = document.querySelector('[data-cell-sim-canvas]');
+            if (cv) {
+              cv._cellSimSetPlayAs(orgId, !!resetMission);
+              cv._onXP = function (xp, label) { recordCanvasXP(xp, label); };
+              cv._onFood = function () {
+                cellSound('food');
+                recordCanvasFoodCollected();
+              };
+              cv._onPhotosynthesis = function () { cellSound('photosynthesis'); };
+              cv._onOrganelleClick = function (name) {
+                if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
+                recordCanvasOrganelleClick(name);
+              };
+            }
+            cellSound('select');
+          }
           var selectedStructureCount = selDef && selDef.anatomy ? selDef.anatomy.length : 0;
 
           var cellRenderPrefersReducedMotion = false;
@@ -21299,7 +21543,7 @@ var d = labToolData.cell || {};
 
           var effectiveCellPaused = !!d.paused || (cellRenderPrefersReducedMotion && typeof d.paused === 'undefined');
 
-          var cellCanvasStatus = (selDef ? selDef.label + ' selected. ' + selectedStructureCount + ' structures available.' : 'No organism selected.') + ' Zoom ' + Math.round(40 * (d.zoom || 1)) + 'x. ' + (effectiveCellPaused ? 'Simulation paused.' : 'Simulation running.');
+          var cellCanvasStatus = (activePlayDef && activePlayTutorial ? activePlayDef.label + ' controlled. Mission: ' + activePlayTutorial.objective + ' Control concept: ' + activePlayTutorial.movement + '. ' : (selDef ? selDef.label + ' selected. ' + selectedStructureCount + ' structures available. ' : 'No organism selected. ')) + 'Zoom ' + Math.round(40 * (d.zoom || 1)) + 'x. ' + (effectiveCellPaused ? 'Simulation paused.' : 'Simulation running.');
 
 
 
@@ -21514,7 +21758,7 @@ var d = labToolData.cell || {};
                     React.createElement("div", null,
                       React.createElement("div", { className: "text-[11px] font-black uppercase text-emerald-700" }, "Cell Lab Command Deck"),
                       React.createElement("h4", { className: "mt-1 text-xl font-black text-slate-900" }, cellModeLabelMap[activeCellMode] || "Observe"),
-                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, "Start with the living petri dish, inspect organelles, then trace how matter and energy move through cell processes before testing your understanding.")
+                      React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600" }, d.mode === "play" ? (activePlayTutorial ? "Current mission: " + activePlayTutorial.objective + " Your controls model " + activePlayTutorial.movement.toLowerCase() + "." : "Choose an organism below, read its short briefing, then control or inspect it to model a real biological strategy.") : "Start with the living petri dish, inspect organelles, then trace how matter and energy move through cell processes before testing your understanding.")
                     ),
                     React.createElement("span", { className: "rounded-full border border-emerald-200 bg-white px-3 py-1.5 text-xs font-black text-emerald-700 shadow-sm" },
                       d.mode === 'play' ? "Playing" : d.quizMode ? "Quiz active" : "Explore ready"
@@ -21600,6 +21844,12 @@ var d = labToolData.cell || {};
                 quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz - concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
               };
               var meta = MODE_META[d.mode] || MODE_META.observe;
+              if (d.mode === 'play') {
+                meta = Object.assign({}, meta, {
+                  title: 'Play - control a biological strategy',
+                  hint: activePlayTutorial ? activePlayTutorial.control + ' Watch for: ' + activePlayTutorial.watch : 'Choose an organism below. Every mission explains what your input represents and which biological structure or behavior to observe.'
+                });
+              }
               return React.createElement('div', {
                 style: {
                   margin: '12px 0',
@@ -21628,14 +21878,24 @@ var d = labToolData.cell || {};
               React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: typeof srOnly === 'string' ? srOnly : "sr-only", style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, cellCanvasStatus),
 
               React.createElement("div", { className: "absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-slate-950/75 px-3 py-2 text-white shadow-lg backdrop-blur" },
-                React.createElement("div", { className: "min-w-0" },
+                React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wide text-emerald-200" }, d.mode === 'play' ? "Live Cell Control" : d.quizMode ? "Observation Challenge" : "Living Petri Dish"),
-                  React.createElement("div", { className: "truncate text-[11px] text-slate-300" }, selDef ? selDef.label + " selected" : "Click an organism to inspect behavior and anatomy")
+                  React.createElement("div", { className: "max-w-[680px] text-[11px] leading-snug text-slate-200" }, activePlayDef && activePlayTutorial ? activePlayDef.label + "  |  " + activePlayTutorial.objective + "  |  Control models " + activePlayTutorial.movement : (selDef ? selDef.label + " selected" : "Click an organism to inspect behavior and anatomy"))
                 ),
                 React.createElement("div", { className: "flex flex-wrap gap-1.5" },
-                  React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
-                  React.createElement("span", { className: "rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
-                  React.createElement("span", { className: "rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100" }, effectiveCellPaused ? "Paused" : "Running")
+                  activePlayDef ? React.createElement("span", { "data-cell-mission-progress": true, className: "inline-flex items-center gap-1 rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100", "aria-label": (activeMissionComplete ? "Mission complete" : activeMissionEvidenceComplete ? "Target evidence complete; reflection needed" : "Mission progress " + activePlayProgress + " of 3") },
+                    React.createElement("span", null, activeMissionComplete ? "\u2713 Complete" : activeMissionEvidenceComplete ? "Explain" : "Mission"),
+                    [0, 1, 2].map(function (step) {
+                      return React.createElement("span", { key: step, className: "h-2 w-2 rounded-full border border-emerald-100/70 " + (step < activePlayProgress ? "bg-emerald-300" : "bg-transparent"), "aria-hidden": "true" });
+                    }),
+                    React.createElement("span", { className: "tabular-nums" }, activePlayProgress + "/3")
+                  ) : React.createElement("span", { className: "rounded-full border border-emerald-300/40 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-100" }, "Observed " + observedCount),
+                  React.createElement("span", { className: "hidden rounded-full border border-cyan-300/40 bg-cyan-400/15 px-2.5 py-1 text-[11px] font-black text-cyan-100 sm:inline-flex" }, "Zoom " + Math.round(40 * (d.zoom || 1)) + "x"),
+                  React.createElement("span", { className: "hidden rounded-full border border-amber-300/40 bg-amber-400/15 px-2.5 py-1 text-[11px] font-black text-amber-100 sm:inline-flex" }, effectiveCellPaused ? "Paused" : "Running"),
+                  activePlayDef && React.createElement("button", {
+                    type: "button", "data-cell-play-hud": true, onClick: function () { upd("showPlayInstructions", true); },
+                    className: "rounded-full border border-violet-300/50 bg-violet-400/20 px-2.5 py-1 text-[11px] font-black text-violet-100 hover:bg-violet-400/35 active:scale-[0.97]"
+                  }, "Tutorial")
                 )
               ),
 
@@ -21656,7 +21916,54 @@ var d = labToolData.cell || {};
                 style: { width: '100%', height: '100%', cursor: d.playAsOrganism ? 'crosshair' : 'grab', touchAction: 'none', userSelect: 'none' }
 
               }),
+              activePlayDef && activePlayTutorial && activeTargetVisual && React.createElement("div", { "data-cell-target-legend": true, className: "absolute z-20 rounded-xl border border-white/20 bg-slate-950/85 px-3 py-2 text-white shadow-xl backdrop-blur", style: { top: '112px', right: '12px', width: '360px', maxWidth: 'calc(100% - 24px)' }, "aria-label": "Mission target: " + activePlayTutorial.target },
+                React.createElement("div", { className: "flex items-center gap-2" },
+                  React.createElement("span", { className: "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border-2 text-sm font-black", style: { color: activeTargetVisual.color, borderColor: activeTargetVisual.ring, background: activeTargetVisual.color + '22' }, "aria-hidden": "true" }, activeTargetVisual.glyph),
+                  React.createElement("div", { className: "min-w-0" },
+                    React.createElement("span", { className: "block text-[9px] font-black uppercase tracking-widest text-slate-300" }, "Find this target"),
+                    React.createElement("strong", { className: "block text-[11px] leading-tight text-white" }, activePlayTutorial.target)
+                  )
+                ),
+                React.createElement("p", { className: "mt-1.5 border-t border-white/10 pt-1.5 text-[10px] leading-snug text-slate-200" }, "Your control models: " + activePlayTutorial.movement),
+                activePlayFeedback && React.createElement("div", { "data-cell-evidence-feedback": true, role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 rounded-lg border border-emerald-300/30 bg-emerald-400/15 p-2" },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                    React.createElement("strong", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-200" }, "What just happened biologically?"),
+                    React.createElement("span", { className: "rounded-full bg-emerald-300 px-2 py-0.5 text-[9px] font-black text-emerald-950" }, "Evidence " + activePlayFeedback.count + "/3")
+                  ),
+                  React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-white" }, activePlayFeedback.text)
+                )
+              ),
 
+              d.playAsOrganism && activePlayTutorial && !activePlayTutorial.stationary && (function () {
+                function setPadDirection(key, pressed, event) {
+                  if (event) event.preventDefault();
+                  var cv = document.querySelector('[data-cell-sim-canvas]');
+                  if (cv && cv._cellSimMoveKey) {
+                    cv._cellSimMoveKey(key, pressed);
+                    if (pressed && cv.focus) cv.focus({ preventScroll: true });
+                  }
+                }
+                function directionButton(key, glyph, label, gridClass) {
+                  return React.createElement("button", {
+                    key: key, type: "button", "aria-label": label, "data-cell-move": key,
+                    onPointerDown: function (e) { setPadDirection(key, true, e); },
+                    onPointerUp: function (e) { setPadDirection(key, false, e); },
+                    onPointerCancel: function (e) { setPadDirection(key, false, e); },
+                    onPointerLeave: function (e) { setPadDirection(key, false, e); },
+                    onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, true, e); },
+                    onKeyUp: function (e) { if (e.key === 'Enter' || e.key === ' ') setPadDirection(key, false, e); },
+                    className: "h-11 w-11 rounded-xl border border-white/30 bg-slate-900/90 text-xl font-black text-white shadow-lg backdrop-blur transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-4 focus-visible:outline-white active:scale-95 " + gridClass,
+                    style: { touchAction: 'none' }
+                  }, glyph);
+                }
+                return React.createElement("div", { "data-cell-direction-pad": true, className: "absolute bottom-14 left-1/2 z-20 grid -translate-x-1/2 grid-cols-3 gap-1 rounded-2xl border border-white/20 bg-slate-950/70 p-2 shadow-2xl backdrop-blur", role: "group", "aria-label": "Move " + activePlayDef.label },
+                  directionButton('ArrowUp', '\u2191', 'Move up - model ' + activePlayTutorial.movement, 'col-start-2'),
+                  directionButton('ArrowLeft', '\u2190', 'Move left - model ' + activePlayTutorial.movement, 'col-start-1 row-start-2'),
+                  React.createElement("div", { className: "col-start-2 row-start-2 flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-center text-[8px] font-black uppercase leading-tight text-emerald-100", "aria-hidden": "true" }, "MOVE"),
+                  directionButton('ArrowRight', '\u2192', 'Move right - model ' + activePlayTutorial.movement, 'col-start-3 row-start-2'),
+                  directionButton('ArrowDown', '\u2193', 'Move down - model ' + activePlayTutorial.movement, 'col-start-2 row-start-3')
+                );
+              })(),
               // Zoom overlay
 
               React.createElement("div", { className: "absolute bottom-2 left-2 flex items-center gap-2 bg-white/80 backdrop-blur rounded-lg px-2 py-1 text-[11px] font-bold text-slate-600" },
@@ -21713,36 +22020,9 @@ var d = labToolData.cell || {};
                 var org = ORGANISMS.find(function (o) { return o.id === d.playAsOrganism; });
 
                 if (!org) return null;
+                var tutorial = cellPlayTutorialFor(org);
+                if (!tutorial) return null;
 
-                // Predator info per organism
-
-                var predatorInfo = {
-
-                  amoeba: { pred: 'Paramecium & WBCs', warn: 'Larger cells may engulf you!' },
-
-                  paramecium: { pred: 'Stentor', warn: 'Stentor creates vortex currents - avoid its trumpet-shaped mouth!' },
-
-                  euglena: { pred: 'Amoeba & Paramecium', warn: 'They can engulf small protists. Stay in the light!' },
-
-                  wbc: { pred: 'None - you are the hunter!', warn: 'Your targets are bacteria. Failure to catch them lets infection spread.' },
-
-                  bacterium: { pred: 'WBCs & Amoeba', warn: 'White blood cells will chase and engulf you!' },
-
-                  plantcell: { pred: 'None - you are stationary', warn: 'Explore your organelles up close.' },
-
-                  diatom: { pred: 'Copepods & Ciliates', warn: 'Filter-feeders may sweep you up!' },
-
-                  volvox: { pred: 'Rotifers', warn: 'Stay together with your colony!' },
-
-                  stentor: { pred: 'None - apex filter feeder!', warn: 'Anchor and create food vortices.' },
-
-                  tardigrade: { pred: 'None - nearly indestructible', warn: 'You can survive extreme conditions!' },
-
-                  spirillum: { pred: 'WBCs & Bacteriophages', warn: 'Immune cells are hunting you!' }
-
-                };
-
-                var pInfo = predatorInfo[org.id] || { pred: 'Various predators', warn: 'Stay alert!' };
 
                 return React.createElement("div", {
 
@@ -21754,7 +22034,7 @@ var d = labToolData.cell || {};
 
                 },
 
-                  React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden", style: { animation: 'slideUp 0.3s ease-out' } },
+                  React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-lg max-h-[94%] w-full mx-4 overflow-y-auto", style: { animation: 'slideUp 0.3s ease-out' } },
 
                     // Header
 
@@ -21762,9 +22042,9 @@ var d = labToolData.cell || {};
 
                       React.createElement("div", { className: "text-3xl mb-1" }, org.icon),
 
-                      React.createElement("h3", { id: "cell-playinstr-title", className: "text-white font-black text-base" }, "Playing as " + org.label),
+                      React.createElement("h3", { id: "cell-playinstr-title", className: "text-white font-black text-base" }, "60-second mission briefing: " + org.label),
 
-                      React.createElement("p", { className: "text-white/80 text-[11px] mt-0.5" }, org.desc)
+                      React.createElement("p", { className: "text-white/90 text-[11px] mt-1 font-bold" }, tutorial.classification + "  |  Movement: " + tutorial.movement)
 
                     ),
 
@@ -21780,9 +22060,9 @@ var d = labToolData.cell || {};
 
                         React.createElement("div", null,
 
-                          React.createElement("p", { className: "text-xs font-black text-slate-700" }, "Goal: " + org.activity),
+                          React.createElement("p", { className: "text-xs font-black text-slate-800" }, "1  |  Mission: " + org.activity),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-600" }, org.activityDesc + " Earn +" + org.xp + " XP per success!")
+                          React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600" }, tutorial.objective + " Target: " + tutorial.target + ". Earn +" + org.xp + " XP per success!")
 
                         )
 
@@ -21796,9 +22076,9 @@ var d = labToolData.cell || {};
 
                         React.createElement("div", null,
 
-                          React.createElement("p", { className: "text-xs font-black text-slate-700" }, "Controls"),
+                          React.createElement("p", { className: "text-xs font-black text-slate-800" }, "2  |  Control the biology"),
 
-                          React.createElement("div", { className: "flex gap-1 mt-1" },
+                          !tutorial.stationary && React.createElement("div", { className: "flex gap-1 mt-1" },
 
                             ["W/\u2191", "A/\u2190", "S/\u2193", "D/\u2192"].map(function (k) {
 
@@ -21808,26 +22088,35 @@ var d = labToolData.cell || {};
 
                           ),
 
-                          React.createElement("p", { className: "text-[11px] text-slate-600 mt-0.5" }, "Move your organism to interact with the environment")
+                          React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-600 mt-1" }, tutorial.control)
 
                         )
 
                       ),
 
-                      // Predators/Dangers
+                      // Structure-and-function learning link
 
-                      React.createElement("div", { className: "flex items-start gap-2 bg-red-50 rounded-lg p-2 -mx-1" },
+                      React.createElement("div", { className: "flex items-start gap-2 bg-violet-50 border border-violet-200 rounded-lg p-3 -mx-1" },
 
-                        React.createElement("span", { className: "text-lg flex-shrink-0" }, "\u26A0\uFE0F"),
+                        React.createElement("span", { className: "text-lg flex-shrink-0" }, "\uD83E\uDDEC"),
 
                         React.createElement("div", null,
 
-                          React.createElement("p", { className: "text-xs font-black text-red-700" }, "Danger: " + pInfo.pred),
+                          React.createElement("p", { className: "text-xs font-black text-violet-800" }, "3  |  Learning link"),
 
-                          React.createElement("p", { className: "text-[11px] text-red-600/80" }, pInfo.warn)
+                          React.createElement("p", { className: "text-[11px] leading-relaxed text-slate-700" }, tutorial.connection),
+                          React.createElement("p", { className: "mt-2 text-[11px] font-bold text-emerald-800" }, "Watch for: " + tutorial.watch),
+                          React.createElement("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-500" }, "Model note: " + tutorial.note)
 
                         )
 
+                      ),
+                      React.createElement("div", { className: "flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 -mx-1" },
+                        React.createElement("span", { className: "text-lg flex-shrink-0", "aria-hidden": "true" }, "\uD83D\uDCAC"),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-xs font-black text-amber-900" }, "4  |  Predict, then explain"),
+                          React.createElement("p", { className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-700" }, tutorial.reflect)
+                        )
                       )
 
                     ),
@@ -21836,15 +22125,15 @@ var d = labToolData.cell || {};
 
                     React.createElement("div", { className: "px-5 pb-4" },
 
-                      React.createElement("button", { "aria-label": "Got it Let's Go!", autoFocus: true,
+                      React.createElement("button", { "aria-label": "Start " + org.label + " mission", autoFocus: true,
 
-                        onClick: function () { upd("showPlayInstructions", false); },
+                        onClick: function () { recordCellTutorialSeen(org.id); upd("showPlayInstructions", false); },
 
                         className: "w-full py-2.5 rounded-xl text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]",
 
                         style: { background: 'linear-gradient(135deg, ' + org.color + ', ' + org.color + 'cc)' }
 
-                      }, "\uD83D\uDE80 Got it - Let's Go!")
+                      }, "\uD83D\uDE80 Start mission")
 
                     )
 
@@ -21855,12 +22144,54 @@ var d = labToolData.cell || {};
               })()
 
             ),
+            d.mode === 'play' && activePlayDef && activePlayTutorial && React.createElement("section", { "data-cell-mission-checkpoint": true, className: "mt-3 overflow-hidden rounded-2xl border border-violet-200 bg-white shadow-sm", "aria-labelledby": "cell-mission-checkpoint-title" },
+              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 bg-gradient-to-r from-violet-50 via-white to-emerald-50 px-4 py-3" },
+                React.createElement("div", { className: "min-w-0 flex-1" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-violet-700" }, "Mission loop  |  Control \u2192 Observe \u2192 Explain"),
+                  React.createElement("h3", { id: "cell-mission-checkpoint-title", className: "mt-1 text-sm font-black text-slate-900" }, activeMissionComplete ? "\u2713 " + activePlayDef.label + " mission complete" : activeMissionEvidenceComplete ? "Targets found \u2014 explain the biology" : activePlayDef.label + " mission in progress"),
+                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600", role: "status", "aria-live": "polite" }, activeMissionComplete ? "You connected the control, the observation, and the biological explanation." : activeMissionEvidenceComplete ? "You collected 3 pieces of evidence. Use the reflection prompt to complete the learning loop." : "Find " + (3 - activePlayProgress) + " more target" + (3 - activePlayProgress === 1 ? "" : "s") + ". Each success is evidence for the structure-function relationship."),
+                ),
+                React.createElement("div", { className: "flex flex-col items-end gap-1" },
+                  React.createElement("span", { className: "rounded-full bg-slate-900 px-3 py-1 text-[11px] font-black text-white" }, activePlayProgress + "/3 evidence"),
+                  React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, activePlayLifetimeSuccesses + " lifetime successes")
+                )
+              ),
+              React.createElement("div", { className: "grid gap-2 border-t border-slate-100 p-3 md:grid-cols-3" },
+                React.createElement("article", { className: "rounded-xl border border-violet-100 bg-violet-50/70 p-3" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-violet-700" }, "1  |  Control"),
+                  React.createElement("p", { className: "mt-1 text-xs font-black text-slate-900" }, activePlayTutorial.movement),
+                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, activePlayTutorial.stationary ? "Inspect and select structure labels." : "Steer with keys or the direction pad.")
+                ),
+                React.createElement("article", { className: "rounded-xl border border-emerald-100 bg-emerald-50/70 p-3" },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide text-emerald-700" }, "2  |  Observe"),
+                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, activePlayTutorial.watch),
+                  React.createElement("div", { className: "mt-2 flex gap-1", "aria-label": activePlayProgress + " of 3 evidence checkpoints complete" },
+                    [0, 1, 2].map(function (step) { return React.createElement("span", { key: step, className: "h-2 flex-1 rounded-full " + (step < activePlayProgress ? "bg-emerald-500" : "bg-emerald-100"), "aria-hidden": "true" }); })
+                  )
+                ),
+                React.createElement("article", { className: "rounded-xl border p-3 " + (activeMissionEvidenceComplete ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-slate-50") },
+                  React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wide " + (activeMissionEvidenceComplete ? "text-amber-800" : "text-slate-500") }, "3  |  Explain"),
+                  React.createElement("p", { className: "mt-1 text-[11px] font-bold leading-relaxed text-slate-800" }, activePlayTutorial.reflect),
+                  React.createElement("button", { type: "button", disabled: !activeMissionEvidenceComplete || activeReflectionComplete, onClick: function () { recordCellPlayReflection(activePlayDef.id); cellSound('correct'); if (typeof announceToSR === 'function') announceToSR(activePlayDef.label + ' mission reflection complete'); }, className: "mt-2 min-h-9 w-full rounded-lg px-3 py-2 text-[11px] font-black transition " + (activeReflectionComplete ? "bg-emerald-700 text-white" : activeMissionEvidenceComplete ? "bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.98]" : "cursor-not-allowed bg-slate-200 text-slate-500"), "aria-label": activeReflectionComplete ? "Explanation noted; mission complete" : "Confirm you can explain the biology" }, activeReflectionComplete ? "\u2713 Explanation noted" : activeMissionEvidenceComplete ? "I can explain it" : "Unlock after 3 targets")
+                )
+              ),
+              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-3 py-2.5" },
+                React.createElement("p", { className: "max-w-2xl text-[10px] leading-relaxed text-slate-500" }, "Model boundary: " + activePlayTutorial.note),
+                React.createElement("div", { className: "flex flex-wrap gap-2" },
+                  React.createElement("button", { type: "button", onClick: function () { upd("showPlayInstructions", true); }, className: "min-h-9 rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-[11px] font-black text-violet-800 hover:bg-violet-100" }, "Review briefing"),
+                  activeMissionComplete && React.createElement("button", { type: "button", onClick: function () { launchCellPlayMission(activePlayDef.id, true); }, className: "min-h-9 rounded-lg bg-emerald-700 px-3 py-2 text-[11px] font-black text-white hover:bg-emerald-800" }, "Replay mission"),
+                  activeMissionComplete && nextCellMissionDef && React.createElement("button", { type: "button", "aria-label": "Next mission: " + nextCellMissionDef.label, onClick: function () { launchCellPlayMission(nextCellMissionDef.id, true); var stage = document.querySelector('[data-cell-stage]'); if (stage) stage.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); }, className: "min-h-9 rounded-lg bg-violet-700 px-3 py-2 text-[11px] font-black text-white hover:bg-violet-800" }, "Next: " + nextCellMissionDef.label),
+                  activeMissionComplete && !nextCellMissionDef && React.createElement("span", { className: "inline-flex min-h-9 items-center rounded-lg bg-amber-100 px-3 py-2 text-[11px] font-black text-amber-900" }, "\u2713 All organism missions complete"),
+                  React.createElement("button", { type: "button", onClick: function () { var chooser = document.querySelector('[data-cell-organism-chooser]'); if (chooser) { chooser.scrollIntoView({ behavior: cellRenderPrefersReducedMotion ? 'auto' : 'smooth', block: 'start' }); var firstChoice = chooser.querySelector('button'); if (firstChoice && firstChoice.focus) firstChoice.focus({ preventScroll: true }); } }, className: "min-h-9 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-50" }, "Switch organism")
+                )
+              )
+            ),
 
 
 
             // 🔬 Petri Dish Filters: Select Visible Cell Types
 
-            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
+            d.mode !== 'play' && d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "bg-white rounded-xl border border-green-200 p-3 mt-3 shadow-sm" },
 
               React.createElement("div", { className: "flex justify-between items-center mb-2" },
 
@@ -22011,11 +22342,20 @@ var d = labToolData.cell || {};
 
             // Organism selector buttons
 
-            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && React.createElement("div", { "data-cell-organism-chooser": true, className: "mt-3 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:grid-cols-3 xl:grid-cols-4" },
 
+              React.createElement("div", { className: "col-span-full mb-1 flex flex-wrap items-end justify-between gap-2 border-b border-slate-100 pb-2" },
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "text-sm font-black text-slate-900" }, d.mode === 'play' ? "Choose your organism" : "Choose an organism to inspect"),
+                  React.createElement("p", { className: "text-[11px] text-slate-500" }, d.mode === 'play' ? "Select a card, then start its biology mission below." : "Each card previews its movement strategy and activity.")
+                ),
+                React.createElement("span", { "data-cell-mastery-summary": d.mode === 'play' ? true : undefined, className: "rounded-full px-2.5 py-1 text-[10px] font-black " + (d.mode === 'play' ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600") }, d.mode === 'play' ? completedCellMissionCount + " / " + ORGANISMS.length + " missions complete" : ORGANISMS.length + " models")
+              ),
               ORGANISMS.map(function (org) {
+                var chooserTutorial = cellPlayTutorialFor(org);
+                var chooserMissionComplete = !!completedCellMissions[org.id];
 
-                return React.createElement("button", { key: org.id,
+                return React.createElement("button", { key: org.id, type: "button", "aria-label": (d.mode === 'play' ? "Choose " : "Inspect ") + org.label + (d.mode === 'play' && chooserMissionComplete ? ". Mission complete." : ""),
 
                   onClick: function () {
 
@@ -22046,7 +22386,7 @@ var d = labToolData.cell || {};
 
                     var cv = document.querySelector('[data-cell-sim-canvas]');
 
-                    var nextSelectedOrg = d.selectedOrganism === org.id ? null : org.id;
+                    var nextSelectedOrg = d.mode === 'play' ? org.id : (d.selectedOrganism === org.id ? null : org.id);
 
                     if (cv && cv._cellSimSelectOrganism) {
 
@@ -22065,11 +22405,19 @@ var d = labToolData.cell || {};
                   },
 
                   "aria-pressed": d.selectedOrganism === org.id,
-                  className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : "border-slate-200 bg-slate-50 text-slate-600"),
+                  "aria-current": d.playAsOrganism === org.id ? "true" : undefined,
+                  className: "min-h-[92px] rounded-xl border-2 p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-[0.98] " + (d.selectedOrganism === org.id ? "bg-white shadow-md" : chooserMissionComplete ? "border-emerald-300 bg-emerald-50/70 text-slate-700" : "border-slate-200 bg-slate-50 text-slate-700"),
 
-                  style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color } : {}
+                  style: d.selectedOrganism === org.id ? { borderColor: org.color, color: org.color, background: org.color + '0D' } : {}
 
-                }, org.icon + " " + org.label);
+                },
+                  React.createElement("span", { className: "flex items-center gap-2 text-xs font-black" }, React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, org.icon), org.label),
+                  d.mode === 'play' && (d.playAsOrganism === org.id || chooserMissionComplete) && React.createElement("span", { className: "mt-2 flex flex-wrap gap-1" },
+                    d.playAsOrganism === org.id && React.createElement("span", { className: "inline-flex rounded-full bg-violet-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white" }, "\u25B6 Current player"),
+                    chooserMissionComplete && React.createElement("span", { "data-cell-mission-mastered": org.id, className: "inline-flex rounded-full bg-emerald-700 px-2 py-0.5 text-[9px] font-black uppercase tracking-wide text-white" }, "\u2713 Mission complete")
+                  ),
+                  React.createElement("span", { className: "mt-2 block text-[10px] font-bold uppercase tracking-wide text-slate-500" }, chooserTutorial ? chooserTutorial.movement : org.activity),
+                  React.createElement("span", { className: "mt-1 block text-[10px] leading-snug text-slate-600" }, org.activity));
 
               })
 
@@ -22081,7 +22429,7 @@ var d = labToolData.cell || {};
 
             d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && !d.quizMode && selDef && React.createElement("div", { className: "mt-3 bg-white rounded-xl border-2 p-4 animate-in fade-in", style: { borderColor: selDef.color } },
 
-              React.createElement("div", { className: "flex items-start justify-between" },
+              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
 
                 React.createElement("div", null,
 
@@ -22091,49 +22439,17 @@ var d = labToolData.cell || {};
 
                 ),
 
-                d.mode === 'play' && React.createElement("button", { "aria-label": "Play as " + selDef.label,
+                d.mode === 'play' && React.createElement("button", { "aria-label": d.playAsOrganism === selDef.id ? "Review " + selDef.label + " tutorial" : "Play as " + selDef.label,
 
                   onClick: function () {
-
-                    upd("playAsOrganism", selDef.id);
-
-                    upd("showPlayInstructions", true);
-
-                    var cv = document.querySelector('[data-cell-sim-canvas]');
-
-                    if (cv) {
-
-                      cv._cellSimSetPlayAs(selDef.id);
-
-                      recordCanvasPlayModeUsed();
-
-                      cv._onXP = function (xp, label) {
-
-                        recordCanvasXP(xp, label);
-
-                      };
-
-                      cv._onFood = function () {
-                        cellSound('food');
-                        recordCanvasFoodCollected();
-                      };
-                      cv._onPhotosynthesis = function () {
-                        cellSound('photosynthesis');
-                      };
-                      cv._onOrganelleClick = function (name) {
-                        if (typeof announceToSR === 'function') announceToSR(name + ' organelle');
-                        recordCanvasOrganelleClick(name);
-                      };
-
-                    }
-
+                    launchCellPlayMission(selDef.id, d.playAsOrganism !== selDef.id);
                   },
 
                   className: "px-3 py-1.5 text-xs font-bold text-white rounded-lg shadow-md hover:shadow-lg transition-all",
 
                   style: { background: selDef.color }
 
-                }, "\uD83C\uDFAE Play As " + selDef.label)
+                }, d.playAsOrganism === selDef.id ? "Review tutorial" : "\uD83C\uDFAE Play as " + selDef.label)
 
               ),
 
@@ -22149,6 +22465,18 @@ var d = labToolData.cell || {};
 
               ),
 
+              selectedPlayTutorial && React.createElement("div", { "data-cell-learning-link": true, className: "mt-3 rounded-xl border border-violet-200 bg-gradient-to-br from-violet-50 to-cyan-50 p-3" },
+                React.createElement("div", { className: "mb-2 flex flex-wrap gap-1.5" },
+                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-800 shadow-sm" }, selectedPlayTutorial.classification),
+                  React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-cyan-800 shadow-sm" }, "Movement: " + selectedPlayTutorial.movement)
+                ),
+                React.createElement("h5", { className: "text-xs font-black text-slate-900" }, "How the gameplay teaches the biology"),
+                React.createElement("div", { className: "mt-2 grid gap-2 md:grid-cols-3" },
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-violet-700" }, "Control"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.control)),
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-emerald-700" }, "Mission"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.objective)),
+                  React.createElement("div", { className: "rounded-lg bg-white/90 p-2" }, React.createElement("div", { className: "text-[10px] font-black uppercase text-cyan-700" }, "Learning link"), React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, selectedPlayTutorial.connection))
+                )
+              ),
               // Facts - always visible
 
               React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-0.5" },

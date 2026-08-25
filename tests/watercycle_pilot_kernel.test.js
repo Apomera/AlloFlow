@@ -156,6 +156,43 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
     });
   });
 
+  it('continues every landfall through a reachable watershed pathway', () => {
+    expect(K.pathwayNextForm('runoff')).toBe('liquid');
+    expect(K.pathwayNextForm('soil')).toBe('groundwater');
+    expect(K.pathwayNextForm('groundwater')).toBe('liquid');
+    expect(K.pathwayNextForm('plant')).toBe('transpiring');
+
+    const assistedRunoff = K.pathwayRate('runoff', { pathwayDrive: 1 });
+    const observedRunoff = K.pathwayRate('runoff', {});
+    expect(observedRunoff).toBeGreaterThan(0);
+    expect(assistedRunoff).toBeGreaterThan(observedRunoff);
+    expect(K.pathwayRate('soil', { thrust: -1 })).toBeGreaterThan(K.pathwayRate('soil', {}));
+    expect(K.pathwayRate('plant', { thrust: 1 })).toBeGreaterThan(K.pathwayRate('plant', {}));
+
+    let soil = Object.assign(K.initialState('tropicalOcean'), { form: 'soil' });
+    const soilForms = ['soil'];
+    for (let i = 0; i < 1400 && soil.form !== 'liquid'; i += 1) {
+      const next = K.step(soil, {
+        dt: 0.05,
+        thrust: soil.form === 'soil' ? -1 : 0,
+        pathwayDrive: soil.form === 'groundwater' ? 1 : 0,
+      });
+      if (next.form !== soil.form) soilForms.push(next.form);
+      soil = next;
+    }
+    expect(soilForms).toEqual(['soil', 'groundwater', 'liquid']);
+
+    let plant = Object.assign(K.initialState('tropicalOcean'), { form: 'plant' });
+    const plantForms = ['plant'];
+    for (let i = 0; i < 700 && plant.form !== 'vapor'; i += 1) {
+      const next = K.step(plant, { dt: 0.05, thrust: plant.form === 'plant' ? 1 : 0 });
+      if (next.form !== plant.form) plantForms.push(next.form);
+      plant = next;
+    }
+    expect(plantForms).toEqual(['plant', 'transpiring', 'vapor']);
+    expect(plant.altitudeM).toBeGreaterThan(0);
+  });
+
   it('freezes rather than condenses when the freezing level sits below the cloud base', () => {
     const env = K.environment('mountainWinter');
     // In this scenario the parcel is already below 0 C by the time it saturates,
@@ -175,6 +212,24 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
     expect(K.nextForm(snowAloft, env)).toBe('');
     const snowLow = Object.assign({}, snowAloft, { altitudeM: env.freezingM - 1 });
     expect(K.nextForm(snowLow, env)).toBe('rain');
+  });
+
+  it('maps latent-energy direction only to real phase changes', () => {
+    expect(K.energyTransfer('liquid', 'vapor')).toBe('absorbed');
+    expect(K.energyTransfer('transpiring', 'vapor')).toBe('absorbed');
+    expect(K.energyTransfer('droplet', 'vapor')).toBe('absorbed');
+    expect(K.energyTransfer('snow', 'rain')).toBe('absorbed');
+    expect(K.energyTransfer('snow', 'soil')).toBe('absorbed');
+
+    expect(K.energyTransfer('vapor', 'droplet')).toBe('released');
+    expect(K.energyTransfer('vapor', 'ice')).toBe('released');
+    expect(K.energyTransfer('droplet', 'ice')).toBe('released');
+    expect(K.energyTransfer('rain', 'snow')).toBe('released');
+
+    expect(K.energyTransfer('droplet', 'cloud')).toBe('none');
+    expect(K.energyTransfer('cloud', 'rain')).toBe('none');
+    expect(K.energyTransfer('plant', 'transpiring')).toBe('none');
+    expect(K.energyTransfer('runoff', 'liquid')).toBe('none');
   });
 
   it('makes snow fall far more slowly than rain', () => {

@@ -122,6 +122,46 @@ describe('clicking it produces the script', () => {
     expect(text).toContain('Direct Instruction lesson script');
   });
 
+  it('is a named modal, contains keyboard focus, closes with Escape, and restores its trigger', async () => {
+    mount(props());
+    const opener = scriptButton();
+    opener.focus();
+    await act(async () => {
+      opener.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    const dialog = container.querySelector('[role="dialog"][aria-modal="true"]');
+    expect(dialog, 'the full-screen script must retain the modal semantics it replaces').toBeTruthy();
+    expect(dialog.getAttribute('aria-labelledby')).toBe('word-sounds-di-script-title');
+    const title = dialog.querySelector('#word-sounds-di-script-title');
+    expect(title?.textContent).toContain('Direct Instruction lesson script');
+
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    const buttons = [...dialog.querySelectorAll('button:not([disabled])')];
+    const first = buttons[0];
+    const last = buttons[buttons.length - 1];
+    expect(document.activeElement, 'opening the script should move focus into it').toBe(last);
+
+    act(() => {
+      last.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    });
+    expect(document.activeElement, 'Tab from the final control should wrap inside the dialog').toBe(first);
+
+    first.focus();
+    act(() => {
+      first.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true }));
+    });
+    expect(document.activeElement, 'Shift+Tab from the first control should wrap inside the dialog').toBe(last);
+
+    act(() => {
+      last.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(container.querySelector('#ws-di-print')).toBeNull();
+    expect(document.activeElement, 'closing the script should restore the lesson-script trigger').toBe(scriptButton());
+  });
+
   it('names the focus pattern in the objective', () => {
     expect(open()).toContain('/or/');
   });

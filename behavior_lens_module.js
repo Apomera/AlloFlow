@@ -6201,7 +6201,7 @@ Return the note as plain text (no JSON). Include date placeholder and signature 
             else template = [...FIDELITY_TEMPLATES.escape.slice(0, 2), ...FIDELITY_TEMPLATES.attention.slice(0, 2), ...template];
             setItems(template);
             setChecks({});
-            if (addToast) addToast(t('behavior_lens.toast.quick_fill_n_items_loaded') || `Quick Fill: ${template.length} items loaded ⚡`, 'success');
+            if (addToast) addToast(t('behavior_lens.toast.quick_fill_n_items_loaded', { n: template.length }) || `Quick Fill: ${template.length} items loaded ⚡`, 'success');
         };
 
         const handleGenerate = async () => {
@@ -6860,7 +6860,7 @@ Generate descriptors for each GAS level and return ONLY valid JSON:
                                 if (addToast) addToast(tt('behavior_lens.toast.all_entries_already_synced_to_abc_data', 'All entries already synced to ABC data'), 'info');
                                 return prev;
                             }
-                            if (addToast) addToast(t('behavior_lens.toast.n_home_entries_pushed_to_abc_data') || `${fresh.length} home entries pushed to ABC data ✅`, 'success');
+                            if (addToast) addToast(t('behavior_lens.toast.n_home_entries_pushed_to_abc_data', { n: fresh.length }) || `${fresh.length} home entries pushed to ABC data ✅`, 'success');
                             return [...fresh, ...prev];
                         });
                     },
@@ -7976,7 +7976,7 @@ Keep language warm and age-appropriate.`;
             const { newAbc, newObs, raw } = importPreview;
             if (newAbc.length > 0) setAbcEntries(prev => [...prev, ...newAbc].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
             if (newObs.length > 0) setObservationSessions(prev => [...prev, ...newObs].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)));
-            addToast && addToast(t('behavior_lens.toast.merged_n_abc_entries_and_n_observations') || `Merged ${newAbc.length} ABC entries and ${newObs.length} observations`, 'success');
+            addToast && addToast(t('behavior_lens.toast.merged_n_abc_entries_and_n_observations', { abc: newAbc.length, observations: newObs.length }) || `Merged ${newAbc.length} ABC entries and ${newObs.length} observations`, 'success');
             setImportPreview(null);
         };
 
@@ -16471,7 +16471,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setSessionHistory(prev => [sessionData, ...prev]);
             if (onSaveSession) onSaveSession(sessionData);
             setSessionActive(false);
-            if (addToast) addToast(t('behavior_lens.toast.session_saved_ns_n_total_responses') || `Session saved! ${duration}s, ${targets.reduce((a, t) => a + t.count, 0)} total responses`, 'success');
+            if (addToast) addToast(t('behavior_lens.toast.session_saved_ns_n_total_responses', { duration, responses: targets.reduce((a, t) => a + t.count, 0) }) || `Session saved! ${duration}s, ${targets.reduce((a, t) => a + t.count, 0)} total responses`, 'success');
         };
 
         const recordCount = (id) => updateTarget(id, 'count', targets.find(t => t.id === id).count + 1);
@@ -20068,7 +20068,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
             // Check mastery
             const updatedConsec = pct >= (program?.masteryCriteria.pct || 80) ? (program?.consecutiveMastered || 0) + 1 : 0;
             if (updatedConsec >= (program?.masteryCriteria.sessions || 3)) {
-                if (addToast) addToast(t('behavior_lens.toast.mastered_n_n_consecutive_sessions_at_criterion') || `🎉 MASTERED! ${program?.name || 'Target'} — ${program?.masteryCriteria.sessions} consecutive sessions at criterion!`, 'success');
+                if (addToast) addToast(t('behavior_lens.toast.mastered_n_n_consecutive_sessions_at_criterion', { name: program?.name || 'Target', n: program?.masteryCriteria.sessions }) || `🎉 MASTERED! ${program?.name || 'Target'} — ${program?.masteryCriteria.sessions} consecutive sessions at criterion!`, 'success');
             }
         };
 
@@ -20416,7 +20416,7 @@ Example format: ["Turn on water", "Pump soap in hands", "Rub hands together for 
                 newGrid[k] = newGrid[k] >= maxVal * 0.6 ? 2 : newGrid[k] >= 1 ? 1 : 0;
             });
             setGrid(newGrid);
-            if (addToast) addToast(t('behavior_lens.toast.populated_from_n_abc_entries') || `Populated from ${abcEntries.length} ABC entries`, 'success');
+            if (addToast) addToast(t('behavior_lens.toast.populated_from_n_abc_entries', { n: abcEntries.length }) || `Populated from ${abcEntries.length} ABC entries`, 'success');
         };
 
         // Pattern detection
@@ -23333,7 +23333,7 @@ Keep the language professional but accessible.`;
                     return;
                 }
                 setParsedEntries(safeEntries);
-                if (addToast) addToast(t('behavior_lens.toast.parsed_n_abc_entries_from_transcript') || `Parsed ${safeEntries.length} ABC entries from transcript!`, 'success');
+                if (addToast) addToast(t('behavior_lens.toast.parsed_n_abc_entries_from_transcript', { n: safeEntries.length }) || `Parsed ${safeEntries.length} ABC entries from transcript!`, 'success');
             } catch (e) { if (addToast) addToast(tt('behavior_lens.toast.failed_to_parse_transcript', 'Failed to parse transcript'), 'error'); }
             setParsing(false);
         };
@@ -23343,7 +23343,7 @@ Keep the language professional but accessible.`;
             if (selected.length === 0) return;
             const clean = selected.map(e => ({ id: e.id, timestamp: e.timestamp, antecedent: e.antecedent, behavior: e.behavior, consequence: e.consequence, intensity: e.intensity || 3, notes: e.notes || '' }));
             setAbcEntries(prev => [...prev, ...clean]);
-            if (addToast) addToast(t('behavior_lens.toast.added_n_entries_to_abc_data') || `Added ${clean.length} entries to ABC data!`, 'success');
+            if (addToast) addToast(t('behavior_lens.toast.added_n_entries_to_abc_data', { n: clean.length }) || `Added ${clean.length} entries to ABC data!`, 'success');
             setParsedEntries([]);
         };
 
@@ -26063,7 +26063,7 @@ IMPORTANT rules for expert keys:
                 // Student is in roster but has no loaded workspace — just switch the name
                 setSelectedStudent(studentName);
                 resetStudentScopedState();
-                if (addToast) addToast(t('behavior_lens.toast.switched_to_n_no_data_loaded') || `Switched to ${studentName} (no data loaded)`, 'info');
+                if (addToast) addToast(t('behavior_lens.toast.switched_to_n_no_data_loaded', { name: studentName }) || `Switched to ${studentName} (no data loaded)`, 'info');
                 return;
             }
             // 3. Load data from _fullData if available, otherwise use summary
@@ -26233,7 +26233,10 @@ IMPORTANT rules for expert keys:
                     } else {
                         applyStudentWorkspace(data);
                     }
-                    if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes') || 'Workspace loaded (' +
+                    if (addToast) addToast(t('behavior_lens.toast.workspace_loaded_n_entries_n_notes', {
+                        entries: Array.isArray(data.abcEntries) ? data.abcEntries.length : 0,
+                        notes: Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0
+                    }) || 'Workspace loaded (' +
                         (Array.isArray(data.abcEntries) ? data.abcEntries.length : 0) + ' entries, ' +
                         (Array.isArray(data.sessionNotes) ? data.sessionNotes.length : 0) + ' notes) ??', 'success');
                 } catch (err) {

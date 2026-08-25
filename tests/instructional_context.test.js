@@ -93,4 +93,73 @@ describe('instructional context contract', () => {
     });
     expect(normalized.status).toBe('unavailable');
   });
+
+  it('includes a supplemental adapted companion by default without changing the primary role', () => {
+    expect(Context.normalizeInstructionalContext(null, { instructionalGrade: '5th Grade' })).toMatchObject({
+      primaryTextPolicy: 'preserve-primary',
+      primaryTextAccess: 'available',
+      adaptedTextPolicy: 'include',
+      adaptedTextPolicySource: 'workflow-default',
+      textAccessReason: 'default-access-companion',
+    });
+  });
+
+  it('makes complex grade-level text required while still including the adapted companion', () => {
+    const context = Context.normalizeInstructionalContext(null, {
+      standardsInput: 'CCSS.ELA-LITERACY.RI.5.10: Read grade-level complex text independently and proficiently.',
+    });
+    expect(context).toMatchObject({
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'include',
+      textAccessReason: 'standard-text-complexity-requirement',
+    });
+
+    const educatorOmit = Context.normalizeInstructionalContext({ adaptedTextPolicy: 'omit' }, {
+      standardsInput: 'CCSS.ELA-LITERACY.RI.5.10: Read grade-level complex text independently and proficiently.',
+    });
+    expect(educatorOmit).toMatchObject({
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'omit',
+      adaptedTextPolicySource: 'educator',
+    });
+  });
+
+  it('suppresses adaptation only for an explicit sourced prohibition', () => {
+    const sourced = Context.normalizeInstructionalContext({
+      adaptedTextPolicy: 'include',
+      standardsContext: {
+        instructionalConstraints: {
+          textAccessExpectation: 'adaptation-prohibited',
+          basis: 'Official secure-assessment administration rule',
+          sourced: true,
+        },
+      },
+    });
+    expect(sourced).toMatchObject({
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'prohibited',
+      adaptedTextPolicySource: 'standard',
+      textAccessReason: 'sourced-adaptation-prohibition',
+    });
+
+    const unsourced = Context.normalizeInstructionalContext({
+      standardsContext: {
+        instructionalConstraints: { textAccessExpectation: 'adaptation-prohibited' },
+      },
+    });
+    expect(unsourced.adaptedTextPolicy).toBe('include');
+
+    const unsourcedRawProhibition = Context.normalizeInstructionalContext({
+      adaptedTextPolicy: 'prohibited',
+      adaptedTextPolicySource: 'standard',
+      standardsContext: {
+        instructionalConstraints: { textAccessExpectation: 'adaptation-prohibited' },
+      },
+    });
+    expect(unsourcedRawProhibition).toMatchObject({
+      adaptedTextPolicy: 'omit',
+      adaptedTextPolicySource: 'educator',
+      textAccessReason: 'educator-choice',
+    });
+  });
 });

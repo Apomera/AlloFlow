@@ -83,8 +83,8 @@ function renderDictionaryPanel(dict, t) {
     target: '_blank',
     rel: 'noopener noreferrer',
     className: 'text-emerald-700 hover:text-emerald-800 underline decoration-emerald-300 underline-offset-2',
-    'aria-label': 'Open dictionary source for ' + (dict.word || 'this word')
-  }, 'Source: ' + (dict.source || 'Wiktionary')) : 'Source: ' + (dict.source || 'Dictionary')));
+    'aria-label': t('common.more_information') + ': ' + (dict.word || '')
+  }, t('common.resource') + ': ' + (dict.source || '')) : t('common.resource') + ': ' + (dict.source || '')));
   return React.createElement('div', {
     className: 'mt-3 pt-3 border-t border-emerald-100'
   }, kids);
@@ -814,6 +814,35 @@ async function regenerateSimplifiedWithRigor(deps) {
 function SimplifiedView(props) {
   // State reads
   var t = props.t;
+  var simplifiedAudioEditLabel = t('common.edit') || '';
+  var simplifiedAudioSaveLabel = t('common.save') || '';
+  var simplifiedAudioStopLabel = t('common.stop') || '';
+  var simplifiedAudioPlayLabel = t('common.play') || '';
+  var simplifiedAudioPauseLabel = t('common.pause') || '';
+  var simplifiedAudioLoadingLabel = t('common.loading') || '';
+  var simplifiedAudioGenerateLabel = t('common.generate') || '';
+  var simplifiedAudioRegenerateLabel = t('common.regenerate') || '';
+  var simplifiedAudioRemoveLabel = t('common.remove') || '';
+  var simplifiedAudioRecordLabel = t('word_sounds.voice_pack_tab_record') || t('common.microphone') || '';
+  var simplifiedAudioSavedLabel = t('common.success') || '';
+  var simplifiedAudioMissingLabel = t('simplified.missing_label') || '';
+  var simplifiedAudioErrorLabel = t('common.error') || '';
+  var simplifiedAudioStorageLimitLabel = t('errors.storage_full') || simplifiedAudioErrorLabel;
+  var simplifiedAudioSettingsChangedLabel = t('ui_common.unsaved_changes') || simplifiedAudioErrorLabel;
+  var simplifiedAudioCopiedLabel = t('common.copy') || '';
+  var simplifiedAudioDiagnosticsLabel = t('common.error_analysis') || simplifiedAudioErrorLabel;
+  var simplifiedActivityCompleteLabel = t('word_sounds.session_complete') || simplifiedAudioSavedLabel;
+  var simplifiedReadingSelectionLabel = t('common.selection') || t('common.resource') || '';
+  var simplifiedReadingThemeLabel = t('header.reading_theme_aria') || '';
+  var simplifiedTeacherRecordingLabel = t('word_sounds.voice_pack_kind_teacher') || simplifiedAudioRecordLabel;
+  var simplifiedStudentRecordingLabel = t('word_sounds.voice_pack_kind_student') || simplifiedAudioRecordLabel;
+  var simplifiedHumanRecordingLabel = t('word_sounds.real_recording') || simplifiedAudioRecordLabel;
+  var simplifiedHearPhonicsLabel = t('common.click_hear_phonics') || '';
+  var simplifiedDefineLabel = t('text_tools.define') || '';
+  var simplifiedReadSentenceLabel = t('common.read') || '';
+  var simplifiedGeneratingMoreLabel = t('word_sounds.generating_more') || '';
+  var simplifiedEnglishTranslationLabel = t('common.english_translation') || '';
+  var simplifiedStopAudioDownloadLabel = t('common.audio_stop') || simplifiedAudioStopLabel;
   var generatedContent = props.generatedContent;
   var inputText = props.inputText;
   var gradeLevel = props.gradeLevel;
@@ -1412,19 +1441,19 @@ function SimplifiedView(props) {
     }
     if (source === 'human-teacher') return {
       source: source,
-      label: 'Teacher recording',
+      label: simplifiedTeacherRecordingLabel,
       metadata: metadata,
       stale: false
     };
     if (source === 'human-student') return {
       source: source,
-      label: 'Student recording',
+      label: simplifiedStudentRecordingLabel,
       metadata: metadata,
       stale: false
     };
     if (source && String(source).indexOf('human') === 0) return {
       source: source,
-      label: 'Human recording',
+      label: simplifiedHumanRecordingLabel,
       metadata: metadata,
       stale: false
     };
@@ -1995,13 +2024,13 @@ function SimplifiedView(props) {
       onClick: handleToggleEditAudioPanel,
       "aria-expanded": editAudioOpen,
       "aria-controls": panelId,
-      "aria-label": `Edit audio. ${summary.saved} of ${summary.total} sentences saved.`,
+      "aria-label": `${simplifiedAudioEditLabel}. ${summary.saved}/${summary.total} ${simplifiedAudioSavedLabel.toLowerCase()}.`,
       className: "inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-white text-orange-800 border border-orange-200 hover:bg-orange-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 transition-colors"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 14
-    }), /*#__PURE__*/React.createElement("span", null, "Edit audio"), /*#__PURE__*/React.createElement("span", {
+    }), /*#__PURE__*/React.createElement("span", null, simplifiedAudioEditLabel), /*#__PURE__*/React.createElement("span", {
       className: "rounded-full bg-orange-100 text-orange-800 px-2 py-0.5 normal-case"
-    }, summary.saved, "/", summary.total, " saved", summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
+    }, summary.saved, "/", summary.total, " ", simplifiedAudioSavedLabel.toLowerCase(), summary.maxBytes ? ` · ${Math.round(summary.bytes / 104857.6) / 10}/${Math.round(summary.maxBytes / 104857.6) / 10} MB` : ''), editAudioOpen ? /*#__PURE__*/React.createElement(ChevronUp, {
       size: 14
     }) : /*#__PURE__*/React.createElement(ChevronDown, {
       size: 14
@@ -2012,18 +2041,18 @@ function SimplifiedView(props) {
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 10,
       className: "animate-spin motion-reduce:animate-none"
-    }), " Saving ", savingCount), captureErrorCount > 0 && /*#__PURE__*/React.createElement("span", {
+    }), " ", simplifiedAudioSaveLabel, " ", savingCount), captureErrorCount > 0 && /*#__PURE__*/React.createElement("span", {
       role: "alert",
       className: "inline-flex items-center gap-1 text-[11px] font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full px-2 py-1"
     }, /*#__PURE__*/React.createElement(AlertCircle, {
       size: 10
-    }), " ", captureErrorCount, " save ", captureErrorCount === 1 ? 'issue' : 'issues'), /*#__PURE__*/React.createElement("button", {
+    }), " ", captureErrorCount, " ", simplifiedAudioErrorLabel), /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: copyTtsDiagnostics,
-      "aria-label": "Copy read-aloud diagnostics to clipboard",
+      "aria-label": simplifiedAudioCopiedLabel,
       title: "Copies a technical trace of recent read-aloud attempts — paste it into a bug report if audio gets stuck.",
       className: "inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 rounded-full px-2 py-1 hover:border-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
-    }, ttsDiagCopied ? '✓ Copied' : '🩺 Diagnostics'), /*#__PURE__*/React.createElement("label", {
+    }, ttsDiagCopied ? '✓ ' + simplifiedAudioCopiedLabel : '🩺 ' + simplifiedAudioDiagnosticsLabel), /*#__PURE__*/React.createElement("label", {
       className: "inline-flex items-center gap-1.5 text-[11px] text-slate-700 font-semibold cursor-pointer"
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
@@ -2032,11 +2061,11 @@ function SimplifiedView(props) {
         setSaveTtsAsPlayedEnabled(event.target.checked);
       },
       className: "accent-orange-600",
-      "aria-label": "Save played TTS into this resource"
-    }), /*#__PURE__*/React.createElement("span", null, "Save played TTS")))), editAudioOpen && /*#__PURE__*/React.createElement("div", {
+      "aria-label": simplifiedAudioSaveLabel
+    }), /*#__PURE__*/React.createElement("span", null, simplifiedAudioSaveLabel)))), editAudioOpen && /*#__PURE__*/React.createElement("div", {
       id: panelId,
       role: "region",
-      "aria-label": "Sentence audio editor",
+      "aria-label": simplifiedAudioEditLabel,
       className: "border-t border-orange-100 bg-white p-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-start gap-2 mb-3 text-xs text-slate-600"
@@ -2059,7 +2088,7 @@ function SimplifiedView(props) {
       var isSaved = hasStoredReadAloudAudio(sentence, identityOptions);
       var provenance = isSaved ? getReadAloudAudioProvenance(sentence, identityOptions) : {
         source: null,
-        label: 'No saved source',
+        label: simplifiedAudioMissingLabel,
         stale: false
       };
       var captureIssue = captureAudioErrors[audioKey];
@@ -2072,7 +2101,7 @@ function SimplifiedView(props) {
       var isRecording = editAudioRecordingKey === key;
       var isRecordingSave = editAudioRecordingSaveKey === key;
       var isRemoving = removeAudioKey === key;
-      var statusLabel = isMicRequest ? 'Opening microphone' : isRecording ? 'Recording' : isRecordingSave ? 'Saving recording' : isGenerating ? isSaved ? 'Regenerating' : 'Generating' : isRemoving ? 'Removing' : isSaving ? 'Caching played TTS' : captureIssue ? captureIssue.status === 'limit' ? 'Storage limit' : 'Save failed' : playbackIssue ? 'Saved · unreadable' : provenance.stale ? 'Saved · settings changed' : isSaved ? 'Saved' : 'Missing audio';
+      var statusLabel = isMicRequest ? simplifiedAudioEditLabel + ': ' + simplifiedAudioRecordLabel : isRecording ? simplifiedAudioRecordLabel : isRecordingSave ? simplifiedAudioSaveLabel : isGenerating ? isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel : isRemoving ? simplifiedAudioRemoveLabel : isSaving ? simplifiedAudioSaveLabel : captureIssue ? captureIssue.status === 'limit' ? simplifiedAudioStorageLimitLabel : simplifiedAudioErrorLabel : playbackIssue ? simplifiedAudioSavedLabel + ' · ' + simplifiedAudioErrorLabel : provenance.stale ? simplifiedAudioSavedLabel + ' · ' + simplifiedAudioSettingsChangedLabel : isSaved ? simplifiedAudioSavedLabel : simplifiedAudioMissingLabel;
       var statusClass = isRecording ? 'bg-red-50 text-red-700 border-red-200' : isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : captureIssue ? captureIssue.status === 'limit' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-red-50 text-red-700 border-red-200' : playbackIssue ? 'bg-red-50 text-red-700 border-red-200' : provenance.stale ? 'bg-amber-50 text-amber-800 border-amber-200' : isSaved ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200';
       var controlsBlocked = isSaving || isGenerating || isRemoving || ttsPrepState.busy;
       var recordDisabled = !isRecording && (anyRecordingWork || !!regenAudioKey || !!removeAudioKey || isSaving || ttsPrepState.busy);
@@ -2092,7 +2121,7 @@ function SimplifiedView(props) {
         className: "text-sm font-medium leading-relaxed text-slate-800"
       }, sentence), /*#__PURE__*/React.createElement("div", {
         className: "mt-1.5 flex items-center gap-1.5 flex-wrap",
-        "aria-label": `Sentence ${sentenceNumber} audio status: ${statusLabel}. Source: ${provenance.label}.`
+        "aria-label": `${simplifiedAudioEditLabel} ${sentenceNumber}: ${statusLabel}. ${provenance.label}.`
       }, /*#__PURE__*/React.createElement("span", {
         className: `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${statusClass}`
       }, isMicRequest || isRecordingSave || isGenerating || isRemoving || isSaving || isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -2110,7 +2139,7 @@ function SimplifiedView(props) {
         className: "text-[10px] font-semibold text-slate-500"
       }, provenance.label)))), /*#__PURE__*/React.createElement("div", {
         role: "group",
-        "aria-label": `Audio actions for sentence ${sentenceNumber}`,
+        "aria-label": `${simplifiedAudioEditLabel} ${sentenceNumber}`,
         className: "mt-2.5 flex items-center gap-1.5 flex-wrap"
       }, /*#__PURE__*/React.createElement("button", {
         type: "button",
@@ -2119,8 +2148,8 @@ function SimplifiedView(props) {
         },
         disabled: !isSaved || isLoading || controlsBlocked || anyRecordingWork || !!editAudioLoadingKey && !isLoading,
         "aria-pressed": isPlayingSentence,
-        "aria-label": `${isPlayingSentence ? 'Pause' : 'Play'} audio for sentence ${sentenceNumber}`,
-        title: !isSaved ? 'Generate or record audio first' : isPlayingSentence ? 'Pause sentence audio' : 'Play sentence audio',
+        "aria-label": `${isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel} ${sentenceNumber}`,
+        title: !isSaved ? simplifiedAudioGenerateLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel,
         className: `${actionClass} bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50`
       }, isLoading ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
@@ -2129,29 +2158,29 @@ function SimplifiedView(props) {
         size: 12
       }) : /*#__PURE__*/React.createElement(Play, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isLoading ? 'Loading' : isPlayingSentence ? 'Pause' : 'Play')), /*#__PURE__*/React.createElement("button", {
+      }), /*#__PURE__*/React.createElement("span", null, isLoading ? simplifiedAudioLoadingLabel : isPlayingSentence ? simplifiedAudioPauseLabel : simplifiedAudioPlayLabel)), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
           handleRegenerateReadAloudSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: !!regenAudioKey || isSaving || isRemoving || anyRecordingWork || ttsPrepState.busy,
-        "aria-label": `${needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate'} audio for sentence ${sentenceNumber}`,
-        title: needsRebuild ? 'Rebuild this clip with the currently selected voice, speed, and language.' : isSaved ? 'Replace this saved clip with current voice settings.' : 'Generate audio with current voice settings.',
+        "aria-label": `${needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel} ${sentenceNumber}`,
+        title: isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel,
         className: `${actionClass} bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50`
       }, isGenerating ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
         className: "animate-spin motion-reduce:animate-none"
       }) : /*#__PURE__*/React.createElement(Volume2, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? 'Regenerating' : 'Generating' : needsRebuild ? 'Rebuild' : isSaved ? 'Regenerate' : 'Generate')), /*#__PURE__*/React.createElement("button", {
+      }), /*#__PURE__*/React.createElement("span", null, isGenerating ? isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel : needsRebuild ? simplifiedAudioRegenerateLabel : isSaved ? simplifiedAudioRegenerateLabel : simplifiedAudioGenerateLabel)), /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
           handleRecordEditAudioSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: recordDisabled,
         "aria-pressed": isRecording,
-        "aria-label": `${isRecording ? 'Stop recording' : 'Record teacher audio'} for sentence ${sentenceNumber}`,
-        title: isRecording ? 'Stop and save this recording' : isSaved ? 'Record a teacher voice replacement' : 'Record teacher audio',
+        "aria-label": `${isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel} ${sentenceNumber}`,
+        title: isRecording ? simplifiedAudioStopLabel : simplifiedAudioRecordLabel,
         className: `${actionClass} ${isRecording ? 'bg-red-600 text-white border-red-700 hover:bg-red-700' : 'bg-white text-fuchsia-700 border-fuchsia-200 hover:bg-fuchsia-50'}`
       }, isMicRequest || isRecordingSave ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
@@ -2160,20 +2189,20 @@ function SimplifiedView(props) {
         size: 12
       }) : /*#__PURE__*/React.createElement(Mic, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isMicRequest ? 'Opening mic' : isRecording ? 'Stop' : isRecordingSave ? 'Saving' : 'Record')), isSaved && /*#__PURE__*/React.createElement("button", {
+      }), /*#__PURE__*/React.createElement("span", null, isMicRequest ? simplifiedAudioRecordLabel : isRecording ? simplifiedAudioStopLabel : isRecordingSave ? simplifiedAudioSaveLabel : simplifiedAudioRecordLabel)), isSaved && /*#__PURE__*/React.createElement("button", {
         type: "button",
         onClick: function () {
           handleRemoveReadAloudSentence(sentence, key, sentenceNumber, identityOptions);
         },
         disabled: !!removeAudioKey || isSaving || !!regenAudioKey || anyRecordingWork || ttsPrepState.busy,
-        "aria-label": `Remove saved audio for sentence ${sentenceNumber}`,
+        "aria-label": `${simplifiedAudioRemoveLabel} ${sentenceNumber}`,
         className: `${actionClass} bg-white text-rose-700 border-rose-200 hover:bg-rose-50`
       }, isRemoving ? /*#__PURE__*/React.createElement(RefreshCw, {
         size: 12,
         className: "animate-spin motion-reduce:animate-none"
       }) : /*#__PURE__*/React.createElement(Trash2, {
         size: 12
-      }), /*#__PURE__*/React.createElement("span", null, isRemoving ? 'Removing' : 'Remove'))));
+      }), /*#__PURE__*/React.createElement("span", null, isRemoving ? simplifiedAudioRemoveLabel : simplifiedAudioRemoveLabel))));
     }))));
   };
   var instructionalTextProfile = getSimplifiedInstructionalText(generatedContent);
@@ -2535,7 +2564,7 @@ function SimplifiedView(props) {
     size: 24,
     className: "text-yellow-500 fill-current",
     "aria-hidden": "true"
-  }), " Activity Complete!")), !isZenMode && /*#__PURE__*/React.createElement("div", {
+  }), " ", simplifiedActivityCompleteLabel)), !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-4 rounded-lg border border-green-100 mb-6"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-green-800"
@@ -2552,7 +2581,7 @@ function SimplifiedView(props) {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("h4", {
       className: "font-comic font-bold text-xl text-orange-800"
-    }, isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : sourceTopic || "Reading Selection"), displayLang !== 'English' && /*#__PURE__*/React.createElement("span", {
+    }, isTeacherMode ? `${t('simplified.target_level_label')}: ${displayGrade}` : sourceTopic || simplifiedReadingSelectionLabel), displayLang !== 'English' && /*#__PURE__*/React.createElement("span", {
       className: "bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-bold border border-blue-200"
     }, displayLang), displayInterests.length > 0 && /*#__PURE__*/React.createElement("span", {
       className: "bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-bold border border-red-200 flex items-center gap-1"
@@ -2733,27 +2762,27 @@ function SimplifiedView(props) {
   }), isAnalyzingPos ? t('simplified.loading_reader') : t('simplified.immersive_reader')), /*#__PURE__*/React.createElement("select", {
     value: readingTheme,
     onChange: e => setReadingTheme(e.target.value),
-    "aria-label": "Reading theme",
+    "aria-label": simplifiedReadingThemeLabel,
     className: `px-2 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${readingTheme === 'default' ? 'border-slate-200 bg-white text-slate-600' : 'border-indigo-300 bg-indigo-50 text-indigo-700'}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "default"
-  }, "🎨 Default (App Theme)"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_default')), /*#__PURE__*/React.createElement("option", {
     value: "warm"
-  }, "☀️ Warm Cream"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_warm')), /*#__PURE__*/React.createElement("option", {
     value: "sepia"
-  }, "📜 Sepia"), theme !== 'dark' && /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_sepia')), theme !== 'dark' && /*#__PURE__*/React.createElement("option", {
     value: "dark"
-  }, "🌙 Dark Mode"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_dark')), /*#__PURE__*/React.createElement("option", {
     value: "highContrast"
-  }, "◼️ High Contrast"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_contrast')), /*#__PURE__*/React.createElement("option", {
     value: "blue"
-  }, "💧 Blue Wash"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_blue')), /*#__PURE__*/React.createElement("option", {
     value: "green"
-  }, "🌿 Green Tint"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_green')), /*#__PURE__*/React.createElement("option", {
     value: "rose"
-  }, "🌸 Rose"), /*#__PURE__*/React.createElement("option", {
+  }, t('header.reading_theme_rose')), /*#__PURE__*/React.createElement("option", {
     value: "dyslexia"
-  }, "🔤 Easy Read")), isTeacherMode && /*#__PURE__*/React.createElement("div", {
+  }, t('header.reading_theme_easy_read'))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center mr-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2827,15 +2856,15 @@ function SimplifiedView(props) {
       }
       handleDownloadAudio(generatedContent?.data, `leveled-text-${gradeLevel}`, 'dl-simplified-main');
     },
-    title: isSimplifiedAudioDownloading ? 'Stop audio download' : t('simplified.tip_download_audio') || t('common.download_audio'),
-    "aria-label": isSimplifiedAudioDownloading ? 'Stop audio download' : t('common.download_audio') || 'Download audio',
+    title: isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('simplified.tip_download_audio') || t('common.download_audio'),
+    "aria-label": isSimplifiedAudioDownloading ? simplifiedStopAudioDownloadLabel : t('common.download_audio'),
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
     "data-help-key": "simplified_download_audio"
   }, isSimplifiedAudioDownloading ? /*#__PURE__*/React.createElement(StopCircle, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Download, {
     size: 14
-  }), isSimplifiedAudioDownloading ? t('common.stop') || 'Stop download' : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
+  }), isSimplifiedAudioDownloading ? t('common.stop') || simplifiedAudioStopLabel : t('common.download_audio')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: function () {
       if (ttsPrepState.busy) {
@@ -2845,15 +2874,15 @@ function SimplifiedView(props) {
       handlePrepareReadAloudAudio();
     },
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-indigo-600 hover:bg-indigo-50 border border-slate-400 transition-all shadow-md whitespace-nowrap",
-    title: ttsPrepState.busy ? t('common.stop') || 'Stop' : t('immersive.prepare_all') || 'Save TTS',
-    "aria-label": ttsPrepState.busy ? t('common.stop') || 'Stop saving TTS' : t('immersive.prepare_all') || 'Save TTS',
+    title: ttsPrepState.busy ? t('common.stop') || simplifiedAudioStopLabel : t('immersive.prepare_all') || simplifiedAudioSaveLabel,
+    "aria-label": ttsPrepState.busy ? t('common.stop') || simplifiedAudioStopLabel : t('immersive.prepare_all') || simplifiedAudioSaveLabel,
     "data-help-key": "simplified_save_tts"
   }, ttsPrepState.busy ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(Volume2, {
     size: 14
-  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✕` : 'Save TTS'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+  }), ttsPrepState.busy ? `${ttsPrepState.done}/${ttsPrepState.total || '...'} ✓` : simplifiedAudioSaveLabel))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.toggle_edit_text'),
     onClick: handleToggleIsEditingLeveledText,
@@ -3581,7 +3610,7 @@ function SimplifiedView(props) {
             },
             tabIndex: "0",
             role: "button",
-            "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${cleanWord}` : `Define ${cleanWord}`,
+            "aria-label": interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${cleanWord}` : `${simplifiedDefineLabel} ${cleanWord}`,
             className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 inline-block border-b border-transparent hover:border-emerald-200 focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1`,
             title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
           }, cleanWord);
@@ -3612,7 +3641,7 @@ function SimplifiedView(props) {
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
             role: interactionMode !== 'cloze' ? "button" : "text",
             "aria-current": isActive ? "true" : undefined,
-            "aria-label": `Read sentence: ${cleanText}`,
+            "aria-label": `${simplifiedReadSentenceLabel}: ${cleanText}`,
             className: `transition-colors duration-300 rounded px-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100 focus:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-200' : ''} ${isActive ? 'bg-yellow-200 text-black shadow-sm' : ''} ${headerClass}`,
             title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
           }, formatInteractiveText(cleanText, interactionMode === 'cloze'), " ");
@@ -3657,7 +3686,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
-  }), " Generating more...")) : /*#__PURE__*/React.createElement("div", {
+  }), " ", simplifiedGeneratingMoreLabel)) : /*#__PURE__*/React.createElement("div", {
     className: `w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`,
     style: {
       maxWidth: 'min(72ch, 100%)',
@@ -3899,7 +3928,7 @@ function SimplifiedView(props) {
               },
               tabIndex: "0",
               role: "button",
-              "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${displayPart}` : `Define ${displayPart}`,
+              "aria-label": interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${displayPart}` : `${simplifiedDefineLabel} ${displayPart}`,
               className: `cursor-help hover:bg-emerald-100 text-slate-800 hover:text-emerald-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-emerald-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader ? 'font-bold text-orange-900' : ''}`,
               title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
             }, displayPart);
@@ -3928,7 +3957,7 @@ function SimplifiedView(props) {
               tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
               role: interactionMode !== 'cloze' ? "button" : "text",
               "aria-current": isActive ? "true" : undefined,
-              "aria-label": `Read sentence: ${cleanText}`,
+              "aria-label": `${simplifiedReadSentenceLabel}: ${cleanText}`,
               className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : isLineFocusMode ? 'text-slate-100' : 'text-slate-800'} ${headerClass}`,
               title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
             }, formatInteractiveText(cleanText, interactionMode === 'cloze'), " ");
@@ -3946,7 +3975,7 @@ function SimplifiedView(props) {
         className: "mt-6 pl-4 border-l-4 border-indigo-300 bg-slate-50 p-4 rounded-r-xl"
       }, /*#__PURE__*/React.createElement("div", {
         className: "text-[11px] font-black text-indigo-500 uppercase tracking-widest mb-2 border-b border-indigo-100 pb-1 inline-block"
-      }, "English Translation"), /*#__PURE__*/React.createElement("div", {
+      }, simplifiedEnglishTranslationLabel), /*#__PURE__*/React.createElement("div", {
         className: "text-slate-700 leading-relaxed"
       }, _engParas.map((para, pIdx) => {
         if (_isTable(para)) {
@@ -4031,7 +4060,7 @@ function SimplifiedView(props) {
               },
               tabIndex: "0",
               role: "button",
-              "aria-label": interactionMode === 'phonics' ? `Hear phonics for ${displayPart3}` : `Define ${displayPart3}`,
+              "aria-label": interactionMode === 'phonics' ? `${simplifiedHearPhonicsLabel} ${displayPart3}` : `${simplifiedDefineLabel} ${displayPart3}`,
               className: `cursor-help hover:bg-indigo-100 text-slate-700 hover:text-indigo-800 rounded px-0.5 transition-colors duration-200 border-b border-transparent hover:border-indigo-200 inline-block focus:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 ${isHeader3 ? 'font-bold text-indigo-900' : ''}`,
               title: interactionMode === 'phonics' ? t('text_tools.click_to_phonics') : t('text_tools.click_to_define')
             }, displayPart3);
@@ -4065,7 +4094,7 @@ function SimplifiedView(props) {
             tabIndex: interactionMode !== 'cloze' ? "0" : "-1",
             role: interactionMode !== 'cloze' ? "button" : "text",
             "aria-current": isActive ? "true" : undefined,
-            "aria-label": `Read sentence: ${cleanText}`,
+            "aria-label": `${simplifiedReadSentenceLabel}: ${cleanText}`,
             className: `transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone ${interactionMode !== 'cloze' ? 'cursor-pointer hover:bg-indigo-100/20' : ''} ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'text-slate-700'} ${headerClass}`,
             title: interactionMode !== 'cloze' ? t('common.click_read_from_here') : ""
           }, formatInteractiveText(cleanText, interactionMode === 'cloze'), " ");
@@ -4079,7 +4108,7 @@ function SimplifiedView(props) {
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
-  }), " Generating more..."))));
+  }), " ", simplifiedGeneratingMoreLabel))));
 }
 SimplifiedView.resolveReferences = resolveSimplifiedReferences;
 SimplifiedView.hasCitationMarkers = simplifiedBodyHasCitationMarkers;

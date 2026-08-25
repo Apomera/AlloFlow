@@ -68,6 +68,6 @@ describe('EPPP final feedback and distractor cleanup wave 49', () => {
     const i48 = builder.indexOf('repair_eppp_native_quality_wave_48.cjs');
     const i49 = builder.indexOf('repair_eppp_native_quality_wave_49.cjs', i48);
     expect(i49).toBeGreaterThan(i48);
-    expect(builder).toContain("existingBank.some((item) => item.challengeEnhancementWave === 'eppp-challenge-enhancement-wave-51')");
+    expect(builder).toContain("existingBank.some((item) => item.applicationRewriteWave === 'eppp-application-rewrite-wave-53')");
   });
 });

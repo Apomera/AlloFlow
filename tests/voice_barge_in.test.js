@@ -242,6 +242,68 @@ it('cuts the reply when the user actually talks over it', async () => {
     } finally { h.restore(); }
   });
 
+  it('lets plain Space stop AlloBot audio and immediately return the microphone', async () => {
+    const h = harness();
+    try {
+      const loop = AC.createVoiceLoop(() => ({ addToast: vi.fn(), setVoiceActive: vi.fn() }));
+      loop.start();
+      const rec = h.instances[0];
+      rec.start.mockClear();
+      const stopExternal = vi.fn();
+      const lease = loop.beginExternalSpeech(stopExternal, { source: 'read-this-page' });
+      await flush();
+      expect(lease.start()).toBe(true);
+
+      const space = new KeyboardEvent('keydown', {
+        key: ' ',
+        code: 'Space',
+        bubbles: true,
+        cancelable: true,
+      });
+      window.dispatchEvent(space);
+
+      expect(space.defaultPrevented, 'Space was claimed only for the active audio turn').toBe(true);
+      expect(stopExternal).toHaveBeenCalledWith('keyboard-skip');
+      expect(loop.getState().speaking).toBe(false);
+      expect(rec.start, 'recognition resumed as soon as audio stopped').toHaveBeenCalled();
+      loop.stop();
+    } finally { h.restore(); }
+  });
+
+  it('does not steal Space from editable or interactive controls', async () => {
+    const h = harness();
+    const input = document.createElement('textarea');
+    const button = document.createElement('button');
+    document.body.append(input, button);
+    try {
+      const loop = AC.createVoiceLoop(() => ({ addToast: vi.fn(), setVoiceActive: vi.fn() }));
+      loop.start();
+      const stopExternal = vi.fn();
+      loop.beginExternalSpeech(stopExternal, { source: 'read-this-page' });
+      await flush();
+
+      for (const target of [input, button]) {
+        const space = new KeyboardEvent('keydown', {
+          key: ' ',
+          code: 'Space',
+          bubbles: true,
+          cancelable: true,
+        });
+        target.dispatchEvent(space);
+        expect(space.defaultPrevented, target.tagName).toBe(false);
+      }
+      expect(stopExternal).not.toHaveBeenCalled();
+
+      expect(loop.stopSpeaking('button-skip')).toBe(true);
+      expect(stopExternal).toHaveBeenCalledWith('button-skip');
+      loop.stop();
+    } finally {
+      input.remove();
+      button.remove();
+      h.restore();
+    }
+  });
+
   it('reports external narration as preparing until the surface confirms playback', async () => {
     const h = harness();
     const updates = [];

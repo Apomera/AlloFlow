@@ -315,7 +315,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(latest.beehive.queen.resultRecorded).toBe(true);
     expect(latest.beehive.queen.career.matches).toBe(1);
     expect(latest.beehive.queen.career.wins).toBe(1);
-    expect(host.textContent).toContain('1 RTS win');
+    expect(host.textContent).toContain('1 network win');
   });
 
   it('draws the live TAKE OFF - REACH DCA - FIND QUEEN route ribbon', async () => {

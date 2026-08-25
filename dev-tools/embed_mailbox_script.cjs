@@ -28,7 +28,26 @@ const moduleSource = buildMailboxScriptSourceModule(source);
 function writeIfChanged(file, content) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
   if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === content) return false;
-  fs.writeFileSync(file, content, 'utf8');
+  const nextFile = file + '.' + process.pid + '.next';
+  const previousFile = file + '.' + process.pid + '.previous';
+  fs.writeFileSync(nextFile, content, 'utf8');
+  let movedPrevious = false;
+  try {
+    if (fs.existsSync(file)) {
+      fs.renameSync(file, previousFile);
+      movedPrevious = true;
+    }
+    fs.renameSync(nextFile, file);
+    if (movedPrevious) fs.rmSync(previousFile, { force: true });
+  } catch (error) {
+    try {
+      if (!fs.existsSync(file) && movedPrevious && fs.existsSync(previousFile)) fs.renameSync(previousFile, file);
+      if (fs.existsSync(nextFile)) fs.rmSync(nextFile, { force: true });
+    } catch (restoreError) {
+      error.message += `; restore failed: ${restoreError.message}`;
+    }
+    throw error;
+  }
   return true;
 }
 

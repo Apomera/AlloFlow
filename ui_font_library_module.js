@@ -2,7 +2,8 @@
  * AlloFlow — UI Font Library Module
  *
  * Holds the FONT_OPTIONS catalog and a self-contained
- * CSS injection IIFE that loads the Google Fonts <link> and defines the
+ * CSS injection IIFE that defines the font utility classes and loads an
+ * optional web font only when the user selects it, plus the
  * `.font-<id>` utility classes used throughout the app, plus responsive
  * and accessibility fixes that ride along.
  *
@@ -73,13 +74,22 @@ const FONT_OPTIONS = [
 if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
 (function injectFontStyles() {
     if (document.getElementById('alloflow-ui-font-library-css')) return;
-    const fonts = FONT_OPTIONS.filter(f => f.googleFont).map(f => f.googleFont);
-    if (fonts.length > 0) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = `https://fonts.googleapis.com/css2?family=${fonts.join('&family=')}&display=swap`;
-        document.head.appendChild(link);
-    }
+    const fontLoads = Object.create(null);
+    window.__alloEnsureUIFont = function (fontId) {
+        const option = FONT_OPTIONS.find(f => f.id === fontId);
+        if (!option || !option.googleFont || option.id === 'inter') return Promise.resolve(true);
+        if (fontLoads[option.id]) return fontLoads[option.id];
+        fontLoads[option.id] = new Promise(resolve => {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.dataset.alloflowUiFont = option.id;
+            link.href = `https://fonts.googleapis.com/css2?family=${option.googleFont}&display=swap`;
+            link.onload = () => resolve(true);
+            link.onerror = () => { delete fontLoads[option.id]; resolve(false); };
+            document.head.appendChild(link);
+        });
+        return fontLoads[option.id];
+    };
     const style = document.createElement('style');
     style.id = 'alloflow-ui-font-library-css';
     style.textContent = `
@@ -414,6 +424,9 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     }
   `;
     document.head.appendChild(style);
+    // A persisted custom choice represents explicit user intent, so restore
+    // that one family now. The default path never downloads the full catalog.
+    try { window.__alloEnsureUIFont(localStorage.getItem('allo_selected_font') || 'default'); } catch (_) {}
     const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
     disabledEls.forEach(el => {
         el.removeAttribute('disabled');

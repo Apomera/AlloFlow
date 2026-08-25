@@ -242,7 +242,7 @@ test.describe('Nuclear Lab — the sticky index must not eat the screen', () => 
 
 test.describe('Nuclear Lab — knowing where you are', () => {
   // The scroll-spy is written imperatively, outside React, so that crossing a
-  // section boundary does not re-render nineteen sections. That means jsdom
+  // section boundary does not re-render twenty-one sections. That means jsdom
   // never sees it (no effects, no IntersectionObserver, no layout) and this is
   // the only place it can be checked at all.
   test('marks the section being read, and only one', async ({ page }) => {
@@ -291,14 +291,17 @@ test.describe('Nuclear Lab — knowing where you are', () => {
 
   test('a route can be walked from the sections themselves', async ({ page }) => {
     await mount2d(page, { _nuclearLab: { nkPath: 'know', nkOpen: false } });
-    const foot = page.locator('#nksec-detect').getByText(/STEP 1 OF 3/);
+    const foot = page.locator('#nksec-detect').getByText(/STEP 1 OF 4/);
     await expect(foot).toBeVisible();
     // Follow the route forward without touching the index.
     await page.locator('#nksec-detect').getByRole('button', { name: /On to step 2/ }).click();
     await page.waitForTimeout(600);
-    await expect(page.locator('#nksec-dating').getByText(/STEP 2 OF 3/)).toBeVisible();
+    await expect(page.locator('#nksec-dating').getByText(/STEP 2 OF 4/)).toBeVisible();
     await page.locator('#nksec-dating').getByRole('button', { name: /On to step 3/ }).click();
     await page.waitForTimeout(600);
-    await expect(page.locator('#nksec-chain').getByText(/End of this route/)).toBeVisible();
+    await expect(page.locator('#nksec-chain').getByText(/STEP 3 OF 4/)).toBeVisible();
+    await page.locator('#nksec-chain').getByRole('button', { name: /On to step 4/ }).click();
+    await page.waitForTimeout(600);
+    await expect(page.locator('#nksec-evidence').getByText(/End of this route/)).toBeVisible();
   });
 });

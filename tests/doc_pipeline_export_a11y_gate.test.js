@@ -246,6 +246,51 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
     expect(html).toContain('html[data-alloflow-theme="hc"] .alloflow-section-marker span:last-child');
   });
 
+  it('keeps Dark HTML/PDF concept sorts legible and preserves the full image frame', () => {
+    const darkPipeline = window.AlloModules.createDocPipeline({
+      callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document',
+      state: { exportTheme: 'dark', currentUiLanguage: 'English' },
+    });
+    const darkHtml = darkPipeline.generateFullPackHTML([{
+      type: 'concept-sort', id: 'cs-dark', title: 'Animal Sort',
+      data: {
+        categories: [{ id: 'mammals', label: 'Mammals' }],
+        items: [{ id: 'otter', categoryId: 'mammals', content: 'River otter', image: 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' }],
+      },
+    }], 'Animals', false, {}, { includeTeacherKey: true, conceptSortInteractive: true });
+
+    const dom = new JSDOM(darkHtml, { runScripts: 'outside-only', pretendToBeVisual: true });
+    const doc = dom.window.document;
+    const root = doc.documentElement;
+    const title = doc.querySelector('.export-title');
+    const meta = doc.querySelector('.export-meta');
+    const itemText = doc.querySelector('.alloflow-cs-item-text');
+    const categoryLabel = doc.querySelector('.alloflow-cs-category-label');
+    const answerItems = doc.querySelector('.alloflow-cs-answer-items');
+    const frame = doc.querySelector('.alloflow-cs-image-frame');
+    const image = doc.querySelector('.alloflow-cs-image');
+
+    expect(root.getAttribute('data-alloflow-base-theme')).toBe('dark');
+    expect(root.getAttribute('data-alloflow-theme')).toBe('dark');
+    for (const mode of [null, 'dark', 'sepia', 'hc']) {
+      if (mode) root.setAttribute('data-alloflow-theme', mode);
+      else root.removeAttribute('data-alloflow-theme');
+      expect(dom.window.getComputedStyle(title).color, `title in ${mode || 'baseline'} mode`).toBe('rgb(255, 255, 255)');
+      expect(dom.window.getComputedStyle(meta).color, `title metadata in ${mode || 'baseline'} mode`).toBe('rgb(255, 255, 255)');
+    }
+    root.setAttribute('data-alloflow-theme', 'dark');
+    expect(dom.window.getComputedStyle(itemText).color).toBe('rgb(255, 255, 255)');
+    expect(dom.window.getComputedStyle(categoryLabel).color).toBe('rgb(255, 255, 255)');
+    expect(dom.window.getComputedStyle(answerItems).color).toBe('rgb(255, 255, 255)');
+    expect(dom.window.getComputedStyle(frame).boxSizing).toBe('border-box');
+    expect(dom.window.getComputedStyle(frame).paddingTop).toBe('4px');
+    expect(dom.window.getComputedStyle(image).borderTopWidth).toBe('0px');
+    expect(darkHtml).toContain('html[data-alloflow-base-theme="dark"] .alloflow-cs-image-frame');
+    expect(darkHtml).toContain('print-color-adjust: exact !important');
+  });
+
   it('keeps default downloaded HTML useful offline and printable for long sections', () => {
     expect(html).not.toContain('fonts.googleapis.com/css2?family=Inter');
     expect(html).toContain('.section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto;');
@@ -279,6 +324,128 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
     expect(vennHtml).toContain('class="venn-visual"');
     expect(vennHtml).toContain('font-size: 16px');
     expect(vennHtml).toContain('data-diagram-auto-open="large-text"');
+    expect(vennHtml).toContain('transform: translateX(-50%) scale(0.82)');
+    expect(vennHtml).toContain('html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc');
+    expect(vennHtml).toContain('class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a');
+    expect(vennHtml).toContain('class="diagram-text-fallback-body"');
+  });
+
+  it('exports Venn diagrams as completed references, accessible sorting activities, or both', () => {
+    const venn = {
+      type: 'outline', id: 'venn-modes', title: 'Compare',
+      data: {
+        main: 'Mammals and Reptiles', structureType: 'Venn Diagram',
+        branches: [
+          { title: 'Mammals', items: ['Fur', 'Milk'] },
+          { title: 'Reptiles', items: ['Scales', 'Cold-blooded'] },
+          { title: 'Both', items: ['Vertebrates', 'Breathe air'] },
+        ],
+      },
+    };
+
+    const completed = pipeline.generateResourceHTML(venn, false, {}, { vennExportMode: 'completed' });
+    expect(completed).toContain('class="venn-visual"');
+    expect(completed).not.toContain('class="alloflow-venn-activity"');
+
+    const activity = pipeline.generateResourceHTML(venn, false, {}, { vennExportMode: 'activity' });
+    const activityDoc = new JSDOM(activity).window.document;
+    expect(activityDoc.querySelector('.alloflow-venn-activity')).toBeTruthy();
+    expect(activityDoc.querySelector('.alloflow-venn-check-button')).toBeTruthy();
+    expect(activityDoc.querySelectorAll('[data-answer-zone]')).toHaveLength(6);
+    expect(activity).toContain('alloflow-venn-print-circles');
+    expect(activity).toContain('Cut out the cards');
+    expect(activity).not.toContain('class="venn-visual"');
+
+    const both = pipeline.generateResourceHTML(venn, false, {}, { vennExportMode: 'both' });
+    expect(both).toContain('class="alloflow-venn-activity"');
+    expect(both).toContain('Completed reference / answer key');
+    expect(both).toContain('class="venn-visual"');
+    expect(both).toContain('page-break-before:always');
+  });
+
+  it('runs the standalone Venn sorter with select, place, check, and reset controls', async () => {
+    const standalone = pipeline.generateFullPackHTML([{
+      type: 'outline', id: 'venn-runtime', title: 'Compare',
+      data: {
+        main: 'Compare', structureType: 'Venn Diagram',
+        branches: [
+          { title: 'A', items: ['A only'] },
+          { title: 'B', items: ['B only'] },
+          { title: 'Both', items: ['Shared'] },
+        ],
+      },
+    }], 'Compare', false, {}, { includeOutline: true, vennExportMode: 'activity' });
+    const dom = new JSDOM(standalone, { runScripts: 'dangerously', pretendToBeVisual: true });
+    await waitForExportRuntime(dom.window);
+    const doc = dom.window.document;
+    const card = doc.querySelector('.alloflow-venn-card');
+    const cardButton = card.querySelector('.alloflow-venn-card-button');
+    const answer = card.getAttribute('data-answer-zone');
+    const placeButton = doc.querySelector(`[data-venn-place-zone="${answer}"]`);
+
+    cardButton.click();
+    expect(card.classList.contains('is-selected')).toBe(true);
+    expect(cardButton.getAttribute('aria-pressed')).toBe('true');
+    expect(placeButton.disabled).toBe(false);
+    placeButton.click();
+    expect(card.parentElement.getAttribute('data-venn-zone-target')).toBe(answer);
+
+    doc.querySelector('.alloflow-venn-check-button').click();
+    expect(card.classList.contains('is-correct')).toBe(true);
+    expect(doc.querySelector('.alloflow-venn-status').textContent).toContain('1 of 3 correct');
+
+    doc.querySelector('.alloflow-venn-reset-button').click();
+    expect(card.parentElement.hasAttribute('data-venn-bank')).toBe(true);
+    expect(doc.querySelector('.alloflow-venn-status').textContent).toBe('Sort reset.');
+    dom.window.close();
+  });
+
+  it('keeps the completed Venn canvas and text fallback legible in a Dark export', () => {
+    const darkPipeline = window.AlloModules.createDocPipeline({
+      callGemini: async () => '{}', callGeminiVision: async () => '{}', callImagen: async () => null,
+      addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+      updateExportPreview: () => {}, getDefaultTitle: () => 'Document',
+      state: { exportTheme: 'dark', currentUiLanguage: 'English' },
+    });
+    const darkVenn = darkPipeline.generateFullPackHTML([{
+      type: 'outline', id: 'venn-dark', title: 'Compare',
+      data: {
+        main: 'Dark Venn', structureType: 'Venn Diagram',
+        branches: [
+          { title: 'A', items: ['A only'] },
+          { title: 'B', items: ['B only'] },
+          { title: 'Both', items: ['Shared'] },
+        ],
+      },
+    }], 'Dark Venn', false, {}, { includeOutline: true, vennExportMode: 'completed' });
+    const dom = new JSDOM(darkVenn, { runScripts: 'outside-only', pretendToBeVisual: true });
+    const doc = dom.window.document;
+    expect(dom.window.getComputedStyle(doc.querySelector('.venn-print-wrapper')).backgroundColor).toBe('rgb(248, 250, 252)');
+    expect(dom.window.getComputedStyle(doc.querySelector('.venn-main-title')).color).toBe('rgb(15, 23, 42)');
+    expect(dom.window.getComputedStyle(doc.querySelector('.venn-set-a-title')).color).toBe('rgb(159, 18, 57)');
+    expect(dom.window.getComputedStyle(doc.querySelector('.diagram-text-fallback')).backgroundColor).toBe('rgb(15, 23, 42)');
+    expect(dom.window.getComputedStyle(doc.querySelector('.diagram-text-fallback-body')).color).toBe('rgb(255, 255, 255)');
+    dom.window.close();
+  });
+
+  it('forces assessment-mode Venn exports to an answer-free activity', () => {
+    const html = pipeline.generateResourceHTML({
+      type: 'outline', id: 'venn-assessment', title: 'Compare',
+      data: {
+        main: 'Compare', structureType: 'Venn Diagram',
+        branches: [
+          { title: 'A', items: ['A only'] },
+          { title: 'B', items: ['B only'] },
+          { title: 'Both', items: ['Shared'] },
+        ],
+      },
+    }, false, {}, { vennExportMode: 'both', assessmentMode: true });
+    const doc = new JSDOM(html).window.document;
+    expect(doc.querySelector('.alloflow-venn-activity')).toBeTruthy();
+    expect(doc.querySelector('.alloflow-venn-check-button')).toBeFalsy();
+    expect(doc.querySelectorAll('[data-answer-zone]')).toHaveLength(0);
+    expect(html).not.toContain('Completed reference / answer key');
+    expect(html).not.toContain('class="venn-visual"');
   });
 
   it('curated export themes expose contrast-clamped text colors for body, headings, and links', () => {

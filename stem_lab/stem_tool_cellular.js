@@ -262,7 +262,9 @@
     }, []);
 
     // ── theme ──
-    var dark = !!ctx.isDark, contrast = !!ctx.isContrast;
+    // The app's dark theme keeps plugin content on a white card. Choose ink
+    // for that actual substrate; only contrast mode retains a dark surface.
+    var contrast = !!ctx.isContrast || ctx.theme === 'contrast', dark = contrast;
     var C = {
       bg: dark ? '#0b1220' : '#f8fafc',
       panel: dark ? '#0f172a' : '#ffffff',

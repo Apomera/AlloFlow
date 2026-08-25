@@ -44,6 +44,13 @@ describe('EvoLab model boundaries', () => {
     expect(html).toContain('Do not generalize this slider directly to clinical dosing');
     expect(html).not.toContain('finish all the pills');
   });
+
+  it('places later snowshoe-hare molting on the later end of the trait axis', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_evolab.js', 'utf8');
+    expect(source).toContain("ideal: 0.68, width: 0.12, mode: 'gaussian'");
+    expect(source).toContain('The "ideal" trait is set to 0.68 (later molt).');
+    expect(source).not.toContain('0.32 (delayed molt)');
+  });
 });
 
 describe('EvoLab runtime and accessibility', () => {

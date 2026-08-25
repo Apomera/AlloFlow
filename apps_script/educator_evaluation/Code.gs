@@ -255,7 +255,7 @@ function saveWorkspace(request) {
     var state = readWorkspaceState_();
     reconcileSecondaryIndexesIfNeeded_(state.workspace);
     if (state.revision !== expected) return { ok: false, code: 'conflict', error: 'This evaluation changed in another session. Reload before saving.', revision: state.revision, version: state.revision };
-    var merged = mergeWorkspaceForActor_(state.workspace, incoming, actor);
+    var merged = mergeWorkspaceForActor_(state.workspace, incoming, actor, request.mutation);
     canonicalizeServerFields_(state.workspace, merged, actor);
     freezeCycleWeights_(state.workspace, merged);
     deriveFinalizedSnapshots_(state.workspace, merged, actor, request.mutation);
@@ -264,11 +264,10 @@ function saveWorkspace(request) {
     var nextRevision = state.revision + 1;
     var visible = filterWorkspaceForActor_(merged, actor);
     var commit = writeWorkspaceState_(merged, nextRevision, actor.email);
-    var reconciliationPending = !!commit.pending;
-    if (!reconciliationPending) {
-      try { syncSecondaryIndexes_(merged); PropertiesService.getScriptProperties().deleteProperty('EE_SECONDARY_RECONCILE_REQUIRED'); }
-      catch (sinkErr) { PropertiesService.getScriptProperties().setProperty('EE_SECONDARY_RECONCILE_REQUIRED','1'); reconciliationPending = true; }
-    }
+    if (commit.pending) throw eeError_('commit_recovery_required', 'The workspace journal was written, but the primary evaluation record was not confirmed. Do not retry this change; reload the district record or ask an administrator to check Setup health.');
+    var reconciliationPending = false;
+    try { syncSecondaryIndexes_(merged); PropertiesService.getScriptProperties().deleteProperty('EE_SECONDARY_RECONCILE_REQUIRED'); }
+    catch (sinkErr) { PropertiesService.getScriptProperties().setProperty('EE_SECONDARY_RECONCILE_REQUIRED','1'); reconciliationPending = true; }
     return { ok: true, workspace: visible, revision: nextRevision, version: nextRevision, reconciliationPending: reconciliationPending };
   } finally { lock.releaseLock(); }
 }
@@ -454,7 +453,7 @@ function reviewPortalReleasedEvaluationShare(request) {
   var allowedDomain = normalizeDomain_(PropertiesService.getScriptProperties().getProperty('EE_ALLOWED_DOMAIN'));
   if (!allowedDomain || emailDomain_(recipient) !== allowedDomain) throw eeError_('denied', 'The educator account is outside the district domain.');
   var state = readWorkspaceState_();
-  releaseRecoveryRequiredForState_(state);
+  if (releaseRecoveryRequiredForState_(state)) throw eeError_('release_recovery_required', 'A prior released-summary operation still needs administrator recovery. Run Setup health and resolve it before reviewing another release.');
   var teacher = findById_(state.workspace.teachers || [], teacherId);
   if (!teacher) throw eeError_('not_found', 'Educator record not found.');
   if (!teacher.finalizedAt) throw eeError_('invalid_transition', 'The educator cycle must be finalized before the evaluation can be shared.');
@@ -590,6 +589,7 @@ function sharePortalReleasedEvaluation(request) {
   if (!lock.tryLock(30000)) throw eeError_('busy', 'Repository is busy.');
   try {
     var state = readWorkspaceState_();
+    if (releaseRecoveryRequiredForState_(state)) throw eeError_('release_recovery_required', 'A prior released-summary operation still needs administrator recovery. Run Setup health and resolve it before sharing another release.');
     var workspace = state.workspace;
     var teacher = findById_(workspace.teachers || [], teacherId);
     if (!teacher) throw eeError_('not_found', 'Educator record not found.');
@@ -780,13 +780,21 @@ function buildReleasedEvaluationDoc_(workspace, teacher, actor) {
   body.appendParagraph('Your final score is the weighted average of these components, each score is multiplied by its weight and the results are added. No component is hidden and no other factor enters the calculation.').setHeading(H.NORMAL);
   var domainTable = body.appendTable();
   var domainHeader = domainTable.appendTableRow();
-  ['Domain', 'Rating', 'In plain language'].forEach(function (label) { domainHeader.appendTableCell(label).editAsText().setBold(true); });
+  ['Domain', 'Rating', 'Annual rationale', 'Evidence used'].forEach(function (label) { domainHeader.appendTableCell(label).editAsText().setBold(true); });
   EE_DOC_DOMAINS.forEach(function (domain) {
     var rating = teacher.ratings && teacher.ratings.domains ? teacher.ratings.domains[domain.id] : null;
+    var rationale = teacher.annualRationales ? safeString_(teacher.annualRationales[domain.id], 15000, '') : '';
+    var evidenceTokens = teacher.annualEvidenceRefs && Array.isArray(teacher.annualEvidenceRefs[domain.id]) ? teacher.annualEvidenceRefs[domain.id] : [];
+    var evidenceLabels = [];
+    for (var evidenceIndex = 0; evidenceIndex < evidenceTokens.length; evidenceIndex++) {
+      var resolved = resolveAnnualEvidenceRef_(workspace, teacher.id, evidenceTokens[evidenceIndex], false);
+      if (resolved) evidenceLabels.push(resolved.title + (resolved.date ? ' (' + eeDocPlainDate_(resolved.date) + ')' : ''));
+    }
     var row = domainTable.appendTableRow();
     row.appendTableCell(domain.code + '. ' + domain.label);
     row.appendTableCell(rating == null ? 'Not rated' : rating + ', ' + eeBandLabel_(rating, frameworkProfile));
-    row.appendTableCell(domain.plain.charAt(0).toUpperCase() + domain.plain.slice(1) + '.');
+    row.appendTableCell(rationale || 'No annual rationale was recorded for this legacy cycle.');
+    row.appendTableCell(evidenceLabels.length ? evidenceLabels.join('; ') : 'No annual evidence references were recorded for this legacy cycle.');
   });
 
   // ── Growth framed constructively, tied to the evaluator's own words. ───
@@ -857,10 +865,15 @@ function getPortalSetupHealth() {
   var assignments = assignmentObjects_();
   var releaseRecoveryRequired = !!props.getProperty('EE_RELEASE_RECOVERY_REQUIRED');
   var rolloverRecoveryRequired = !!props.getProperty('EE_ROLLOVER_RECOVERY_REQUIRED');
+  var workspaceCommitRecoveryRequired = !!props.getProperty('EE_COMMIT_RECOVERY_REQUIRED');
   var state;
-  try { state = readWorkspaceState_(); releaseRecoveryRequired = releaseRecoveryRequiredForState_(state); }
+  try {
+    state = readWorkspaceState_();
+    releaseRecoveryRequired = releaseRecoveryRequiredForState_(state);
+    workspaceCommitRecoveryRequired = !!props.getProperty('EE_COMMIT_RECOVERY_REQUIRED');
+  }
   catch (workspaceErr) {
-    if (!releaseRecoveryRequired && !rolloverRecoveryRequired) throw workspaceErr;
+    if (!releaseRecoveryRequired && !rolloverRecoveryRequired && !workspaceCommitRecoveryRequired) throw workspaceErr;
     state = { workspace: { teachers: [] }, revision: -1, metadataExists: false };
   }
   var teachers = (state.workspace.teachers || []).filter(function (t) { return t.active !== false; });
@@ -904,6 +917,7 @@ function getPortalSetupHealth() {
       auditChainRows: audit.rows || 0,
       auditChainBreakReason: audit.ok ? '' : String(audit.reason || 'unknown'),
       auditChainBrokenAtRow: audit.ok ? 0 : (audit.brokenAtRow || 0),
+      workspaceCommitRecoveryRequired: workspaceCommitRecoveryRequired,
       releasedSummaryRecoveryRequired: releaseRecoveryRequired,
       annualRolloverRecoveryRequired: rolloverRecoveryRequired,
       deploymentOwnerMatchesBootstrapAdmin: !!effectiveOwner && !!bootstrapAdmin && effectiveOwner === bootstrapAdmin,
@@ -1687,6 +1701,8 @@ function filterWorkspaceForActor_(workspace, actor) {
       var teacherProfile = copy.teachers[teacherIndex];
       if (!teacherProfile.finalizedAt) {
         teacherProfile.ratings = { domains: emptyDomains_(), building: null, teacher: null, lea: null };
+        teacherProfile.annualRationales = emptyRationales_();
+        teacherProfile.annualEvidenceRefs = emptyAnnualEvidenceRefs_();
         teacherProfile.finalScore = null;
         teacherProfile.weightSnapshot = null;
       }
@@ -1727,6 +1743,7 @@ function filterWorkspaceForActor_(workspace, actor) {
 function emptyPrework_() { return { plan: '', outcomes: '', resources: '', assessment: '', artifactReferences: '' }; }
 function emptyDomains_() { return { d1: null, d2: null, d3: null, d4: null }; }
 function emptyRationales_() { return { d1: '', d2: '', d3: '', d4: '' }; }
+function emptyAnnualEvidenceRefs_() { return { d1: [], d2: [], d3: [], d4: [] }; }
 function redactUnsubmittedSpmForEvaluator_(spm) {
   if (spm.status === 'draft') {
     spm.context = ''; spm.baseline = ''; spm.goal = ''; spm.measures = ''; spm.actionPlan = '';
@@ -1744,13 +1761,14 @@ function redactUnsubmittedSpmForEvaluator_(spm) {
     return;
   }
   if (spm.status === 'approved') { spm.results = ''; spm.reflection = ''; }
-}function mergeWorkspaceForActor_(current, incoming, actor) {
+}function mergeWorkspaceForActor_(current, incoming, actor, rawMutation) {
   var merged = clone_(current);
   var allowed = accessibleTeacherIds_(actor, current);
   if (actor.role === 'admin' && !same_(current.config, incoming.config)) throw eeError_('review_required', 'District configuration changes require an administrator review and explicit confirmation in Setup.');
   merged.config = clone_(current.config);
   mergeTeacherProfiles_(merged, incoming, actor, allowed);
   merged.walkthroughs = mergeRecords_(current.walkthroughs, incoming.walkthroughs, actor, allowed, 'walkthrough', merged.config.frameworkVersion, merged.teachers);
+  applyWalkthroughDraftDiscard_(merged, current, incoming, actor, allowed, rawMutation);
   merged.observations = mergeRecords_(current.observations, incoming.observations, actor, allowed, 'observation', merged.config.frameworkVersion, merged.teachers);
   merged.spms = mergeRecords_(current.spms, incoming.spms, actor, allowed, 'spm', merged.config.frameworkVersion, merged.teachers);
   merged.comments = mergeComments_(current.comments || [], incoming.comments || [], actor, allowed, current);
@@ -1758,6 +1776,22 @@ function redactUnsubmittedSpmForEvaluator_(spm) {
   merged.audit = clone_(current.audit || []); // client audit is never authoritative
   merged.cycleSnapshots = clone_(current.cycleSnapshots || []); // snapshots are server-derived only
   return merged;
+}
+
+function applyWalkthroughDraftDiscard_(merged, current, incoming, actor, allowed, rawMutation) {
+  var mutation = isPlainObject_(rawMutation) ? rawMutation : {};
+  if (String(mutation.event || '').toUpperCase() !== 'DRAFT_DISCARDED') return;
+  if (actor.role === 'teacher') throw eeError_('denied', 'Educators cannot discard evaluator walkthrough drafts.');
+  if (safeToken_(mutation.entityType || '', 60) !== 'walkthrough') throw eeError_('invalid_transition', 'Draft discard must identify a walkthrough record.');
+  var recordId = safeId_(mutation.entityId || '', true);
+  var teacherId = safeId_(mutation.teacherId || '', true);
+  if (!allowed[teacherId]) throw eeError_('denied', 'Walkthrough draft is outside this evaluator assignment.');
+  var record = findById_(current.walkthroughs || [], recordId);
+  if (!record || record.teacherId !== teacherId) throw eeError_('not_found', 'Walkthrough draft was not found.');
+  if (record.publishedAt) throw eeError_('immutable', 'Published walkthrough evidence cannot be discarded.');
+  if (findById_(incoming.walkthroughs || [], recordId)) throw eeError_('invalid_transition', 'Discarding a draft requires removing it from the submitted workspace.');
+  if ((current.comments || []).some(function (item) { return item.recordType === 'walkthrough' && item.recordId === recordId; })) throw eeError_('immutable', 'A walkthrough draft with shared comments cannot be discarded.');
+  merged.walkthroughs = (merged.walkthroughs || []).filter(function (item) { return item.id !== recordId; });
 }
 
 function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
@@ -2048,7 +2082,7 @@ function sameCommentSemantics_(a,b){return a.teacherId===b.teacherId&&a.recordTy
   var now = nowIso_();
   next.createdAt = now; next.updatedAt = now; next.version = 1;
   if (kind === 'walkthrough') {
-    next.observer = actor.displayName; next.startedAt = now; next.teacherAcknowledgedAt = null;
+    next.observer = actor.displayName; next.createdByEmail = actor.email; next.startedAt = now; next.teacherAcknowledgedAt = null;
     if (next.publishedAt) {
       if (!next.evidence || !next.privacyChecked) throw eeError_('invalid_transition', 'Publishing requires evidence and privacy review.');
       next.publishedAt = now;
@@ -2177,6 +2211,7 @@ function deriveFinalizedSnapshots_(oldWorkspace, workspace, actor, rawMutation) 
     }
     var score = serverOverallScore_(teacher, workspace.config);
     if (score === null) throw eeError_('invalid_transition', 'Annual release requires every weighted rating input.');
+    validateAnnualJudgmentProvenance_(teacher, workspace);
     var academicYear = workspace.config.academicYear;
     for (var j = 0; j < workspace.cycleSnapshots.length; j++) {
       if (workspace.cycleSnapshots[j].teacherId === teacher.id && workspace.cycleSnapshots[j].academicYear === academicYear) throw eeError_('immutable', 'A finalized snapshot already exists for this educator and academic year.');
@@ -2187,10 +2222,55 @@ function deriveFinalizedSnapshots_(oldWorkspace, workspace, actor, rawMutation) 
       id: newId_('cycle'), teacherId: teacher.id, staffCodeSnapshot: teacher.code,
       academicYear: academicYear, buildingSnapshot: teacher.building, employeeTypeSnapshot: teacher.employeeType,
       finalizedAt: teacher.finalizedAt, finalScore: teacher.finalScore,
-      domainRatings: clone_(teacher.ratings.domains), weightSnapshot: clone_(teacher.weightSnapshot),
+      domainRatings: clone_(teacher.ratings.domains),
+      annualRationales: clone_(teacher.annualRationales), annualEvidenceRefs: clone_(teacher.annualEvidenceRefs),
+      weightSnapshot: clone_(teacher.weightSnapshot),
       frameworkVersion: teacher.frameworkVersion
     });
   }
+}
+
+function validateAnnualJudgmentProvenance_(teacher, workspace) {
+  var rationales = sanitizeAnnualRationales_(teacher.annualRationales);
+  var evidenceRefs = sanitizeAnnualEvidenceRefs_(teacher.annualEvidenceRefs);
+  var domains = teacher.ratings && teacher.ratings.domains ? teacher.ratings.domains : {};
+  var keys = ['d1','d2','d3','d4'];
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (numberOrNull_(domains[key]) === null) continue;
+    if (!rationales[key]) throw eeError_('invalid_transition', 'Annual release requires a written rationale for every rated domain.');
+    if (!evidenceRefs[key].length) throw eeError_('invalid_transition', 'Annual release requires at least one eligible evidence record for every rated domain.');
+    for (var j = 0; j < evidenceRefs[key].length; j++) resolveAnnualEvidenceRef_(workspace, teacher.id, evidenceRefs[key][j], true);
+  }
+  teacher.annualRationales = rationales;
+  teacher.annualEvidenceRefs = evidenceRefs;
+}
+
+function resolveAnnualEvidenceRef_(workspace, teacherId, token, required) {
+  var canonical = sanitizeAnnualEvidenceToken_(token);
+  var splitAt = canonical.indexOf(':');
+  var type = canonical.slice(0, splitAt), id = canonical.slice(splitAt + 1), record = null, eligible = false, title = '', date = '';
+  if (type === 'walkthrough') {
+    record = findById_(workspace.walkthroughs || [], id);
+    eligible = !!(record && record.teacherId === teacherId && record.publishedAt);
+    title = record && record.subject ? 'Walkthrough: ' + safeString_(record.subject, 160, '') : 'Walkthrough observation';
+    date = record ? (record.date || record.publishedAt || '') : '';
+  } else if (type === 'formal_observation') {
+    record = findById_(workspace.observations || [], id);
+    eligible = !!(record && record.teacherId === teacherId && record.evidencePublishedAt);
+    title = 'Formal observation';
+    date = record ? (record.observedAt || record.evidencePublishedAt || '') : '';
+  } else if (type === 'spm') {
+    record = findById_(workspace.spms || [], id);
+    eligible = !!(record && record.teacherId === teacherId && record.status === 'locked');
+    title = record && record.goal ? 'Student performance measure: ' + safeString_(record.goal, 160, '') : 'Student performance measure';
+    date = record ? (record.lockedAt || record.resultsSubmittedAt || record.approvedAt || '') : '';
+  }
+  if (!eligible) {
+    if (required) throw eeError_('invalid_transition', 'Annual evidence must reference this educator\'s published walkthrough, published formal-observation evidence, or locked student performance measure.');
+    return null;
+  }
+  return { token: canonical, type: type, id: id, title: title, date: date };
 }
 
 // Framework-aware practice composite. PA uses the statutory 20/30/30/20;
@@ -2248,11 +2328,11 @@ function deriveMutation_(raw, oldWorkspace, nextWorkspace, actor) {
     EVIDENCE_PUBLISHED: 'Evidence published to educator', ACKNOWLEDGED: 'Receipt acknowledged',
     SUBMITTED: 'Record submitted', CONFERENCED: 'Conference recorded', OBSERVATION_STARTED: 'Observation recorded',
     SIGNED: 'Evaluator signature recorded', FINALIZED: 'Record finalized', APPROVED: 'Record approved',
-    RETURNED: 'Record returned for revision', RELEASED: 'Annual cycle released',
+    RETURNED: 'Record returned for revision', RELEASED: 'Annual cycle released', DRAFT_DISCARDED: 'Unpublished walkthrough draft discarded',
     PROFILE_UPDATED: 'Educator profile updated', COMMENTED: 'Shared comment posted'
   };
   if (!allowedEvents[event]) { if (durableMilestoneChanges_(oldWorkspace,nextWorkspace).length) throw eeError_('invalid_transition','A durable workflow change requires its exact audited action.'); return null; }
-  if (actor.role === 'teacher' && ['ASSIGNED', 'EVIDENCE_PUBLISHED', 'CONFERENCED', 'OBSERVATION_STARTED', 'SIGNED', 'FINALIZED', 'APPROVED', 'RETURNED', 'RELEASED', 'PROFILE_UPDATED'].indexOf(event) !== -1) throw eeError_('denied', 'The requested workflow event requires evaluator authority.');
+  if (actor.role === 'teacher' && ['ASSIGNED', 'EVIDENCE_PUBLISHED', 'CONFERENCED', 'OBSERVATION_STARTED', 'SIGNED', 'FINALIZED', 'APPROVED', 'RETURNED', 'RELEASED', 'PROFILE_UPDATED', 'DRAFT_DISCARDED'].indexOf(event) !== -1) throw eeError_('denied', 'The requested workflow event requires evaluator authority.');
   var teacherId = safeId_(raw.teacherId || '', false);
   if (teacherId) requireTeacherAccess_(actor, teacherId);
   var entityType = safeToken_(raw.entityType || 'workspace', 60);
@@ -2266,8 +2346,9 @@ function deriveMutation_(raw, oldWorkspace, nextWorkspace, actor) {
   return { teacherId: teacherId, event: event, summary: allowedEvents[event], entityType: entityType || 'workspace', entityId: entityId, version: clampInt_(raw.version, 1, 1000, 1) };
 }
 
-function durableMilestoneChanges_(oldWorkspace,nextWorkspace){var out=[];collectNewRecordMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[]);collectNewRecordMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[]);collectNewRecordMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[]);collectNewRecordMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[]);collectMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[],['publishedAt:EVIDENCE_PUBLISHED','teacherAcknowledgedAt:ACKNOWLEDGED']);collectMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[],['preworkSubmittedAt:SUBMITTED','preConferenceAt:CONFERENCED','observedAt:OBSERVATION_STARTED','evidencePublishedAt:EVIDENCE_PUBLISHED','reflectionSubmittedAt:SUBMITTED','postConferenceAt:CONFERENCED','evaluatorSignedAt:SIGNED','teacherAcknowledgedAt:ACKNOWLEDGED','finalizedAt:FINALIZED']);collectMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[],['firstOpenedAt:OPENED']);collectSpmStatusMilestones_(out,oldWorkspace.spms||[],nextWorkspace.spms||[]);collectNewCommentMilestones_(out,oldWorkspace.comments||[],nextWorkspace.comments||[]);collectMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[],['finalizedAt:RELEASED']);return out;}
+function durableMilestoneChanges_(oldWorkspace,nextWorkspace){var out=[];collectNewRecordMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[]);collectNewRecordMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[]);collectNewRecordMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[]);collectNewRecordMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[]);collectDeletedWalkthroughMilestones_(out,oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[]);collectMilestones_(out,'walkthrough',oldWorkspace.walkthroughs||[],nextWorkspace.walkthroughs||[],['publishedAt:EVIDENCE_PUBLISHED','teacherAcknowledgedAt:ACKNOWLEDGED']);collectMilestones_(out,'formal_observation',oldWorkspace.observations||[],nextWorkspace.observations||[],['preworkSubmittedAt:SUBMITTED','preConferenceAt:CONFERENCED','observedAt:OBSERVATION_STARTED','evidencePublishedAt:EVIDENCE_PUBLISHED','reflectionSubmittedAt:SUBMITTED','postConferenceAt:CONFERENCED','evaluatorSignedAt:SIGNED','teacherAcknowledgedAt:ACKNOWLEDGED','finalizedAt:FINALIZED']);collectMilestones_(out,'spm',oldWorkspace.spms||[],nextWorkspace.spms||[],['firstOpenedAt:OPENED']);collectSpmStatusMilestones_(out,oldWorkspace.spms||[],nextWorkspace.spms||[]);collectNewCommentMilestones_(out,oldWorkspace.comments||[],nextWorkspace.comments||[]);collectMilestones_(out,'educator_cycle',oldWorkspace.teachers||[],nextWorkspace.teachers||[],['finalizedAt:RELEASED']);return out;}
 function collectNewRecordMilestones_(out,type,oldItems,nextItems){var oldById=indexById_(oldItems);for(var i=0;i<nextItems.length;i++){var next=nextItems[i];if(oldById[next.id])continue;var event=type==='formal_observation'?'ASSIGNED':(type==='walkthrough'&&next.publishedAt?'EVIDENCE_PUBLISHED':'CREATED');out.push({event:event,teacherId:type==='educator_cycle'?next.id:next.teacherId,entityType:type,entityId:next.id});}}
+function collectDeletedWalkthroughMilestones_(out,oldItems,nextItems){var nextById=indexById_(nextItems);for(var i=0;i<oldItems.length;i++){var old=oldItems[i];if(!old.publishedAt&&!nextById[old.id])out.push({event:'DRAFT_DISCARDED',teacherId:old.teacherId,entityType:'walkthrough',entityId:old.id});}}
 function collectMilestones_(out,type,oldItems,nextItems,specs){var oldById=indexById_(oldItems);for(var i=0;i<nextItems.length;i++){var next=nextItems[i],old=oldById[next.id];if(!old)continue;for(var j=0;j<specs.length;j++){var parts=specs[j].split(':');if(!old[parts[0]]&&next[parts[0]])out.push({event:parts[1],teacherId:next.teacherId===undefined?next.id:next.teacherId,entityType:type,entityId:next.id});}}}
 function collectSpmStatusMilestones_(out,oldItems,nextItems){var oldById=indexById_(oldItems),events={submitted:'SUBMITTED',returned:'RETURNED',approved:'APPROVED',results_submitted:'SUBMITTED',locked:'FINALIZED'};for(var i=0;i<nextItems.length;i++){var next=nextItems[i],old=oldById[next.id];if(old&&old.status!==next.status&&events[next.status])out.push({event:events[next.status],teacherId:next.teacherId,entityType:'spm',entityId:next.id});}}
 function collectNewCommentMilestones_(out,oldItems,nextItems){var oldById=indexById_(oldItems);for(var i=0;i<nextItems.length;i++){var item=nextItems[i];if(!oldById[item.id])out.push({event:'COMMENTED',teacherId:item.teacherId,entityType:item.recordType,entityId:item.recordId});}}
@@ -2278,6 +2359,7 @@ function mutationOccurred_(event, teacherId, entityType, entityId, oldWorkspace,
   if (event === 'COMMENTED') { var changes=durableMilestoneChanges_(oldWorkspace,nextWorkspace);return changes.length===1&&sameMilestone_(changes[0],event,teacherId,entityType,entityId); }
   var pair = entityPair_(entityType, entityId, oldWorkspace, nextWorkspace), old = pair.old, next = pair.next;
   if (event === 'CREATED' || event === 'ASSIGNED') return !old && !!next;
+  if (event === 'DRAFT_DISCARDED') return !!old && !old.publishedAt && !next;
   if (event === 'EVIDENCE_PUBLISHED' && !old && next) return !!(next.publishedAt || next.evidencePublishedAt);
   if (event === 'OPENED') return !!old && !!next && !old.firstOpenedAt && !!next.firstOpenedAt;
   if (!old || !next) return false;
@@ -2333,7 +2415,7 @@ function sanitizeConfig_(v) {
     sampleMode: false,
   };
 }
-function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requireObject_(v.ratings||{},'ratings'); return { id:safeId_(v.id,true), code:safeString_(v.code,40,''), name:safeString_(v.name,160,''), building:safeString_(v.building,160,''), assignment:safeString_(v.assignment,240,''), employeeType:v.employeeType==='temporary'?'temporary':'professional', buildingData:!!v.buildingData, teacherSpecificData:!!v.teacherSpecificData, active:v.active!==false, evaluator:safeString_(v.evaluator,160,''), dueDate:optionalDate_(v.dueDate), cycleStatus:oneOf_(v.cycleStatus||'not_started',['not_started','in_progress','awaiting_teacher','awaiting_evaluator','finalized'],'cycleStatus'), lastActivityAt:optionalTimestamp_(v.lastActivityAt), finalizedAt:optionalTimestamp_(v.finalizedAt), cycleLockedAt:optionalTimestamp_(v.cycleLockedAt), frameworkVersion:safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), weightSnapshot:sanitizeWeights_(v.weightSnapshot), finalScore:rating_(v.finalScore), ratings:{domains:sanitizeRubricDomains_(ratings.domains),building:rating_(ratings.building),teacher:rating_(ratings.teacher),lea:rating_(ratings.lea)}, releasedDoc:sanitizeReleasedDoc_(v.releasedDoc), educatorStatement:sanitizeEducatorStatement_(v.educatorStatement) }; }
+function sanitizeTeacher_(v) { v=requireObject_(v,'teacher'); var ratings=requireObject_(v.ratings||{},'ratings'); return { id:safeId_(v.id,true), code:safeString_(v.code,40,''), name:safeString_(v.name,160,''), building:safeString_(v.building,160,''), assignment:safeString_(v.assignment,240,''), employeeType:v.employeeType==='temporary'?'temporary':'professional', buildingData:!!v.buildingData, teacherSpecificData:!!v.teacherSpecificData, active:v.active!==false, evaluator:safeString_(v.evaluator,160,''), dueDate:optionalDate_(v.dueDate), cycleStatus:oneOf_(v.cycleStatus||'not_started',['not_started','in_progress','awaiting_teacher','awaiting_evaluator','finalized'],'cycleStatus'), lastActivityAt:optionalTimestamp_(v.lastActivityAt), finalizedAt:optionalTimestamp_(v.finalizedAt), cycleLockedAt:optionalTimestamp_(v.cycleLockedAt), frameworkVersion:safeString_(v.frameworkVersion,80,'PA Act 13 / Danielson 2021'), weightSnapshot:sanitizeWeights_(v.weightSnapshot), finalScore:rating_(v.finalScore), ratings:{domains:sanitizeRubricDomains_(ratings.domains),building:rating_(ratings.building),teacher:rating_(ratings.teacher),lea:rating_(ratings.lea)}, annualRationales:sanitizeAnnualRationales_(v.annualRationales), annualEvidenceRefs:sanitizeAnnualEvidenceRefs_(v.annualEvidenceRefs), releasedDoc:sanitizeReleasedDoc_(v.releasedDoc), educatorStatement:sanitizeEducatorStatement_(v.educatorStatement) }; }
 // releasedDoc: server-owned pointer to the shared released-summary Doc. It must
 // survive sanitizeStoredWorkspace_ (which rebuilds every teacher through
 // sanitizeTeacher_ at commit time) or the pointer written by
@@ -2343,11 +2425,15 @@ function sanitizeReleasedDoc_(v){ if(!isPlainObject_(v))return null; var url=saf
 // educatorStatement: the educator's own words for the record. Owned by the
 // teacher (merge adopts it only from teacher saves, only pre-finalization).
 function sanitizeEducatorStatement_(v){ if(!isPlainObject_(v))return null; var text=safeString_(v.text,20000,''); if(!text)return null; return { text:text, updatedAt:optionalTimestamp_(v.updatedAt) }; }
-function sanitizeWalkthrough_(v) { v=requireObject_(v,'walkthrough'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),date:optionalDate_(v.date),startedAt:optionalTimestamp_(v.startedAt),durationMin:String(clampInt_(v.durationMin,1,180,8)),announced:v.announced==='announced'?'announced':'unannounced',lessonPhase:oneOf_(v.lessonPhase||'middle',['opening','middle','guided_practice','independent_practice','closure'],'lessonPhase'),subject:safeString_(v.subject,240,''),evidence:safeString_(v.evidence,30000,''),interpretation:safeString_(v.interpretation,15000,''),componentTags:sanitizeTags_(v.componentTags),privacyChecked:!!v.privacyChecked,observer:safeString_(v.observer,160,''),publishedAt:optionalTimestamp_(v.publishedAt),teacherAcknowledgedAt:optionalTimestamp_(v.teacherAcknowledgedAt),version:clampInt_(v.version,1,1000,1) }; }
+function sanitizeAnnualRationales_(v){v=isPlainObject_(v)?v:{};return{d1:safeString_(v.d1,15000,''),d2:safeString_(v.d2,15000,''),d3:safeString_(v.d3,15000,''),d4:safeString_(v.d4,15000,'')};}
+function sanitizeAnnualEvidenceRefs_(v){v=isPlainObject_(v)?v:{};return{d1:sanitizeAnnualEvidenceRefList_(v.d1),d2:sanitizeAnnualEvidenceRefList_(v.d2),d3:sanitizeAnnualEvidenceRefList_(v.d3),d4:sanitizeAnnualEvidenceRefList_(v.d4)};}
+function sanitizeAnnualEvidenceRefList_(v){if(v===undefined||v===null)return[];if(!Array.isArray(v)||v.length>100)throw eeError_('bad_request','Annual evidence references must be an array of at most 100 records per domain.');var out=[],seen={};for(var i=0;i<v.length;i++){var token=sanitizeAnnualEvidenceToken_(v[i]);if(seen[token])throw eeError_('bad_request','Annual evidence references cannot contain duplicates within a domain.');seen[token]=true;out.push(token);}return out;}
+function sanitizeAnnualEvidenceToken_(v){var token=safeString_(v,140,'');var match=/^(walkthrough|formal_observation|spm):(.+)$/.exec(token);if(!match)throw eeError_('bad_request','Annual evidence reference has an invalid record type.');return match[1]+':'+safeId_(match[2],true);}
+function sanitizeWalkthrough_(v) { v=requireObject_(v,'walkthrough'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),date:optionalDate_(v.date),startedAt:optionalTimestamp_(v.startedAt),durationMin:String(clampInt_(v.durationMin,1,180,8)),announced:v.announced==='announced'?'announced':'unannounced',lessonPhase:oneOf_(v.lessonPhase||'middle',['opening','middle','guided_practice','independent_practice','closure'],'lessonPhase'),subject:safeString_(v.subject,240,''),evidence:safeString_(v.evidence,30000,''),interpretation:safeString_(v.interpretation,15000,''),componentTags:sanitizeTags_(v.componentTags),privacyChecked:!!v.privacyChecked,observer:safeString_(v.observer,160,''),createdByEmail:normalizeEmail_(v.createdByEmail),publishedAt:optionalTimestamp_(v.publishedAt),teacherAcknowledgedAt:optionalTimestamp_(v.teacherAcknowledgedAt),version:clampInt_(v.version,1,1000,1) }; }
 function sanitizeObservation_(v) { v=requireObject_(v,'observation'); var p=requireObject_(v.prework||{},'prework'); var r=requireObject_(v.rationales||{},'rationales'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),frameworkVersion:safeString_(v.frameworkVersion,80,''),version:clampInt_(v.version,1,1000,1),prework:{plan:safeString_(p.plan,30000,''),outcomes:safeString_(p.outcomes,20000,''),resources:safeString_(p.resources,20000,''),assessment:safeString_(p.assessment,20000,''),artifactReferences:safeString_(p.artifactReferences,10000,'')},preConferenceNotes:safeString_(v.preConferenceNotes,20000,''),observedLocal:safeString_(v.observedLocal,30,''),evidence:safeString_(v.evidence,50000,''),reflection:safeString_(v.reflection,30000,''),postConferenceNotes:safeString_(v.postConferenceNotes,30000,''),ratings:sanitizeRubricDomains_(v.ratings),rationales:{d1:safeString_(r.d1,15000,''),d2:safeString_(r.d2,15000,''),d3:safeString_(r.d3,15000,''),d4:safeString_(r.d4,15000,'')},componentTags:sanitizeTags_(v.componentTags),privacyChecked:!!v.privacyChecked,ackChecked:!!v.ackChecked,preworkSubmittedAt:optionalTimestamp_(v.preworkSubmittedAt),preConferenceAt:optionalTimestamp_(v.preConferenceAt),observedAt:optionalTimestamp_(v.observedAt),evidencePublishedAt:optionalTimestamp_(v.evidencePublishedAt),reflectionSubmittedAt:optionalTimestamp_(v.reflectionSubmittedAt),postConferenceAt:optionalTimestamp_(v.postConferenceAt),evaluatorSignedAt:optionalTimestamp_(v.evaluatorSignedAt),teacherAcknowledgedAt:optionalTimestamp_(v.teacherAcknowledgedAt),finalizedAt:optionalTimestamp_(v.finalizedAt) }; }
 function sanitizeSpm_(v) { v=requireObject_(v,'spm'); var revisions=mapLimited_(v.revisions||[],20,function(x){x=requireObject_(x,'revision');return {version:clampInt_(x.version,1,1000,1),submittedAt:optionalTimestamp_(x.submittedAt),context:safeString_(x.context,20000,''),baseline:safeString_(x.baseline,20000,''),goal:safeString_(x.goal,20000,''),measures:safeString_(x.measures,20000,''),actionPlan:safeString_(x.actionPlan,20000,'')};}); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),createdAt:optionalTimestamp_(v.createdAt),updatedAt:optionalTimestamp_(v.updatedAt),status:oneOf_(v.status||'draft',['draft','submitted','returned','approved','results_submitted','locked'],'status'),version:clampInt_(v.version,1,1000,1),context:safeString_(v.context,20000,''),baseline:safeString_(v.baseline,20000,''),goal:safeString_(v.goal,20000,''),measures:safeString_(v.measures,20000,''),actionPlan:safeString_(v.actionPlan,20000,''),returnReason:safeString_(v.returnReason,10000,''),pendingReturnReason:safeString_(v.pendingReturnReason,10000,''),results:safeString_(v.results,30000,''),reflection:safeString_(v.reflection,30000,''),rating:rating_(v.rating),ratingRationale:safeString_(v.ratingRationale,15000,''),approvedBy:safeString_(v.approvedBy,160,''),revisions:revisions,submittedAt:optionalTimestamp_(v.submittedAt),firstOpenedAt:optionalTimestamp_(v.firstOpenedAt),returnedAt:optionalTimestamp_(v.returnedAt),approvedAt:optionalTimestamp_(v.approvedAt),resultsSubmittedAt:optionalTimestamp_(v.resultsSubmittedAt),lockedAt:optionalTimestamp_(v.lockedAt) }; }
 function sanitizeComment_(v) { v=requireObject_(v,'comment'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),recordType:recordType_(v.recordType),recordId:safeId_(v.recordId,true),text:safeString_(v.text,EE_MAX_MESSAGE_CHARS,'',true),role:v.role==='Teacher'?'Teacher':'Evaluator',author:safeString_(v.author,160,''),authorEmail:normalizeEmail_(v.authorEmail),authorRole:['admin','evaluator','teacher'].indexOf(String(v.authorRole||''))===-1?'':String(v.authorRole),at:optionalTimestamp_(v.at),version:clampInt_(v.version,1,1000,1) }; }
-function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),staffCodeSnapshot:safeString_(v.staffCodeSnapshot,40,''),academicYear:safeString_(v.academicYear,20,''),buildingSnapshot:safeString_(v.buildingSnapshot,160,''),employeeTypeSnapshot:v.employeeTypeSnapshot==='temporary'?'temporary':'professional',finalizedAt:optionalTimestamp_(v.finalizedAt),finalScore:rating_(v.finalScore),domainRatings:sanitizeRubricDomains_(v.domainRatings),weightSnapshot:sanitizeWeights_(v.weightSnapshot),frameworkVersion:safeString_(v.frameworkVersion,80,'') }; }
+function sanitizeSnapshot_(v) { v=requireObject_(v,'snapshot'); return { id:safeId_(v.id,true),teacherId:safeId_(v.teacherId,true),staffCodeSnapshot:safeString_(v.staffCodeSnapshot,40,''),academicYear:safeString_(v.academicYear,20,''),buildingSnapshot:safeString_(v.buildingSnapshot,160,''),employeeTypeSnapshot:v.employeeTypeSnapshot==='temporary'?'temporary':'professional',finalizedAt:optionalTimestamp_(v.finalizedAt),finalScore:rating_(v.finalScore),domainRatings:sanitizeRubricDomains_(v.domainRatings),annualRationales:sanitizeAnnualRationales_(v.annualRationales),annualEvidenceRefs:sanitizeAnnualEvidenceRefs_(v.annualEvidenceRefs),weightSnapshot:sanitizeWeights_(v.weightSnapshot),frameworkVersion:safeString_(v.frameworkVersion,80,'') }; }
 
 /* ---------------------------- persistence ------------------------------ */
 
@@ -2407,7 +2493,7 @@ function snapshotObjects_(){var rows=dataRows_(repositorySpreadsheet_().getSheet
 
 function blankWorkspace_(config){config=isPlainObject_(config)?config:{};var baseBuilding=safeString_(config.building,160,'');var evaluator=safeString_(config.adminDisplayName,160,'Principal');var rawTeachers=config.teachers===undefined?[]:config.teachers;if(!Array.isArray(rawTeachers)||rawTeachers.length>1000)throw eeError_('bad_config','Invalid setup teachers list.');var teachers=[];for(var i=0;i<rawTeachers.length;i++){var raw=requireObject_(rawTeachers[i],'setup teacher');teachers.push(sanitizeTeacher_({id:raw.id,code:raw.code,name:raw.name,building:raw.building||baseBuilding,assignment:raw.assignment||'',employeeType:raw.employeeType||'professional',buildingData:raw.buildingData!==false,teacherSpecificData:raw.teacherSpecificData!==false,active:raw.active!==false,evaluator:raw.evaluator||evaluator,dueDate:raw.dueDate||'',cycleStatus:'not_started',frameworkVersion:'PA Act 13 / Danielson 2021',ratings:{domains:{d1:null,d2:null,d3:null,d4:null},building:null,teacher:null,lea:null}}));}assertUniqueIds_(teachers,'educator');return{kind:'alloflow-educator-evaluation-workspace',version:1,config:{organization:safeString_(config.organization,160,'District'),building:baseBuilding,academicYear:safeString_(config.academicYear,20,''),evaluatorName:evaluator,evaluatorInitials:'',frameworkVersion:'PA Act 13 / Danielson 2021',sampleMode:false},teachers:teachers,walkthroughs:[],observations:[],spms:[],comments:[],audit:[],cycleSnapshots:[]};}
 function jsonOutput_(value){return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);}
-function publicError_(err){var code=String(err&&err.code||'server_error');var safe={identity_unavailable:1,wrong_domain:1,not_member:1,not_configured:1,denied:1,bad_json:1,bad_request:1,bad_workspace:1,conflict:1,busy:1,not_found:1,immutable:1,invalid_transition:1,too_large:1,review_required:1,review_stale:1,acknowledgment_required:1,manual_recovery_required:1};return{ok:false,code:safe[code]?code:'server_error',error:safe[code]?String(err.message).slice(0,240):'The district evaluation service could not complete the request.'};}
+function publicError_(err){var code=String(err&&err.code||'server_error');var safe={identity_unavailable:1,wrong_domain:1,not_member:1,not_configured:1,denied:1,bad_json:1,bad_request:1,bad_workspace:1,conflict:1,busy:1,not_found:1,immutable:1,invalid_transition:1,too_large:1,review_required:1,review_stale:1,acknowledgment_required:1,manual_recovery_required:1,commit_recovery_required:1,release_recovery_required:1};return{ok:false,code:safe[code]?code:'server_error',error:safe[code]?String(err.message).slice(0,240):'The district evaluation service could not complete the request.'};}
 function eeError_(code,message){var err=new Error(message);err.code=code;return err;}
 function isPlainObject_(v){return !!v&&Object.prototype.toString.call(v)==='[object Object]'&&Object.getPrototypeOf(v)===Object.prototype;}
 function requireObject_(v,name){if(!isPlainObject_(v))throw eeError_('bad_request',String(name||'value')+' must be an object.');return v;}

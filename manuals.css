@@ -195,6 +195,26 @@
     font-weight: 750;
 }
 
+.manual-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-top: auto;
+}
+
+.manual-card__actions a {
+    margin-top: 0;
+}
+
+.manual-card__try {
+    padding: 8px 12px;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
+    background: #eef2ff;
+    font-size: .82rem;
+}
+
 .manual-card a {
     margin-top: auto;
     color: #4338ca;

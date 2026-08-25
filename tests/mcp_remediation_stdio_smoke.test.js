@@ -182,6 +182,18 @@ describe('remediation MCP: protocol + tool registry', () => {
     for (const name of ['fix_contrast', 'generate_conformance_report', 'audit_two_engines', 'check_document_structure']) {
       expect(tools.find((t) => t.name === name).annotations.openWorldHint, name).toBe(false);
     }
+    const agentRequests = tools.find((t) => t.name === 'remediation_agent_requests');
+    expect(agentRequests.inputSchema.properties).toMatchObject({
+      request_id: { type: 'string', maxLength: 200 },
+      prompt_offset: { type: 'integer', minimum: 0 },
+      image_index: { type: 'integer', minimum: 0 },
+    });
+    const pendingItem = agentRequests.outputSchema.properties.pendingRequests.items.properties;
+    expect(pendingItem.promptOffset.type).toBe('number');
+    expect(pendingItem.promptTotalChars.type).toBe('number');
+    expect(pendingItem.promptNextOffset.type).toEqual(['number', 'null']);
+    expect(agentRequests.outputSchema.properties.omittedImages.type).toBe('array');
+    expect(tools.find((t) => t.name === 'remediation_agent_respond').inputSchema.properties.text.maxLength).toBe(8000000);
 
     // OCR input uses the same fail-closed language contract as the remote MCP. The JSON Schema
     // must not advertise legacy Tesseract codes which the runtime rejects.
@@ -269,12 +281,31 @@ describe('remediation MCP: protocol + tool registry', () => {
     expect(cap.networkEgress.join(' ')).toContain('cdn.jsdelivr.net');
   });
 
+  it('remediation_verify_key reports a stable no-key state without a false credential-change warning', async () => {
+    const res = await callTool('remediation_verify_key', {});
+    expect(res.isError).toBe(false);
+    expect(res.structuredContent).toMatchObject({
+      state: 'no-key',
+      keyWorks: null,
+      checked: false,
+      geminiKeySource: 'none',
+      documentContentSent: false,
+    });
+    expect(res.structuredContent.checkedAt).toBeUndefined();
+    expect(res.structuredContent.detail || '').not.toMatch(/credential changed/i);
+    expect(res.structuredContent.setup).toMatch(/optional/i);
+  });
+
   it('the Claude Desktop bundle keeps the Gemini key optional for no-account installs', () => {
     const built = requireCjs(resolve(process.cwd(), 'desktop/mcp/build_mcpb.cjs'));
     const manifest = built.buildManifest();
     expect(manifest.user_config.gemini_api_key.required).toBe(false);
+    expect(manifest.user_config.gemini_api_key.sensitive).toBe(true);
+    expect(manifest.server.mcp_config.env.GEMINI_API_KEY).toBe('${user_config.gemini_api_key}');
     expect(manifest.long_description).toMatch(/deterministic tools remain available without a key/i);
     expect(manifest.server.mcp_config.env.ALLOFLOW_MCP_NO_KEY_FILES).toBe('1');
+    const projectConfig = JSON.parse(readFileSync(resolve(process.cwd(), '.mcp.json'), 'utf8'));
+    expect(projectConfig.mcpServers['alloflow-remediation'].env.ALLOFLOW_MCP_NO_KEY_FILES).toBe('1');
   });
 
   it('the MCPB manifest advertises EXACTLY the tools the server serves', async () => {

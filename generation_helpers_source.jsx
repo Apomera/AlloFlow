@@ -836,13 +836,37 @@ const _normalizeFullPackInstructionalContext = (raw, options = {}) => {
     return module.normalizeInstructionalContext(source, {
       instructionalGrade: options.gradeLevel || '',
       standardsContext: options.standardsContext || null,
+      standardsInput: options.standardsInput || '',
     });
   }
   const standardsContext = _cloneFullPackValue(source.standardsContext || options.standardsContext || null);
+  const constraints = standardsContext && standardsContext.instructionalConstraints || {};
+  const sourcedProhibition = constraints.textAccessExpectation === 'adaptation-prohibited'
+    && (constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl));
+  const requestedAdaptedPolicy = ['include', 'omit', 'prohibited'].includes(source.adaptedTextPolicy)
+    ? source.adaptedTextPolicy : '';
+  const adaptedTextPolicy = sourcedProhibition
+    ? 'prohibited'
+    : (requestedAdaptedPolicy === 'prohibited' ? 'omit' : (requestedAdaptedPolicy || 'include'));
+  const standardRequiresPrimary = _fullPackStandardsPreserveTextComplexity(
+    standardsContext, options.standardsInput || ''
+  ) || sourcedProhibition;
   return {
     schemaVersion: 1,
     instructionalGrade: String(source.instructionalGrade || options.gradeLevel || ''),
     primaryTextPolicy: source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
+    primaryTextAccess: standardRequiresPrimary ? 'required' : (source.primaryTextAccess === 'required' ? 'required' : 'available'),
+    adaptedTextPolicy,
+    adaptedTextPolicySource: sourcedProhibition
+      ? 'standard'
+      : (requestedAdaptedPolicy === 'prohibited' ? 'educator'
+        : (['educator', 'standard', 'workflow-default'].includes(source.adaptedTextPolicySource)
+          ? source.adaptedTextPolicySource
+          : (requestedAdaptedPolicy ? 'educator' : 'workflow-default'))),
+    textAccessReason: sourcedProhibition
+      ? 'sourced-adaptation-prohibition'
+      : (standardRequiresPrimary ? 'standard-text-complexity-requirement'
+          : (requestedAdaptedPolicy ? 'educator-choice' : 'default-access-companion')),
     standardsContext,
     standardsFingerprint: String(source.standardsFingerprint || _fullPackFingerprint(JSON.stringify(standardsContext || null))),
   };
@@ -1424,29 +1448,18 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             || (_planSourceRun.settingsSnapshot && _planSourceRun.settingsSnapshot.instructionalContext));
     const _requestedInstructionalContext = _plannedInstructionalContext
         || _fullPackRequest.instructionalContext || instructionalContext;
-    const _hasExplicitPrimaryTextPolicy = !!(_requestedInstructionalContext
-        && typeof _requestedInstructionalContext === 'object'
-        && Object.prototype.hasOwnProperty.call(_requestedInstructionalContext, 'primaryTextPolicy'));
-    const _hasExistingAnalyzedSource = Array.isArray(history) && history.some(item => item
-        && item.type === 'analysis' && item._fullPackPlannedArtifact !== true);
-    const _inheritedDefaultTextPair = !!(deps && deps.fullPackDefaultTextPair === true);
-    // Keep the common path to two teacher actions: Plan, then Generate. When
-    // the source has not been analyzed yet, or a standards constraint requires
-    // continued access to complex primary text, include both the primary
-    // Analysis and a supplemental Adapted Text in the reviewed plan. An
-    // explicit educator policy still wins and approved/retry runs stay frozen.
-    const _defaultToAnalyzedAndAdaptedText = !_planSourceRun
-        && (_inheritedDefaultTextPair
-            || (!_hasExplicitPrimaryTextPolicy
-                && (!_hasExistingAnalyzedSource
-                    || _fullPackStandardsPreserveTextComplexity(_runStandardsContext, standardsInput))));
     const _normalizedInstructionalContext = _normalizeFullPackInstructionalContext(
         _requestedInstructionalContext,
-        { gradeLevel, standardsContext: _runStandardsContext }
+        { gradeLevel, standardsContext: _runStandardsContext, standardsInput }
     );
-    const _activeInstructionalContext = _defaultToAnalyzedAndAdaptedText
-        ? Object.assign({}, _normalizedInstructionalContext, { primaryTextPolicy: 'educator-directed' })
-        : _normalizedInstructionalContext;
+    const _activeInstructionalContext = _normalizedInstructionalContext;
+    // Primary-text preservation and adapted-companion inclusion are separate
+    // decisions. The common path includes both regardless of whether an
+    // Analysis artifact already exists; the Generation Matrix will reuse that
+    // analysis at zero calls. Only an explicit omit or sourced prohibition
+    // suppresses Adapted Text.
+    const _defaultToAnalyzedAndAdaptedText = !_planSourceRun
+        && _activeInstructionalContext.adaptedTextPolicy === 'include';
     const _fullPackRunAbortCtl = _ownsFullPackAbort && typeof AbortController !== 'undefined' ? new AbortController() : null;
     const _fullPackSignal = generationSignal || (_fullPackRunAbortCtl && _fullPackRunAbortCtl.signal) || null;
     if (_fullPackRunAbortCtl) _fullPackAbortCtl = _fullPackRunAbortCtl;
@@ -1639,7 +1652,12 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                         standardsFingerprint: groupStandardsContext === _runStandardsContext
                             ? _activeInstructionalContext.standardsFingerprint : '',
                     }),
-                    { gradeLevel: profile.gradeLevel || gradeLevel, standardsContext: groupStandardsContext }
+                    {
+                        gradeLevel: profile.gradeLevel || gradeLevel,
+                        standardsContext: groupStandardsContext,
+                        standardsInput: Array.isArray(profile.targetStandards)
+                            ? profile.targetStandards.join('; ') : standardsInput,
+                    }
                 );
                 const groupFrozenGenerationDeps = _fullPackGenerationConfigDeps(
                     profile.fullPackGenerationConfig || _fullPackGenerationConfig
@@ -1852,11 +1870,10 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             { type: 'lesson-plan', directive: '' },
             { type: 'adventure', directive: '' }
         ];
-        // Preserve-primary is the safe Full Pack default: add same-text
-        // supports, but do not silently create an adapted companion. Teachers
-        // can opt in by choosing educator-directed policy, and the legacy
-        // internal type remains `simplified` for renderer compatibility.
-        if (_activeInstructionalContext.primaryTextPolicy === 'educator-directed') {
+        // The adapted companion is included by default and remains
+        // supplemental. This is independent of whether the source must remain
+        // the primary text for standards alignment.
+        if (_activeInstructionalContext.adaptedTextPolicy === 'include') {
             resourcesToGen.splice(1, 0, { type: 'simplified', directive: '' });
         }
         if (!_retryRun && !_approvedRun && (resourceCount === 'Auto' || resourceCount === 'All')) {
@@ -1970,13 +1987,15 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
             }
         }
         const _policySkippedResources = [];
-        if (!_approvedRun && !_retryRun && _activeInstructionalContext.primaryTextPolicy === 'preserve-primary') {
+        if (!_approvedRun && !_retryRun && _activeInstructionalContext.adaptedTextPolicy !== 'include') {
             const adaptedRows = resourcesToGen.filter(item => item && item.type === 'simplified');
             resourcesToGen = resourcesToGen.filter(item => !item || item.type !== 'simplified');
             adaptedRows.forEach(item => _policySkippedResources.push({
                 type: 'simplified',
                 uiId: item.uiId || null,
-                reason: 'Adapted Text is optional under the preserve-primary policy.'
+                reason: _activeInstructionalContext.adaptedTextPolicy === 'prohibited'
+                    ? 'Adapted Text is contraindicated by a sourced standards constraint.'
+                    : 'Adapted Text was omitted by educator choice.'
             }));
         }
         const fullPackFailures = [];
@@ -3468,6 +3487,26 @@ const _setFullPackRecordPrimaryTextPolicy = (record, policy) => {
   });
 };
 
+const _setFullPackRecordAdaptedTextPolicy = (record, policy, decisionSource = 'educator') => {
+  const normalizedPolicy = ['include', 'omit', 'prohibited'].includes(policy) ? policy : 'include';
+  const payload = record.planPayload && typeof record.planPayload === 'object' ? record.planPayload : {};
+  const snapshot = record.settingsSnapshot && typeof record.settingsSnapshot === 'object' ? record.settingsSnapshot : {};
+  const existingContext = payload.instructionalContext || snapshot.instructionalContext || {};
+  const instructionalContext = Object.assign({}, existingContext, {
+    schemaVersion: Number(existingContext.schemaVersion) || 1,
+    adaptedTextPolicy: normalizedPolicy,
+    adaptedTextPolicySource: normalizedPolicy === 'prohibited' ? 'standard' : decisionSource,
+    textAccessReason: normalizedPolicy === 'prohibited'
+      ? 'sourced-adaptation-prohibition'
+      : 'educator-choice',
+  });
+  return Object.assign({}, record, {
+    planPayload: Object.assign({}, payload, { instructionalContext: _cloneFullPackValue(instructionalContext) }),
+    settingsSnapshot: Object.assign({}, snapshot, { instructionalContext: _cloneFullPackValue(instructionalContext) }),
+    preflight: Object.assign({}, record.preflight || {}, { adaptedTextPolicy: normalizedPolicy }),
+  });
+};
+
 const _getFullPackReadyPlanTarget = (priorRun, groupId, editRecord) => {
   const run = priorRun && typeof priorRun === 'object' ? priorRun : null;
   if (!run || run.status !== 'ready' || typeof editRecord !== 'function') return run;
@@ -3487,8 +3526,12 @@ const _getFullPackReadyPlanTarget = (priorRun, groupId, editRecord) => {
 const _syncFullPackPolicyToRows = (record, preferredPolicy = null) => {
   const rows = record.preflight && Array.isArray(record.preflight.selected) ? record.preflight.selected : [];
   const hasAdapted = rows.some(item => item && item.type === 'simplified');
-  const policy = preferredPolicy || (hasAdapted ? 'educator-directed' : 'preserve-primary');
-  return _setFullPackRecordPrimaryTextPolicy(record, policy);
+  const context = record.planPayload && record.planPayload.instructionalContext
+    || record.settingsSnapshot && record.settingsSnapshot.instructionalContext || {};
+  if (context.adaptedTextPolicy === 'prohibited') return record;
+  const policy = preferredPolicy || (hasAdapted ? 'include' : 'omit');
+  if (context.adaptedTextPolicy === policy) return record;
+  return _setFullPackRecordAdaptedTextPolicy(record, policy);
 };
 
 const addFullPackPlanResource = (priorRun, resource, groupId = null) => {
@@ -3496,6 +3539,9 @@ const addFullPackPlanResource = (priorRun, resource, groupId = null) => {
   const type = String(source.type || source.tool || '').trim();
   if (!getFullPackEditableResourceTypes().includes(type)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
   return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const context = record.planPayload && record.planPayload.instructionalContext
+      || record.settingsSnapshot && record.settingsSnapshot.instructionalContext || {};
+    if (type === 'simplified' && context.adaptedTextPolicy === 'prohibited') return record;
     const rows = record.preflight.selected;
     const uiId = _nextFullPackPlanUiId(rows, type, source.uiId);
     const contextOptions = _fullPackPlanContextOptions(record);
@@ -3512,7 +3558,7 @@ const addFullPackPlanResource = (priorRun, resource, groupId = null) => {
       ),
     });
     let updated = _recalculateFullPackPlan(record, rows.concat(added));
-    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'educator-directed' : null);
+    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'include' : null);
     return updated;
   });
 };
@@ -3546,6 +3592,9 @@ const changeFullPackPlanResourceType = (priorRun, resourceKey, nextType, groupId
     const rowIndex = rows.findIndex((item, index) => _fullPackPlanItemKey(item, index) === key);
     if (rowIndex < 0) return record;
     const current = rows[rowIndex] || {};
+    const context = record.planPayload && record.planPayload.instructionalContext
+      || record.settingsSnapshot && record.settingsSnapshot.instructionalContext || {};
+    if (type === 'simplified' && context.adaptedTextPolicy === 'prohibited') return record;
     if (current.type === type) {
       const safeRows = _normalizeFullPackPlanRows(record, rows);
       const same = JSON.stringify(safeRows) === JSON.stringify(rows);
@@ -3560,7 +3609,7 @@ const changeFullPackPlanResourceType = (priorRun, resourceKey, nextType, groupId
     });
     const selected = rows.map((item, index) => index === rowIndex ? changed : item);
     let updated = _recalculateFullPackPlan(record, selected);
-    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'educator-directed' : null);
+    updated = _syncFullPackPolicyToRows(updated, type === 'simplified' ? 'include' : null);
     return updated;
   });
 };
@@ -3605,42 +3654,57 @@ const moveFullPackPlanResource = (priorRun, resourceKey, toIndex, groupId = null
 const setFullPackPlanPrimaryTextPolicy = (priorRun, policy, groupId = null) => {
   if (!['preserve-primary', 'educator-directed'].includes(policy)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
   return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const existingPolicy = record.planPayload && record.planPayload.instructionalContext
+      && record.planPayload.instructionalContext.primaryTextPolicy;
+    if (existingPolicy === policy) return record;
+    return _setFullPackRecordPrimaryTextPolicy(record, policy);
+  });
+};
+
+const setFullPackPlanAdaptedTextPolicy = (priorRun, policy, groupId = null) => {
+  if (!['include', 'omit', 'prohibited'].includes(policy)) return priorRun && typeof priorRun === 'object' ? priorRun : null;
+  return _getFullPackReadyPlanTarget(priorRun, groupId, record => {
+    const context = record.planPayload && record.planPayload.instructionalContext
+      || record.settingsSnapshot && record.settingsSnapshot.instructionalContext || {};
+    if (context.adaptedTextPolicy === 'prohibited' && policy !== 'prohibited') return record;
     const rows = record.preflight.selected;
-    if (policy === 'preserve-primary') {
+    if (policy !== 'include') {
       const nonAdapted = rows.filter(item => item && item.type !== 'simplified');
-      // Never let a policy switch erase the entire reviewed plan.
       if (nonAdapted.length === 0) return record;
       const removed = rows.filter(item => item && item.type === 'simplified');
-      const priorPolicy = record.planPayload && record.planPayload.instructionalContext
-        && record.planPayload.instructionalContext.primaryTextPolicy;
-      if (removed.length === 0 && priorPolicy === 'preserve-primary') return record;
+      if (removed.length === 0 && context.adaptedTextPolicy === policy) return record;
       const skipped = (Array.isArray(record.preflight.skipped) ? record.preflight.skipped : []).concat(
         removed.map((item, index) => ({
           type: 'simplified',
           uiId: _fullPackPlanItemKey(item, index),
-          reason: 'Supplemental adapted text removed when the educator selected preserve-primary policy.',
+          reason: policy === 'prohibited'
+            ? 'Supplemental adapted text removed because a sourced standard prohibits adaptation.'
+            : 'Supplemental adapted text omitted by educator choice.',
         }))
       );
-      return _setFullPackRecordPrimaryTextPolicy(_recalculateFullPackPlan(record, nonAdapted, skipped), policy);
+      return _setFullPackRecordAdaptedTextPolicy(
+        _recalculateFullPackPlan(record, nonAdapted, skipped), policy,
+        policy === 'prohibited' ? 'standard' : 'educator'
+      );
     }
     let selected = rows.slice();
     if (!selected.some(item => item && item.type === 'simplified')) {
       const type = 'simplified';
-      selected.push({
+      const analysisIndex = selected.findIndex(item => item && item.type === 'analysis');
+      const adapted = {
         type,
         uiId: _nextFullPackPlanUiId(selected, type),
-        directive: '',
+        directive: 'Create a supplemental Adapted Text while keeping the analyzed primary text available.',
         instructionalText: _safeFullPackPlanInstructionalText(
           type, null, _fullPackPlanContextOptions(record), true, true
         ),
-      });
+      };
+      selected.splice(analysisIndex >= 0 ? analysisIndex + 1 : selected.length, 0, adapted);
     }
     const normalized = _recalculateFullPackPlan(record, selected);
-    const existingPolicy = record.planPayload && record.planPayload.instructionalContext
-      && record.planPayload.instructionalContext.primaryTextPolicy;
-    if (existingPolicy === policy && selected.length === rows.length
+    if (context.adaptedTextPolicy === 'include' && selected.length === rows.length
         && JSON.stringify(normalized.preflight.selected) === JSON.stringify(rows)) return record;
-    return _setFullPackRecordPrimaryTextPolicy(normalized, policy);
+    return _setFullPackRecordAdaptedTextPolicy(normalized, 'include');
   });
 };
 
@@ -3922,6 +3986,7 @@ window.AlloModules.GenerationHelpers = {
   editFullPackPlanResourceDirective,
   moveFullPackPlanResource,
   setFullPackPlanPrimaryTextPolicy,
+  setFullPackPlanAdaptedTextPolicy,
   handleRemoveFullPackPlanResource,
   handleApproveFullPack,
   handleRetryFailedFullPack,

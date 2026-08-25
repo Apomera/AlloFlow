@@ -93,14 +93,14 @@ describe('Beehive Drone measurement-driven coaching', () => {
     const coach = host.querySelector('[data-drone-debrief-coach="energy-budget"]');
     expect(coach).toBeTruthy();
     expect(coach.textContent).toContain('Energy was the limiting factor');
-    expect(coach.textContent).toContain('Boost-first');
+    expect(coach.textContent).toContain('Updraft-first');
     expect(coach.querySelectorAll('[data-drone-coach-evidence]')).toHaveLength(3);
     expect(host.querySelector('[data-drone-colony-consequence="true"]').textContent).toContain('without a mating contribution');
 
     const retry = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Apply plan & fly again'));
     expect(retry).toBeTruthy();
     await act(async () => { retry.click(); await Promise.resolve(); await Promise.resolve(); });
-    expect(latest.beehive.drone.routePlan).toBe('boost-first');
+    expect(latest.beehive.drone.routePlan).toBe('thermal-first');
     expect(latest.beehive.drone.active).toBe(true);
   });
 });

@@ -3441,6 +3441,35 @@ function _builderExportPreflight(doc, mode) {
   const pendingChanges = _builderTrackedChangeEntries(doc).length;
   if (pendingChanges) add('warning', 'pending-changes', pendingChanges + ' pending revision' + (pendingChanges === 1 ? ' will' : 's will') + ' export using the final accepted view.', pendingChanges);
   if (mode === 'slides' && headings.length < 2) add('warning', 'slide-structure', 'Add section headings so the slide deck can split content into meaningful slides.');
+  if (mode === 'html') {
+    const remoteAssetNodes = Array.from(doc.querySelectorAll('img[src],audio[src],video[src],source[src],object[data],link[rel~="stylesheet"][href],style')).filter((node) => {
+      const value = node.tagName === 'STYLE'
+        ? node.textContent
+        : (node.getAttribute('src') || node.getAttribute('data') || node.getAttribute('href') || '');
+      return /https?:\/\//i.test(value || '');
+    }).length;
+    if (remoteAssetNodes) add('warning', 'html-remote-assets', `${remoteAssetNodes} external asset reference${remoteAssetNodes === 1 ? '' : 's'} may need an internet connection when the downloaded HTML is opened.`, remoteAssetNodes);
+  }
+  if (mode === 'print' || mode === 'worksheet') {
+    const overflowing = Array.from(doc.body.querySelectorAll('*')).filter((node) => {
+      if (node.closest('[hidden],.alloflow-reading-tools-shell,.allo-block-controls,.allo-block-remove')) return false;
+      const clientWidth = Number(node.clientWidth) || 0;
+      const scrollWidth = Number(node.scrollWidth) || 0;
+      return clientWidth > 0 && scrollWidth > clientWidth + 4;
+    }).length;
+    if (overflowing) add('warning', 'print-overflow', `${overflowing} element${overflowing === 1 ? '' : 's'} may extend beyond the printable page width.`, overflowing);
+    const tallBlocks = Array.from(doc.querySelectorAll('.question,.card,.quiz-box,figure,table,.reflection-block,[style*="break-inside: avoid"],[style*="break-inside:avoid"]')).filter((node) => {
+      if (node.closest('[hidden],.alloflow-reading-tools-shell')) return false;
+      try { return node.getBoundingClientRect().height > 900; } catch (_) { return false; }
+    }).length;
+    if (tallBlocks) add('warning', 'print-tall-blocks', `${tallBlocks} unbreakable content block${tallBlocks === 1 ? '' : 's'} may be clipped or pushed to another page.`, tallBlocks);
+  }
+  if (mode === 'worksheet') {
+    const interactiveControls = Array.from(doc.querySelectorAll('input:not([type="hidden"]),textarea,select')).filter((control) => !control.closest('[hidden],.alloflow-reading-tools-shell,.quiz-controls')).length;
+    if (interactiveControls) add('warning', 'worksheet-controls', `${interactiveControls} interactive control${interactiveControls === 1 ? '' : 's'} should be replaced by a printable line, blank, or choice marker.`, interactiveControls);
+    const responseLessQuestions = Array.from(doc.querySelectorAll('.quiz-box .question')).filter((question) => !question.querySelector('[data-allo-print-response],.alloflow-ruled-response,.alloflow-print-bubble,.alloflow-print-box,.alloflow-print-blank')).length;
+    if (responseLessQuestions) add('warning', 'worksheet-response-space', `${responseLessQuestions} worksheet question${responseLessQuestions === 1 ? '' : 's'} may not provide a clear place for students to respond.`, responseLessQuestions);
+  }
   if (mode === 'epub') {
     const remoteImages = Array.from(doc.images || []).filter((img) => !/^data:image\//i.test(img.getAttribute('src') || '')).length;
     if (remoteImages) add('warning', 'epub-images', `${remoteImages} image${remoteImages === 1 ? '' : 's'} must be fetched and packaged for offline e-readers.`, remoteImages);
@@ -7515,14 +7544,23 @@ function ExportPreviewView(props) {
 
   const runOfficeExport = React.useCallback(async (format) => {
     if (altExportBusy) return;
-    const api = window.AlloModules?.AccessibleOfficeExport;
     const doc = exportPreviewRef.current?.contentDocument;
-    if (!api || typeof api.build !== 'function') { addToast && addToast('The accessible Office exporter is still loading. Try again in a moment.', 'info'); return; }
     if (!doc) return;
     const preflight = runBuilderPreflight(format, false);
     if (preflight.errors) { addToast && addToast('Office export stopped: fix the blocking preflight issues first.', 'error'); return; }
     setAltExportBusy(format);
     try {
+      let api = window.AlloModules?.AccessibleOfficeExport;
+      if (!api || typeof api.build !== 'function') {
+        if (typeof window.__alloEnsurePdfAuditView === 'function') {
+          await window.__alloEnsurePdfAuditView();
+        }
+        api = window.AlloModules?.AccessibleOfficeExport;
+      }
+      if (!api || typeof api.build !== 'function') {
+        addToast && addToast('The accessible Office exporter is still loading. Try again in a moment.', 'info');
+        return;
+      }
       const clean = getCleanBuilderDocument({ forExport: true });
       if (!clean) throw new Error('The editable preview is not ready.');
       const result = await api.build({ html: clean.html, title: clean.title, format });
@@ -7589,8 +7627,13 @@ function ExportPreviewView(props) {
   const hasTimeline = (history || []).some(h => h && h.type === 'timeline');
   const hasBrainstorm = (history || []).some(h => h && h.type === 'brainstorm');
   const hasConceptSort = (history || []).some(h => h && h.type === 'concept-sort');
+  const hasVennDiagram = (history || []).some(h => h && h.type === 'outline' && h.data && h.data.structureType === 'Venn Diagram');
   const hasAssessmentContent = (history || []).some(h => h && (h.type === 'quiz' || h.type === 'assessment' || h.type === 'stem-assessment'));
-  const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort;
+  const showDisplayModes = hasGlossary || hasTimeline || hasBrainstorm || hasConceptSort || hasVennDiagram;
+  const requestedVennExportMode = ['completed', 'activity', 'both'].includes(exportConfig.vennExportMode)
+    ? exportConfig.vennExportMode
+    : 'completed';
+  const effectiveVennExportMode = exportConfig.assessmentMode === true ? 'activity' : requestedVennExportMode;
   const textAccessExportReview = React.useMemo(() => {
     const source = Array.isArray(history) ? history : [];
     const toggleForType = {
@@ -8271,6 +8314,16 @@ function ExportPreviewView(props) {
                       <input type="checkbox" checked={exportConfig.includeTeacherKey} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeTeacherKey: e.target.checked }))} className="rounded" />
                       📎 Teacher Answer Key
                     </label>
+                    {exportPreviewMode === 'html' && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && (
+                      <div className="ml-5 rounded-lg border border-emerald-200 bg-emerald-50 p-2">
+                        <label className="flex items-start gap-2 text-xs font-semibold text-emerald-950 cursor-pointer">
+                          <input type="checkbox" checked={exportConfig.separateTeacherStudentFiles !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, separateTeacherStudentFiles: e.target.checked }))} className="mt-0.5 rounded" />
+                          <span>Separate student + teacher files <span className="font-normal">(recommended)</span></span>
+                        </label>
+                        <p className="mt-1 text-[10px] leading-snug text-emerald-900">The STUDENT HTML downloads separately with the answer-key appendix removed. Answers stay in a private TEACHER download; project data is included when a private teacher ZIP can be created.</p>
+                        {exportConfig.separateTeacherStudentFiles === false && <p className="mt-1 text-[10px] font-bold leading-snug text-rose-700">The combined HTML will contain answers. Do not share it with students.</p>}
+                      </div>
+                    )}
                     <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                       <input type="checkbox" checked={exportConfig.includeStudentResponses} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, includeStudentResponses: e.target.checked }))} className="rounded" />
                       📝 Student Responses
@@ -8289,9 +8342,9 @@ function ExportPreviewView(props) {
                       <input type="checkbox" checked={exportConfig.assessmentMode === true} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, assessmentMode: e.target.checked }))} className="rounded" />
                       🔒 Assessment mode (no embedded answers)
                     </label>
-                    <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
-                      <input type="checkbox" checked={exportConfig.singleFileHtml} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, singleFileHtml: e.target.checked }))} className="rounded" />
-                      📄 Single file (.html, no zip)
+                    <label className={`flex items-center gap-2 text-xs text-slate-700 rounded px-1 py-0.5 ${exportPreviewMode === 'html' && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer hover:bg-white'}`} title="Embeds generated read-aloud audio inside the HTML instead of placing audio files beside it.">
+                      <input type="checkbox" checked={!!exportConfig.singleFileHtml || (exportPreviewMode === 'html' && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false)} disabled={exportPreviewMode === 'html' && exportConfig.includeTeacherKey && exportConfig.assessmentMode !== true && exportConfig.separateTeacherStudentFiles !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, singleFileHtml: e.target.checked }))} className="rounded" />
+                      🔊 Embed generated audio in HTML
                     </label>
                   </div>
                 </div>
@@ -8419,12 +8472,27 @@ function ExportPreviewView(props) {
                       </div>
                     )}
 
+                    {/* Venn diagram export: completed reference / student activity / both */}
+                    {hasVennDiagram && (
+                      <div className={`mb-2 ${exportConfig.includeOutline ? '' : 'opacity-50'}`}>
+                        <div className="text-[11px] font-semibold text-slate-700 mb-1 px-1">Venn diagram</div>
+                        <div className="space-y-0.5">
+                          {[['completed', '✅ Completed reference'], ['activity', '🧩 Student sorting activity'], ['both', '📄 Both (activity + completed key)']].map(([value, label]) => {
+                            const assessmentBlocked = exportConfig.assessmentMode === true && value !== 'activity';
+                            return <label key={value} className={`flex items-center gap-2 text-xs rounded px-1 py-0.5 ${assessmentBlocked || !exportConfig.includeOutline ? 'cursor-not-allowed text-slate-400' : 'text-slate-700 cursor-pointer hover:bg-white'}`}><input type="radio" name="vennExportMode" checked={effectiveVennExportMode === value} onChange={() => setExportConfigAndRefresh(p => ({ ...p, vennExportMode: value }))} disabled={!exportConfig.includeOutline || assessmentBlocked} />{label}</label>;
+                          })}
+                        </div>
+                        <div className="mt-1 px-1 text-[10px] leading-snug text-slate-500">HTML uses accessible tap/select placement. PDF and Worksheet exports use blank circles with cut-out cards.</div>
+                        {exportConfig.assessmentMode === true && <div className="mt-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] leading-snug text-amber-900">Assessment mode exports the activity without its completed reference or self-check answers.</div>}
+                      </div>
+                    )}
+
                     {/* Concept-sort interactive + image size */}
                     {hasConceptSort && (
                       <div>
                         <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5">
                           <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))} className="rounded" />
-                          🧩 Concept sort: drag-to-sort on digital
+                          🧩 Concept sort: interactive tap/select sorting
                         </label>
                         <div className="mt-1 pl-1">
                           <div className="text-[10px] font-semibold text-slate-500 mb-1">Sort strip image size</div>

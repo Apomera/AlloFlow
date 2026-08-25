@@ -26,7 +26,8 @@ describe('Water Cycle stage transfer cue', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('className: "wc-stage-focus-flow"');
-      expect(source).toContain('"aria-label": "Water transfer: " + currentStageFlow.from + " to " + currentStageFlow.to');
+      expect(source).not.toContain('"aria-label": "Water transfer: " + currentStageFlow.from + " to " + currentStageFlow.to');
+      expect(source).toContain('React.createElement("span", { className: "sr-only" }, " to ")');
       expect(source).toContain('currentStageFlow.from');
       expect(source).toContain('currentStageFlow.to');
     });

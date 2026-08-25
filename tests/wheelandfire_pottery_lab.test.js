@@ -30,6 +30,11 @@ describe('Wheel & Fire pottery lab', () => {
     expect(tool.category).toBe('creative');
     expect(tool.questHooks).toHaveLength(5);
     expect(html).toContain('data-wheel-fire-lab="true"');
+    expect(html).toContain('data-experience-mode="studio"');
+    expect(html).toContain('Workspace depth');
+    expect(html).toContain('Guided');
+    expect(html).toContain('Studio');
+    expect(html).toContain('Research');
     expect(html).toContain('role="tablist"');
     expect(html).toContain('aria-label="Pottery lifecycle"');
     expect(html).toContain('aria-label="Interactive pottery profile:');
@@ -38,6 +43,182 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Dry &amp; fire');
     expect(html).toContain('Use tests');
     expect(html).toContain('Journal');
+    expect(html).toContain('Start here');
+    expect(html).toContain('Pottery is a sequence');
+    expect(html).toContain('blue dashed line marks the work zone');
+    expect(html).toContain('What do these numbers mean?');
+    expect(html).toContain('Active tool:');
+    expect(html).toContain('Inside-hand support');
+    expect(html).toContain('Surface lubrication');
+    expect(html).toContain('Contact span');
+    expect(html).toContain('pale cyan band shows contact span');
+    expect(html).toContain('Support 55%');
+    expect(html).toContain('Preview only · no clay changed');
+    expect(html).toContain('Show predicted profile');
+    expect(html).toContain('dashed amber outline predicts the next profile');
+    expect(html).toContain('Predicted: stability');
+    expect(html).toContain('3D wheel · 42° tilt');
+    expect(html).toContain('3D camera tilt');
+    expect(html).toContain('wheel-fire-wheel-motion');
+    expect(html).toContain('wheel-fire-wobble-motion');
+    expect(html).toContain('Centering 38% · strong wobble');
+    expect(html).toContain('38 percent centered with strong wobble');
+    expect(html).toContain('Optional studio challenges');
+    expect(html).toContain('aria-orientation="horizontal"');
+    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown Enter Space"');
+    expect(html).toContain('data-tooltip=');
+    const source = readFileSync(sourceFile, 'utf8');
+    expect(source).not.toMatch(/Â|â|Ã/);
+    expect(source).toContain('.wheel-fire-shell[data-experience-mode="guided"] .wheel-fire-advanced');
+    expect(source).toContain('.wheel-fire-shell:not([data-experience-mode="research"]) .wheel-fire-research-only');
+    expect(source).toContain('function finishGesture()');
+    expect(source).toContain('onPointerUp: function (event) { finishGesture();');
+    const firedHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'performance', vessel: makeGlazeFired(window.__alloPotteryPure) } });
+    expect(firedHtml).toContain('Next suggested step');
+    expect(firedHtml).toContain('Run a use test');
+  });
+
+  it('makes the experiment loop, stage boundaries, and measurable change feedback explicit', () => {
+    const pure = window.__alloPotteryPure;
+    const wet = pure.makeVessel('stoneware', 'bowl');
+    const shaped = pure.applyTool(wet, 'belly', 20, { pressure: 62, rpm: 55, method: 'wheel' });
+    const html = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'shape', vessel: shaped, history: [wet], activeTool: 'belly',
+      lastChange: { beforeStage: 'wet', afterStage: 'wet', stabilityDelta: 3.4, centeredDelta: 1.2, minWallDelta: -0.08, capacityDelta: 12.5, massDelta: 0, outcome: shaped.lastOutcome }
+    } });
+    const scienceHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'science', vessel: shaped } });
+
+    expect(scienceHtml).toContain('1. Predict.');
+    expect(scienceHtml).toContain('2. Change one thing.');
+    expect(scienceHtml).toContain('3. Compare.');
+    expect(scienceHtml).toContain('Study protocol');
+    expect(scienceHtml).toContain('Baseline needed');
+    expect(scienceHtml).toContain('No baseline yet');
+    expect(scienceHtml).toContain('Next move.');
+    expect(scienceHtml).toContain('Log the current setup as a baseline');
+    expect(html).toContain('What changed since the previous checkpoint:');
+    expect(html).toContain('stability +3.4 pts');
+    expect(html).toContain('minimum wall -0.08 cm');
+    expect(html).toContain('capacity +12.5 mL');
+    expect(html).toContain('Outcome:');
+
+    const bisqueHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: makeBisque(pure) } });
+    expect(bisqueHtml).toContain('Shaping is paused after leather-hard');
+    expect(bisqueHtml).toContain('continue in Dry &amp; fire');
+  });
+
+  it('makes repeatable mechanics trials comparable, replayable, and evidence-rich', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'bowl');
+    const html = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'science',
+      vessel,
+      trialSeriesId: 'series-speed',
+      trialSeriesName: 'Wheel speed study',
+      trialBaselineIds: { 'series-speed': '1' },
+      measurementLog: [
+        { id: 0, seriesId: 'series-old', seriesName: 'Earlier study', method: 'wheel', tool: 'center', workRing: 10, rpm: 25, pressure: 48, moisture: 70, minWall: '0.94', uniformity: 84, compression: 52, coilBond: 90, overhang: 8, stability: 69, outcome: 'Stable' },
+        { id: 1, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, pressure: 48, moisture: 70, minWall: '0.90', uniformity: 80, compression: 50, coilBond: 90, overhang: 10, stability: 65, outcome: 'Watch closely' },
+        { id: 2, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 65, pressure: 48, moisture: 70, minWall: '0.84', uniformity: 75, compression: 48, coilBond: 90, overhang: 14, stability: 60, outcome: 'Watch closely', hypothesis: 'Higher speed increases wobble.', observation: 'The rim felt softer and began to wander.' }
+      ]
+    } });
+
+    expect(html).toContain('Reference-to-latest comparison');
+    expect(html).toContain('Comparison ready — interpret the evidence');
+    expect(html).toContain('Experiment series');
+    expect(html).toContain('Wheel speed study');
+    expect(html).toContain('Reference trial');
+    expect(html).toContain('Reference is Trial 1');
+    expect(html).toContain('Trial 1 - wheel - 40 RPM - center - ring 11');
+    expect(html).toContain('70% moisture');
+    expect(html).toContain('48% pressure');
+    expect(html).toContain('Only trials in the selected series are compared');
+    expect(html).toContain('2 logged trials');
+    expect(html).toContain('Series evidence trail');
+    expect(html).toContain('Selected-reference evidence graph');
+    expect(html).toContain('Square marker = selected reference');
+    expect(html).toContain('Stability moved from 65% at Trial 1 to 60% at Trial 2');
+    expect(html).toContain('Reference to latest modeled metrics');
+    expect(html).toContain('Path summary:');
+    expect(html).toContain('falling path');
+    expect(html).toContain('Setup audit:');
+    expect(html).toContain('one-variable candidate');
+    expect(html).toContain('wheel speed');
+    expect(html).toContain('Study protocol');
+    expect(html).toContain('Hold constant.');
+    expect(html).toContain('Use Trial 1 as your selected reference');
+    expect(html).toContain('Change one thing.');
+    expect(html).toContain('Observe.');
+    expect(html).toContain('Interpret.');
+    expect(html).toContain('Next move.');
+    expect(html).toContain('reduce one stress input');
+    expect(html).toContain('Current setup:');
+    expect(html).toContain('One setup input changed from Trial 1 → Trial 2: wheel speed');
+    expect(html).toContain('How to read it:');
+    expect(html).toContain('Observation recorded:');
+    expect(html).toContain('Studio observation (optional)');
+    expect(html).toContain('Observation');
+    expect(html).toContain('Model deltas:');
+    expect(html).toContain('Prediction recorded:');
+    expect(html).toContain('Replay in Shape');
+    expect(html).toContain('Remove from series');
+    expect(html).toContain('Tool');
+    expect(html).toContain('Ring');
+
+    const laterReferenceHtml = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'science',
+      vessel,
+      trialSeriesId: 'series-speed',
+      trialSeriesName: 'Wheel speed study',
+      trialBaselineIds: { 'series-speed': '2' },
+      measurementLog: [
+        { id: 1, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, pressure: 48, moisture: 70, minWall: '0.90', uniformity: 80, compression: 50, coilBond: 90, overhang: 10, stability: 65, outcome: 'Watch closely' },
+        { id: 2, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 65, pressure: 48, moisture: 70, minWall: '0.84', uniformity: 75, compression: 48, coilBond: 90, overhang: 14, stability: 60, outcome: 'Watch closely' }
+      ]
+    } });
+    expect(laterReferenceHtml).toContain('Trial 2 is the reference');
+    expect(laterReferenceHtml).toContain('Use Trial 2 as your selected reference');
+    expect(laterReferenceHtml).toContain('Reference logged');
+    expect(laterReferenceHtml).toContain('comparison needs one more trial');
+    expect(laterReferenceHtml).toContain('Trial 2 - wheel - 65 RPM - center - ring 11');
+    expect(laterReferenceHtml).not.toContain('Reference-to-latest comparison');
+    expect(laterReferenceHtml).not.toContain('Selected-reference evidence graph');
+
+    const nonAdjacentReferenceHtml = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'science',
+      vessel,
+      trialSeriesId: 'series-speed',
+      trialSeriesName: 'Wheel speed study',
+      trialBaselineIds: { 'series-speed': '1' },
+      measurementLog: [
+        { id: 1, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, pressure: 48, moisture: 70, minWall: '0.90', uniformity: 80, compression: 50, coilBond: 90, overhang: 10, stability: 65, outcome: 'Watch closely' },
+        { id: 2, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 65, pressure: 48, moisture: 70, minWall: '0.84', uniformity: 75, compression: 48, coilBond: 90, overhang: 14, stability: 60, outcome: 'Watch closely' },
+        { id: 3, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 65, pressure: 55, moisture: 70, minWall: '0.80', uniformity: 72, compression: 46, coilBond: 90, overhang: 16, stability: 56, outcome: 'Watch closely' }
+      ]
+    } });
+    expect(nonAdjacentReferenceHtml).toContain('Trial 1 → Trial 3');
+    expect(nonAdjacentReferenceHtml).toContain('Selected-reference evidence graph');
+    expect(nonAdjacentReferenceHtml).toContain('2 setup inputs changed');
+    expect(nonAdjacentReferenceHtml).toContain('wheel speed');
+    expect(nonAdjacentReferenceHtml).toContain('hand pressure');
+
+    const removedHtml = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'science', vessel, trialSeriesId: 'series-speed', trialSeriesName: 'Wheel speed study',
+      measurementLog: [{ id: 1, seriesId: 'series-speed', seriesName: 'Wheel speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, pressure: 48, moisture: 70, minWall: '0.90', uniformity: 80, compression: 50, coilBond: 90, overhang: 10, stability: 65, outcome: 'Watch closely' }],
+      removedMechanicsTrial: { row: { id: 2 }, seriesId: 'series-speed', seriesName: 'Wheel speed study', trialLabel: 'Trial 2', allIndex: 1, removedKey: '2', wasReference: false }
+    } });
+    expect(removedHtml).toContain('Trial 2');
+    expect(removedHtml).toContain('Comparisons and journal evidence now omit it');
+    expect(removedHtml).toContain('Restore removed trial');
+    const source = readFileSync(sourceFile, 'utf8');
+    expect(source).toContain('function removeTrial(row, index)');
+    expect(source).toContain('function restoreRemovedTrial()');
+
+    const guidedHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'science', vessel, experienceMode: 'guided' } });
+    expect(guidedHtml).toContain('data-experience-mode="guided"');
+    const researchHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'science', vessel, experienceMode: 'research' } });
+    expect(researchHtml).toContain('data-experience-mode="research"');
+    expect(researchHtml).toContain('Research model-audit lens');
   });
 
   it('presents named, sourced cultural process studies without style-copy shortcuts', () => {
@@ -58,6 +239,49 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('no motif stamps');
     expect(html).toContain('Context before resemblance');
     expect(html).toContain('Evidence and uncertainty');
+  });
+
+  it('models inside support, lubrication, and contact span as tactile forming variables', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'cylinder');
+    const unsupported = pure.applyTool(vessel, 'pull', 22, { pressure: 70, rpm: 65, method: 'wheel', handSupport: 0, lubrication: 30, contactSpan: 9 });
+    const supported = pure.applyTool(vessel, 'pull', 22, { pressure: 70, rpm: 65, method: 'wheel', handSupport: 90, lubrication: 30, contactSpan: 9 });
+    expect(supported.thickness[22]).toBeGreaterThan(unsupported.thickness[22]);
+    expect(supported.heightCm).toBeGreaterThan(unsupported.heightCm);
+    expect(supported.wobble).toBeLessThanOrEqual(unsupported.wobble);
+
+    const narrow = pure.applyTool(vessel, 'belly', 20, { pressure: 65, rpm: 55, method: 'wheel', handSupport: 50, lubrication: 30, contactSpan: 3 });
+    const broad = pure.applyTool(vessel, 'belly', 20, { pressure: 65, rpm: 55, method: 'wheel', handSupport: 50, lubrication: 30, contactSpan: 11 });
+    expect(Math.abs(broad.radii[24] - vessel.radii[24])).toBeGreaterThan(Math.abs(narrow.radii[24] - vessel.radii[24]));
+
+    const moderateSlip = pure.analyzeVessel(vessel, { pressure: 48, rpm: 58, method: 'wheel', lubrication: 30 });
+    const excessSlip = pure.analyzeVessel(vessel, { pressure: 48, rpm: 58, method: 'wheel', lubrication: 100 });
+    expect(excessSlip.stability).toBeLessThan(moderateSlip.stability);
+  });
+
+  it('forecasts a dangerous forming move before it changes the vessel', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'cylinder');
+    vessel.heightCm = 38;
+    vessel.centered = 0;
+    vessel.wobble = 1;
+    vessel.radii = vessel.radii.map(() => 10.8);
+    vessel.thickness = vessel.thickness.map((wall, index) => index < 3 ? wall : 0.23);
+    const html = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'shape', vessel, activeTool: 'belly', workRing: 22,
+      pressure: 100, rpm: 120, handSupport: 0, lubrication: 100, contactSpan: 3
+    } });
+
+    expect(html).toContain('Collapse forecast');
+    expect(html).toContain('Use safer touch setup');
+    expect(html).toContain('high pressure');
+    expect(html).toContain('high wheel speed');
+    expect(html).toContain('low inside support');
+    expect(html).toContain('excess lubrication');
+    expect(html).toContain('concentrated contact');
+    expect(html).toContain('stroke-dasharray="9 6"');
+    expect(html).toContain('Preview only · no clay changed');
+    expect(vessel.collapsed).toBe(false);
   });
 
   it('approximately conserves clay volume while shaping but not when adding or trimming clay', () => {
@@ -91,6 +315,21 @@ describe('Wheel & Fire pottery lab', () => {
     expect(collapsed.collapsed).toBe(true);
     expect(collapsed.defects).toContain('structural collapse');
     expect(collapsed.heightCm).toBeLessThan(38);
+
+    const autopsy = pure.analyzeFailureContributors(collapsed, { pressure: 100, rpm: 120, method: 'wheel' });
+    expect(autopsy.ready).toBe(true);
+    expect(autopsy.eventLabel).toBe('Structural collapse');
+    expect(autopsy.contributors.map((item) => item.id)).toContain('pressure');
+    expect(autopsy.contributors.map((item) => item.id)).toContain('rpm');
+    expect(autopsy.criticalRing).toBeGreaterThanOrEqual(0);
+
+    const autopsyHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'shape', vessel: collapsed, pressure: 100, rpm: 120, history: [pure.makeVessel('porcelain', 'cylinder')] } });
+    expect(autopsyHtml).toContain('Modeled outcome autopsy');
+    expect(autopsyHtml).toContain('1. Input or condition');
+    expect(autopsyHtml).toContain('2. Vulnerable response');
+    expect(autopsyHtml).toContain('3. Modeled outcome');
+    expect(autopsyHtml).toContain('Restore last safe checkpoint');
+    expect(autopsyHtml).toContain('diagnostic hypothesis, not proof');
   });
 
   it('models coil consolidation and unsupported overhang as structural variables', () => {
@@ -174,6 +413,29 @@ describe('Wheel & Fire pottery lab', () => {
     const zeroRangeCalibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'uncertainty-zero', checkpointIndex: 0, modeled: { heightCm: dimensions.baseline.heightCm }, measured: { heightCm: dimensions.baseline.heightCm }, uncertainty: { heightCm: 0 }, modelSettings }], modelSettings);
     expect(zeroRangeCalibration.rows[0].compared[0].withinUncertainty).toBe(true);
     expect(zeroRangeCalibration.rows[0].compared[0].uncertaintyRatio).toBeNull();
+    const repeatedCalibration = pure.compareDimensionalMeasurements(dimensions, [
+      { id: 'repeat-1', checkpointIndex: 0, measurementMethod: 'calipers', modeled: { heightCm: dimensions.baseline.heightCm, capacityMl: dimensions.baseline.capacityMl }, measured: { heightCm: dimensions.baseline.heightCm + 0.2, capacityMl: dimensions.baseline.capacityMl - 12 }, uncertainty: { heightCm: 0.25, capacityMl: 5 }, modelSettings },
+      { id: 'repeat-2', checkpointIndex: 0, measurementMethod: 'calipers', modeled: { heightCm: dimensions.baseline.heightCm, capacityMl: dimensions.baseline.capacityMl }, measured: { heightCm: dimensions.baseline.heightCm + 0.4, capacityMl: dimensions.baseline.capacityMl - 10 }, uncertainty: { heightCm: 0.25, capacityMl: 5 }, modelSettings }
+    ], modelSettings);
+    const repeatability = pure.summarizeMeasurementRepeatability(repeatedCalibration.rows);
+    expect(repeatability.groupCount).toBe(1);
+    expect(repeatability.repeatedGroupCount).toBe(1);
+    expect(repeatability.repeatedDimensionCount).toBe(2);
+    expect(repeatability.groups[0].metricSummaries.heightCm.range).toBeCloseTo(0.2, 5);
+    expect(repeatability.groups[0].metricSummaries.heightCm.count).toBe(2);
+    expect(repeatability.groups[0].metricSummaries.capacityMl.meanUncertainty).toBeCloseTo(5, 5);
+    expect(repeatability.groups[0].methodConsistency).toBe('consistent');
+    expect(repeatability.groups[0].methodLabels).toEqual(['Calipers / diameter gauge']);
+    expect(repeatability.summary).toContain('Repeated evidence covers');
+    const mixedRepeatability = pure.summarizeMeasurementRepeatability([
+      { ...repeatedCalibration.rows[0], measurementMethod: 'calipers' },
+      { ...repeatedCalibration.rows[1], measurementMethod: 'water-fill' }
+    ]);
+    expect(mixedRepeatability.mixedMethodGroupCount).toBe(1);
+    expect(mixedRepeatability.groups[0].methodConsistency).toBe('mixed');
+    expect(mixedRepeatability.summary).toContain('mixed measurement methods');
+    expect(pure.normalizeMeasurementMethod('not-a-method')).toBe('unknown');
+    expect(pure.measurementMethodLabel('water-fill')).toBe('Water fill / graduated volume');
     const calibration = pure.compareDimensionalMeasurements(dimensions, [{ id: 'measure-1', checkpointIndex: 0, measured: { heightCm: dimensions.baseline.heightCm + 0.2, capacityMl: dimensions.baseline.capacityMl - 12 }, note: 'calipers and water fill' }]);
     expect(calibration.measurementCount).toBe(1);
     expect(calibration.dimensionCount).toBe(2);
@@ -282,7 +544,18 @@ describe('Wheel & Fire pottery lab', () => {
       firingSchedules: [{ id: 9, label: 'Slow test', temperature: 1220, ramp: 80, soak: 30, coolingRate: 80, kilnType: 'electric' }],
       cycleProtocols: [{ id: 10, label: 'Slow rinse', cycles: 12, dryingRate: 20, cycleTemperatureDelta: 30 }],
       sensitivityLog: [{ id: 11, label: 'Cycle sensitivity sweep', stage: 'glaze-fired', cycles: 24, dryingRate: 45, cycleTemperatureDelta: 80, damagePct: 18, axes: [], observation: 'Observed no visible change after the short comparison.' }],
-      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], cycleProtocols: [{ id: 10 }], sensitivityStudies: [{ id: 11 }], method: 'wheel', performanceTests: [] }]
+      claim: 'A higher speed reduces rim stability.',
+      evidence: 'The second trial lost five stability points.',
+      reasoning: 'The model links speed and wobble while pressure stays fixed.',
+      selectedTradition: 'acoma',
+      compareTradition: 'onggi',
+      visitedTraditions: { acoma: true, onggi: true },
+      culturalComparisons: [{ id: 13, firstName: 'Acoma Pueblo pottery', secondName: 'Korean onggi', similarity: 'Both use practiced forming.', difference: 'Their food contexts differ.', evidence: 'Named sources distinguish their histories.' }],
+      trialSeriesId: 'series-speed',
+      trialSeriesName: 'Rim speed study',
+      trialBaselineIds: { 'series-speed': '12' },
+      measurementLog: [{ id: 12, seriesId: 'series-speed', seriesName: 'Rim speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, pressure: 48, moisture: 70, minWall: '0.90', uniformity: 80, compression: 50, coilBond: 90, overhang: 10, stability: 65, outcome: 'Watch closely', observation: 'Rim felt firm after the second pass.' }],
+      gallery: [{ id: 8, name: 'Recipe record', vessel: recipeState, materialRecipe: recipeState.materialRecipe, materialScenarios: [{ id: 7 }], firingSchedules: [{ id: 9 }], cycleProtocols: [{ id: 10 }], sensitivityStudies: [{ id: 11 }], measurementTrials: [{ id: 12, seriesId: 'series-speed', seriesName: 'Rim speed study', method: 'wheel', tool: 'center', workRing: 10, rpm: 40, observation: 'Rim felt firm after the second pass.' }], claim: 'A higher speed reduces rim stability.', evidence: 'The second trial lost five stability points.', reasoning: 'The model links speed and wobble while pressure stays fixed.', culturalComparisons: [{ id: 13 }], selectedTradition: 'acoma', trialSeriesId: 'series-speed', trialSeriesName: 'Rim speed study', trialBaselineIds: { 'series-speed': '12' }, method: 'wheel', performanceTests: [] }]
     } });
     expect(journalHtml).toContain('Saved scenarios');
     expect(journalHtml).toContain('1 saved material scenario');
@@ -292,6 +565,32 @@ describe('Wheel & Fire pottery lab', () => {
     expect(journalHtml).toContain('1 saved reuse protocol');
     expect(journalHtml).toContain('Sensitivity studies');
     expect(journalHtml).toContain('1 saved sensitivity study');
+    expect(journalHtml).toContain('Mechanics trials');
+    expect(journalHtml).toContain('1 saved mechanics trial');
+    expect(journalHtml).toContain('Latest field observation');
+    expect(journalHtml).toContain('Latest field note:');
+    expect(journalHtml).toContain('Reflection fields');
+    expect(journalHtml).toContain('3/3 recorded');
+    expect(journalHtml).toContain('Cultural comparisons');
+    expect(journalHtml).toContain('1 saved cultural comparison');
+    expect(journalHtml).toContain('Tradition context: Acoma Pueblo pottery');
+    expect(journalHtml).toContain('Trial series: Rim speed study');
+    expect(journalHtml).toContain('Mechanics reference');
+    expect(journalHtml).toContain('40 RPM');
+    expect(journalHtml).toContain('Reference trial: Trial 1');
+
+    const legacyJournalHtml = renderTool('wheelAndFire', { wheelAndFire: {
+      view: 'journal',
+      trialSeriesId: 'series-legacy',
+      trialSeriesName: 'Legacy ring study',
+      trialBaselineIds: { 'series-legacy': 'legacy-1' },
+      measurementLog: [
+        { seriesId: 'series-legacy', method: 'wheel', tool: 'center', workRing: 2, rpm: 20, pressure: 45, moisture: 68 },
+        { seriesId: 'series-legacy', method: 'wheel', tool: 'center', workRing: 8, rpm: 45, pressure: 45, moisture: 68 }
+      ]
+    } });
+    expect(legacyJournalHtml).toContain('45 RPM');
+    expect(legacyJournalHtml).toContain('ring 9');
   });
 
   it('enforces drying, bisque, glazing, and glaze-firing order with modeled defects', () => {
@@ -339,7 +638,7 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('crack-risk signal');
     expect(html).toContain('Drying hotspots to inspect');
     expect(html).toContain('Focus one in Shape');
-    expect(html).toContain('Simplified kiln schedule');
+    expect(html).toContain('Time-scaled kiln schedule');
     expect(html).toContain('Modeled thermal history');
     expect(html).toContain('Ramp up');
     expect(html).toContain('Controlled cool');
@@ -357,6 +656,10 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('Log measured checkpoint');
     expect(html).toContain('Model calibration evidence');
     expect(html).toContain('No measurement uncertainty ranges declared yet');
+    expect(html).toContain('Measurement method');
+    expect(html).toContain('Use the same method when repeating a checkpoint');
+    expect(html).toContain('Repeatability study');
+    expect(html).toContain('Repeated measurements become useful here');
     expect(html).toContain('rough cone neighborhood');
     expect(html).toContain('Projected maturation');
     expect(html).toContain('Glaze outcome preview');
@@ -513,6 +816,67 @@ describe('Wheel & Fire pottery lab', () => {
     expect(html).toContain('°C eq.');
     expect(html).toContain('Observed model flags');
     expect(html).toContain('Surface outcome');
+  });
+
+  it('renders live 3D kiln and open-firing sections across the firing cycle', () => {
+    const pure = window.__alloPotteryPure;
+    const vessel = pure.makeVessel('stoneware', 'bowl');
+    const kilnHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel } });
+    expect(kilnHtml).toContain('3D kiln cutaway');
+    expect(kilnHtml).toContain('Peak soak · 1220°C · oxidation');
+    expect(kilnHtml).toContain('Preview schedule time');
+    expect(kilnHtml).toContain('Show modeled heat zones');
+    expect(kilnHtml).toContain('electric kiln cutaway during peak soak');
+    expect(kilnHtml).toContain('Heatwork accumulating at peak.');
+    expect(kilnHtml).toContain('Modeled firing shrinkage');
+    expect(kilnHtml).toContain('load Δ ≈ 14°C');
+    expect(kilnHtml).toContain('Time-scaled kiln schedule');
+    expect(kilnHtml).toContain('Teal marker:');
+    expect(kilnHtml).toContain('witness cones');
+
+    const heatingHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel, kilnType: 'gas', atmosphere: 'reduction', kilnPreviewPhase: 20 } });
+    expect(heatingHtml).toContain('Heating · 510°C · reduction');
+    expect(heatingHtml).toContain('gas kiln cutaway during heating');
+    expect(heatingHtml).toContain('Burnout and mineral change.');
+    expect(heatingHtml).toContain('burner / firebox');
+
+    const openHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel, kilnType: 'open', atmosphere: 'oxidation', kilnPreviewPhase: 100 } });
+    expect(openHtml).toContain('Open-firing 3D section');
+    expect(openHtml).toContain('Cooling · 100°C · oxidation');
+    expect(openHtml).toContain('Cooling toward handling range.');
+    expect(openHtml).toContain('Open firing: uneven heat and atmosphere exposure');
+    expect(openHtml).toContain('not computational fluid dynamics');
+
+    const glazed = pure.glazeVessel(makeBisque(pure), 'clear', 70);
+    const glazeHtml = renderTool('wheelAndFire', { wheelAndFire: { view: 'kiln', vessel: glazed } });
+    expect(glazeHtml).toContain('Glaze melt and body maturity.');
+    expect(glazeHtml).toContain('glaze development 100%');
+  });
+
+  it('maps kiln preview position to schedule time and retains fired material change while cooling', () => {
+    const pure = window.__alloPotteryPure;
+    const history = pure.estimateThermalHistory({ temperature: 1220, ramp: 110, soak: 10, coolingRate: 100 });
+    const heating = pure.sampleThermalHistory(history, 20);
+    const soakPosition = (history.segments[0].durationHours + history.segments[1].durationHours * 0.5) / history.totalHours * 100;
+    const peak = pure.sampleThermalHistory(history, soakPosition);
+    const cooled = pure.sampleThermalHistory(history, 100);
+
+    expect(heating.segmentId).toBe('ramp');
+    expect(heating.temperatureC).toBeCloseTo(510.1, 1);
+    expect(peak.segmentId).toBe('soak');
+    expect(peak.temperatureC).toBe(1220);
+    expect(cooled.segmentId).toBe('cool');
+    expect(cooled.temperatureC).toBe(100);
+
+    let boneDry = pure.makeVessel('stoneware', 'bowl');
+    boneDry = pure.dryVessel(boneDry, { humidity: 48, dryingRate: 40 });
+    boneDry = pure.dryVessel(boneDry, { humidity: 48, dryingRate: 40 });
+    const peakState = pure.estimateKilnMaterialState(boneDry, peak, { temperature: 1220 });
+    const cooledState = pure.estimateKilnMaterialState(boneDry, cooled, { temperature: 1220 });
+    expect(peakState.label).toBe('Heatwork accumulating at peak');
+    expect(peakState.firingShrinkagePct).toBeGreaterThan(2);
+    expect(cooledState.firingShrinkagePct).toBeCloseTo(peakState.firingShrinkagePct, 5);
+    expect(cooledState.label).toBe('Cooling toward handling range');
   });
 
   it('keeps the deployed plugin mirror byte-for-byte synchronized', () => {

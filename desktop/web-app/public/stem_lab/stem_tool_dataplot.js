@@ -1689,7 +1689,7 @@ window.StemLab = window.StemLab || {
           })[state];
           return h('div', { className: 'p-3 rounded-xl', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.dataplot.correlation_inquiry_when_samples_misle', '\uD83D\uDD2C Correlation Inquiry - When Samples Mislead')),
-            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set true population r, sample size, noise, outliers. Predict how far observed r drifts. No score, no reveal.')),
+            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.dataplot.set_true_population_r_sample_size_nois', 'Set population r, sample size, noise, and outliers, then observe how far the sampled r drifts. The result updates live; record a hypothesis or pattern you notice.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label + ' \u00B7 true r=' + iq.trueR.toFixed(2) + ', observed r=' + observedR.toFixed(2)),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
             h('svg', { role: 'img', 'aria-label': t('stem.dataplot.sampling_img_label', 'Sampling distribution chart'), width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },

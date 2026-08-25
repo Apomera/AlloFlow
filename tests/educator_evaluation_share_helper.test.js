@@ -5,6 +5,17 @@ import { describe, expect, it } from 'vitest';
 
 const ROOT = process.cwd();
 const GS = fs.readFileSync(path.join(ROOT, 'apps_script/educator_evaluation_share/Code.gs'), 'utf8');
+const PANEL_SOURCE = fs.readFileSync(path.join(ROOT, 'educator_evaluation_source.jsx'), 'utf8');
+
+function joinedArrayConstant(source, name) {
+  const start = source.indexOf('const ' + name + ' = [');
+  const suffix = "].join('');";
+  const end = source.indexOf(suffix, start);
+  if (start === -1 || end === -1) throw new Error('Missing joined-array constant: ' + name);
+  return new Function(source.slice(start, end + suffix.length) + '\nreturn ' + name + ';')();
+}
+
+const PACKET_FORM_JS = joinedArrayConstant(PANEL_SOURCE, 'AE_PACKET_FORM_JS');
 
 function educatorPacket(overrides = {}) {
   const packet = {
@@ -22,6 +33,31 @@ function educatorPacket(overrides = {}) {
   };
   return '<!doctype html><html><body><script type="application/json" id="allo-evaluation-packet">'
     + JSON.stringify(packet).replaceAll('<', '\\u003c') + '</script></body></html>';
+}
+
+function finalizedAnnualPacket(options = {}) {
+  const teacher = {
+    id: 'teacher-01', code: 'T-01', name: 'T-01',
+    finalizedAt: '2026-08-20T12:00:00.000Z', finalScore: 3.25,
+    ratings: { domains: { d1: 3, d2: 3, d3: 4, d4: 3 } },
+    annualRationales: {
+      d1: 'Domain one rationale', d2: 'Domain two rationale',
+      d3: 'Domain three rationale', d4: 'Domain four rationale',
+    },
+    annualEvidenceRefs: {
+      d1: ['walkthrough:walk.1', 'walkthrough:walk.1'],
+      d2: ['formal_observation:obs-1'],
+      d3: ['spm:spm-1'],
+      d4: ['walkthrough:walk.1'],
+    },
+    ...(options.teacher || {}),
+  };
+  return educatorPacket({
+    teachers: [teacher],
+    walkthroughs: options.walkthroughs ?? [{ id: 'walk.1', teacherId: 'teacher-01', date: '2026-05-01', publishedAt: '2026-05-02T12:00:00.000Z', subject: 'Algebra' }],
+    observations: options.observations ?? [{ id: 'obs-1', teacherId: 'teacher-01', observedAt: '2026-04-10', evidencePublishedAt: '2026-04-11T12:00:00.000Z' }],
+    spms: options.spms ?? [{ id: 'spm-1', teacherId: 'teacher-01', status: 'locked', lockedAt: '2026-06-01T12:00:00.000Z', goal: 'Student growth goal' }],
+  });
 }
 
 function makeDrive(options = {}) {
@@ -75,6 +111,7 @@ function makeDrive(options = {}) {
     },
     Session: {
       getActiveUser: () => ({ getEmail: () => options.blankIdentity ? '' : 'principal@district.org' }),
+      getEffectiveUser: () => ({ getEmail: () => options.mismatchedIdentity ? 'other@district.org' : (options.blankIdentity ? '' : 'principal@district.org') }),
       getScriptTimeZone: () => 'GMT',
     },
     Utilities: { formatDate: (date) => date.toISOString().replace(/[:T]/g, '-').slice(0, 19) },
@@ -132,6 +169,8 @@ describe('evaluation share helper', () => {
     });
     expect(gs.state.files[0].folder).toBe('root/AlloFlow Evaluations/2026-27/T-01');
     expect(gs.state.permissions).toMatchObject([{ emailAddress: 'educator@district.org', role: 'reader' }]);
+    expect(gs.state.files[0].content).toContain('rebuilt by the share helper from allowlisted packet fields');
+    expect(gs.state.files[0].content).not.toBe(basePacket.html);
     expect(result.deliveryNote).toMatch(/notify.*download.*open/i);
   });
 
@@ -164,6 +203,37 @@ describe('evaluation share helper', () => {
     expect(() => gs.shareEvaluationPacket({ ...basePacket, educatorLabel: 'Another educator' })).toThrow(/does not match/);
     expect(() => gs.shareEvaluationPacket({ ...basePacket, html: educatorPacket({ teachers: [{ id: 'teacher-01', code: 'T-01' }, { id: 'teacher-02', code: 'T-02' }] }) })).toThrow(/exactly one educator/);
     expect(gs.state.files).toHaveLength(0);
+  });
+
+  it('rejects caller-supplied scripts, event handlers, and javascript URLs before filing', () => {
+    const gs = makeDrive();
+    const packet = educatorPacket();
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, html: packet.replace('</body>', '<script>alert(1)</script></body>') })).toThrow(/untrusted executable/);
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, html: packet.replace('</body>', '<img src=x onerror="alert(1)"></body>') })).toThrow(/untrusted active markup/);
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, html: packet.replace('</body>', '<a href="javascript:alert(1)">x</a></body>') })).toThrow(/untrusted active markup/);
+    expect(gs.state.files).toHaveLength(0);
+  });
+
+  it('escapes packet narrative while preserving the fixed response workflow', () => {
+    const gs = makeDrive();
+    const html = educatorPacket({ walkthroughs: [{
+      id: 'walk-1', teacherId: 'teacher-01', publishedAt: '2026-08-20T12:00:00.000Z',
+      evidence: '</script><img src=x onerror="alert(1)">', componentTags: ['2C'],
+    }] });
+    gs.shareEvaluationPacket({ ...basePacket, html });
+    const filed = gs.state.files[0].content;
+    expect(filed).toContain('&lt;/script&gt;&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
+    expect(filed).not.toContain('</script><img src=x');
+    expect((filed.match(/<script>/g) || [])).toHaveLength(1);
+    expect(filed).toContain('Download my response');
+  });
+
+  it('accepts only the response script shipped by the packet exporter', () => {
+    const gs = makeDrive();
+    expect(gs.EE_PACKET_RESPONSE_SCRIPT).toBe(PACKET_FORM_JS);
+    const html = educatorPacket().replace('</body>', '<script>' + PACKET_FORM_JS + '</script></body>');
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, html })).not.toThrow();
+    expect(gs.state.files[0].content).toContain('<script>' + PACKET_FORM_JS + '</script>');
   });
 
   it('trashes the private copy when Drive rejects permission creation', () => {
@@ -207,7 +277,7 @@ describe('evaluation share helper', () => {
   it('revokes every matching paginated permission and proves absence', () => {
     const gs = makeDrive({ paginate: true });
     const shared = gs.shareEvaluationPacket(basePacket);
-    gs.state.permissions.push({ id: 'duplicate-permission', fileId: shared.fileId, emailAddress: basePacket.educatorEmail, role: 'reader' });
+    gs.state.permissions.push({ id: 'duplicate-permission', fileId: shared.fileId, type: 'user', emailAddress: basePacket.educatorEmail, role: 'reader' });
     const result = gs.revokeEvaluationAccess({ fileId: shared.fileId, educatorEmail: basePacket.educatorEmail });
     expect(result).toMatchObject({ revokedFor: basePacket.educatorEmail, removedPermissions: 2, absenceVerified: true });
     expect(gs.state.permissions).toHaveLength(0);
@@ -239,6 +309,128 @@ describe('evaluation share helper', () => {
     expect(without.note).toMatch(/sharing stays locked/);
   });
 
+  it('blocks every mutating or listing RPC when active and effective identities differ', () => {
+    const gs = makeDrive({ mismatchedIdentity: true });
+    expect(gs.verifyShareHelper()).toMatchObject({ ready: false, identityMatched: false });
+    expect(() => gs.doGet()).toThrow(/identity could not be proved/);
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/identity could not be proved/);
+    expect(() => gs.listSharedEvaluations('2026-27')).toThrow(/identity could not be proved/);
+    expect(() => gs.revokeEvaluationAccess({ fileId: 'file-1', educatorEmail: basePacket.educatorEmail })).toThrow(/identity could not be proved/);
+  });
+
+
+  it('rebuilds finalized annual rationale and evidence provenance as escaped passive content', () => {
+    const gs = makeDrive();
+    const html = finalizedAnnualPacket({
+      teacher: {
+        annualRationales: {
+          d1: 'Strong <img src=x onerror="boom">',
+          d2: 'Domain two rationale', d3: 'Domain three rationale', d4: 'Domain four rationale',
+        },
+      },
+      walkthroughs: [{
+        id: 'walk.1', teacherId: 'teacher-01', date: '2026-05-01',
+        publishedAt: '2026-05-02T12:00:00.000Z',
+        subject: 'Algebra <script>alert(1)</script>',
+      }],
+    });
+    gs.shareEvaluationPacket({ ...basePacket, html });
+    const filed = gs.state.files[0].content;
+    expect(filed).toContain('Annual rationale and evidence provenance');
+    expect(filed).toContain('Strong &lt;img src=x onerror=&quot;boom&quot;&gt;');
+    expect(filed).toContain('Algebra &lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(filed).toContain('Published formal-observation evidence');
+    expect(filed).toContain('Locked SPM / SLO');
+    expect(filed).toContain('Reference: walkthrough:walk.1');
+    expect(filed).not.toContain('<img src=x onerror="boom">');
+    expect(filed).not.toContain('<script>alert(1)</script>');
+    const block = filed.match(/<script type="application\/json" id="allo-evaluation-packet">([\s\S]*?)<\/script>/);
+    const safePacket = JSON.parse(block[1]);
+    expect(safePacket.teachers[0].annualEvidenceRefs.d1).toEqual(['walkthrough:walk.1']);
+  });
+
+  it('renders finalized annual provenance exactly once when no walkthrough is included', () => {
+    const gs = makeDrive();
+    const html = finalizedAnnualPacket({
+      teacher: {
+        annualEvidenceRefs: {
+          d1: ['formal_observation:obs-1'],
+          d2: ['formal_observation:obs-1'],
+          d3: ['spm:spm-1'],
+          d4: ['spm:spm-1'],
+        },
+      },
+      walkthroughs: [],
+    });
+    gs.shareEvaluationPacket({ ...basePacket, html });
+    const filed = gs.state.files[0].content;
+    expect(filed.match(/Annual rationale and evidence provenance/g) || []).toHaveLength(1);
+  });
+
+  it('renders finalized annual provenance exactly once when two walkthroughs are included', () => {
+    const gs = makeDrive();
+    const html = finalizedAnnualPacket({
+      walkthroughs: [
+        { id: 'walk.1', teacherId: 'teacher-01', date: '2026-05-01', publishedAt: '2026-05-02T12:00:00.000Z', subject: 'Algebra' },
+        { id: 'walk.2', teacherId: 'teacher-01', date: '2026-05-08', publishedAt: '2026-05-09T12:00:00.000Z', subject: 'Geometry' },
+      ],
+    });
+    gs.shareEvaluationPacket({ ...basePacket, html });
+    const filed = gs.state.files[0].content;
+    expect(filed.match(/Annual rationale and evidence provenance/g) || []).toHaveLength(1);
+  });
+
+  it('keeps legacy finalized packets without annual provenance fields shareable', () => {
+    const gs = makeDrive();
+    const html = educatorPacket({
+      teachers: [{
+        id: 'teacher-01', code: 'T-01', name: 'T-01',
+        finalizedAt: '2026-08-20T12:00:00.000Z',
+        ratings: { domains: { d1: 3 } },
+      }],
+    });
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, html })).not.toThrow();
+  });
+
+  it('rejects pre-final or incomplete annual provenance before filing', () => {
+    const gs = makeDrive();
+    expect(() => gs.shareEvaluationPacket({
+      ...basePacket, html: finalizedAnnualPacket({ teacher: { finalizedAt: undefined } }),
+    })).toThrow(/only on a finalized educator cycle/);
+    expect(() => gs.shareEvaluationPacket({
+      ...basePacket, html: finalizedAnnualPacket({ teacher: { annualEvidenceRefs: undefined } }),
+    })).toThrow(/requires ratings, rationales, and evidence references together/);
+    expect(() => gs.shareEvaluationPacket({
+      ...basePacket, html: finalizedAnnualPacket({ teacher: { annualRationales: { d1: 'Only one domain' } } }),
+    })).toThrow(/Annual rationale is required for every rated domain/);
+    expect(gs.state.files).toHaveLength(0);
+  });
+
+  it('rejects malformed, unresolved, unpublished, or unlocked annual evidence references before filing', () => {
+    const cases = [
+      {
+        html: finalizedAnnualPacket({ teacher: { annualEvidenceRefs: { d1: [{ token: 'walkthrough:walk.1' }], d2: ['formal_observation:obs-1'], d3: ['spm:spm-1'], d4: ['walkthrough:walk.1'] } } }),
+        error: /canonical released-record reference/,
+      },
+      {
+        html: finalizedAnnualPacket({ teacher: { annualEvidenceRefs: { d1: ['walkthrough:missing'], d2: ['formal_observation:obs-1'], d3: ['spm:spm-1'], d4: ['walkthrough:walk.1'] } } }),
+        error: /does not resolve to a released record/,
+      },
+      {
+        html: finalizedAnnualPacket({ observations: [{ id: 'obs-1', teacherId: 'teacher-01', observedAt: '2026-04-10' }] }),
+        error: /formal-observation evidence that has not been published/,
+      },
+      {
+        html: finalizedAnnualPacket({ spms: [{ id: 'spm-1', teacherId: 'teacher-01', status: 'approved', approvedAt: '2026-05-01T12:00:00.000Z' }] }),
+        error: /SPM \/ SLO record that has not been locked/,
+      },
+    ];
+    cases.forEach((entry) => {
+      const gs = makeDrive();
+      expect(() => gs.shareEvaluationPacket({ ...basePacket, html: entry.html })).toThrow(entry.error);
+      expect(gs.state.files).toHaveLength(0);
+    });
+  });
   it('pins the private deployment and Advanced Drive v3 in the manifest', () => {
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'apps_script/educator_evaluation_share/appsscript.json'), 'utf8'));
     expect(manifest.webapp).toEqual({ access: 'MYSELF', executeAs: 'USER_DEPLOYING' });

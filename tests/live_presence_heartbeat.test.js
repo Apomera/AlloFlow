@@ -27,7 +27,7 @@ describe('presence heartbeat — write path is gated and validated', () => {
     expect(MAILBOX).toMatch(/value === null \|\| \(typeof value === 'number' && isFinite\(value\) && value >= 0\)/);
   });
   it('participantCanPatchSession allows the field on the per-uid roster root', () => {
-    expect(MAILBOX).toMatch(/wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, lastSeen: 1/);
+    expect(MAILBOX).toMatch(/wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, lastSeen: 1/);
   });
 });
 

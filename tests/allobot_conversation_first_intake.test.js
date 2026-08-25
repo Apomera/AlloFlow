@@ -38,6 +38,16 @@ const speechEvent = (text) => {
   return { results: [result] };
 };
 
+const flushRouting = async (ready, rounds = 30) => {
+  for (let index = 0; index < rounds && !ready(); index += 1) {
+    // The real kernel crosses several promise boundaries before an unmatched
+    // utterance reaches conversation; wait on the observable condition rather
+    // than baking that implementation depth into each test.
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.resolve();
+  }
+};
+
 const installFakeRecognition = () => {
   const instances = [];
   class FakeSpeechRecognition {
@@ -103,6 +113,19 @@ const runUtterances = async (ctx, utterances) => {
 const NO_COMMAND_SHAPES = /didn.?t catch|no command|not a command|try .bigger text/i;
 
 describe('A1 — free speech is never reported as a failed command', () => {
+  it('gives a pending guided choice priority over the global command router', async () => {
+    const ctx = makeCtx({
+      hasPendingGuidedChoice: true,
+      callGemini: vi.fn(() => { throw new Error('the command router must not run'); }),
+    });
+    const spoken = await runUtterances(ctx, ['full pack']);
+    expect(ctx.converse).toHaveBeenCalledTimes(1);
+    expect(ctx.converse.mock.calls[0][0]).toBe('full pack');
+    expect(ctx.callGemini).not.toHaveBeenCalled();
+    expect(ctx.startLessonFlow).not.toHaveBeenCalled();
+    expect(spoken.join(' | ')).toContain('Here is what I think about that.');
+  });
+
   it('routes an unmatched utterance to conversation instead of scolding', async () => {
     const ctx = makeCtx();
     const spoken = await runUtterances(ctx, ['what do you think about phonics instruction']);
@@ -129,9 +152,88 @@ describe('A1 — free speech is never reported as a failed command', () => {
     const source = readFileSync(resolve(process.cwd(), 'allo_commands_source.jsx'), 'utf-8');
     expect(source).not.toMatch(/Didn.{0,3}t catch a command/i);
   });
+
+  it('actually suspends recognition while the UI says AlloBot is thinking', async () => {
+    const fake = installFakeRecognition();
+    let resolveReply;
+    const ctx = makeCtx({ converse: vi.fn(() => new Promise((resolveReplyPromise) => { resolveReply = resolveReplyPromise; })) });
+    const loop = AC.createVoiceLoop(() => ctx);
+    try {
+      expect(loop.start()).toBe(true);
+      const recognition = fake.instances.at(-1);
+      recognition.start.mockClear();
+      recognition.stop.mockClear();
+      const pending = recognition.onresult(speechEvent('what makes a strong phonics warmup'));
+      await flushRouting(() => typeof resolveReply === 'function');
+
+      expect(resolveReply).toBeTypeOf('function');
+      expect(recognition.stop, 'processing state owns a genuinely closed microphone').toHaveBeenCalled();
+      expect(loop.getState().routePending).toBe(true);
+
+      resolveReply(null);
+      await pending;
+      expect(recognition.start, 'a visual-only or empty reply returns the microphone').toHaveBeenCalled();
+      loop.stop();
+    } finally {
+      fake.restore();
+    }
+  });
+
+  it('does not speak a late reply after a buffered newer turn supersedes it', async () => {
+    const fake = installFakeRecognition();
+    const resolvers = [];
+    const spoken = [];
+    const ctx = makeCtx({
+      converse: vi.fn(() => new Promise((resolveReply) => { resolvers.push(resolveReply); })),
+    });
+    const loop = AC.createVoiceLoop(() => ctx);
+    window.alloAnnounce = (message) => spoken.push(String(message));
+    try {
+      expect(loop.start()).toBe(true);
+      const recognition = fake.instances.at(-1);
+      const older = recognition.onresult(speechEvent('tell me one thought about phonics instruction'));
+      await flushRouting(() => resolvers.length === 1);
+      const newer = recognition.onresult(speechEvent('actually focus that answer on decoding practice'));
+      await flushRouting(() => resolvers.length === 2);
+
+      expect(resolvers).toHaveLength(2);
+      resolvers[0]('This is the superseded answer.');
+      await older;
+      expect(spoken.join(' | ')).not.toContain('superseded answer');
+
+      resolvers[1]('This is the current answer.');
+      await newer;
+      expect(spoken.join(' | ')).toContain('current answer');
+      loop.stop();
+    } finally {
+      delete window.alloAnnounce;
+      fake.restore();
+    }
+  });
+});
+
+describe('host voice-chat waiter ownership', () => {
+  it.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'])('%s settles one voice turn per model reply', (file) => {
+    const source = readFileSync(resolve(process.cwd(), file), 'utf-8');
+    const start = source.indexOf('const waiters = _voiceConverseWaitersRef.current;');
+    const block = source.slice(start, start + 1100);
+    expect(start).toBeGreaterThan(-1);
+    expect(block).toContain('const waiter = waiters[0];');
+    expect(block).toContain('_voiceConverseWaitersRef.current = waiters.slice(1);');
+    expect(block).not.toContain('waiters.forEach');
+  });
 });
 
 describe('A2 — a command that changes the screen is offered, not performed', () => {
+  it('recognises “generate a lesson” as the cohesive Blueprint entrance', async () => {
+    const ctx = makeCtx();
+    const spoken = await runUtterances(ctx, ['generate a lesson about fractions']);
+    expect(ctx.startLessonFlow).not.toHaveBeenCalled();
+    expect(spoken.join(' | ')).toMatch(/say yes/i);
+    await runUtterances(ctx, ['generate a lesson about fractions', 'yes']);
+    expect(ctx.startLessonFlow).toHaveBeenCalledWith(expect.objectContaining({ topic: 'fractions' }));
+  });
+
   it('does NOT open the lesson flow when the user says "build a lesson"', async () => {
     const ctx = makeCtx();
     const spoken = await runUtterances(ctx, ['build a lesson about volcanoes']);

@@ -20,7 +20,8 @@
     'unspecified',
     'preserve-primary',
     'supplemental-adaptation-permitted',
-    'educator-directed'
+    'educator-directed',
+    'adaptation-prohibited'
   ];
 
   function text(value, limit) {
@@ -227,6 +228,8 @@
     var constraints = context.instructionalConstraints || {};
     if (constraints.sourced && constraints.textAccessExpectation === 'preserve-primary') {
       lines.push('SOURCED TEXT-ACCESS EXPECTATION: Preserve access to the designated primary text; adaptations are supplemental unless the educator explicitly authorizes replacement.');
+    } else if (constraints.sourced && constraints.textAccessExpectation === 'adaptation-prohibited') {
+      lines.push('SOURCED TEXT-ACCESS PROHIBITION: Use the designated primary text without generating or distributing an adapted version. Add only same-text access supports.');
     }
     return lines.join('\n');
   }
@@ -241,6 +244,7 @@
     resolve: normalize,
     isEmpty: isEmpty,
     normalizeInstructionalConstraints: normalizeInstructionalConstraints,
+    TEXT_ACCESS_EXPECTATIONS: TEXT_ACCESS_EXPECTATIONS.slice(),
     buildResourceDirective: buildResourceDirective
   };
 

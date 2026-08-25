@@ -165,4 +165,16 @@ describe('MCPB vendor and tool-registry release contracts', () => {
     expect(() => Artifact.validatedToolNames([...tools, tools[0]], 'manifest')).toThrow(/duplicate/i);
     expect(Artifact.DEFAULT_RPC_TIMEOUT_MS).toBe(60000);
   });
+
+  it('rejects an artifact manifest that is stale relative to the current connector source', () => {
+    const manifest = Builder.buildManifest();
+    expect(Artifact.assertSourceParity(manifest)).toMatchObject({
+      version: manifest.version,
+      tools: Artifact.validatedToolNames(manifest.tools, 'expected'),
+    });
+    expect(() => Artifact.assertSourceParity({ ...manifest, version: '0.0.0-stale' }))
+      .toThrow(/does not match current source version/i);
+    expect(() => Artifact.assertSourceParity({ ...manifest, tools: manifest.tools.slice(1) }))
+      .toThrow(/tool registry does not match/i);
+  });
 });

@@ -172,6 +172,18 @@
       lesson: 'Life aboard mixes wonder with procedure. Even the best view in human history ends with a checklist.',
       discoveries: [['🪟 Center window', 'At about 80 cm across, it is the largest window ever flown in space and a prime robotics workstation.'], ['🌎 Thin blue line', 'Most of the atmosphere lies within about 16 km of Earth’s surface — visually tiny from a 400 km orbit.']] }
   ];
+  // Connected interior training route. Coordinates are schematic metres:
+  // Harmony -> Destiny -> Unity, then port into Tranquility and nadir into
+  // Cupola. The branch matters: navigating a station is a 3-D wayfinding task,
+  // not a walk down a hallway.
+  var INTERIOR_3D_LAYOUT = [
+    { id: 'harmony', center: [0, 0, -11.0], axis: 'z', length: 5.2, radius: 1.72, color: 0xe879f9, facing: [0, Math.PI, 0] },
+    { id: 'destiny', center: [0, 0, -5.45], axis: 'z', length: 6.2, radius: 1.78, color: 0x38bdf8, facing: [0, Math.PI, 0] },
+    { id: 'unity', center: [0, 0, -0.25], axis: 'z', length: 4.1, radius: 1.68, color: 0x34d399, facing: [0, Math.PI / 2, 0] },
+    { id: 'tranquility', center: [-3.25, 0, -0.25], axis: 'x', length: 6.5, radius: 1.68, color: 0xfbbf24, facing: [0, Math.PI / 2, 0] },
+    { id: 'cupola', center: [-6.25, -2.35, -0.25], axis: 'y', length: 4.2, radius: 1.48, color: 0x818cf8, facing: [-Math.PI / 2, Math.PI / 2, 0] }
+  ];
+  var INTERIOR_ROUTE_IDS = ['harmony', 'destiny', 'unity', 'tranquility', 'cupola'];
   // ── A Day Aboard (typical crew day, station runs on GMT) ──
   var DAY_SCHEDULE = [
     { h: '06:00', icon: '⏰', label: 'Wake-up', what: 'Crew wakes in phone-booth-sized cabins; sleeping bags strapped to the wall.', why: 'With 16 sunrises a day, the body gets no light cues — a strict clock (and adjustable LED lighting) stands in for the Sun.' },
@@ -648,6 +660,7 @@
       { id: 'iss_module', label: 'Inspect 3 station modules in the 3-D map', icon: '🛰️', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenModules || {}).length >= 3; } },
       { id: 'iss_day', label: 'Walk through an astronaut’s whole day', icon: '👩‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenHours || {}).length >= 6; } },
       { id: 'iss_inside', label: 'Complete 3 jobs inside the station', icon: '🧑‍🔬', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.interiorDone || {}).filter(function (k) { return !!s.interiorDone[k]; }).length >= 3; } },
+      { id: 'iss_freeflight', label: 'Complete 3 free-flight navigation challenges', icon: '\uD83E\uDDED', check: function (d) { var n = (((d && d.spaceStation) || {}).interiorNav) || {}; return [n.preciseHatch, n.handrailStop, n.cargoClear, n.orientationRecovered, n.routeComplete].filter(Boolean).length >= 3; } },
       { id: 'iss_ops', label: 'Simulate a full station orbit', icon: '📡', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.opsRuns || 0) >= 1; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
       { id: 'iss_quiz', label: 'Score ' + QUIZ_PASS + '+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= QUIZ_PASS; } },
@@ -676,6 +689,7 @@
             interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
             interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
+            interiorView: '3d', interiorNav: { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 },
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
             opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
             orbitAlt: 420, orbitInc: 51.6, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
@@ -683,7 +697,7 @@
             askInput: '', askAnswer: '', askLoading: false
           } });
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, __alloT('stem.spacestation.initializing', '🛰️ Docking with the station…'));
+        return h('div', { style: { padding: 24, color: '#475569', backgroundColor: '#ffffff', textAlign: 'center' } }, __alloT('stem.spacestation.initializing', '🛰️ Docking with the station…'));
       }
       var d = labToolData.spaceStation;
       function upd(patch) {
@@ -726,6 +740,14 @@
           '.iss-panel{min-height:280px;padding:clamp(12px,2vw,18px);border:1px solid var(--iss-line);border-radius:18px;background:linear-gradient(160deg,rgba(15,23,42,.8),rgba(8,17,31,.74));box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 18px 40px rgba(2,6,23,.18);backdrop-filter:blur(12px)}.iss-card{position:relative;overflow:hidden;border:1px solid var(--iss-line)!important;border-left:3px solid var(--iss-card-accent)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(30,41,59,.86),rgba(15,23,42,.82))!important;box-shadow:0 12px 28px rgba(2,6,23,.16),inset 0 1px 0 rgba(255,255,255,.04)}.iss-card:after{content:"";position:absolute;right:-55px;top:-75px;width:145px;height:145px;border-radius:50%;pointer-events:none;background:var(--iss-card-accent);opacity:.045}.iss-card-title{display:flex;align-items:center;gap:7px;padding-bottom:8px;border-bottom:1px solid rgba(148,163,184,.12);letter-spacing:.01em}' +
           '.iss-interior-hero{position:relative;overflow:hidden!important;border-radius:16px!important;background:radial-gradient(circle at 83% 18%,rgba(125,211,252,.16),transparent 31%),linear-gradient(125deg,rgba(14,165,233,.22),rgba(79,70,229,.14) 58%,rgba(15,23,42,.52))!important;box-shadow:0 14px 32px rgba(2,6,23,.2),inset 0 1px 0 rgba(255,255,255,.07)}.iss-interior-hero:after{content:"";position:absolute;right:-30px;bottom:-56px;width:180px;height:100px;border:1px solid rgba(125,211,252,.18);border-radius:50%;transform:rotate(-12deg)}.iss-route{padding:8px;border:1px solid var(--iss-line);border-radius:14px;background:rgba(2,6,23,.34)}.iss-route-button{position:relative;overflow:hidden}.iss-route-button[aria-pressed="true"]:after{content:"";position:absolute;inset:auto 9px 0;height:2px;border-radius:2px;background:currentColor;box-shadow:0 0 10px currentColor}' +
           '.iss-interior-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px}.iss-scene-frame{box-shadow:0 18px 38px rgba(2,6,23,.3),inset 0 0 0 1px rgba(255,255,255,.04)}.iss-scene-frame:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(125,211,252,.1),transparent 10%,transparent 90%,rgba(125,211,252,.08)),repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}.iss-scene-frame>button{z-index:2}' +
+          '.iss-interior-viewbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}.iss-interior-viewbar p{margin:0;color:#94a3b8;font-size:10.5px}.iss-interior-view-switch{display:flex;gap:4px;padding:3px;border:1px solid var(--iss-line);border-radius:10px;background:rgba(2,6,23,.46)}.iss-interior-view-switch button{padding:6px 9px;border:0;border-radius:7px;background:transparent;color:#94a3b8;font-size:10.5px;font-weight:850;cursor:pointer}.iss-interior-view-switch button[aria-pressed="true"]{background:#0ea5e9;color:#04121f;box-shadow:0 5px 14px rgba(14,165,233,.22)}' +
+          '.iss-interior-sim{margin-bottom:10px}.iss-interior-3d{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.42);border-radius:16px;background:#030712;box-shadow:0 20px 45px rgba(2,6,23,.42),inset 0 0 40px rgba(14,165,233,.08)}.iss-interior-canvas{display:block;width:100%;height:clamp(320px,48vw,450px);background:#030712;cursor:crosshair;touch-action:none}.iss-interior-hud{position:absolute;inset:10px 10px auto;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;pointer-events:none}.iss-interior-hud span,.iss-interior-help,.iss-interior-route-hud{padding:5px 8px;border:1px solid rgba(125,211,252,.26);border-radius:7px;background:rgba(2,6,23,.72);backdrop-filter:blur(7px);color:#bae6fd;font:850 8.5px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.55px}.iss-interior-hud .iss-interior-room-hud{overflow:hidden;color:#f8fafc;text-overflow:ellipsis;white-space:nowrap}.iss-interior-help{position:absolute;left:50%;bottom:10px;z-index:2;width:max-content;max-width:calc(100% - 20px);transform:translateX(-50%);color:#cbd5e1;text-align:center;pointer-events:none}.iss-interior-route-hud{position:absolute;left:10px;bottom:45px;z-index:2;color:#94a3b8;pointer-events:none}.iss-interior-route-hud strong{color:#7dd3fc}.iss-interior-fallback{margin:8px 0 0;padding:8px;border-left:3px solid #fbbf24;background:rgba(251,191,36,.09);color:#fde68a;font-size:11px}' +
+          '.iss-interior-sim[data-iss-webgl-state="unavailable"] .iss-interior-controls{display:none}' +
+          '.iss-interior-safety button[aria-disabled="true"]{opacity:.72;border-style:dashed;cursor:help}' +
+          '.iss-interior-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}.iss-interior-thrusters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.iss-interior-thrusters button,.iss-interior-safety button{min-height:39px;padding:6px 7px;border:1px solid #475569;border-radius:9px;background:rgba(2,6,23,.44);color:#cbd5e1;font-size:9.5px;font-weight:850;cursor:pointer;touch-action:none}.iss-interior-thrusters button:active{border-color:#7dd3fc;background:rgba(14,165,233,.2)}.iss-interior-safety{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}.iss-interior-safety button:first-child{border-color:#fbbf24;color:#fde68a}.iss-interior-instructions{margin:7px 0 0;color:#94a3b8;font-size:10.5px;line-height:1.5}.iss-nav-challenges{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:6px;margin:9px 0 2px}.iss-nav-challenge{min-height:62px;padding:8px;border:1px solid #334155;border-radius:10px;background:rgba(2,6,23,.38);color:#94a3b8}.iss-nav-challenge.is-complete{border-color:rgba(74,222,128,.52);background:rgba(34,197,94,.09);color:#bbf7d0}.iss-nav-challenge strong{display:block;margin-bottom:2px;color:#e2e8f0;font-size:10px}.iss-nav-challenge span{display:block;font-size:9px;line-height:1.35}.iss-nav-challenge i{float:right;font-style:normal}.iss-discovery-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.iss-discovery-row button{padding:7px 8px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.52);color:#e2e8f0;font-size:10px;font-weight:800;cursor:pointer}' +
+          '.iss-interior-3d:focus-within{border-color:#7dd3fc;box-shadow:0 20px 45px rgba(2,6,23,.42),inset 0 0 52px rgba(14,165,233,.13),0 0 0 2px rgba(125,211,252,.16)}.iss-interior-hud{grid-template-columns:minmax(0,1fr) repeat(3,auto)}.iss-interior-speed[data-rate="controlled"]{color:#bbf7d0;border-color:rgba(74,222,128,.42)}.iss-interior-speed[data-rate="fast"]{color:#fde68a;border-color:rgba(251,191,36,.52)}.iss-interior-reticle{position:absolute;left:50%;top:50%;z-index:2;width:72px;height:72px;transform:translate(-50%,-50%);pointer-events:none}.iss-interior-reticle:before,.iss-interior-reticle:after{content:"";position:absolute;left:50%;top:50%;background:rgba(224,242,254,.7);box-shadow:0 0 8px rgba(125,211,252,.5)}.iss-interior-reticle:before{width:24px;height:1px;transform:translate(-50%,-50%)}.iss-interior-reticle:after{width:1px;height:24px;transform:translate(-50%,-50%)}.iss-interior-horizon{position:absolute;left:12px;right:12px;top:35px;height:1px;background:linear-gradient(90deg,transparent,#7dd3fc 28%,#7dd3fc 72%,transparent);opacity:.5;transform-origin:50% 50%}.iss-interior-velocity-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border:1px solid #f8fafc;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8}.iss-interior-next-hatch{position:absolute;right:10px;top:54px;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:2px 7px;align-items:center;max-width:190px;padding:7px 9px;border:1px solid rgba(125,211,252,.32);border-radius:9px;background:rgba(2,6,23,.76);color:#e0f2fe;font:800 8.5px ui-monospace,monospace;pointer-events:none}.iss-interior-next-hatch-arrow{grid-row:1/3;display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(125,211,252,.46);border-radius:50%;color:#7dd3fc;font-size:17px}.iss-interior-next-hatch strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.6px}.iss-interior-next-hatch span:last-child{color:#94a3b8}.iss-interior-objective{position:absolute;left:10px;top:54px;z-index:2;max-width:210px;padding:7px 9px;border-left:3px solid #fbbf24;border-radius:7px;background:rgba(2,6,23,.76);color:#fef3c7;font:800 8px ui-monospace,monospace;letter-spacing:.45px;pointer-events:none}.iss-interior-event{position:absolute;left:50%;top:26%;z-index:3;max-width:75%;padding:7px 11px;border:1px solid rgba(125,211,252,.4);border-radius:8px;background:rgba(2,6,23,.86);color:#bae6fd;font:900 9px ui-monospace,monospace;letter-spacing:.7px;text-align:center;transform:translate(-50%,-8px);opacity:0;transition:opacity .16s ease,transform .16s ease;pointer-events:none}.iss-interior-event.is-visible{opacity:1;transform:translate(-50%,0)}.iss-interior-event[data-tone="safe"]{color:#bbf7d0;border-color:#4ade80}.iss-interior-event[data-tone="warn"],.iss-interior-event[data-tone="impact"]{color:#fde68a;border-color:#fbbf24}.iss-interior-mission-cue{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;margin:8px 0 0;padding:8px 10px;border:1px solid rgba(125,211,252,.25);border-radius:10px;background:linear-gradient(90deg,rgba(14,165,233,.12),rgba(2,6,23,.38))}.iss-interior-mission-cue>span{grid-row:1/3;color:#7dd3fc;font:900 8px ui-monospace,monospace;letter-spacing:1px}.iss-interior-mission-cue strong{color:#e0f2fe;font-size:10.5px}.iss-interior-mission-cue small{color:#94a3b8;font-size:9px}.iss-interior-thrusters button{display:flex;align-items:center;justify-content:space-between;gap:5px}.iss-interior-thrusters kbd{min-width:20px;padding:2px 4px;border:1px solid #64748b;border-bottom-width:2px;border-radius:4px;background:#101827;color:#e0f2fe;font:850 8px ui-monospace,monospace}.iss-interior-safety button:disabled{opacity:.48;cursor:not-allowed}.iss-location-strip.iss-interior-route-map{display:block;padding:8px 10px;overflow:hidden}.iss-route-map-heading{display:flex;justify-content:space-between;gap:10px;color:#94a3b8;font:850 8px ui-monospace,monospace;letter-spacing:.7px}.iss-route-map-heading strong{color:#7dd3fc}.iss-route-schematic{display:block;width:100%;height:auto;margin-top:2px}.iss-route-schematic .iss-route-line{fill:none;stroke:#334155;stroke-width:3}.iss-route-schematic .iss-route-progress-line{fill:none;stroke:#38bdf8;stroke-width:2;stroke-dasharray:5 5;opacity:.65}.iss-route-schematic .iss-route-node circle{fill:#07101d;stroke:#64748b;stroke-width:2}.iss-route-schematic .iss-route-node text{fill:#94a3b8;font:800 8px ui-monospace,monospace;text-anchor:middle}.iss-route-schematic .iss-route-node.is-visited circle{stroke:#38bdf8}.iss-route-schematic .iss-route-node.is-done circle{fill:#14532d;stroke:#4ade80}.iss-route-schematic .iss-route-node.is-current circle{fill:#0ea5e9;stroke:#e0f2fe;stroke-width:3;filter:drop-shadow(0 0 5px #38bdf8)}.iss-route-schematic .iss-route-node.is-current text{fill:#e0f2fe}.iss-route-schematic .iss-route-branch-label{fill:#fbbf24;font:850 7px ui-monospace,monospace;letter-spacing:.6px}' +
+          '.iss-route-schematic .iss-route-node.is-next circle{stroke:#fbbf24;stroke-dasharray:3 2}.iss-route-schematic .iss-route-node.is-next text{fill:#fde68a}@media (max-width:620px){.iss-interior-objective{display:none}.iss-interior-next-hatch{top:54px;right:8px;max-width:148px}.iss-interior-next-hatch strong{max-width:96px}.iss-interior-hud span:nth-child(4){display:none}.iss-route-map-heading span{display:none}}@media (prefers-reduced-motion:reduce){.iss-interior-event{transition:none}.iss-route-schematic .iss-route-progress-line{stroke-dasharray:none}}' +
+          '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}.iss-orientation-widget{position:absolute;right:10px;bottom:8px;width:88px;height:88px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(2,6,23,.45))}.iss-orientation-widget line{transition:x2 .08s linear,y2 .08s linear}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:10.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-system-steps{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-system-steps button{min-height:31px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer}.iss-system-steps button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(14,165,233,.18);color:#e0f2fe;box-shadow:inset 0 -2px 0 #38bdf8}.iss-system-coupling{margin-top:-4px}.iss-coupling-pipe{stroke-dasharray:6 6;animation:iss-flow 5s linear infinite}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
           '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
@@ -1483,6 +1505,961 @@
         }
       }
 
+      // -- Connected 3-D interior (momentum, hatches, hazards, cleanup) --
+      function interiorCanvasRef(cv) {
+        if (!cv || cv._issInteriorInit) return;
+        cv._issInteriorInit = true;
+
+        function showInteriorFallback(message) {
+          cv._issInteriorInit = false;
+          cv.setAttribute('data-iss-webgl', 'unavailable');
+          var shell = cv.closest ? cv.closest('[data-iss-interior-sim]') : null;
+          if (shell) {
+            shell.setAttribute('data-iss-webgl-state', 'unavailable');
+            var unavailableControls = shell.querySelectorAll('.iss-interior-controls button');
+            for (var controlIndex = 0; controlIndex < unavailableControls.length; controlIndex++) unavailableControls[controlIndex].disabled = true;
+          }
+          var warning = shell && shell.querySelector('[data-iss-interior-fallback]');
+          if (warning) {
+            warning.hidden = false;
+            warning.textContent = message || 'The 3-D view is unavailable on this device. Choose Accessible diagram to keep exploring every room and activity.';
+          }
+          cv.style.display = 'none';
+        }
+
+        function doInit(THREE) {
+          var Wc = cv.clientWidth || (cv.parentElement && cv.parentElement.clientWidth) || 720;
+          var Hc = cv.clientHeight || 410;
+          var renderer;
+          try {
+            renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: 'default' });
+          } catch (err) {
+            showInteriorFallback('This browser could not start the 3-D cabin. Choose Accessible diagram to keep exploring every room and activity.');
+            return;
+          }
+          renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
+          renderer.setSize(Wc, Hc, false);
+          renderer.setClearColor(0x02050c, 1);
+          if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+          if (THREE.ACESFilmicToneMapping) renderer.toneMapping = THREE.ACESFilmicToneMapping;
+          renderer.toneMappingExposure = 0.92;
+
+          var scene = new THREE.Scene();
+          scene.background = new THREE.Color(0x02050c);
+          scene.fog = new THREE.Fog(0x02050c, 17, 40);
+          var camera = new THREE.PerspectiveCamera(70, Wc / Hc, 0.05, 70);
+          camera.rotation.order = 'YXZ';
+          scene.add(new THREE.HemisphereLight(0xdff5ff, 0x050912, 0.48));
+          scene.add(new THREE.AmbientLight(0x7890a8, 0.16));
+          var workLight = new THREE.DirectionalLight(0xe8f6ff, 0.5);
+          workLight.position.set(4, 7, -8);
+          scene.add(workLight);
+
+          var roomDefs = INTERIOR_3D_LAYOUT.map(function (def) {
+            return {
+              id: def.id, center: new THREE.Vector3(def.center[0], def.center[1], def.center[2]),
+              axis: def.axis, length: def.length, radius: def.radius, color: def.color,
+              facing: def.facing.slice()
+            };
+          });
+          function roomDef(id) {
+            return roomDefs.find(function (item) { return item.id === id; }) || roomDefs[0];
+          }
+          function roomInfo(id) {
+            return INTERIOR_ROOMS.find(function (item) { return item.id === id; }) || INTERIOR_ROOMS[0];
+          }
+          function orientCylinder(object, axis) {
+            if (axis === 'z') object.rotation.x = Math.PI / 2;
+            else if (axis === 'x') object.rotation.z = Math.PI / 2;
+          }
+          function orientRing(object, axis) {
+            if (axis === 'x') object.rotation.y = Math.PI / 2;
+            else if (axis === 'y') object.rotation.x = Math.PI / 2;
+          }
+          function setAxisPosition(vector, axis, value) {
+            if (axis === 'x') vector.x = value;
+            else if (axis === 'y') vector.y = value;
+            else vector.z = value;
+          }
+          function makeBox(size, position, material) {
+            var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), material);
+            mesh.position.set(position[0], position[1], position[2]);
+            scene.add(mesh);
+            return mesh;
+          }
+          function standardMat(color, emissive) {
+            return new THREE.MeshStandardMaterial({
+              color: color, emissive: emissive || 0x000000, roughness: 0.58, metalness: 0.24
+            });
+          }
+
+          var labelTextures = [];
+          var shellMat = new THREE.MeshStandardMaterial({
+            color: 0x8d9aaa, emissive: 0x060b11, roughness: 0.76, metalness: 0.16,
+            side: THREE.BackSide, transparent: true, opacity: 0.42, depthWrite: false
+          });
+          var panelMat = standardMat(0x9da9b7, 0x070d14);
+          var rackMat = standardMat(0x26354a, 0x030812);
+          var bulkheadMat = standardMat(0x536171, 0x03070c);
+          var railBlue = standardMat(0x1976d2, 0x06214b);
+          var railGold = standardMat(0xd79a24, 0x382206);
+          var screenMat = new THREE.MeshStandardMaterial({ color: 0x8ed8f8, emissive: 0x1c89b7, roughness: 0.34, metalness: 0.12 });
+          var hatchMat = new THREE.MeshStandardMaterial({ color: 0xdde6ef, emissive: 0x21384d, roughness: 0.32, metalness: 0.68 });
+          var guideMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.62 });
+          var lightStripMat = new THREE.MeshBasicMaterial({ color: 0xe7f6ff });
+
+          function addModulePlacard(def, index) {
+            var labelCanvas = document.createElement('canvas');
+            labelCanvas.width = 512; labelCanvas.height = 128;
+            var labelContext = labelCanvas.getContext('2d');
+            if (!labelContext) return;
+            var accent = '#' + ('000000' + def.color.toString(16)).slice(-6);
+            labelContext.fillStyle = 'rgba(3,9,18,.94)';
+            labelContext.fillRect(0, 0, 512, 128);
+            labelContext.fillStyle = accent;
+            labelContext.fillRect(0, 0, 18, 128);
+            labelContext.strokeStyle = accent;
+            labelContext.lineWidth = 5;
+            labelContext.strokeRect(3, 3, 506, 122);
+            labelContext.fillStyle = '#f8fafc';
+            labelContext.font = '900 48px Arial, sans-serif';
+            labelContext.fillText(roomInfo(def.id).module.toUpperCase(), 42, 61);
+            labelContext.fillStyle = '#9fb2c8';
+            labelContext.font = '700 20px Arial, sans-serif';
+            labelContext.fillText('CREW MODULE // ' + String(index + 1).padStart(2, '0'), 43, 98);
+            var labelTexture = THREE.CanvasTexture ? new THREE.CanvasTexture(labelCanvas) : new THREE.Texture(labelCanvas);
+            labelTexture.needsUpdate = true;
+            if (THREE.sRGBEncoding) labelTexture.encoding = THREE.sRGBEncoding;
+            labelTextures.push(labelTexture);
+            var placard = new THREE.Mesh(
+              new THREE.PlaneGeometry(1.45, 0.36),
+              new THREE.MeshBasicMaterial({ map: labelTexture, transparent: true, side: THREE.DoubleSide })
+            );
+            placard.position.copy(def.center);
+            if (def.axis === 'z') placard.position.x += def.radius * 0.82;
+            else if (def.axis === 'x') placard.position.z += def.radius * 0.82;
+            else placard.position.x += def.radius * 0.78;
+            placard.lookAt(def.center);
+            scene.add(placard);
+          }
+
+          function addRail(def, offset, material) {
+            var size, position = def.center.toArray();
+            if (def.axis === 'z') {
+              size = [0.055, 0.055, def.length * 0.86];
+              position[0] += offset; position[1] -= def.radius * 0.58;
+            } else if (def.axis === 'x') {
+              size = [def.length * 0.86, 0.055, 0.055];
+              position[1] -= def.radius * 0.58; position[2] += offset;
+            } else {
+              size = [0.055, def.length * 0.86, 0.055];
+              position[0] += offset; position[2] += def.radius * 0.55;
+            }
+            makeBox(size, position, material);
+          }
+          function addRoom(def, index) {
+            var shell = new THREE.Mesh(
+              new THREE.CylinderGeometry(def.radius, def.radius, def.length, 20, 1, true),
+              shellMat
+            );
+            orientCylinder(shell, def.axis);
+            shell.position.copy(def.center); shell.userData.moduleId = def.id;
+            scene.add(shell);
+
+            for (var ringIndex = -2; ringIndex <= 2; ringIndex++) {
+              var ring = new THREE.Mesh(new THREE.TorusGeometry(def.radius * 0.965, 0.045, 8, 32), bulkheadMat);
+              orientRing(ring, def.axis);
+              ring.position.copy(def.center);
+              var axisBase = def.axis === 'x' ? def.center.x : def.axis === 'y' ? def.center.y : def.center.z;
+              setAxisPosition(ring.position, def.axis, axisBase + ringIndex * def.length * 0.22);
+              scene.add(ring);
+            }
+
+            var panelSize, panelA = def.center.toArray(), panelB = def.center.toArray();
+            if (def.axis === 'z') {
+              panelSize = [def.radius * 1.18, 0.08, def.length * 0.82];
+              panelA[1] -= def.radius * 0.72; panelB[1] += def.radius * 0.72;
+            } else if (def.axis === 'x') {
+              panelSize = [def.length * 0.82, 0.08, def.radius * 1.18];
+              panelA[1] -= def.radius * 0.72; panelB[1] += def.radius * 0.72;
+            } else {
+              panelSize = [def.radius * 1.18, def.length * 0.82, 0.08];
+              panelA[2] -= def.radius * 0.72; panelB[2] += def.radius * 0.72;
+            }
+            makeBox(panelSize, panelA, panelMat);
+            makeBox(panelSize, panelB, panelMat);
+            [-0.28, 0.28].forEach(function (fraction) {
+              var lampPosition = def.center.toArray(), lampSize;
+              if (def.axis === 'z') {
+                lampPosition[1] += def.radius * 0.76; lampPosition[2] += fraction * def.length;
+                lampSize = [0.48, 0.035, 0.72];
+              } else if (def.axis === 'x') {
+                lampPosition[0] += fraction * def.length; lampPosition[1] += def.radius * 0.76;
+                lampSize = [0.72, 0.035, 0.48];
+              } else {
+                lampPosition[1] += fraction * def.length; lampPosition[2] -= def.radius * 0.76;
+                lampSize = [0.48, 0.72, 0.035];
+              }
+              makeBox(lampSize, lampPosition, lightStripMat);
+            });
+            addRail(def, def.radius * 0.63, index % 2 ? railGold : railBlue);
+            addRail(def, -def.radius * 0.63, index % 2 ? railBlue : railGold);
+
+            if (def.axis === 'z') {
+              [-0.31, 0.31].forEach(function (fraction, rackIndex) {
+                var z = def.center.z + fraction * def.length;
+                makeBox([0.19, 0.82, 0.9], [def.center.x - def.radius * 0.78, rackIndex ? 0.42 : -0.42, z], rackMat);
+                makeBox([0.025, 0.32, 0.42], [def.center.x - def.radius * 0.675, rackIndex ? 0.42 : -0.42, z], screenMat);
+              });
+            } else if (def.axis === 'x') {
+              [-0.3, 0.3].forEach(function (fraction, rackIndex) {
+                var x = def.center.x + fraction * def.length;
+                makeBox([0.9, 0.82, 0.19], [x, rackIndex ? 0.42 : -0.42, def.center.z - def.radius * 0.78], rackMat);
+                makeBox([0.42, 0.32, 0.025], [x, rackIndex ? 0.42 : -0.42, def.center.z - def.radius * 0.675], screenMat);
+              });
+            }
+
+            addModulePlacard(def, index);
+            var lamp = new THREE.PointLight(def.color, 0.28, 6.4, 2);
+            lamp.position.copy(def.center);
+            scene.add(lamp);
+          }
+          roomDefs.forEach(addRoom);
+
+          var hatchVisuals = [];
+          function addHatch(position, axis, color, from, to) {
+            var outer = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.11, 10, 36), hatchMat);
+            orientRing(outer, axis);
+            outer.position.set(position[0], position[1], position[2]);
+            scene.add(outer);
+            var inner = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.025, 6, 32), new THREE.MeshBasicMaterial({ color: color }));
+            orientRing(inner, axis);
+            inner.position.copy(outer.position);
+            scene.add(inner);
+            var light = new THREE.PointLight(color, 0.34, 4.2, 2);
+            light.position.copy(outer.position);
+            scene.add(light);
+            hatchVisuals.push({ from: from, to: to, position: outer.position.clone(), inner: inner, light: light, color: color, flashUntil: 0 });
+          }
+          addHatch([0, 0, -8.45], 'z', 0x7dd3fc, 'harmony', 'destiny');
+          addHatch([0, 0, -2.25], 'z', 0x4ade80, 'destiny', 'unity');
+          addHatch([-1.45, 0, -0.25], 'x', 0xfbbf24, 'unity', 'tranquility');
+          addHatch([-6.25, -1.28, -0.25], 'y', 0x818cf8, 'tranquility', 'cupola');
+
+          var routePoints = [
+            [0, -0.94, -12.3], [0, -0.94, -10.5], [0, -0.94, -8.45],
+            [0, -0.94, -6.4], [0, -0.94, -4.4], [0, -0.94, -2.25],
+            [0, -0.94, -0.25], [-1.55, -0.94, -0.25], [-3.2, -0.94, -0.25],
+            [-5.1, -0.94, -0.25], [-6.25, -1.35, -0.25], [-6.25, -2.8, -0.25]
+          ];
+          routePoints.forEach(function (point) {
+            var dot = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), guideMat);
+            dot.position.set(point[0], point[1], point[2]);
+            scene.add(dot);
+          });
+          var routeVectors = routePoints.map(function (point) { return new THREE.Vector3(point[0], point[1], point[2]); });
+          var routeLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(routeVectors),
+            new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.3 })
+          );
+          scene.add(routeLine);
+
+          // Room-specific objects make the jobs visible before the learner opens
+          // their activity card.
+          makeBox([0.18, 1.18, 0.68], [1.28, 0, -11.1], standardMat(0x557ca8, 0x13263d));
+          makeBox([0.92, 0.72, 0.62], [-1.18, 0.15, -5.45], standardMat(0x1f3158, 0x0b1b3d));
+          var plant = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), standardMat(0x4ade80, 0x0d3c25));
+          plant.scale.set(1.25, 0.62, 0.8); plant.position.set(-0.82, 0.58, -5.45); scene.add(plant);
+
+          var fan = new THREE.Group();
+          var fanRing = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.075, 8, 30), standardMat(0x94a3b8, 0x101827));
+          fan.add(fanRing);
+          for (var bladeIndex = 0; bladeIndex < 5; bladeIndex++) {
+            var blade = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.035), standardMat(0x64748b, 0x09111d));
+            blade.rotation.z = bladeIndex * Math.PI * 2 / 5;
+            blade.position.set(Math.cos(blade.rotation.z) * 0.2, Math.sin(blade.rotation.z) * 0.2, 0);
+            fan.add(blade);
+          }
+          fan.position.set(-3.4, 0.05, -1.23);
+          scene.add(fan);
+
+          var cargo = new THREE.Group();
+          cargo.add(new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.46, 0.38), standardMat(0x8b5e3c, 0x301707)));
+          var cargoHandle = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.035, 6, 18, Math.PI), standardMat(0xfde68a, 0x3a2505));
+          cargoHandle.position.y = 0.27; cargoHandle.rotation.x = Math.PI;
+          cargo.add(cargoHandle);
+          var cargoBase = new THREE.Vector3(-0.66, 0.18, -0.25);
+          cargo.position.copy(cargoBase);
+          scene.add(cargo);
+
+          var activityBeacons = {};
+          function addActivityBeacon(id, position, color) {
+            var beacon = new THREE.Group();
+            var spinner = new THREE.Group();
+            var ring = new THREE.Mesh(
+              new THREE.TorusGeometry(0.24, 0.025, 8, 28),
+              new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.88 })
+            );
+            spinner.add(ring);
+            var tick = new THREE.Mesh(
+              new THREE.BoxGeometry(0.1, 0.035, 0.02),
+              new THREE.MeshBasicMaterial({ color: 0xf8fafc })
+            );
+            tick.position.x = 0.29;
+            spinner.add(tick);
+            beacon.add(spinner);
+            var core = new THREE.Mesh(new THREE.SphereGeometry(0.055, 10, 8), new THREE.MeshBasicMaterial({ color: 0xf8fafc }));
+            beacon.add(core);
+            var beaconLight = new THREE.PointLight(color, 0.38, 2.2, 2);
+            beacon.add(beaconLight);
+            beacon.position.set(position[0], position[1], position[2]);
+            beacon.userData.baseY = position[1];
+            beacon.userData.spinner = spinner;
+            scene.add(beacon);
+            activityBeacons[id] = beacon;
+          }
+          addActivityBeacon('harmony', [1.05, 0.02, -11.1], 0xe879f9);
+          addActivityBeacon('destiny', [-0.82, 0.58, -5.45], 0x38bdf8);
+          addActivityBeacon('unity', [-0.66, 0.18, -0.25], 0x34d399);
+          addActivityBeacon('tranquility', [-3.4, 0.05, -1.23], 0xfbbf24);
+          addActivityBeacon('cupola', [-6.25, -3.72, -0.25], 0x818cf8);
+
+          var earth = new THREE.Mesh(
+            new THREE.SphereGeometry(6.2, 40, 26),
+            new THREE.MeshPhongMaterial({ color: 0x2879b9, emissive: 0x061b38, shininess: 46, specular: 0x9edfff })
+          );
+          earth.position.set(-6.25, -11.0, -0.25);
+          scene.add(earth);
+          var atmosphere = new THREE.Mesh(
+            new THREE.SphereGeometry(6.3, 40, 26),
+            new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.09, side: THREE.BackSide })
+          );
+          atmosphere.position.copy(earth.position);
+          scene.add(atmosphere);
+
+          // Cupola's seven-window geometry creates a recognizable destination
+          // and lets the activity's shutter state appear in the 3-D scene.
+          var cupolaShutters = new THREE.Group();
+          var cupolaWindows = new THREE.Group();
+          var cupolaWindowCenters = [[0, 0]];
+          for (var windowIndex = 0; windowIndex < 6; windowIndex++) {
+            var windowAngle = windowIndex * Math.PI / 3;
+            cupolaWindowCenters.push([Math.cos(windowAngle) * 0.76, Math.sin(windowAngle) * 0.76]);
+          }
+          cupolaWindowCenters.forEach(function (offset, index) {
+            var windowRadius = index ? 0.29 : 0.4;
+            var frame = new THREE.Mesh(new THREE.TorusGeometry(windowRadius, 0.055, 8, 28), hatchMat);
+            orientRing(frame, 'y');
+            frame.position.set(-6.25 + offset[0], -4.35, -0.25 + offset[1]);
+            cupolaWindows.add(frame);
+            var shutter = new THREE.Mesh(
+              new THREE.CircleGeometry(windowRadius * 0.91, 24),
+              standardMat(0x263241, 0x02050a)
+            );
+            shutter.rotation.x = -Math.PI / 2;
+            shutter.position.set(-6.25 + offset[0], -4.31, -0.25 + offset[1]);
+            cupolaShutters.add(shutter);
+          });
+          cupolaShutters.visible = false;
+          scene.add(cupolaWindows);
+          scene.add(cupolaShutters);
+          var cupolaGlow = new THREE.PointLight(0x7dd3fc, 0.46, 5.5, 2);
+          cupolaGlow.position.set(-6.25, -4.05, -0.25);
+          scene.add(cupolaGlow);
+
+          function insideRoom(position, def) {
+            var dx = position.x - def.center.x;
+            var dy = position.y - def.center.y;
+            var dz = position.z - def.center.z;
+            var axial, radial;
+            if (def.axis === 'x') { axial = Math.abs(dx); radial = Math.sqrt(dy * dy + dz * dz); }
+            else if (def.axis === 'y') { axial = Math.abs(dy); radial = Math.sqrt(dx * dx + dz * dz); }
+            else { axial = Math.abs(dz); radial = Math.sqrt(dx * dx + dy * dy); }
+            return axial <= def.length / 2 + 0.22 && radial <= def.radius - 0.16;
+          }
+          function withinPortal(position, axis, center, radius) {
+            var first, second;
+            if (axis === 'z') {
+              first = position.x - center[0]; second = position.y - center[1];
+            } else if (axis === 'x') {
+              first = position.y - center[1]; second = position.z - center[2];
+            } else {
+              first = position.x - center[0]; second = position.z - center[2];
+            }
+            return Math.sqrt(first * first + second * second) <= radius;
+          }
+          function transitionRoom(currentId, position) {
+            var margin = 0.025;
+            if (currentId === 'harmony' && position.z > -8.45 + margin && withinPortal(position, 'z', [0, 0, -8.45], 1.24)) return roomDef('destiny');
+            if (currentId === 'destiny') {
+              if (position.z < -8.45 - margin && withinPortal(position, 'z', [0, 0, -8.45], 1.24)) return roomDef('harmony');
+              if (position.z > -2.25 + margin && withinPortal(position, 'z', [0, 0, -2.25], 1.24)) return roomDef('unity');
+            }
+            if (currentId === 'unity') {
+              if (position.z < -2.25 - margin && withinPortal(position, 'z', [0, 0, -2.25], 1.24)) return roomDef('destiny');
+              if (position.x < -1.45 - margin && withinPortal(position, 'x', [-1.45, 0, -0.25], 1.24)) return roomDef('tranquility');
+            }
+            if (currentId === 'tranquility') {
+              if (position.x > -1.45 + margin && withinPortal(position, 'x', [-1.45, 0, -0.25], 1.24)) return roomDef('unity');
+              if (position.y < -1.28 - margin && withinPortal(position, 'y', [-6.25, -1.28, -0.25], 1.16)) return roomDef('cupola');
+            }
+            if (currentId === 'cupola' && position.y > -1.28 + margin && withinPortal(position, 'y', [-6.25, -1.28, -0.25], 1.16)) return roomDef('tranquility');
+            return roomDef(currentId);
+          }
+          function crossedConnectorPlane(currentId, position) {
+            var margin = 0.025;
+            if (currentId === 'harmony') return position.z > -8.45 + margin;
+            if (currentId === 'destiny') return position.z < -8.45 - margin || position.z > -2.25 + margin;
+            if (currentId === 'unity') return position.z < -2.25 - margin || position.x < -1.45 - margin;
+            if (currentId === 'tranquility') return position.x > -1.45 + margin || position.y < -1.28 - margin;
+            return currentId === 'cupola' && position.y > -1.28 + margin;
+          }
+          function canOccupyFromRoom(currentId, position) {
+            var current = roomDef(currentId);
+            var adjacent = transitionRoom(currentId, position);
+            if (adjacent.id !== currentId) return insideRoom(position, adjacent);
+            return !crossedConnectorPlane(currentId, position) && insideRoom(position, current);
+          }
+
+          var startDef = roomDef(cv._issInteriorWantRoom || 'harmony');
+          var state = {
+            position: startDef.center.clone(), velocity: new THREE.Vector3(),
+            pitch: startDef.facing[0], yaw: startDef.facing[1], roll: startDef.facing[2],
+            room: startDef.id, mode: 'STATIONARY', collisions: 0, railGrabs: 0,
+            looseHits: 0, manualVisited: {}, routeComplete: false,
+            routeIndex: startDef.id === 'harmony' ? 0 : -1,
+            cargoHitSinceUnity: false, rolledFar: false, orientationDone: false,
+            lastWallEvent: 0, lastCargoEvent: 0,
+            feedbackText: '', feedbackTone: 'info', feedbackUntil: 0
+          };
+          state.manualVisited[startDef.id] = true;
+          cv._issInteriorState = state;
+          cv.setAttribute('data-iss-webgl', 'ready');
+
+          var keys = {};
+          var lastWant = startDef.id;
+          var dirty = true;
+          var disposed = false;
+          var rafId = 0;
+          var lastFrame = (window.performance && performance.now) ? performance.now() : Date.now();
+          var lastHud = -Infinity;
+          var tick = 0;
+          var drag = null;
+          var resizeObserver = null;
+          var tempForward = new THREE.Vector3();
+          var tempRight = new THREE.Vector3();
+          var tempUp = new THREE.Vector3();
+          var tempThrust = new THREE.Vector3();
+          var tempCandidate = new THREE.Vector3();
+          var tempSeparation = new THREE.Vector3();
+          var tempHudTarget = new THREE.Vector3();
+          var tempLocalVelocity = new THREE.Vector3();
+
+          function announce(message) {
+            var shell = cv.closest ? cv.closest('[data-iss-interior-sim]') : null;
+            var status = shell && shell.querySelector('[data-iss-interior-status]');
+            if (status) status.textContent = message;
+          }
+          function emit(type, payload) {
+            var event = Object.assign({ type: type }, payload || {});
+            try { if (typeof cv._issInteriorEvent === 'function') cv._issInteriorEvent(event); } catch (e) {}
+          }
+          function setCameraFromState() {
+            camera.position.copy(state.position);
+            camera.rotation.set(state.pitch, state.yaw, state.roll, 'YXZ');
+          }
+          function setFeedback(message, tone, duration) {
+            state.feedbackText = message;
+            state.feedbackTone = tone || 'info';
+            state.feedbackUntil = ((window.performance && performance.now) ? performance.now() : Date.now()) + (duration || 1500);
+            dirty = true;
+          }
+          function railDistance(position, def) {
+            var offset = def.radius * 0.63;
+            var axialHalf = def.length * 0.43;
+            var axialExcess, first, second;
+            if (def.axis === 'z') {
+              axialExcess = Math.max(0, Math.abs(position.z - def.center.z) - axialHalf);
+              first = Math.sqrt(Math.pow(position.x - (def.center.x + offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+              second = Math.sqrt(Math.pow(position.x - (def.center.x - offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+            } else if (def.axis === 'x') {
+              axialExcess = Math.max(0, Math.abs(position.x - def.center.x) - axialHalf);
+              first = Math.sqrt(Math.pow(position.z - (def.center.z + offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+              second = Math.sqrt(Math.pow(position.z - (def.center.z - offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+            } else {
+              axialExcess = Math.max(0, Math.abs(position.y - def.center.y) - axialHalf);
+              first = Math.sqrt(Math.pow(position.x - (def.center.x + offset), 2) + Math.pow(position.z - (def.center.z + def.radius * 0.55), 2) + axialExcess * axialExcess);
+              second = Math.sqrt(Math.pow(position.x - (def.center.x - offset), 2) + Math.pow(position.z - (def.center.z + def.radius * 0.55), 2) + axialExcess * axialExcess);
+            }
+            return Math.min(first, second);
+          }
+          function nextRouteTarget() {
+            if (state.routeComplete) return null;
+            var recovering = state.routeIndex < 0;
+            var nextId;
+            if (recovering) {
+              var currentIndex = INTERIOR_ROUTE_IDS.indexOf(state.room);
+              nextId = INTERIOR_ROUTE_IDS[Math.max(0, currentIndex - 1)] || 'harmony';
+            } else {
+              nextId = INTERIOR_ROUTE_IDS[state.routeIndex + 1];
+            }
+            if (!nextId) return null;
+            var hatch = hatchVisuals.find(function (item) { return item.from === state.room && item.to === nextId; });
+            if (!hatch) {
+              hatch = hatchVisuals.find(function (item) { return item.to === state.room && item.from === nextId; });
+            }
+            return {
+              id: nextId,
+              position: hatch ? hatch.position : roomDef(nextId).center,
+              label: recovering ? 'RESET VIA // ' + roomInfo(nextId).module.toUpperCase() : 'NEXT // ' + roomInfo(nextId).module.toUpperCase()
+            };
+          }
+          function moveToRoom(id, speak, preserveProgress) {
+            var def = roomDef(id);
+            state.position.copy(def.center);
+            state.velocity.set(0, 0, 0);
+            state.pitch = def.facing[0]; state.yaw = def.facing[1]; state.roll = def.facing[2];
+            state.room = def.id; state.mode = 'STATIONARY';
+            if (!preserveProgress) {
+              state.routeIndex = def.id === 'harmony' ? 0 : -1;
+              state.routeComplete = false;
+              state.cargoHitSinceUnity = false;
+            }
+            setCameraFromState();
+            dirty = true;
+            if (speak) announce('Moved to ' + roomInfo(def.id).name + '. Camera centered and momentum stopped.');
+          }
+          function grabRail() {
+            var speed = state.velocity.length();
+            var distance = railDistance(state.position, roomDef(state.room));
+            if (distance > 0.68) {
+              setFeedback('RAIL OUT OF REACH // ' + distance.toFixed(2) + ' M', 'warn', 1700);
+              announce('No handrail within reach. Nearest rail is ' + distance.toFixed(2) + ' meters away. Move within 0.68 meters and try again.');
+              return false;
+            }
+            state.velocity.set(0, 0, 0);
+            state.mode = 'RAIL HOLD';
+            state.railGrabs += 1;
+            dirty = true;
+            var controlled = speed >= 0.12 && speed <= 0.35;
+            setFeedback(controlled ? 'CONTROLLED RAIL CATCH' : speed > 0.35 ? 'RAIL CAUGHT // ENTRY TOO FAST' : 'RAIL HOLD // STATIONARY', controlled ? 'safe' : speed > 0.35 ? 'warn' : 'info');
+            emit('rail-grab', { room: state.room, speed: speed, distance: distance, controlled: controlled });
+            announce(speed > 0.02 ? 'Handrail caught. Momentum stopped from ' + speed.toFixed(2) + ' meters per second.' : 'Handrail held. You are already stationary.');
+            return true;
+          }
+          function centerAndStop() {
+            moveToRoom(state.room, false, true);
+            state.rolledFar = false;
+            setFeedback('TRAINING ASSIST // CENTERED + STOPPED', 'info');
+            announce('Training assist used. Centered and stopped in ' + roomInfo(state.room).name + '.');
+          }
+          function resetRoute() {
+            state.manualVisited = { harmony: true };
+            state.routeComplete = false;
+            state.orientationDone = false;
+            state.rolledFar = false;
+            state.routeIndex = 0;
+            state.collisions = 0; state.railGrabs = 0; state.looseHits = 0;
+            lastWant = 'harmony';
+            moveToRoom('harmony', true);
+          }
+          cv._issInteriorSetControl = function (action, on) {
+            if (action === 'grab' && on) { grabRail(); return; }
+            keys[action] = !!on;
+            if (on) state.mode = 'PUSHING';
+            dirty = true;
+          };
+          cv._issInteriorGrabRail = grabRail;
+          cv._issInteriorCenter = centerAndStop;
+          cv._issInteriorReset = resetRoute;
+          cv._issInteriorGoTo = function (id) {
+            lastWant = id;
+            moveToRoom(id, true);
+          };
+
+          function updateHud(now) {
+            if (now - lastHud < 120) return;
+            lastHud = now;
+            setCameraFromState();
+            camera.updateMatrixWorld(true);
+            var shell = cv.closest ? cv.closest('[data-iss-interior-sim]') : null;
+            if (!shell) return;
+            var info = roomInfo(state.room);
+            var speed = state.velocity.length();
+            var distanceToRail = railDistance(state.position, roomDef(state.room));
+            var roomEl = shell.querySelector('[data-iss-interior-room-hud]');
+            var speedEl = shell.querySelector('[data-iss-interior-speed]');
+            var modeEl = shell.querySelector('[data-iss-interior-mode]');
+            var railEl = shell.querySelector('[data-iss-interior-rail-distance]');
+            var routeEl = shell.querySelector('[data-iss-interior-route-progress]');
+            var grabEl = shell.querySelector('[data-iss-interior-grab]');
+            var objectiveEl = shell.querySelector('[data-iss-interior-objective]');
+            var hatchLabelEl = shell.querySelector('[data-iss-interior-next-label]');
+            var hatchDistanceEl = shell.querySelector('[data-iss-interior-next-distance]');
+            var hatchArrowEl = shell.querySelector('[data-iss-interior-next-arrow]');
+            var horizonEl = shell.querySelector('[data-iss-interior-horizon]');
+            var velocityDotEl = shell.querySelector('[data-iss-interior-velocity-dot]');
+            var eventEl = shell.querySelector('[data-iss-interior-event]');
+            if (roomEl) roomEl.textContent = info.module.toUpperCase() + ' // ' + info.zone.toUpperCase();
+            if (speedEl) {
+              speedEl.textContent = 'SPEED ' + speed.toFixed(2) + ' M/S // STOP ~' + (speed * speed / (2 * 0.46)).toFixed(2) + ' M';
+              speedEl.setAttribute('data-rate', speed < 0.02 ? 'stopped' : speed <= 0.35 ? 'controlled' : 'fast');
+            }
+            if (modeEl) modeEl.textContent = state.mode;
+            if (railEl) railEl.textContent = 'RAIL ' + distanceToRail.toFixed(2) + ' M';
+            if (grabEl) {
+              grabEl.disabled = false;
+              grabEl.setAttribute('aria-disabled', distanceToRail > 0.68 ? 'true' : 'false');
+              grabEl.title = distanceToRail > 0.68 ? 'Move within 0.68 m of a handrail' : 'Handrail is within reach';
+            }
+            if (routeEl) routeEl.textContent = state.routeComplete ? '5 / 5 // COMPLETE' : state.routeIndex < 0 ? 'ROUTE RESET // RETURN TO HARMONY' : (state.routeIndex + 1) + ' / 5 // ORDERED';
+            if (objectiveEl) objectiveEl.textContent = (cv._issInteriorTaskDone ? 'ACTIVITY COMPLETE // ' : 'CURRENT ACTIVITY // ') + info.task.toUpperCase();
+            var target = nextRouteTarget();
+            if (target) {
+              tempHudTarget.copy(target.position);
+              var targetDistance = tempHudTarget.distanceTo(state.position);
+              camera.worldToLocal(tempHudTarget);
+              var targetAngle = Math.atan2(tempHudTarget.x, -tempHudTarget.z) * 180 / Math.PI;
+              if (hatchLabelEl) hatchLabelEl.textContent = target.label;
+              if (hatchDistanceEl) hatchDistanceEl.textContent = targetDistance.toFixed(1) + ' M // ' + (tempHudTarget.y < -0.35 ? 'NADIR' : tempHudTarget.y > 0.35 ? 'ZENITH' : tempHudTarget.x < -0.35 ? 'PORT' : tempHudTarget.x > 0.35 ? 'STARBOARD' : 'AHEAD');
+              if (hatchArrowEl) hatchArrowEl.style.transform = 'rotate(' + targetAngle.toFixed(1) + 'deg)';
+            } else {
+              if (hatchLabelEl) hatchLabelEl.textContent = 'ROUTE COMPLETE';
+              if (hatchDistanceEl) hatchDistanceEl.textContent = 'CUPOLA REACHED';
+            }
+            if (horizonEl) horizonEl.style.transform = 'rotate(' + (-state.roll * 180 / Math.PI).toFixed(1) + 'deg) translateY(' + Math.max(-14, Math.min(14, state.pitch * 9)).toFixed(1) + 'px)';
+            if (velocityDotEl) {
+              tempLocalVelocity.copy(state.position).add(state.velocity);
+              camera.worldToLocal(tempLocalVelocity);
+              velocityDotEl.style.transform = 'translate(' + Math.max(-28, Math.min(28, tempLocalVelocity.x / 0.78 * 28)).toFixed(1) + 'px,' + Math.max(-28, Math.min(28, -tempLocalVelocity.y / 0.78 * 28)).toFixed(1) + 'px)';
+            }
+            if (eventEl) {
+              eventEl.textContent = state.feedbackText;
+              eventEl.setAttribute('data-tone', state.feedbackTone);
+              eventEl.className = 'iss-interior-event' + (state.feedbackText && now < state.feedbackUntil ? ' is-visible' : '');
+            }
+          }
+
+          function updatePhysics(dt, now) {
+            var want = cv._issInteriorWantRoom;
+            if (want && want !== lastWant) {
+              lastWant = want;
+              moveToRoom(want, true);
+            }
+
+            var rollInput = (keys.rollLeft ? 1 : 0) - (keys.rollRight ? 1 : 0);
+            if (rollInput) {
+              state.roll += rollInput * dt * 1.18;
+              if (state.roll > Math.PI) state.roll -= Math.PI * 2;
+              if (state.roll < -Math.PI) state.roll += Math.PI * 2;
+              dirty = true;
+            }
+            if (Math.abs(state.roll) > 0.72) state.rolledFar = true;
+            if (state.rolledFar && !state.orientationDone && Math.abs(state.roll) < 0.14 && rollInput) {
+              state.orientationDone = true;
+              emit('orientation-recovered', { room: state.room });
+              setFeedback('ORIENTATION RECOVERED // DECK ALIGNED', 'safe');
+              announce('Orientation recovered. Your agreed deck direction is level again.');
+            }
+
+            setCameraFromState();
+            tempThrust.set(0, 0, 0);
+            tempForward.set(0, 0, -1).applyQuaternion(camera.quaternion);
+            tempRight.set(1, 0, 0).applyQuaternion(camera.quaternion);
+            tempUp.set(0, 1, 0).applyQuaternion(camera.quaternion);
+            tempThrust.addScaledVector(tempForward, (keys.forward ? 1 : 0) - (keys.back ? 1 : 0));
+            tempThrust.addScaledVector(tempRight, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
+            tempThrust.addScaledVector(tempUp, (keys.up ? 1 : 0) - (keys.down ? 1 : 0));
+            if (tempThrust.lengthSq() > 0) {
+              tempThrust.normalize();
+              state.velocity.addScaledVector(tempThrust, 0.46 * dt);
+              if (state.velocity.length() > 0.78) state.velocity.setLength(0.78);
+              state.mode = 'PUSHING';
+              dirty = true;
+            } else if (state.velocity.length() > 0.006) {
+              state.mode = 'COASTING // NO DRAG';
+            } else {
+              state.velocity.set(0, 0, 0);
+              if (state.mode !== 'RAIL HOLD') state.mode = 'STATIONARY';
+            }
+
+            if (state.velocity.lengthSq() > 0) {
+              tempCandidate.copy(state.position).addScaledVector(state.velocity, dt);
+              if (canOccupyFromRoom(state.room, tempCandidate)) {
+                state.position.copy(tempCandidate);
+              } else {
+                var impactSpeed = state.velocity.length();
+                state.velocity.multiplyScalar(-0.18);
+                state.collisions += 1;
+                dirty = true;
+                if (now - state.lastWallEvent > 700) {
+                  state.lastWallEvent = now;
+                  emit('collision', { room: state.room, speed: impactSpeed });
+                  setFeedback('HULL CONTACT // IMPACT ' + impactSpeed.toFixed(2) + ' M/S', 'impact');
+                  announce('Hull contact at ' + impactSpeed.toFixed(2) + ' meters per second. In microgravity, unplanned speed still carries you into the wall.');
+                }
+              }
+            }
+
+            if (!_prefersReducedMotion) {
+              cargo.position.copy(cargoBase);
+              cargo.position.y += Math.sin(now * 0.00072) * 0.16;
+              cargo.position.z += Math.cos(now * 0.00058) * 0.09;
+              cargo.rotation.x = now * 0.00018;
+              cargo.rotation.y = now * 0.00024;
+              fan.rotation.z = now * 0.0011;
+              Object.keys(activityBeacons).forEach(function (id, beaconIndex) {
+                activityBeacons[id].position.y = activityBeacons[id].userData.baseY + Math.sin(now * 0.0024 + beaconIndex) * 0.045;
+                activityBeacons[id].userData.spinner.rotation.z = now * 0.0007;
+              });
+              dirty = true;
+            }
+            Object.keys(activityBeacons).forEach(function (id) {
+              var beacon = activityBeacons[id];
+              var shouldShowBeacon = id === state.room && !cv._issInteriorTaskDone;
+              if (beacon.visible !== shouldShowBeacon) {
+                beacon.visible = shouldShowBeacon;
+                dirty = true;
+              }
+              if (beacon.visible) beacon.lookAt(camera.position);
+            });
+            var shouldShowShutters = !!cv._issInteriorCupolaShutters;
+            if (cupolaShutters.visible !== shouldShowShutters) {
+              cupolaShutters.visible = shouldShowShutters;
+              dirty = true;
+            }
+            hatchVisuals.forEach(function (hatch) {
+              if (hatch.flashUntil && now > hatch.flashUntil) {
+                hatch.inner.material.color.setHex(hatch.color);
+                hatch.light.color.setHex(hatch.color);
+                hatch.light.intensity = 0.34;
+                hatch.flashUntil = 0;
+                dirty = true;
+              }
+            });
+            tempSeparation.copy(state.position).sub(cargo.position);
+            if (tempSeparation.length() < 0.53 && now - state.lastCargoEvent > 1200) {
+              state.lastCargoEvent = now;
+              state.cargoHitSinceUnity = true;
+              state.looseHits += 1;
+              if (tempSeparation.lengthSq() < 0.001) tempSeparation.set(1, 0, 0);
+              tempSeparation.normalize();
+              state.position.addScaledVector(tempSeparation, 0.12);
+              state.velocity.addScaledVector(tempSeparation, 0.2);
+              emit('cargo-hit', { speed: state.velocity.length() });
+              setFeedback('LOOSE CARGO CONTACT // MOTION CHANGED', 'warn');
+              announce('Loose cargo contact. The pouch changed your motion and now tumbles through the node.');
+            }
+
+            var nextRoom = transitionRoom(state.room, state.position);
+            if (nextRoom && nextRoom.id !== state.room) {
+              var previous = state.room;
+              state.room = nextRoom.id;
+              lastWant = nextRoom.id;
+              state.manualVisited[nextRoom.id] = true;
+              if (nextRoom.id === 'unity' && previous !== 'unity') state.cargoHitSinceUnity = false;
+              var expectedRoom = state.routeIndex >= 0 ? INTERIOR_ROUTE_IDS[state.routeIndex + 1] : null;
+              if (nextRoom.id === 'harmony') {
+                state.routeIndex = 0;
+              } else if (expectedRoom && nextRoom.id === expectedRoom) {
+                state.routeIndex += 1;
+              } else {
+                state.routeIndex = -1;
+              }
+              var hatchSpeed = state.velocity.length();
+              emit('hatch', { from: previous, to: nextRoom.id, speed: hatchSpeed, routeStep: state.routeIndex });
+              var crossedHatch = hatchVisuals.find(function (hatch) {
+                return (hatch.from === previous && hatch.to === nextRoom.id) || (hatch.to === previous && hatch.from === nextRoom.id);
+              });
+              if (crossedHatch) {
+                var hatchTone = hatchSpeed <= 0.35 ? 0x4ade80 : 0xfbbf24;
+                crossedHatch.inner.material.color.setHex(hatchTone);
+                crossedHatch.light.color.setHex(hatchTone);
+                crossedHatch.light.intensity = 0.8;
+                crossedHatch.flashUntil = now + 1000;
+              }
+              if (previous === 'unity' && nextRoom.id === 'tranquility' && !state.cargoHitSinceUnity) {
+                emit('cargo-clear', { speed: state.velocity.length() });
+              }
+              var completedThisCrossing = false;
+              if (!state.routeComplete && state.routeIndex === INTERIOR_ROUTE_IDS.length - 1) {
+                state.routeComplete = true;
+                completedThisCrossing = true;
+                emit('route-complete', { room: nextRoom.id });
+              } else if (state.routeComplete && nextRoom.id !== 'cupola') {
+                state.routeComplete = false;
+              }
+              if (completedThisCrossing) setFeedback('ORDERED ROUTE COMPLETE // CUPOLA', 'safe', 2400);
+              else if (state.routeIndex < 0) setFeedback('ROUTE ORDER LOST // RETURN TO HARMONY', 'warn', 2100);
+              else setFeedback((hatchSpeed <= 0.35 ? 'CONTROLLED HATCH // ' : 'FAST HATCH // ') + roomInfo(nextRoom.id).module.toUpperCase(), hatchSpeed <= 0.35 ? 'safe' : 'warn');
+              announce('Hatch crossed into ' + roomInfo(nextRoom.id).name + ' at ' + state.velocity.length().toFixed(2) + ' meters per second.');
+            }
+            setCameraFromState();
+          }
+
+          function animate(now) {
+            if (disposed) return;
+            if (!cv.isConnected) { cleanup(); return; }
+            var time = typeof now === 'number' ? now : ((window.performance && performance.now) ? performance.now() : Date.now());
+            var elapsed = Math.max(0.001, Math.min(0.16, (time - lastFrame) / 1000));
+            lastFrame = time;
+            tick += 1;
+            // Keep thrust and coasting consistent on slow GPUs without allowing
+            // one delayed frame to tunnel through a wall or loose object.
+            var physicsSteps = Math.max(1, Math.ceil(elapsed / 0.04));
+            var physicsDt = elapsed / physicsSteps;
+            for (var physicsStep = 0; physicsStep < physicsSteps; physicsStep++) updatePhysics(physicsDt, time);
+            updateHud(time);
+            if (dirty || tick % 120 === 0) {
+              renderer.render(scene, camera);
+              dirty = false;
+            }
+            rafId = requestAnimationFrame(animate);
+          }
+
+          var keyMap = {
+            KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right',
+            KeyR: 'up', KeyF: 'down', KeyQ: 'rollLeft', KeyE: 'rollRight'
+          };
+          function onKeyDown(event) {
+            if (event.code === 'ArrowLeft' || event.code === 'ArrowRight' || event.code === 'ArrowUp' || event.code === 'ArrowDown') {
+              event.preventDefault();
+              var lookStep = event.shiftKey ? 0.11 : 0.055;
+              if (event.code === 'ArrowLeft') state.yaw += lookStep;
+              else if (event.code === 'ArrowRight') state.yaw -= lookStep;
+              else if (event.code === 'ArrowUp') state.pitch += lookStep;
+              else state.pitch -= lookStep;
+              state.pitch = Math.max(-1.48, Math.min(1.48, state.pitch));
+              dirty = true;
+              return;
+            }
+            if (event.code === 'Space') {
+              event.preventDefault();
+              if (!event.repeat) grabRail();
+              return;
+            }
+            if (event.code === 'Home') {
+              event.preventDefault();
+              centerAndStop();
+              return;
+            }
+            var action = keyMap[event.code];
+            if (!action) return;
+            event.preventDefault();
+            keys[action] = true;
+            dirty = true;
+          }
+          function onKeyUp(event) {
+            var action = keyMap[event.code];
+            if (!action) return;
+            event.preventDefault();
+            keys[action] = false;
+          }
+          function clearKeys() { keys = {}; if (state.velocity.length() < 0.006 && state.mode !== 'RAIL HOLD') state.mode = 'STATIONARY'; }
+          function onVisibilityChange() { if (document.hidden) clearKeys(); }
+          function onPointerDown(event) {
+            if (event.button != null && event.button !== 0) return;
+            cv.focus();
+            drag = { x: event.clientX, y: event.clientY, id: event.pointerId };
+            try { cv.setPointerCapture(event.pointerId); } catch (e) {}
+            event.preventDefault();
+          }
+          function onPointerMove(event) {
+            if (!drag || (drag.id != null && event.pointerId !== drag.id)) return;
+            var dx = event.clientX - drag.x, dy = event.clientY - drag.y;
+            drag.x = event.clientX; drag.y = event.clientY;
+            state.yaw -= dx * 0.0043;
+            state.pitch -= dy * 0.0038;
+            state.pitch = Math.max(-1.48, Math.min(1.48, state.pitch));
+            dirty = true;
+            event.preventDefault();
+          }
+          function onPointerUp(event) {
+            if (!drag || (drag.id != null && event.pointerId !== drag.id)) return;
+            drag = null;
+            try { cv.releasePointerCapture(event.pointerId); } catch (e) {}
+          }
+          function resizeScene() {
+            var nextW = cv.clientWidth || (cv.parentElement && cv.parentElement.clientWidth) || Wc;
+            var nextH = cv.clientHeight || Hc;
+            if (nextW === Wc && nextH === Hc) return;
+            Wc = nextW; Hc = nextH;
+            camera.aspect = Wc / Hc;
+            camera.updateProjectionMatrix();
+            renderer.setSize(Wc, Hc, false);
+            dirty = true;
+          }
+
+          cv.addEventListener('keydown', onKeyDown);
+          cv.addEventListener('keyup', onKeyUp);
+          cv.addEventListener('blur', clearKeys);
+          window.addEventListener('blur', clearKeys);
+          document.addEventListener('visibilitychange', onVisibilityChange);
+          cv.addEventListener('pointerdown', onPointerDown);
+          window.addEventListener('pointermove', onPointerMove, { passive: false });
+          window.addEventListener('pointerup', onPointerUp);
+          window.addEventListener('pointercancel', onPointerUp);
+          if (window.ResizeObserver) {
+            resizeObserver = new window.ResizeObserver(resizeScene);
+            resizeObserver.observe(cv);
+          } else {
+            window.addEventListener('resize', resizeScene);
+          }
+
+          function cleanup() {
+            if (disposed) return;
+            disposed = true;
+            cancelAnimationFrame(rafId);
+            cv.removeEventListener('keydown', onKeyDown);
+            cv.removeEventListener('keyup', onKeyUp);
+            cv.removeEventListener('blur', clearKeys);
+            window.removeEventListener('blur', clearKeys);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            cv.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            window.removeEventListener('pointercancel', onPointerUp);
+            if (resizeObserver) resizeObserver.disconnect();
+            else window.removeEventListener('resize', resizeScene);
+            var geometries = [], materials = [];
+            scene.traverse(function (object) {
+              if (object.geometry && geometries.indexOf(object.geometry) < 0) geometries.push(object.geometry);
+              var mats = object.material ? (Array.isArray(object.material) ? object.material : [object.material]) : [];
+              mats.forEach(function (material) { if (materials.indexOf(material) < 0) materials.push(material); });
+            });
+            geometries.forEach(function (geometry) { try { geometry.dispose(); } catch (e) {} });
+            materials.forEach(function (material) { try { material.dispose(); } catch (e) {} });
+            labelTextures.forEach(function (texture) { try { texture.dispose(); } catch (e) {} });
+            try { renderer.dispose(); } catch (e) {}
+            cv._issInteriorState = null;
+            cv._issInteriorSetControl = null;
+            cv._issInteriorGrabRail = null;
+            cv._issInteriorCenter = null;
+            cv._issInteriorReset = null;
+            cv._issInteriorGoTo = null;
+            cv._issInteriorCleanup = null;
+            cv._issInteriorTaskDone = null;
+            cv._issInteriorCupolaShutters = null;
+            cv._issInteriorInit = false;
+          }
+          cv._issInteriorCleanup = cleanup;
+          moveToRoom(startDef.id, false);
+          updateHud(lastFrame);
+          animate(lastFrame);
+        }
+
+        if (window.THREE) {
+          doInit(window.THREE);
+        } else if (window.StemLab && typeof window.StemLab.ensureThree === 'function') {
+          window.StemLab.ensureThree({ orbit: false }).then(function () {
+            if (window.THREE && cv.isConnected) doInit(window.THREE);
+            else if (cv.isConnected) showInteriorFallback();
+            else cv._issInteriorInit = false;
+          }).catch(function () { if (cv.isConnected) showInteriorFallback(); else cv._issInteriorInit = false; });
+        } else {
+          showInteriorFallback();
+        }
+      }
       // ── Orbit Lab math (real physics) ──
       // Shares issOrbit() with the fast-facts card so a student can never read
       // one number in the card and a different one in the readout beside it.
@@ -2194,6 +3171,9 @@
         var roomIdx = INTERIOR_ROOMS.findIndex(function (r) { return r.id === d.interiorRoom; });
         if (roomIdx < 0) roomIdx = 0;
         var room = INTERIOR_ROOMS[roomIdx];
+        var interiorRouteRooms = INTERIOR_ROUTE_IDS.map(function (id) { return INTERIOR_ROOMS.find(function (candidate) { return candidate.id === id; }); }).filter(Boolean);
+        var routeRoomIdx = interiorRouteRooms.findIndex(function (candidate) { return candidate.id === room.id; });
+        var routePlot = { harmony: [54, 52], destiny: [174, 52], unity: [294, 52], tranquility: [430, 24], cupola: [558, 68] };
         var done = d.interiorDone || {};
         var completed = Object.keys(done).filter(function (key) { return !!done[key]; }).length;
         var visited = Object.assign({}, d.interiorSeen || {}); visited[room.id] = true;
@@ -2208,11 +3188,191 @@
         var totalAttempts = Object.keys(attemptStats).reduce(function (sum, key) { return sum + Number(attemptStats[key] || 0); }, 0);
         var firstTryCount = Object.keys(done).filter(function (key) { return !!done[key] && attemptStats[key] === 1; }).length;
         var notesCount = Object.keys(d.interiorNotes || {}).filter(function (key) { return String((d.interiorNotes || {})[key] || '').trim().length > 0; }).length;
-        var nextIncomplete = INTERIOR_ROOMS.findIndex(function (candidate) { return !done[candidate.id]; });
+        var nextIncompleteRoom = interiorRouteRooms.find(function (candidate) { return !done[candidate.id]; });
+        var nextIncomplete = nextIncompleteRoom ? INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === nextIncompleteRoom.id; }) : -1;
         var choiceId = (d.interiorChoices || {})[room.id];
         var pickedChoice = room.choices.find(function (c) { return c.id === choiceId; });
         var discoveryPrefix = room.id + ':';
         var selectedDiscovery = String(d.interiorDiscovery || '').indexOf(discoveryPrefix) === 0 ? parseInt(String(d.interiorDiscovery).split(':')[1], 10) : -1;
+        var interiorView = d.interiorView === 'diagram' ? 'diagram' : '3d';
+        var navigation = Object.assign({ hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 }, d.interiorNav || {});
+        var navigationChallengeCount = [navigation.preciseHatch, navigation.handrailStop, navigation.cargoClear, navigation.orientationRecovered, navigation.routeComplete].filter(Boolean).length;
+
+        function recordInteriorNavigation(event) {
+          if (!event || !event.type) return;
+          setLabToolData(function (prev) {
+            var station = Object.assign({}, (prev && prev.spaceStation) || {});
+            var nav = Object.assign({ hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 }, station.interiorNav || {});
+            nav.hatches = Object.assign({}, nav.hatches || {});
+            if (event.type === 'hatch') {
+              nav.hatches[event.from + '>' + event.to] = true;
+              if (Number(event.speed) <= 0.35) nav.preciseHatch = true;
+              if (isFinite(Number(event.routeStep))) nav.routeStep = Number(event.routeStep);
+              var nextSeen = Object.assign({}, station.interiorSeen || {});
+              nextSeen[event.to] = true;
+              station.interiorSeen = nextSeen;
+              station.interiorRoom = event.to;
+              station.interiorDiscovery = null;
+            } else if (event.type === 'rail-grab') {
+              nav.railGrabs = Number(nav.railGrabs || 0) + 1;
+              if (Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35) nav.handrailStop = true;
+            } else if (event.type === 'collision') {
+              nav.collisions = Number(nav.collisions || 0) + 1;
+              nav.lastImpactSpeed = Number(event.speed || 0);
+            } else if (event.type === 'cargo-hit') {
+              nav.looseHits = Number(nav.looseHits || 0) + 1;
+            } else if (event.type === 'cargo-clear') {
+              nav.cargoClear = true;
+            } else if (event.type === 'orientation-recovered') {
+              nav.orientationRecovered = true;
+            } else if (event.type === 'route-complete') {
+              nav.routeComplete = true;
+            }
+            station.interiorNav = nav;
+            return Object.assign({}, prev, { spaceStation: station });
+          });
+          if (event.type === 'rail-grab' && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35) announceToSR('Controlled handrail stop challenge complete.');
+          else if (event.type === 'cargo-clear') announceToSR('Loose cargo avoided. Navigation challenge complete.');
+          else if (event.type === 'orientation-recovered') announceToSR('Orientation recovery challenge complete.');
+          else if (event.type === 'route-complete') announceToSR('Five-module free-flight route complete.');
+        }
+        function roomInfoForInterior(id) {
+          return INTERIOR_ROOMS.find(function (candidate) { return candidate.id === id; }) || INTERIOR_ROOMS[0];
+        }
+        function interiorCanvasFrom(element) {
+          var shell = element && element.closest ? element.closest('[data-iss-interior-sim]') : null;
+          return shell && shell.querySelector('[data-iss-interior-canvas]');
+        }
+        function chooseInteriorView(mode, event) {
+          if (mode === 'diagram') {
+            var interiorRoot = event && event.currentTarget && event.currentTarget.closest ? event.currentTarget.closest('.iss-interior') : null;
+            var canvas = interiorRoot && interiorRoot.querySelector('[data-iss-interior-canvas]');
+            if (canvas && canvas._issInteriorCleanup) canvas._issInteriorCleanup();
+          }
+          upd({ interiorView: mode });
+          announceToSR(mode === '3d' ? 'Interactive 3-D free-flight view opened.' : 'Accessible interior diagram opened.');
+        }
+        function renderInteriorSimulation() {
+          var challenges = [
+            { id: 'hatch', done: !!navigation.preciseHatch, title: 'Controlled hatch', note: 'Cross any hatch at 0.35 m/s or slower.' },
+            { id: 'rail', done: !!navigation.handrailStop, title: 'Handrail braking', note: 'Reach a rail and catch it while coasting at 0.12-0.35 m/s.' },
+            { id: 'cargo', done: !!navigation.cargoClear, title: 'Loose-object awareness', note: navigation.looseHits ? 'Try Unity again without contacting the pouch.' : 'Turn through Unity without touching the pouch.' },
+            { id: 'roll', done: !!navigation.orientationRecovered, title: 'Orientation recovery', note: 'Roll past 40 degrees, then manually return within 8 degrees.' },
+            { id: 'route', done: !!navigation.routeComplete, title: 'Connected-station route', note: 'Travel Harmony -> Destiny -> Unity -> Tranquility -> Cupola in order.' }
+          ];
+          var nextChallenge = challenges.find(function (challenge) { return !challenge.done; });
+          function controlButton(action, label, shortcut) {
+            function setControl(on) {
+              return function (event) {
+                if (event) event.preventDefault();
+                var canvas = interiorCanvasFrom(event && event.currentTarget);
+                if (canvas && canvas._issInteriorSetControl) canvas._issInteriorSetControl(action, on);
+              };
+            }
+            function keyControl(on) {
+              return function (event) {
+                if (event.key !== ' ' && event.key !== 'Enter') return;
+                setControl(on)(event);
+              };
+            }
+            return h('button', {
+              key: action, type: 'button', 'data-iss-interior-control': action,
+              'aria-label': label + '. Press and hold. Keyboard shortcut ' + shortcut + '.',
+              onPointerDown: setControl(true), onPointerUp: setControl(false),
+              onPointerCancel: setControl(false), onPointerLeave: setControl(false),
+              onKeyDown: keyControl(true), onKeyUp: keyControl(false), onBlur: setControl(false)
+            }, h('span', null, label), h('kbd', { 'aria-hidden': 'true' }, shortcut));
+          }
+          function safetyAction(method, announcement) {
+            return function (event) {
+              var canvas = interiorCanvasFrom(event.currentTarget);
+              if (canvas && typeof canvas[method] === 'function') canvas[method]();
+              if (announcement) announceToSR(announcement);
+            };
+          }
+          function resetNavigation(event) {
+            setLabToolData(function (prev) {
+              var station = Object.assign({}, (prev && prev.spaceStation) || {});
+              station.interiorRoom = 'harmony';
+              station.interiorNav = { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 };
+              return Object.assign({}, prev, { spaceStation: station });
+            });
+            var canvas = interiorCanvasFrom(event.currentTarget);
+            if (canvas && canvas._issInteriorReset) canvas._issInteriorReset();
+            announceToSR('Free-flight route restarted in Harmony. Crew jobs were kept.');
+          }
+          return h('div', { className: 'iss-interior-sim', 'data-iss-interior-sim': 'true' },
+            h('div', { className: 'iss-interior-3d', 'data-iss-interior-3d': room.id, 'data-iss-room-transition': room.id },
+              h('canvas', {
+                className: 'iss-interior-canvas',
+                ref: function (canvas) {
+                  if (!canvas) return;
+                  canvas._issInteriorWantRoom = room.id;
+                  canvas._issInteriorEvent = recordInteriorNavigation;
+                  canvas._issInteriorTaskDone = roomDone;
+                  canvas._issInteriorCupolaShutters = !!d.cupolaShutters;
+                  interiorCanvasRef(canvas);
+                },
+                'data-iss-interior-canvas': 'true',
+                role: 'application', tabIndex: 0,
+                'aria-label': 'Interactive 3-D interior of the International Space Station. Training push controls add velocity for exploration; actual crew translate by pushing and pulling handrails. Follow Harmony through Destiny and Unity, turn port into Tranquility, then move nadir into Cupola. Momentum continues until you push the other way or catch a nearby rail.',
+                'aria-describedby': 'iss-interior-flight-instructions iss-interior-flight-status',
+                'aria-keyshortcuts': 'W A S D R F Q E ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'
+              }),
+              h('div', { className: 'iss-interior-hud', 'aria-hidden': 'true' },
+                h('span', { className: 'iss-interior-room-hud', 'data-iss-interior-room-hud': 'true' }, room.module.toUpperCase() + ' // ' + room.zone.toUpperCase()),
+                h('span', { className: 'iss-interior-speed', 'data-iss-interior-speed': 'true', 'data-rate': 'stopped' }, 'SPEED 0.00 M/S // STOP ~0.00 M'),
+                h('span', { 'data-iss-interior-mode': 'true' }, 'STATIONARY'),
+                h('span', { 'data-iss-interior-rail-distance': 'true' }, 'RAIL -- M')),
+              h('div', { className: 'iss-interior-objective', 'data-iss-interior-objective': 'true', 'aria-hidden': 'true' }, 'CURRENT ACTIVITY // ' + room.task.toUpperCase()),
+              h('div', { className: 'iss-interior-next-hatch', 'aria-hidden': 'true' },
+                h('span', { className: 'iss-interior-next-hatch-arrow', 'data-iss-interior-next-arrow': 'true' }, '^'),
+                h('strong', { 'data-iss-interior-next-label': 'true' }, 'NEXT HATCH'),
+                h('span', { 'data-iss-interior-next-distance': 'true' }, '-- M')),
+              h('div', { className: 'iss-interior-reticle', 'aria-hidden': 'true' },
+                h('span', { className: 'iss-interior-horizon', 'data-iss-interior-horizon': 'true' }),
+                h('span', { className: 'iss-interior-velocity-dot', 'data-iss-interior-velocity-dot': 'true' })),
+              h('div', { className: 'iss-interior-event', 'data-iss-interior-event': 'true', 'aria-hidden': 'true' }),
+              h('div', { className: 'iss-interior-route-hud', 'aria-hidden': 'true' }, 'ORDERED ROUTE // ', h('strong', { 'data-iss-interior-route-progress': 'true' }, (Math.max(0, Number(navigation.routeStep || 0)) + 1) + ' / 5')),
+              h('div', { className: 'iss-interior-help', 'aria-hidden': 'true' }, 'Drag or arrows: look / tap push: add speed / release: coast / Space near rail: catch')),
+            h('p', { className: 'iss-interior-fallback', 'data-iss-interior-fallback': 'true', role: 'status', hidden: true }),
+            h('span', { id: 'iss-interior-flight-status', className: 'iss-sr-only', 'data-iss-interior-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Free-flight simulator ready in ' + room.name + '. Speed zero meters per second.'),
+            h('div', { className: 'iss-interior-mission-cue', 'data-iss-next-maneuver': nextChallenge ? nextChallenge.id : 'complete' },
+              h('span', null, nextChallenge ? 'NEXT MANEUVER' : 'MISSION'),
+              h('strong', null, nextChallenge ? nextChallenge.title : 'All navigation challenges complete'),
+              h('small', null, nextChallenge ? nextChallenge.note : 'Review the route or continue the crew activities.')),
+            h('div', { className: 'iss-interior-controls' },
+              h('div', { className: 'iss-interior-thrusters', role: 'group', 'aria-label': 'Virtual navigation push controls' },
+                controlButton('forward', 'Push forward', 'W'),
+                controlButton('back', 'Push reverse', 'S'),
+                controlButton('left', 'Push left', 'A'),
+                controlButton('right', 'Push right', 'D'),
+                controlButton('up', 'Rise', 'R'),
+                controlButton('down', 'Lower', 'F'),
+                controlButton('rollLeft', 'Roll left', 'Q'),
+                controlButton('rollRight', 'Roll right', 'E')),
+              h('div', { className: 'iss-interior-safety', role: 'group', 'aria-label': 'Free-flight safety assists' },
+                h('button', { type: 'button', 'data-iss-interior-grab': 'true', onClick: safetyAction('_issInteriorGrabRail') }, 'Grab handrail'),
+                h('button', { type: 'button', onClick: safetyAction('_issInteriorCenter', 'Training assist centered and stopped the camera.') }, 'Center + stop'),
+                h('button', { type: 'button', onClick: resetNavigation }, 'Restart route'))),
+            h('p', { id: 'iss-interior-flight-instructions', className: 'iss-interior-instructions' },
+              'Training push controls are an exploration aid. Astronauts actually translate by pushing and pulling handrails or station structure; there are no personal thrusters inside. Tap a push briefly to add velocity, release to coast with no passive braking, and move within 0.68 m of a rail before catching it. Arrow keys look; W/A/S/D translate; R/F move vertically; Q/E roll. Follow Harmony -> Destiny -> Unity, turn port into Tranquility, then move nadir into Cupola. The stopping-distance readout uses a simplified constant-counter-push model.'),
+            h('div', { className: 'iss-nav-challenges', role: 'list', 'aria-label': 'Microgravity navigation challenges. ' + navigationChallengeCount + ' of ' + challenges.length + ' complete.' },
+              challenges.map(function (challenge) {
+                return h('div', { key: challenge.id, role: 'listitem', className: 'iss-nav-challenge' + (challenge.done ? ' is-complete' : ''), 'data-iss-nav-challenge': challenge.id },
+                  h('i', { 'aria-hidden': 'true' }, challenge.done ? '\u2713' : '\u25CB'),
+                  h('strong', null, challenge.title),
+                  h('span', null, challenge.note));
+              })),
+            h('p', { className: 'iss-interior-instructions', 'aria-live': 'off' },
+              'Flight log: ' + Object.keys(navigation.hatches || {}).length + ' hatch transitions / ' + Number(navigation.railGrabs || 0) + ' rail catches / ' + Number(navigation.collisions || 0) + ' hull contacts / ' + Number(navigation.looseHits || 0) + ' cargo contacts.'),
+            h('div', { className: 'iss-discovery-row', role: 'group', 'aria-label': 'Inspect details in ' + room.name },
+              room.discoveries.map(function (spot, index) {
+                var active = selectedDiscovery === index;
+                return h('button', { key: index, type: 'button', 'aria-pressed': active, onClick: function () { inspectInteriorSpot(index); }, style: { borderColor: active ? room.color : '#475569', background: active ? room.color + '20' : 'rgba(2,6,23,.52)' } }, (inspected[room.id + ':' + index] ? '\u2713 ' : 'Inspect ') + spot[0]);
+              }))
+          );
+        }
 
         function visitRoom(index) {
           var safe = Math.max(0, Math.min(INTERIOR_ROOMS.length - 1, index));
@@ -2220,6 +3380,10 @@
           var seen = Object.assign({}, d.interiorSeen || {}); seen[next.id] = true;
           upd({ interiorRoom: next.id, interiorSeen: seen, interiorDiscovery: null });
           announceToSR(next.name + '. ' + next.zone + '.');
+        }
+        function visitRoomById(id) {
+          var index = INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === id; });
+          if (index >= 0) visitRoom(index);
         }
         function inspectInteriorSpot(index) {
           var nextInspected = Object.assign({}, inspected); nextInspected[room.id + ':' + index] = true;
@@ -2537,17 +3701,42 @@
             h('div', { role: 'group', 'aria-label': 'Learning guidance level', style: { display: 'flex', gap: 4, padding: 3, borderRadius: 9, background: '#0f172a', border: '1px solid #334155' } },
               [['guided', '🧭 Guided'], ['independent', '🎯 Independent']].map(function (mode) { var active = guided ? mode[0] === 'guided' : mode[0] === 'independent'; return h('button', { key: mode[0], type: 'button', 'aria-pressed': active, onClick: function () { upd({ interiorGuided: mode[0] === 'guided' }); }, style: { padding: '5px 8px', borderRadius: 6, border: 'none', background: active ? '#0ea5e9' : 'transparent', color: active ? '#04121f' : SOFT, fontSize: 10.5, fontWeight: 800, cursor: 'pointer' } }, mode[1]); }))
           ),
-          h('div', { className: 'iss-location-strip', role: 'status', 'aria-label': 'Current station location: ' + room.name + '. Aft to forward route.' },
-            h('span', { className: 'iss-orientation-cue', 'aria-hidden': 'true' }, 'AFT'),
-            INTERIOR_ROOMS.map(function (loc, i) { var current = loc.id === room.id; return h(React.Fragment, { key: loc.id }, i ? h('span', { className: 'iss-location-link', 'aria-hidden': 'true' }) : null, h('span', { className: 'iss-location-node' + (current ? ' is-current' : '') }, h('span', { className: 'iss-location-dot', 'aria-hidden': 'true' }), current ? 'YOU: ' + loc.module : loc.module)); }),
-            h('span', { className: 'iss-orientation-cue', 'aria-hidden': 'true' }, 'FORWARD')),
+          h('div', { className: 'iss-interior-viewbar' },
+            h('p', null, 'Choose free-flight for spatial practice or the diagram for a still, low-power view.'),
+            h('div', { className: 'iss-interior-view-switch', role: 'group', 'aria-label': 'Interior view mode' },
+              h('button', { type: 'button', 'data-iss-interior-view': '3d', 'aria-pressed': interiorView === '3d', onClick: function (event) { chooseInteriorView('3d', event); } }, '3-D free-flight'),
+              h('button', { type: 'button', 'data-iss-interior-view': 'diagram', 'aria-pressed': interiorView === 'diagram', onClick: function (event) { chooseInteriorView('diagram', event); } }, 'Accessible diagram'))),
+          h('div', { className: 'iss-location-strip iss-interior-route-map', role: 'group', 'aria-live': 'off', 'aria-label': 'Current station location: ' + room.name + '. Connected route: Harmony to Destiny to Unity, port turn into Tranquility, then nadir descent into Cupola.' },
+            h('div', { className: 'iss-route-map-heading', 'aria-hidden': 'true' },
+              h('strong', null, 'CONNECTED INTERIOR ROUTE'), h('span', null, 'PORT TURN // NADIR DESCENT')),
+            h('svg', { className: 'iss-route-schematic', viewBox: '0 0 620 100', 'aria-hidden': 'true', focusable: 'false' },
+              h('path', { className: 'iss-route-line', d: 'M54 52 H294 L430 24 L558 68' }),
+              h('path', { className: 'iss-route-progress-line', d: 'M54 52 H294 L430 24 L558 68' }),
+              h('text', { className: 'iss-route-branch-label', x: 350, y: 28 }, 'PORT TURN'),
+              h('text', { className: 'iss-route-branch-label', x: 488, y: 70 }, 'NADIR'),
+              interiorRouteRooms.map(function (loc) {
+                var point = routePlot[loc.id] || [0, 0];
+                var nextIndex = Number(navigation.routeStep) < 0 ? Math.max(0, routeRoomIdx - 1) : routeRoomIdx + 1;
+                var next = routeRoomIdx >= 0 && interiorRouteRooms[nextIndex] && interiorRouteRooms[nextIndex].id === loc.id;
+                var nodeClass = 'iss-route-node' + (visited[loc.id] ? ' is-visited' : '') + (done[loc.id] ? ' is-done' : '') + (next ? ' is-next' : '') + (loc.id === room.id ? ' is-current' : '');
+                return h('g', { key: loc.id, className: nodeClass, transform: 'translate(' + point[0] + ',' + point[1] + ')' },
+                  h('circle', { r: loc.id === room.id ? 8 : 6 }),
+                  h('text', { y: 24 }, loc.id === room.id ? 'YOU // ' + loc.module.toUpperCase() : loc.module.toUpperCase()));
+              }))),
           h('div', { className: 'iss-route', role: 'group', 'aria-label': __alloT('stem.spacestation.interior_route', 'Interior station route'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 7, marginBottom: 12 } },
-            INTERIOR_ROOMS.map(function (r, i) { var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length; return h('button', { className: 'iss-route-button', key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(i); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '✅' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited • ' + r.zone : r.zone)); })),
+            interiorRouteRooms.map(function (r) {
+              var originalIndex = INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === r.id; });
+              var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length;
+              return h('button', { className: 'iss-route-button', key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(originalIndex); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '\u2705' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited \u2022 ' + r.zone : r.zone));
+            })),
           h('div', { className: 'iss-interior-layout' },
             h('div', null,
+              interiorView === '3d' ? renderInteriorSimulation() :
               h('div', { key: room.id, className: 'iss-scene-frame iss-hatch-enter', 'data-iss-room-transition': room.id, style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + room.color, background: 'radial-gradient(circle at 50% 12%,' + room.color + '20,#050a18 72%)' } }, sceneArt(),
                 room.discoveries.map(function (spot, i) { var on = selectedDiscovery === i; return h('button', { key: i, type: 'button', 'aria-pressed': on, onClick: function () { inspectInteriorSpot(i); }, style: { position: 'absolute', left: i ? '65%' : '6%', top: i ? '16%' : '57%', maxWidth: '29%', padding: '5px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer', background: on ? room.color : 'rgba(2,6,23,0.88)', color: on ? '#04121f' : '#f8fafc', border: '1px solid ' + room.color } }, (inspected[room.id + ':' + i] ? '✓ ' : '') + spot[0]); })),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } }, h('button', { type: 'button', disabled: roomIdx === 0, onClick: function () { visitRoom(roomIdx - 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx ? 'pointer' : 'not-allowed', opacity: roomIdx ? 1 : 0.45 } }, '← Float aft'), h('button', { type: 'button', disabled: roomIdx === INTERIOR_ROOMS.length - 1, onClick: function () { visitRoom(roomIdx + 1); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: roomIdx < INTERIOR_ROOMS.length - 1 ? 'pointer' : 'not-allowed', opacity: roomIdx < INTERIOR_ROOMS.length - 1 ? 1 : 0.45 } }, 'Float forward →')),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } },
+                h('button', { type: 'button', disabled: routeRoomIdx <= 0, onClick: function () { if (routeRoomIdx > 0) visitRoomById(interiorRouteRooms[routeRoomIdx - 1].id); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: routeRoomIdx > 0 ? 'pointer' : 'not-allowed', opacity: routeRoomIdx > 0 ? 1 : 0.45 } }, 'Previous module'),
+                h('button', { type: 'button', disabled: routeRoomIdx >= interiorRouteRooms.length - 1, onClick: function () { if (routeRoomIdx < interiorRouteRooms.length - 1) visitRoomById(interiorRouteRooms[routeRoomIdx + 1].id); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: routeRoomIdx < interiorRouteRooms.length - 1 ? 'pointer' : 'not-allowed', opacity: routeRoomIdx < interiorRouteRooms.length - 1 ? 1 : 0.45 } }, 'Next module')),
               h('p', { style: { color: TEXT, fontSize: 12.5, lineHeight: 1.6, margin: '10px 0 4px' } }, room.scene),
               h('p', { style: { color: SOFT, fontSize: 11.5, lineHeight: 1.55, margin: 0 } }, h('strong', { style: { color: room.color } }, '🎧 You notice: '), room.sound),
               selectedDiscovery >= 0 && room.discoveries[selectedDiscovery] ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 9, padding: 9, borderRadius: 9, background: room.color + '12', borderLeft: '3px solid ' + room.color, color: TEXT, fontSize: 12, lineHeight: 1.55 } }, h('strong', { style: { color: room.color } }, room.discoveries[selectedDiscovery][0] + ': '), room.discoveries[selectedDiscovery][1]) : h('p', { style: { color: SOFT, fontSize: 10.5, margin: '8px 0 0' } }, 'Select the two labeled hotspots to look closer.')),

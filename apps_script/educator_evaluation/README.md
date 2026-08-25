@@ -59,6 +59,18 @@ then:
   (`RELEASED_DOC_SHARED`). The pointer is server-owned: client saves can
   never set or clear it.
 
+New annual finalizations also require a written rationale and at least one
+eligible supporting-record reference for every rated domain. References are
+canonical tokens resolved server-side against that educator's published
+walkthroughs, published formal-observation evidence, or locked SPM/SLO records;
+the finalized provenance is copied into the immutable cycle snapshot and the
+released summary.
+
+Unpublished walkthrough drafts can be corrected or discarded before release.
+Discard is an explicit `DRAFT_DISCARDED` mutation: the server permits deletion
+only for the named unpublished walkthrough, rejects published or commented
+records, preserves every unrelated omission, and records the event in audit.
+
 The document states explicitly that the portal remains the authoritative
 record. A later **Review released-summary access** operation verifies or
 restores permissions on the same immutable document instead of creating a

@@ -15,10 +15,67 @@
   <meta name="description"
     content="AlloFlow - Adaptive Levels, Layers, &amp; Outputs. AI-powered UDL differentiation for every classroom." />
   <title>AlloFlow | Adaptive UDL Platform</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Outfit'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Outfit-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 200 800; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/PlusJakartaSans-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: 'Plus Jakarta Sans'; font-style: italic; font-weight: 200 800; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/PlusJakartaSans-italic-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* Self-host Inter so first paint never waits on Google Fonts. The browser
+       fetches only the subset needed by the current page/language. */
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-cyrillic-ext.woff2') format('woff2');
+      unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-cyrillic.woff2') format('woff2');
+      unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-greek-ext.woff2') format('woff2');
+      unicode-range: U+1F00-1FFF;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-greek.woff2') format('woff2');
+      unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-vietnamese.woff2') format('woff2');
+      unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-latin-ext.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: 'Inter'; font-style: normal; font-weight: 300 900; font-display: swap;
+      src: url('%PUBLIC_URL%/fonts/Inter-latin.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    /* Keep the fully rendered workspace out of paint/layout-shift accounting
+       while the splash or launch-path overlay is the only active surface. */
+    body.alloflow-workspace-concealed #main-content {
+      visibility: hidden !important;
+    }
+  </style>
+  <link rel="preload" as="image" href="%PUBLIC_URL%/rainbow-book.jpg" fetchpriority="high" />
+  <link rel="preload" as="font" type="font/woff2" href="%PUBLIC_URL%/fonts/Inter-latin.woff2" crossorigin />
   <script>
     // Register service worker to cache assets and bypass QUIC protocol issues
     if ('serviceWorker' in navigator) {
@@ -42,16 +99,17 @@
     }
   </script>
   <!-- AI Backend: Firebase Shim + WebSearchProvider + AIProvider (must load before React bundle) -->
-  <script src="/ai_backend_module.js"></script>
+  <script id="alloflow-ai-backend-script" src="/ai_backend_module.js" defer></script>
   <!-- Narrow cross-origin bridge for the isolated Electron command-center preview. -->
   <script src="%PUBLIC_URL%/alloflow_desktop_bridge.js" defer></script>
   <!-- DragDropTouch polyfill: makes HTML5 native drag-and-drop work on touch devices (iPad / Android tablet).
        Without this, all sort games' draggable items silently fail on touch.
        Attaches to all `draggable` elements on load; no code changes needed elsewhere. -->
-  <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/dist/drag-drop-touch.js" defer></script>
+  <script src="%PUBLIC_URL%/vendor/drag-drop-touch-2.0.3.esm.min.js?autoload"
+    type="module"></script>
 </head>
 
-<body>
+<body class="alloflow-workspace-concealed">
   <noscript>You need to enable JavaScript to run AlloFlow.</noscript>
   <div id="root"></div>
   <div id="alloflow-loader"

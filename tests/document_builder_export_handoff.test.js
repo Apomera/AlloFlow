@@ -60,6 +60,40 @@ describe('Document Builder export handoff', () => {
     open.mockRestore();
   });
 
+  it('waits for popup fonts and image decoding before opening print', async () => {
+    let resolveFonts;
+    let imageLoad;
+    const decode = vi.fn().mockResolvedValue(undefined);
+    const popup = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn(),
+        readyState: 'complete',
+        fonts: { ready: new Promise((resolve) => { resolveFonts = resolve; }) },
+        images: [{
+          complete: false,
+          decode,
+          addEventListener: vi.fn((type, handler) => { if (type === 'load') imageLoad = handler; }),
+        }],
+      },
+      requestAnimationFrame: vi.fn((callback) => callback()),
+      focus: vi.fn(),
+      print: vi.fn(),
+    };
+    const open = vi.spyOn(window, 'open').mockReturnValue(popup);
+
+    const pending = executeExportFromPreview(deps());
+    await Promise.resolve();
+    expect(popup.print).not.toHaveBeenCalled();
+
+    resolveFonts();
+    imageLoad();
+    await expect(pending).resolves.toBe(true);
+    expect(decode).toHaveBeenCalledOnce();
+    expect(popup.focus).toHaveBeenCalledBefore(popup.print);
+    open.mockRestore();
+  });
+
   it('does not close when an asynchronous slide export fails', async () => {
     const d = deps({ exportPreviewMode: 'slides', handleExportSlides: vi.fn().mockRejectedValue(new Error('slide failure')) });
     await expect(executeExportFromPreview(d)).rejects.toThrow('slide failure');

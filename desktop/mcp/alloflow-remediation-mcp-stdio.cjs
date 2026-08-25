@@ -1350,7 +1350,9 @@ function agentRunView(run) {
 }
 
 function requireAgentRun(args) {
-  if (typeof args.run_id !== 'string' || !args.run_id.trim()) throw invalidParams('arguments.run_id is required');
+  if (typeof args.run_id !== 'string' || !args.run_id.trim() || args.run_id.length > 200) {
+    throw invalidParams('arguments.run_id must be a non-empty string no longer than 200 characters');
+  }
   if (!agentRun || agentRun.runId !== args.run_id) {
     throw invalidParams('No agent-bridge run with that run_id. Agent runs are conversation-scoped: they do not survive a server restart, and only the most recent run is retained.');
   }
@@ -2851,13 +2853,16 @@ const TOOLS = [
       {
         name: 'remediation_agent_requests',
         title: 'Fetch pending model requests',
-        description: "Fetch the agent-bridge run's state and any model calls waiting for an answer. Long-polls up to wait_seconds (default 20) so a quiet poll returns as soon as the pipeline asks for something. Each pending request carries the pipeline's own prompt (answer its format contract EXACTLY — malformed replies are retried and waste turns) and, for vision requests, the rendered page images as image content. When status is 'completed' the final report is included. Answer honestly from the document content provided: fabricated audit evidence poisons the honesty-gated verdict that teachers rely on.",
+        description: "Fetch the agent-bridge run's state and any model calls waiting for an answer. Long-polls up to wait_seconds (default 20) so a quiet poll returns as soon as the pipeline asks for something. Each pending request carries the pipeline's own prompt (answer its format contract EXACTLY — malformed replies are retried and waste turns) and, for vision requests, rendered page images as correlated image content. Large prompts are paged with promptNextOffset; omitted images can be fetched one at a time with request_id + image_index. When status is 'completed' the final report is included. Answer honestly from the document content provided: fabricated audit evidence poisons the honesty-gated verdict that teachers rely on.",
         inputSchema: {
           type: 'object', required: ['run_id'],
           properties: {
             run_id: { type: 'string', minLength: 1, maxLength: 200 },
             wait_seconds: { type: 'number', minimum: 0, maximum: 30, description: 'Long-poll window when nothing is pending yet (default 20)' },
             include_images: { type: 'boolean', description: 'Attach vision-request images as image content blocks (default true; capped at ~4MB per response)' },
+            request_id: { type: 'string', minLength: 1, maxLength: 200, description: 'Return one pending request (required when paging a prompt or fetching one image)' },
+            prompt_offset: { type: 'integer', minimum: 0, description: 'Character offset for the selected request prompt; use promptNextOffset until null' },
+            image_index: { type: 'integer', minimum: 0, maximum: 1000, description: 'Attach only this zero-based image from the selected request' },
           },
           additionalProperties: false,
         },
@@ -3228,12 +3233,16 @@ const OUTPUT_SCHEMAS = {
         kind: { type: 'string', enum: ['text', 'vision'] },
         ageSeconds: S_NUM,
         imageCount: S_NUM,
-        images: { type: 'array', items: obj({ mimeType: S_STR, bytes: S_NUM }) },
+        images: { type: 'array', items: obj({ imageIndex: S_NUM, mimeType: S_STR, bytes: S_NUM }) },
         promptTruncated: S_BOOL,
+        promptOffset: S_NUM,
+        promptTotalChars: S_NUM,
+        promptNextOffset: { type: ['number', 'null'] },
         prompt: S_STR,
       }, ['requestId', 'kind', 'prompt']),
     },
     imagesTruncated: S_BOOL,
+    omittedImages: { type: 'array', items: obj({ requestId: S_STR, imageIndex: S_NUM, bytes: S_NUM, reason: S_STR }) },
     result: {},
     error: S_STR,
     note: S_STR,
@@ -3320,7 +3329,13 @@ const TOOL_HANDLERS = {
     };
     const keyAfter = Driver.resolveGeminiApiKey();
     const identityAfter = geminiCredentialIdentity(keyAfter);
-    if (identityBefore && identityBefore === identityAfter && keyBefore.source === keyAfter.source) {
+    const sourceStable = keyBefore.source === keyAfter.source;
+    if (!identityBefore && !identityAfter && sourceStable && result.state === 'no-key') {
+      // A stable absence is the expected keyless state, not a credential mutation. Do not
+      // persist a verification record for "no key", but also do not tell the user that a
+      // credential changed merely because both identities are null.
+      geminiKeyVerification = null;
+    } else if (identityBefore && identityBefore === identityAfter && sourceStable) {
       geminiKeyVerification = {
         identity: identityAfter, source: keyAfter.source, state: result.state,
         keyWorks, checkedAt: new Date().toISOString(),
@@ -4135,11 +4150,25 @@ const TOOL_HANDLERS = {
   },
 
   async remediation_agent_requests(args) {
-    assertAllowedKeys(args, ['run_id', 'wait_seconds', 'include_images'], 'arguments');
+    assertAllowedKeys(args, ['run_id', 'wait_seconds', 'include_images', 'request_id', 'prompt_offset', 'image_index'], 'arguments');
     const run = requireAgentRun(args);
     const waitSeconds = optionalBoundedNumber(args, 'wait_seconds', 0, 30);
     const includeImages = args.include_images !== false;
     if (args.include_images !== undefined && typeof args.include_images !== 'boolean') throw invalidParams('arguments.include_images must be a boolean');
+    const requestFilter = args.request_id;
+    if (requestFilter !== undefined && (typeof requestFilter !== 'string' || !requestFilter.trim() || requestFilter.length > 200)) {
+      throw invalidParams('arguments.request_id must be a non-empty string no longer than 200 characters');
+    }
+    const promptOffset = args.prompt_offset === undefined ? 0 : Number(args.prompt_offset);
+    if (!Number.isSafeInteger(promptOffset) || promptOffset < 0) throw invalidParams('arguments.prompt_offset must be a non-negative integer');
+    const imageIndex = args.image_index === undefined ? null : Number(args.image_index);
+    if (imageIndex !== null && (!Number.isSafeInteger(imageIndex) || imageIndex < 0 || imageIndex > 1000)) {
+      throw invalidParams('arguments.image_index must be an integer between 0 and 1000');
+    }
+    if (imageIndex !== null && !includeImages) throw invalidParams('arguments.include_images must be true when image_index is supplied');
+    if ((promptOffset > 0 || imageIndex !== null) && !requestFilter) {
+      throw invalidParams('arguments.request_id is required with prompt_offset or image_index');
+    }
     if (run.status === 'running' && run.pending.size === 0 && (waitSeconds === undefined ? 20 : waitSeconds) > 0) {
       await new Promise((resolveWait) => {
         const waiter = { resolve: resolveWait, timer: null };
@@ -4155,38 +4184,74 @@ const TOOL_HANDLERS = {
     const extraContent = [];
     let imageBytes = 0;
     let imagesTruncated = false;
+    const omittedImages = [];
     const pendingRequests = [];
     for (const entry of run.pending.values()) {
+      if (requestFilter && entry.requestId !== requestFilter) continue;
       const images = [];
+      let currentImageIndex = 0;
       for (const part of entry.parts) {
         const inline = part && (part.inline_data || part.inlineData);
         if (!inline || !inline.data) continue;
-        images.push({ mimeType: inline.mime_type || inline.mimeType || 'image/png', bytes: Math.round(String(inline.data).length * 0.75) });
-        if (!includeImages) continue;
+        const thisImageIndex = currentImageIndex++;
+        const mimeType = inline.mime_type || inline.mimeType || 'image/png';
         const approx = Math.round(String(inline.data).length * 0.75);
-        if (imageBytes + approx > AGENT_IMAGE_BYTES_CAP) { imagesTruncated = true; continue; }
+        images.push({ imageIndex: thisImageIndex, mimeType, bytes: approx });
+        if (!includeImages) continue;
+        if (imageIndex !== null && thisImageIndex !== imageIndex) continue;
+        if (imageBytes + approx > AGENT_IMAGE_BYTES_CAP) {
+          imagesTruncated = true;
+          omittedImages.push({
+            requestId: entry.requestId,
+            imageIndex: thisImageIndex,
+            bytes: approx,
+            reason: approx > AGENT_IMAGE_BYTES_CAP ? 'single-image-exceeds-response-cap' : 'response-image-budget-exhausted',
+          });
+          continue;
+        }
         imageBytes += approx;
-        extraContent.push({ type: 'image', data: String(inline.data), mimeType: inline.mime_type || inline.mimeType || 'image/png' });
+        extraContent.push({
+          type: 'image', data: String(inline.data), mimeType,
+          _meta: { alloflowRequestId: entry.requestId, alloflowImageIndex: thisImageIndex },
+        });
       }
+      if (imageIndex !== null && imageIndex >= images.length) {
+        throw invalidParams('arguments.image_index is outside the selected request\'s ' + images.length + '-image range');
+      }
+      if (promptOffset > entry.prompt.length) {
+        throw invalidParams('arguments.prompt_offset exceeds the selected request prompt length');
+      }
+      const promptEnd = Math.min(entry.prompt.length, promptOffset + AGENT_REQUEST_PROMPT_CAP);
       pendingRequests.push({
         requestId: entry.requestId,
         kind: entry.kind,
         ageSeconds: Math.round((Date.now() - entry.createdAt) / 1000),
         imageCount: images.length,
         images,
-        promptTruncated: entry.prompt.length > AGENT_REQUEST_PROMPT_CAP || undefined,
-        prompt: entry.prompt.slice(0, AGENT_REQUEST_PROMPT_CAP),
+        promptTruncated: promptEnd < entry.prompt.length || undefined,
+        promptOffset,
+        promptTotalChars: entry.prompt.length,
+        promptNextOffset: promptEnd < entry.prompt.length ? promptEnd : null,
+        prompt: entry.prompt.slice(promptOffset, promptEnd),
       });
+    }
+    if (requestFilter && run.status === 'running' && pendingRequests.length === 0) {
+      throw invalidParams('No pending request ' + requestFilter + ' on this run. Fetch without request_id for the current set.');
     }
     const out = Object.assign(agentRunView(run), {
       pendingRequests,
       imagesTruncated: imagesTruncated || undefined,
+      omittedImages: omittedImages.length ? omittedImages : undefined,
       result: run.status === 'completed' ? run.result : undefined,
       error: run.error || undefined,
       note: run.status === 'running'
-        ? (pendingRequests.length
-          ? 'Answer each request with remediation_agent_respond, matching its prompt\'s format contract exactly.'
-          : 'Nothing pending — the pipeline is working. Poll again.')
+        ? (omittedImages.some((item) => item.reason === 'single-image-exceeds-response-cap')
+          ? 'A required image exceeds the safe MCP response cap and cannot be transported by this lane. Cancel this run and reduce/resample the image, use a text-first source, or choose an approved Gemini path.'
+          : (omittedImages.length
+            ? 'Some images exceeded this response\'s combined budget. Fetch each with request_id + image_index, then answer the request.'
+            : (pendingRequests.length
+              ? 'Answer each request with remediation_agent_respond, matching its prompt\'s format contract exactly. Follow promptNextOffset pages before answering when non-null.'
+              : 'Nothing pending — the pipeline is working. Poll again.')))
         : 'Run is ' + run.status + '.',
     });
     if (extraContent.length) out._mcpExtraContent = extraContent;
@@ -4196,8 +4261,8 @@ const TOOL_HANDLERS = {
   remediation_agent_respond(args) {
     assertAllowedKeys(args, ['run_id', 'request_id', 'text'], 'arguments');
     const run = requireAgentRun(args);
-    if (typeof args.request_id !== 'string' || !args.request_id.trim()) throw invalidParams('arguments.request_id is required');
-    if (typeof args.text !== 'string' || !args.text.length) throw invalidParams('arguments.text must be a non-empty string (the model reply itself)');
+    if (typeof args.request_id !== 'string' || !args.request_id.trim() || args.request_id.length > 200) throw invalidParams('arguments.request_id must be a non-empty string no longer than 200 characters');
+    if (typeof args.text !== 'string' || !args.text.length || args.text.length > 8000000) throw invalidParams('arguments.text must be a non-empty string no longer than 8,000,000 characters (the model reply itself)');
     const entry = run.pending.get(args.request_id);
     if (!entry) {
       throw invalidParams('No pending request ' + args.request_id + ' on this run — it was already answered, or the run moved on. Fetch remediation_agent_requests for the current set.');

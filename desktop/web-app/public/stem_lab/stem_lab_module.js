@@ -5234,6 +5234,7 @@
                 color: 'cyan', ready: true
               },
               { id: 'bridgeLab', icon: '\uD83C\uDF09', label: 'Bridge Engineering Lab', desc: 'NGSS MS-ETS1 + HS-ETS1 + HS-PS2. Truss stress simulator with adjustable span/height/load/material, bridge type comparison (beam/truss/arch/suspension/cable-stayed), materials database, force types, real-world case studies (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn/Golden Gate/Akashi/Millau), engineering design cycle, AP-style quiz, printable design specs.', color: 'amber', ready: true },
+              { id: 'printLab', icon: '\uD83D\uDDA8\uFE0F', label: '3D Print Lab', desc: 'Design or import a model, inspect scale and printability, compare materials, and prepare a reviewed school-store print request.', aliases: ['3D printing', 'Minecraft GLB', 'STL', 'additive manufacturing', 'PHA', 'slicing', 'makerspace'], color: 'teal', ready: true },
               { id: 'printingPress', icon: '\uD83D\uDCDC', label: 'PrintingPress', desc: 'The Gutenberg-style screw press as a working simulation. Pull the bar, set your own type, see the impression. Plus the materials science (lead-tin-antimony alloy), economics (cost-per-book collapse), history (Reformation, scientific revolution), typography, and the people behind the press (including women printers history forgot). Built for interdisciplinary middle-school work.', aliases: ['simple machines', 'lever', 'mechanical advantage', 'screw press'], color: 'amber', ready: true },
               {
                 id: 'archStudio', icon: '\uD83C\uDFD7\uFE0F', label: 'Architecture Studio',
@@ -7015,7 +7016,7 @@
             // Aug 2026: Machine Lab — simple machines, forces and mechanical advantage.
             machineLab: true,
             // Engineering & CS
-            archStudio: true, openBim: true, bridgeLab: true, circuit: true, codingPlayground: true,
+            archStudio: true, openBim: true, bridgeLab: true, printLab: true, circuit: true, codingPlayground: true,
             trajectoryComputing: true,
             cyberDefense: true, magnetism: true, semiconductor: true,
             // Aug 2026: City Planning Lab — settlement-scale design under conflicting

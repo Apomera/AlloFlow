@@ -4,21 +4,26 @@ import { resolve } from 'node:path';
 
 let FullPack;
 
-const instructionalContext = (policy = 'preserve-primary') => ({
+const instructionalContext = (policy = 'preserve-primary', adaptedTextPolicy = 'omit') => ({
   schemaVersion: 1,
   instructionalGrade: '6th Grade',
   primaryTextPolicy: policy,
+  primaryTextAccess: 'available',
+  adaptedTextPolicy,
+  adaptedTextPolicySource: 'educator',
   standardsFingerprint: 'standards-reviewed',
 });
 
-const makeRecord = (rows, policy = 'preserve-primary') => ({
+const makeRecord = (rows, policy = 'preserve-primary') => {
+  const adaptedTextPolicy = rows.some(item => item && item.type === 'simplified') ? 'include' : 'omit';
+  return ({
   status: 'ready',
   settingsSnapshot: {
     gradeLevel: '6th Grade',
     leveledTextLanguage: 'English',
-    instructionalContext: instructionalContext(policy),
+    instructionalContext: instructionalContext(policy, adaptedTextPolicy),
   },
-  planPayload: { instructionalContext: instructionalContext(policy) },
+  planPayload: { instructionalContext: instructionalContext(policy, adaptedTextPolicy) },
   preflight: {
     selected: rows.map((row, index) => ({ ...row, index })),
     skipped: [],
@@ -28,7 +33,8 @@ const makeRecord = (rows, policy = 'preserve-primary') => ({
       provider: 'openai', model: 'test-model', imageProvider: 'images', imageModel: 'test-image', isLocal: false,
     },
   },
-});
+  });
+};
 
 const row = (type, uiId, directive = '') => ({
   type,
@@ -86,8 +92,10 @@ describe('Full Pack ready-plan editor', () => {
     });
     expect(updated.preflight.estimatedResourceGenerations).toBe(4);
     expect(updated.preflight.capacity).toMatchObject({ aiCalls: 4, textCalls: 4, imageCalls: 0 });
-    expect(updated.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
-    expect(updated.settingsSnapshot.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(updated.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary', adaptedTextPolicy: 'include',
+    });
+    expect(updated.settingsSnapshot.instructionalContext.adaptedTextPolicy).toBe('include');
   });
 
   it('changes type without changing uiId/directive and resets adapted metadata when moving away', () => {
@@ -106,7 +114,9 @@ describe('Full Pack ready-plan editor', () => {
       },
     });
     expect(updated.preflight.capacity).toMatchObject({ aiCalls: 4, imageCalls: 3 });
-    expect(updated.planPayload.instructionalContext.primaryTextPolicy).toBe('preserve-primary');
+    expect(updated.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'educator-directed', adaptedTextPolicy: 'omit',
+    });
     expect(original.preflight.selected[0].type).toBe('simplified');
   });
 
@@ -121,7 +131,9 @@ describe('Full Pack ready-plan editor', () => {
       },
     });
     expect(updated.preflight.estimatedResourceGenerations).toBe(3);
-    expect(updated.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(updated.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary', adaptedTextPolicy: 'include',
+    });
   });
 
   it('edits directives without changing identity and repairs unsafe adapted metadata', () => {
@@ -170,11 +182,12 @@ describe('Full Pack ready-plan editor', () => {
     expect(FullPack.changeFullPackPlanResourceType(running, 'quiz-only', 'glossary')).toBe(running);
     expect(FullPack.moveFullPackPlanResource(running, 'quiz-only', 0)).toBe(running);
     expect(FullPack.setFullPackPlanPrimaryTextPolicy(running, 'educator-directed')).toBe(running);
+    expect(FullPack.setFullPackPlanAdaptedTextPolicy(running, 'include')).toBe(running);
   });
 
-  it('makes the policy toggle a deterministic opt-in/out for one supplemental adapted row', () => {
+  it('makes the adapted-text toggle deterministic without changing the primary-text policy', () => {
     const original = makeRecord([row('quiz', 'quiz-0')]);
-    const optedIn = FullPack.setFullPackPlanPrimaryTextPolicy(original, 'educator-directed');
+    const optedIn = FullPack.setFullPackPlanAdaptedTextPolicy(original, 'include');
     const adapted = optedIn.preflight.selected.filter(item => item.type === 'simplified');
 
     expect(adapted).toHaveLength(1);
@@ -182,16 +195,19 @@ describe('Full Pack ready-plan editor', () => {
       role: 'supplemental', form: 'adapted',
       replacementAuthorization: { authorized: false, source: 'none' },
     });
-    expect(optedIn.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
-    expect(FullPack.setFullPackPlanPrimaryTextPolicy(optedIn, 'educator-directed')).toBe(optedIn);
+    expect(optedIn.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary', adaptedTextPolicy: 'include',
+    });
+    expect(FullPack.setFullPackPlanAdaptedTextPolicy(optedIn, 'include')).toBe(optedIn);
 
-    const optedOut = FullPack.setFullPackPlanPrimaryTextPolicy(optedIn, 'preserve-primary');
+    const optedOut = FullPack.setFullPackPlanAdaptedTextPolicy(optedIn, 'omit');
     expect(optedOut.preflight.selected.map(item => item.type)).toEqual(['quiz']);
     expect(optedOut.planPayload.instructionalContext.primaryTextPolicy).toBe('preserve-primary');
-    expect(optedOut.preflight.skipped.at(-1).reason).toContain('preserve-primary');
+    expect(optedOut.planPayload.instructionalContext.adaptedTextPolicy).toBe('omit');
+    expect(optedOut.preflight.skipped.at(-1).reason).toContain('educator choice');
 
     const adaptedOnly = makeRecord([row('simplified', 'only-adapted')], 'educator-directed');
-    expect(FullPack.setFullPackPlanPrimaryTextPolicy(adaptedOnly, 'preserve-primary')).toBe(adaptedOnly);
+    expect(FullPack.setFullPackPlanAdaptedTextPolicy(adaptedOnly, 'omit')).toBe(adaptedOnly);
   });
 
   it('scopes edits to one ready roster group without touching sibling or outer plan records', () => {
@@ -211,7 +227,9 @@ describe('Full Pack ready-plan editor', () => {
     expect(edited.groups.a.preflight.selected.map(item => item.type)).toEqual(['quiz', 'simplified']);
     expect(edited.groups.a.preflight.selected[0].directive).toBe('Group A only.');
     expect(edited.groups.b.preflight.selected).toEqual(groupB.preflight.selected);
-    expect(edited.groups.a.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(edited.groups.a.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary', adaptedTextPolicy: 'include',
+    });
     expect(run.groups.a.preflight.selected).toHaveLength(1);
   });
 });

@@ -152,6 +152,45 @@ describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
     expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
   });
 
+  it('carries inferred source settings and recent lesson guidance into the reviewed Blueprint', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: {
+        isFlowActive: true,
+        currentStage: 'initial_choice',
+        conversationHandoff: 'Teacher: Use retrieval practice and a brief exit ticket.',
+        pendingBlueprintContext: 'Use retrieval practice and a brief exit ticket.',
+        pendingSourceConfig: {
+          topic: 'Fractions',
+          language: 'Spanish',
+          grade: '6th Grade',
+          tone: 'Persuasive',
+          length: '500',
+          dok: 'Level 3',
+          standards: ['CCSS.MATH.CONTENT.6.RP.A.3'],
+          vocabulary: 'ratio, equivalent',
+          customInstructions: 'Use a sports-data example.',
+          includeCitations: true,
+          blueprintGuidance: 'Use retrieval practice and a brief exit ticket.',
+        },
+      },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('step', deps);
+    await vi.waitFor(() => expect(store.guidedFlowState.currentStage).toBe('blueprint_review'));
+    const args = deps.autoConfigureSettings.mock.calls[0];
+    expect(args[1]).toBe('6th Grade');
+    expect(args[2]).toContain('CCSS.MATH.CONTENT.6.RP.A.3');
+    expect(args[3]).toBe('Spanish');
+    expect(args[4]).toBe('Use retrieval practice and a brief exit ticket.');
+    expect(store.activeBlueprint.globalSettings).toMatchObject({
+      gradeLevel: '6th Grade',
+      tone: 'Persuasive',
+      dokLevel: 'Level 3',
+      targetStandards: ['CCSS.MATH.CONTENT.6.RP.A.3'],
+    });
+  });
+
   it("handles the post-analysis chooser ('pack' after analysis) the same way", async () => {
     const { deps, store } = makeDeps({
       messages: [stepPackChoicesMsg('post_analysis_route')],
@@ -190,11 +229,16 @@ describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
         role: 'model', type: 'choices', stage: 'pack_count_selection', text: 'How extensive?',
         choices: [{ label: 'All', value: 'all' }],
       }],
-      guidedFlowState: { isFlowActive: true, currentStage: 'pack_count_selection' },
+      guidedFlowState: {
+        isFlowActive: true,
+        currentStage: 'pack_count_selection',
+        pendingSourceConfig: { language: 'French' },
+      },
       isAutoFillMode: true,
     });
     await handleSendUDLMessage('all', deps);
     expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
+    expect(deps.autoConfigureSettings.mock.calls[0][3]).toBe('French');
     expect(deps.autoConfigureSettings.mock.calls[0][6]).toBe('All'); // targetCount
     expect(store.guidedFlowState.currentStage).toBe('blueprint_review');
     expect(deps.parseUserIntent).not.toHaveBeenCalled();

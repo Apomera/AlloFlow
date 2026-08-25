@@ -13381,7 +13381,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               "Score unavailable…" — but the headline now shows the deterministic structural
                               score. Render ONE reconciled amber line instead of the contradictory green one. */}
                           <div className={`text-xs font-medium ${pdfFixResult._aiVerificationIncomplete ? 'text-amber-700' : 'text-emerald-700'}`}>{pdfFixResult._aiVerificationIncomplete
-                            ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit?.chunksAudited != null && pdfFixResult.verificationAudit?.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; use “Complete final audit” below to finish the AI check when the service is calm — it audits only, and keeps this document as it is.'))
+                            ? (t('pdf_audit.verification.ai_incomplete_summary', { detail: pdfFixResult.verificationAudit?.chunksAudited != null && pdfFixResult.verificationAudit?.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '' }) || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit?.chunksAudited != null && pdfFixResult.verificationAudit?.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; use “Complete final audit” below to finish the AI check when the service is calm — it audits only, and keeps this document as it is.'))
                             : pdfFixResult.verificationAudit?.summary}</div>
                           {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) && (
                             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-900">
@@ -13748,7 +13748,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 </summary>
                                 {_catalog.length > 0 && (
                                   <p className="mt-2 text-[11px] text-slate-600">
-                                    {t('pdf_audit.wcag_report.scope') || ('Scope: WCAG 2.2 Level A and AA — ' + _catalog.length + ' success criteria. ' + scEntries.length + ' were exercised by an automated engine on this document; ' + _untested.length + ' were not.')}
+                                    {t('pdf_audit.wcag_report.scope', { total: _catalog.length, exercised: scEntries.length, untested: _untested.length }) || ('Scope: WCAG 2.2 Level A and AA — ' + _catalog.length + ' success criteria. ' + scEntries.length + ' were exercised by an automated engine on this document; ' + _untested.length + ' were not.')}
                                   </p>
                                 )}
                                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -13806,7 +13806,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 {_untested.length > 0 && (
                                   <details className="mt-3 bg-white border border-slate-300 rounded-lg p-2">
                                     <summary className="cursor-pointer text-[11px] font-bold text-slate-700">
-                                      ○ {t('pdf_audit.wcag_report.untested_heading') || ('Not evaluated on this document (' + _untested.length + ' of ' + _catalog.length + ' criteria)')}
+                                      ○ {t('pdf_audit.wcag_report.untested_heading', { untested: _untested.length, total: _catalog.length }) || ('Not evaluated on this document (' + _untested.length + ' of ' + _catalog.length + ' criteria)')}
                                     </summary>
                                     <p className="mt-1 text-[10px] text-slate-600">
                                       {t('pdf_audit.wcag_report.untested_note') || 'These criteria are in scope for WCAG 2.2 AA but produced no automated result on this document. They are neither passing nor failing here — they are unmeasured, and a conformance claim that covers them needs a human reviewer.'}

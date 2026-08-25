@@ -164,7 +164,7 @@ const remappedVariants = (() => {
 // [class~="bg-white/80"] form the generator emits for slash tokens, and the
 // bare form-control block. Used to exclude intentional utility overrides.
 const TW_UTILITY_SEL = new RegExp(
-  `(^|[\\s>+~])(\\.|\\[class~="?)(bg|text|border|ring|divide|from|to|via)-` +
+  `(^|[\\s>+~])(\\.|\\[class~="?)(?:(?:hover|focus|focus-visible|focus-within|active|disabled|checked|group-hover|peer-hover|group-focus):)*(bg|text|border|ring|divide|from|to|via)-` +
   `(white|black|${FAMS})|^(input|select|textarea|button)\\b|^\\*`);
 
 // Hard-coded colours at the extremes of the luminance range. These are the ones

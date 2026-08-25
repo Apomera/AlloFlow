@@ -114,9 +114,11 @@ legacy browser-based veraPDF compatibility path downloads CheerpJ/pdf-lib and is
 `ALLOFLOW_MCP_ALLOW_BROWSER_VERAPDF_EGRESS=1` is explicitly set; MCP validation fails closed when
 the local Java CLI is unavailable. The one-time setup downloads Chromium, and the
 editable-Office/ePub/DAISY/Braille exporters fetch pinned public libraries.
-Those dependency requests do not intentionally include document content. All other tools listed
-in `dataHandling.offlineToolNames` need no network, AlloFlow, Cloudflare, paid Worker, or
-institution account.
+Those dependency requests do not intentionally include document content. Tools listed in
+`dataHandling.offlineToolNames` make no external request from the connector process and need no
+AlloFlow, Cloudflare, paid Worker, or institution account. Their results still enter the MCP client
+conversation; for the agent-bridge tools this deliberately includes document-derived prompts and
+optional rendered page images, which the client's model provider processes.
 
 ### Claude Code — nothing to install
 
@@ -241,6 +243,12 @@ Honesty notes, because this lane moves the data boundary rather than removing it
 - **The verdict stays honesty-gated.** A client that answers the audit prompts carelessly gets
   a degraded, disclosed verdict — exactly as a misbehaving Gemini would. The result carries
   `modelTransport: "agent-bridge"` and `modelCallsAnswered` so nobody can mistake the engine.
+- Large prompts are paged. When `promptNextOffset` is non-null, call
+  `remediation_agent_requests` again with that request's `request_id` and the returned
+  `prompt_offset`, concatenate the pages, and only then answer. Images carry request/index
+  correlation metadata. If the combined image budget omits one, fetch it alone with
+  `request_id` + `image_index`; an individually oversized image fails visibly rather than being
+  silently discarded.
 - Expect roughly 10–40 requests per document (more with `auto_continue` or scanned pages).
   Text-first documents are the sweet spot; scanned pages surface as images to describe. Agent
   runs are conversation-scoped: they hold the single-flight lane, default to a 60-minute wall

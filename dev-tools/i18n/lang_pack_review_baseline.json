@@ -1,0 +1,906 @@
+{
+  "acholi": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "078e49634c2f"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "9c251cc663fb"
+    }
+  },
+  "amharic": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "ecdf403552c0"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "fe484526278c"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "1a2a92be6724"
+    }
+  },
+  "arabic": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "28af81c12669"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "373fca56b807"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "0bc6b7a53563"
+    }
+  },
+  "bengali": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "ee3d333ed70f"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "f8489fd09960"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "045823968021"
+    }
+  },
+  "burmese": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "97e33d95d9f2"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "a9c28c8987da"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "6d882f1616cf"
+    }
+  },
+  "chin_falam": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "b8941b036099"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "95b67556adca"
+    }
+  },
+  "chin_hakha": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "309cdf9d2c66"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "30a067b43bb6"
+    }
+  },
+  "chinese_simplified": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "3d19b685b8c3"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "3881ad97116c"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "066642a2c989"
+    }
+  },
+  "chinese_traditional": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "98c544412d51"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "79d9bbe1380b"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "9713b2d07db7"
+    }
+  },
+  "dari": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "bed7c5b2ec25"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "bc35c3a1f236"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "3040ae9f052f"
+    }
+  },
+  "dutch": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "39d2edd58314"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "e5a332fb8d51"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "8de18717d056"
+    }
+  },
+  "esperanto": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "accc94734847"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "26b2290b36e1"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "f5fa8a16f2c7"
+    }
+  },
+  "farsi": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "01fc20ac6cb7"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "6aa366e1f28f"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "3040ae9f052f"
+    }
+  },
+  "french": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "26416137e628"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "a06f74e86ee6"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "d4bf6761ba50"
+    }
+  },
+  "french_canadian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "958682f07867"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "fb8fa5a03277"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "d4bf6761ba50"
+    }
+  },
+  "german": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "2df1567eacc9"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "e1c0c8db68e1"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "7d5eb590238f"
+    }
+  },
+  "greek": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "c0e06059ed1e"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "18502cf555b8"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "6bba681904e2"
+    }
+  },
+  "gujarati": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "12ccd0126c33"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "d532a92acaa2"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "0f31dead884e"
+    }
+  },
+  "haitian_creole": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "abfdcf179b7c"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "09831706ca42"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "9ca435d54b7a"
+    }
+  },
+  "hausa": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "45484538f865"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "009bdbf96a9a"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "f422fa2f0bc7"
+    }
+  },
+  "hebrew": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "91c38e1c4037"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "b6fbe278de84"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "c47329c93b4c"
+    }
+  },
+  "hindi": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "b2e519ccb280"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "2f3e575f73ed"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "4cf0a7e6a8ca"
+    }
+  },
+  "hmong": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "c8a14a8f50f6"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "ce3e76d07ce3"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "333bf7433c0f"
+    }
+  },
+  "igbo": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "c3e9b806b6fe"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "4f1fed644af5"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "193a7f39fb51"
+    }
+  },
+  "indonesian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "3994a6827597"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "f0e02b200f1f"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "8ba5d39094bb"
+    }
+  },
+  "italian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "94e6f7d25eef"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "4e6e65f286ad"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "24438e86eec9"
+    }
+  },
+  "japanese": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "1115a43a5edb"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "6622d0f15db4"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "16e0ddfd5311"
+    }
+  },
+  "kannada": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "7aa7593b4124"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "b1f7aa093bf4"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "e8ae2f094d4f"
+    }
+  },
+  "karen": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "59f000ef7c57"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "1cee1b475b00"
+    }
+  },
+  "khmer": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "2996e30a9ae1"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "8827d0f4a08c"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "811936306b1f"
+    }
+  },
+  "kinyarwanda": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "28af73d04c29"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "68001ee2bd88"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "34ca1823a3bd"
+    }
+  },
+  "kirundi": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "6ace84eec48c"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "11f44da4a7cd"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "0e6f87116656"
+    }
+  },
+  "korean": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "6e90d20fae53"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "d3010b1d1a00"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "7943602e886b"
+    }
+  },
+  "lao": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "f7d1bf41a516"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "b595b33506cd"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "4eb3486ac072"
+    }
+  },
+  "latin": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "99ed2c2acf93"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "cc44eeeaab4f"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "f5e4023aee6c"
+    }
+  },
+  "lingala": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "b50a88812909"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "e7e027c04d52"
+    }
+  },
+  "malayalam": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "4d0168f0f639"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "c3ee7d28eb66"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "b61daa4e5f0e"
+    }
+  },
+  "marathi": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "a0ba369ff5db"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "2a9df6a743e2"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "26dc2e856257"
+    }
+  },
+  "marshallese": {
+    "tour.actions_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "9196e5caa130"
+    },
+    "tour.brainstorm_text": {
+      "reviewReason": "2026-08-24-structure-reviewed-note-taking-remains-condensed",
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "bbe323c912d1"
+    }
+  },
+  "nepali": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "f21411240cbd"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "4ccdb7df7aa2"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "b7f4e9f192ce"
+    }
+  },
+  "pashto": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "e3289336d3eb"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "a723188be34a"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "d2f346bc2a8f"
+    }
+  },
+  "polish": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "65c790bf0b85"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "aca8670199df"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "3530a857b282"
+    }
+  },
+  "portuguese_angola": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "4ab26be90a6e"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "ed0de1f7e357"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "688535e1266c"
+    }
+  },
+  "portuguese_brazil": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "6d5ce993da62"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "449b82e0e7b1"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "f99fa9b91c0e"
+    }
+  },
+  "portuguese_portugal": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "4ab26be90a6e"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "ed0de1f7e357"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "eb75398b0c02"
+    }
+  },
+  "punjabi": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "4e3614165492"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "95a7dcd3d518"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "557041e9593e"
+    }
+  },
+  "romanian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "c62d05eebf6b"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "e61f90d568df"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "d19a7a0a327a"
+    }
+  },
+  "russian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "75667f64ed21"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "9cf1af1f3b28"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "7417e61b8c3e"
+    }
+  },
+  "somali": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "1ba18dbf8b84"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "b6996a14492a"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "e32a9abf44a0"
+    }
+  },
+  "spanish_castilian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "f1f29a051502"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "7b0420740d56"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "0146ba06d649"
+    }
+  },
+  "spanish_latin_america": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "867470ad8f4b"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "1692fbf28084"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "2035f78e199f"
+    }
+  },
+  "swahili": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "98dfd01cb6ea"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "fd8af337d4fa"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "f1df8da478fb"
+    }
+  },
+  "tagalog": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "372bc6989d9f"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "54d9ce19bfd3"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "8a013959c9b7"
+    }
+  },
+  "tamil": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "d129dc6dae18"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "2a82828a735b"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "979c0fa1755c"
+    }
+  },
+  "telugu": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "e3b616e51972"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "f91f00094edd"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "12d9643acea2"
+    }
+  },
+  "thai": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "bab5235a1520"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "7417873d0ed0"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "02d4332b817d"
+    }
+  },
+  "tigrinya": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "e8d81d37e119"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "bcbd996577a7"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "470f199045cd"
+    }
+  },
+  "turkish": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "12a7f0e3a9eb"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "39c45095aeeb"
+    },
+    "tour.note_taking_text": {
+      "sourceHash": "ef15651e945b",
+      "translationHash": "c9d1dbf01b52"
+    }
+  },
+  "ukrainian": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "4a3c555fa17a"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "d6745a1766e4"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "0ac27aad765c"
+    }
+  },
+  "urdu": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "11f89364b5f0"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "8ff65d1d3697"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "ef78d3ade1a9"
+    }
+  },
+  "vietnamese": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "586f599a4e26"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "b441c233d8b3"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "9b26877279b2"
+    }
+  },
+  "yoruba": {
+    "tour.actions_text": {
+      "sourceHash": "9a9bf6c6f090",
+      "translationHash": "86abd469611c"
+    },
+    "tour.brainstorm_text": {
+      "sourceHash": "a3da8a2713bc",
+      "translationHash": "1d8751c907d2"
+    },
+    "tour.note_taking_text": {
+      "reviewReason": "preserved-condensed-summary",
+      "sourceHash": "ef15651e945b",
+      "translationHash": "36d8d4496ef8"
+    }
+  }
+}

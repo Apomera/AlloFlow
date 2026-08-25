@@ -25,6 +25,20 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('organNotes: d.organNotes || {}');
       expect(source).toContain('organConfidence: d.organConfidence || {}');
       expect(source).toContain('annotations: d.annotations || []');
+      expect(source).toContain('quizFirstAttemptScore: Number(d.quizFirstAttemptScore) || 0');
+      expect(source).toContain('quizFirstAttemptTotal: Number(d.quizFirstAttemptTotal) || 0');
+      expect(source).toContain('quizSupportedCount: Number(d.quizSupportedCount) || 0');
+      expect(source).toContain('assessmentRecordedScore: Number(d.assessmentRecordedScore) || 0');
+      expect(source).toContain('assessmentRecordedTotal: Number(d.assessmentRecordedTotal) || 0');
+      expect(source).toContain('assessmentRecordedScore: data.assessmentRecordedScore == null ? (Number(data.quizFirstAttemptScore) || 0)');
+      expect(source).toContain('assessmentRecordedTotal: data.assessmentRecordedTotal == null ? (Number(data.quizFirstAttemptTotal) || 0)');
+      expect(source).toContain('assessmentEvidence: d.assessmentEvidence || {}');
+      expect(source).toContain('quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : []');
+      expect(source).toContain('var encounteredQuizPool = specimenQuizPool.filter');
+      expect(source).toContain('var quizSessionLimit = Math.min(5, orderedQuizPool.length);');
+      expect(source).toContain("var quizKind = requestedQuizKind === 'location' && hotspotQuizAvailable && sameRegionCandidates.length === 1 ? 'location' : 'function';");
+      expect(source).toContain("var quizSalt = specimen + '|assessment|' + (d.quizSeed || 'default');");
+      expect(source).toContain("if (d.quizMode) {\n              setProcedureFeedback('Layer navigation is locked during an assessment so the current question stays stable.'");
       expect(source).toContain("localStorage.removeItem('dissection_progress_' + specimen)");
       expect(source).not.toContain("setTimeout(function () { upd('_dissQuizOpts'");
     }
@@ -446,7 +460,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('relationshipMotion: relationshipMotion');
       expect(source).toContain('sceneDetail: data.sceneDetail !== false');
       expect(source).toContain('relationshipMotion: data.relationshipMotion !== false');
-      expect(source).toContain('var depthAtlasEnabled = d.depthAtlas !== false;');
+      expect(source).toContain('var depthAtlasEnabled = advancedWorkspace && d.depthAtlas !== false;');
       expect(source).toContain('var depthAtlasCounts = organs.reduce');
       expect(source).toContain('function drawDepthAtlasMarker(x, y, depth, selected, hovered, muted)');
       expect(source).toContain('Shape-coded depth landmarks pair color, geometry, and line style so depth never depends on hue alone.');
@@ -533,7 +547,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("Visual code: ' + anatomicalRelationshipEncodingText(nextRelationship.type)");
       expect(source).toContain('Relationship pathway visual key');
       expect(source).toContain('var flowT = relationshipMotion && !dissMotionReduced');
-      expect(source).toContain("var activeFunctionalTraceKey = d.traceCirculation ? 'circulation'");
+      expect(source).toContain("var activeFunctionalTraceKey = advancedWorkspace ? (d.traceCirculation ? 'circulation'");
       expect(source).toContain('One shared playback clock keeps all functional pathways synchronized and pausable.');
       expect(source).toContain('canvas._systemTraceReplayToken !== systemReplayToken');
       expect(source).toContain('var systemTraceTick = Math.max(0, systemTraceBaseTick');
@@ -1232,6 +1246,8 @@ describe('dissection improved UI render', () => {
         anatomicalView,
         _dissLoadedSpec: 'frog',
         quizMode: true,
+        quizReviewMode: true,
+        quizReviewQueue: ['dorsal_skin', 'ventral_skin', 'tympanum', 'nictitating'],
         quizAnswerMode: 'choices',
         quizIdx: 1,
         quizSeed: 7,
@@ -1246,7 +1262,143 @@ describe('dissection improved UI render', () => {
     expect(dorsalHtml).toContain('upper-right region of this view');
     expect(ventralHtml).toContain('upper-left region of this view');
     expect(ventralHtml).not.toContain('upper-right region of this view');
-    expect(lateralHtml).toContain('upper-central region of this view');
+    expect(lateralHtml).toContain('Function clue:');
+    expect(lateralHtml).not.toContain('upper-central region of this view');
+  });
+
+  it('defaults to an Essentials workspace while preserving an explicit Advanced workspace', () => {
+    const essentialsHtml = renderTool('dissection', {
+      dissection: { specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog' },
+    });
+    const advancedHtml = renderTool('dissection', {
+      dissection: { specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog', workspaceMode: 'advanced' },
+    });
+
+    expect(essentialsHtml).toContain('data-workspace-mode="essentials"');
+    expect(essentialsHtml).toContain('Essentials workspace');
+    expect(essentialsHtml).toContain('Procedure practice');
+    expect(essentialsHtml).toContain('diss-advanced-only');
+    expect(essentialsHtml).toContain('aria-label="Dissection instruments"');
+    expect(advancedHtml).toContain('data-workspace-mode="advanced"');
+    expect(advancedHtml).toContain('Advanced workspace');
+    expect(advancedHtml).toContain('Free explore');
+
+    document.body.innerHTML = essentialsHtml;
+    expect(getComputedStyle(document.querySelector('.diss-scenario-console')).display).toBe('none');
+    expect(getComputedStyle(document.querySelector('button[aria-label="Toggle Tools toolbar"]')).display).toBe('none');
+    expect(document.querySelector('[aria-label="Dissection instruments"]')).not.toBeNull();
+    document.body.innerHTML = advancedHtml;
+    expect(getComputedStyle(document.querySelector('.diss-scenario-console')).display).not.toBe('none');
+    document.body.innerHTML = '';
+  });
+
+  it('deactivates hidden challenge state when switching from Advanced to Essentials', async () => {
+    const canvasContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          workspaceMode: 'advanced', procedureMode: 'independent',
+          procedureScenario: 'restricted-tray', scenarioStartedAt: 1000,
+          scenarioTimeRemaining: 180, activeInstrument: 'dropper',
+          crossSectionMode: true, relationshipMode: true, beforeTechniqueView: true,
+          splitComparison: true, referenceEvidenceId: 1,
+          visualEvidence: [{ id: 1, image: 'data:image/jpeg;base64,eA==', layer: 'skin' }],
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      const essentialsButton = Array.from(host.querySelectorAll('.diss-workspace-mode__choices button'))
+        .find((button) => button.textContent.includes('Essentials'));
+      await act(async () => { essentialsButton.click(); await Promise.resolve(); });
+
+      expect(latestToolData.dissection.workspaceMode).toBe('essentials');
+      expect(latestToolData.dissection.procedureScenario).toBe('precision-access');
+      expect(latestToolData.dissection.scenarioStartedAt).toBe(0);
+      expect(latestToolData.dissection.scenarioTimeRemaining).toBe(0);
+      expect(latestToolData.dissection.procedureMode).toBe('independent');
+      expect(host.querySelector('.diss-procedure__mode button[aria-pressed="true"]')?.textContent).toContain('Guided');
+      expect(host.querySelector('.diss-canvas-layout')?.getAttribute('data-split')).toBe('false');
+      expect(host.querySelector('select[aria-label="Fullscreen active instrument"] option[value="dropper"]')?.disabled).toBe(false);
+      const essentialsCanvas = host.querySelector('#diss-canvas');
+      const essentialsShortcuts = (essentialsCanvas?.getAttribute('aria-keyshortcuts') || '').split(/\s+/);
+      expect(essentialsShortcuts).not.toEqual(expect.arrayContaining(['X', 'M', 'P', 'F']));
+      await act(async () => { essentialsCanvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true })); await Promise.resolve(); });
+      expect(latestToolData.dissection.crossSectionMode).toBe(true);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      canvasContext.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('derives learning objectives from structure evidence instead of manual check-off', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'organs',
+        _dissLoadedSpec: 'frog',
+        exploredOrgans: { 'frog|heart': true },
+        organNotes: { 'frog|heart': 'Two atria feed a shared ventricle.' },
+        organConfidence: { 'frog|heart': 3 },
+        verifiedIdentifications: { 'frog|heart': { status: 'verified' } },
+      },
+    });
+
+    document.body.innerHTML = html;
+    const objectives = Array.from(document.querySelectorAll('.diss-objective-item'));
+    expect(objectives).toHaveLength(4);
+    expect(objectives[0]?.tagName).toBe('ARTICLE');
+    expect(objectives[0]?.getAttribute('data-objective-status')).toBe('demonstrated');
+    expect(objectives[0]?.textContent).toContain('Evidence demonstrated');
+    expect(objectives.every((objective) => objective.querySelector('button') === null)).toBe(true);
+    document.body.innerHTML = '';
+  });
+
+  it('renders a finite assessment summary with first-attempt and supported-practice evidence', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+        quizMode: true, quizComplete: true,
+        quizFirstAttemptScore: 4, quizFirstAttemptTotal: 5, quizSupportedCount: 1,
+        quizReviewQueue: ['tympanum'], assessmentCompletedAt: 123,
+      },
+    });
+
+    expect(html).toContain('data-dissection-assessment-summary="true"');
+    expect(html).toContain('Assessment complete');
+    expect(html).toContain('First-attempt evidence: 4/5');
+    expect(html).toContain('Supported practice is reported separately');
+    expect(html).toContain('Review missed structures');
+    expect(html).not.toContain('id="diss-quiz-panel"');
+  });
+
+  it('offers persisted missed-item review after returning to the lab', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+        quizMode: false, quizReviewQueue: ['tympanum', 'nictitating'],
+        assessmentCompletedAt: 123, assessmentRecordedScore: 3, assessmentRecordedTotal: 5,
+      },
+    });
+
+    expect(html).toContain('Review 2 missed structures');
+    expect(html).toContain('completed first-attempt assessment 3/5');
   });
 
   it('renders one explicit next action as investigation state advances', () => {
@@ -1398,10 +1550,10 @@ describe('dissection improved UI render', () => {
 
     const viewControl = page.querySelector('[aria-label="Anatomical view locked during timed practical"]');
     expect(viewControl).toBeNull();
-    const fullscreenViewControl = page.querySelector('[aria-label="Fullscreen anatomical view locked during timed practical"]');
+    const fullscreenViewControl = page.querySelector('[aria-label="Fullscreen anatomical view locked during assessment"]');
     expect(fullscreenViewControl).not.toBeNull();
     expect(fullscreenViewControl.disabled).toBe(true);
-    expect(readFileSync(DISSECTION_PATHS[0], 'utf8')).toContain('The anatomical view is locked during the timed practical so every question stays answerable.');
+    expect(readFileSync(DISSECTION_PATHS[0], 'utf8')).toContain('The anatomical view is locked during an assessment so the current question stays stable.');
 
     const practicalAnswers = Array.from(page.querySelectorAll('#diss-quiz-panel button[aria-label]'))
       .map((button) => button.getAttribute('aria-label'))
@@ -1496,6 +1648,120 @@ describe('dissection improved UI render', () => {
     }
   });
 
+  it('separates first-attempt mastery from a correct supported retry', async () => {
+    const canvasContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', anatomicalView: 'dorsal', _dissLoadedSpec: 'frog',
+          quizMode: true, quizIdx: 1, quizSeed: 42, quizAnswerMode: 'choices',
+          revealedLayers: { skin: true },
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    async function choose(labelStart) {
+      const button = Array.from(host.querySelectorAll('#diss-quiz-panel button')).find((candidate) => candidate.getAttribute('aria-label')?.startsWith(labelStart));
+      expect(button).not.toBeNull();
+      await act(async () => { button.click(); await Promise.resolve(); });
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      expect(host.textContent).toContain('Lighter, thinner ventral surface');
+      await choose('Dorsal Skin');
+      expect(latestToolData.dissection.quizFirstAttemptScore).toBe(0);
+      expect(latestToolData.dissection.quizFirstAttemptTotal).toBe(1);
+      expect(latestToolData.dissection.quizTotal || 0).toBe(0);
+      expect(latestToolData.dissection.quizRetry.questionId).toBe('ventral_skin');
+
+      const muscleLayer = Array.from(host.querySelectorAll('.diss-layer-button')).find((button) => button.textContent.includes('Muscle'));
+      const pigSpecimen = host.querySelector('#diss-specimen-tab-pig');
+      const fullscreenView = host.querySelector('[aria-label="Fullscreen anatomical view locked during assessment"]');
+      expect(muscleLayer?.disabled).toBe(true);
+      expect(pigSpecimen?.disabled).toBe(true);
+      expect(fullscreenView?.disabled).toBe(true);
+      await act(async () => { muscleLayer.click(); pigSpecimen.click(); fullscreenView.click(); await Promise.resolve(); });
+      expect(latestToolData.dissection.specimen).toBe('frog');
+      expect(latestToolData.dissection.activeLayer).toBe('skin');
+      expect(latestToolData.dissection.quizRetry.questionId).toBe('ventral_skin');
+      expect(latestToolData.dissection.quizFirstAttemptTotal).toBe(1);
+
+      await choose('Ventral Skin');
+      expect(latestToolData.dissection.quizFirstAttemptScore).toBe(0);
+      expect(latestToolData.dissection.quizFirstAttemptTotal).toBe(1);
+      expect(latestToolData.dissection.quizSupportedCount).toBe(1);
+      expect(latestToolData.dissection.quizTotal).toBe(1);
+      expect(latestToolData.dissection.quizFeedback.supported).toBe(true);
+      expect(host.textContent).toContain('Correct with support');
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      canvasContext.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('clears the durable missed-item queue after supported review is completed', async () => {
+    const canvasContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog', activeLayer: 'skin', _dissLoadedSpec: 'frog',
+          quizMode: true, quizReviewMode: true, quizReviewQueue: ['ventral_skin'],
+          quizIdx: 0, quizSeed: 42, quizAnswerMode: 'choices',
+          assessmentCompletedAt: 123, assessmentRecordedScore: 3, assessmentRecordedTotal: 5,
+        },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+
+      const correctAnswer = Array.from(host.querySelectorAll('#diss-quiz-panel button'))
+        .find((button) => button.getAttribute('aria-label') === 'Ventral Skin');
+      await act(async () => { correctAnswer.click(); await Promise.resolve(); });
+      const summaryButton = host.querySelector('button[aria-label="View assessment summary"]');
+      await act(async () => { summaryButton.click(); await Promise.resolve(); });
+
+      expect(latestToolData.dissection.quizComplete).toBe(true);
+      expect(latestToolData.dissection.quizReviewQueue).toEqual([]);
+      expect(latestToolData.dissection.assessmentCompletedAt).toBe(123);
+      expect(latestToolData.dissection.assessmentRecordedScore).toBe(3);
+      expect(latestToolData.dissection.assessmentRecordedTotal).toBe(5);
+      expect(host.textContent).toContain('Supported review complete');
+      expect(host.textContent).toContain('First-attempt evidence: 3/5 · 60% accuracy');
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      canvasContext.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
   it('falls back to multiple choice without changing an unanswerable hotspot question', () => {
     const html = renderTool('dissection', {
       dissection: {
@@ -1526,6 +1792,7 @@ describe('dissection improved UI render', () => {
         activeLayer: 'skin',
         anatomicalView: 'ventral',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         procedureScenario: 'restricted-tray',
         activeInstrument: 'dropper',
       },
@@ -1550,8 +1817,11 @@ describe('dissection improved UI render', () => {
       dissection: {
         specimen: 'frog',
         activeLayer: 'skin',
+        anatomicalView: 'ventral',
         _dissLoadedSpec: 'frog',
         quizMode: true,
+        quizReviewMode: true,
+        quizReviewQueue: ['dorsal_skin', 'ventral_skin', 'tympanum', 'nictitating'],
         quizIdx: 1,
         quizSeed: 42,
         quizAnswerMode: 'hotspot',
@@ -1573,7 +1843,8 @@ describe('dissection improved UI render', () => {
 
     expect(html).toContain('Select on specimen');
     expect(html).toContain('keyboard-accessible multiple-choice answers');
-    expect(html).toContain('Diagram location clue');
+    expect(html).toContain('Function clue:');
+    expect(html).not.toContain('Diagram location clue');
     expect(labelToggle?.disabled).toBe(true);
     expect(labelToggle?.getAttribute('aria-pressed')).toBe('false');
     expect(document.querySelector('[data-dissection-overlays]')).toBeNull();
@@ -1587,6 +1858,7 @@ describe('dissection improved UI render', () => {
         activeLayer: 'skin',
         anatomicalView: 'ventral',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         activeInstrument: 'scalpel',
         incisionDepth: 'shallow',
         procedureMode: 'guided',
@@ -1740,6 +2012,7 @@ describe('dissection improved UI render', () => {
         specimen: 'frog',
         activeLayer: 'skin',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         toolbarViewOpen: true,
         toolbarToolsOpen: true,
         parallaxDepth: true,
@@ -1779,6 +2052,7 @@ describe('dissection improved UI render', () => {
         specimen: 'sheepEye',
         activeLayer: 'skin',
         _dissLoadedSpec: 'sheepEye',
+        workspaceMode: 'advanced',
         activeInstrument: 'dropper',
         selectedOrgan: 'sclera',
         toolbarViewOpen: true,
@@ -1906,7 +2180,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("e.key === '+' || e.key === '='");
       expect(source).toContain("e.key === '-' || e.key === '_'");
       expect(source).toContain("'aria-roledescription': 'interactive specimen canvas'");
-      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V X M P F 1 2 3 4 5 6 7'");
+      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7'");
       expect(source).toContain("className: \"diss-shortcuts\"");
       expect(source).toContain("'Ctrl + wheel', 'Zoom around the pointer'");
       expect(source).toContain('var macroLikelyOnLeft = inspectionLens && macroInset');
@@ -1965,6 +2239,7 @@ describe('dissection improved UI render', () => {
         specimen: 'frog',
         activeLayer: 'skin',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         variationSeed: 4,
         specimenCondition: 'dehydrated',
       },
@@ -2090,6 +2365,7 @@ describe('dissection improved UI render', () => {
         specimen: 'frog',
         activeLayer: 'skin',
         selectedOrgan: 'dorsal_skin',
+        workspaceMode: 'advanced',
         inspectionLens: true,
         lensPinned: true,
         lensPinnedOrganId: 'dorsal_skin',
@@ -2291,6 +2567,7 @@ describe('dissection improved UI render', () => {
         specimen: 'earthworm',
         activeLayer: 'organs',
         _dissLoadedSpec: 'earthworm',
+        workspaceMode: 'advanced',
         livingFunctionEnabled: true,
         livingFunctionPaused: false,
         livingFunctionSpeed: 'slow',
@@ -2320,6 +2597,7 @@ describe('dissection improved UI render', () => {
           activeLayer: 'organs',
           anatomicalView: 'dorsal',
           _dissLoadedSpec: 'earthworm',
+          workspaceMode: 'advanced',
           livingFunctionEnabled: true,
           livingFunctionPaused: false,
           livingFunctionSpeed: 'normal',
@@ -2439,6 +2717,7 @@ describe('dissection improved UI render', () => {
         specimen: 'sheepEye',
         activeLayer: 'skin',
         _dissLoadedSpec: 'sheepEye',
+        workspaceMode: 'advanced',
         selectedOrgan: 'sclera',
         inspectionLens: true,
         procedureByLayer: {
@@ -2609,7 +2888,7 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Pool detected');
     expect(html).toContain('Wick excess saline');
     expect(html).toContain('1-7');
-    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V X M P F 1 2 3 4 5 6 7"');
+    expect(html).toContain('aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V 1 2 3 4 5 6 7"');
   });
 
 
@@ -2634,6 +2913,7 @@ describe('dissection improved UI render', () => {
         specimen: 'sheepEye',
         activeLayer: 'skin',
         _dissLoadedSpec: 'sheepEye',
+        workspaceMode: 'advanced',
         selectedOrgan: 'sclera',
         inspectionLens: true,
         lensPinned: true,
@@ -2752,6 +3032,7 @@ expect(source).toContain('Scenario checkpoint: ');
         specimen: 'frog',
         activeLayer: 'skin',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         toolbarViewOpen: true,
         toolbarToolsOpen: true,
         relationshipMode: true,
@@ -2788,6 +3069,7 @@ expect(html).toContain('Scenario center');
         specimen: 'frog',
         activeLayer: 'skin',
         _dissLoadedSpec: 'frog',
+        workspaceMode: 'advanced',
         procedureScenario: 'timed-practical',
         scenarioStartedAt: Date.now(),
         scenarioTimeRemaining: 125,

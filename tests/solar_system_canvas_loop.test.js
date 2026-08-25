@@ -348,7 +348,8 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('role: "status", "aria-live": "polite", "aria-atomic": "true"');
       expect(source).toContain('ariaDescribedBy: "orrery-canvas-help orrery-model-scale-note orrery-hover-summary orrery-stage-key orrery-stage-tip" + (canvasSelectedBody ? " orrery-stage-readout" : "")');
       expect(source).toContain('id: "orrery-canvas-help"');
-      expect(source).toContain('var modelScaleNote = scaleMode === "relative"');
+      expect(source).toContain('var innerInsetScaleNote = zoomMode === "full"');
+      expect(source).toContain('var modelScaleNote = (scaleMode === "relative"');
       expect(source).toContain('id: "orrery-model-scale-note"');
       expect(source).toContain('id: "orrery-hover-summary"');
       expect(source).toContain('cv._orreryHoverSummaryKey');

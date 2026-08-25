@@ -509,4 +509,118 @@ describe('Throw Lab prompt accessibility', () => {
     expect(app.getData().throwlab.replayT).toBe(1);
     expect(panel.querySelector('[role=progressbar]').getAttribute('aria-valuenow')).toBe('100');
   });
+
+  it('presents one coherent choose, predict, launch, compare loop with sport-specific rates', () => {
+    mountThrowLab({
+      throwlabOverrides: {
+        throwCount: 12,
+        modeThrowCounts: { pitching: 2, freethrow: 10 },
+        strikeCount: 1,
+      },
+    });
+
+    const loop = container.querySelector('section[aria-label="How Throw Lab works"]');
+    expect(loop).toBeTruthy();
+    expect(Array.from(loop.querySelectorAll('.throwlab-loop-step')).map((step) => step.textContent)).toEqual([
+      '1ChoosePick a sport and setup',
+      '2PredictCall the outcome',
+      '3LaunchWatch the evidence',
+      '4CompareChange one variable',
+    ]);
+
+    const rate = container.querySelector('[data-throwlab-run-focus] [role="progressbar"]');
+    expect(rate.getAttribute('aria-valuenow')).toBe('50');
+    expect(rate.getAttribute('data-throwlab-mode-attempts')).toBe('2');
+    expect(rate.getAttribute('aria-label')).toContain('50 percent from 2 attempts');
+
+    expect(container.querySelector('#tl-preset-picker-heading').textContent).toBe('1 · Choose a pitch');
+    expect(container.querySelector('#tl-release-controls-heading').textContent).toBe('2 · Tune the release');
+    expect(container.querySelector('#throwlab-launch-controls-heading').textContent).toBe('3 · Call it and launch');
+    expect(container.querySelector('#tl-result-heading').textContent).toBe('4 · Launch to collect evidence');
+
+    const jump = Array.from(container.querySelectorAll('button')).find((button) => button.textContent === 'SET UP NEXT REP');
+    expect(jump.getAttribute('aria-controls')).toBe('throwlab-launch-controls');
+    expect(Array.from(container.querySelectorAll('button')).filter((button) => button.textContent.includes('THROW PITCH'))).toHaveLength(1);
+
+    const prediction = container.querySelector('fieldset[data-throwlab-prediction="true"]');
+    expect(prediction.querySelector('legend').textContent).toContain('Call your shot');
+    expect(prediction.querySelectorAll('button[aria-pressed]')).toHaveLength(3);
+  });
+
+  it('pins an optional prediction to the launched trial and responds with evidence', async () => {
+    const app = mountThrowLab();
+    const prediction = container.querySelector('[data-throwlab-prediction="true"]');
+    const strikeCall = Array.from(prediction.querySelectorAll('button')).find((button) => button.textContent.startsWith('Strike'));
+    await clickAsync(strikeCall);
+
+    expect(strikeCall.getAttribute('aria-pressed')).toBe('true');
+    expect(app.getData().throwlab.predictionKey).toBe('target');
+
+    const launch = Array.from(container.querySelectorAll('#throwlab-launch-controls button')).find((button) => button.textContent.includes('THROW PITCH'));
+    await clickAsync(launch);
+
+    const state = app.getData().throwlab;
+    expect(state.lastResult.trial).toMatchObject({
+      predictionKey: 'target',
+      predictionLabel: 'Strike',
+    });
+    expect(state.predictionKey).toBeNull();
+    expect(state.predictionStats.attempts).toBe(1);
+    expect([0, 1]).toContain(state.predictionStats.matches);
+
+    const feedback = container.querySelector('[data-throwlab-prediction-result]');
+    expect(feedback).toBeTruthy();
+    expect(feedback.textContent).toContain('You called Strike');
+    expect(['matched', 'surprised']).toContain(feedback.getAttribute('data-throwlab-prediction-result'));
+    expect(Array.from(container.querySelectorAll('[data-throwlab-prediction] button')).every((button) => button.getAttribute('aria-pressed') === 'false')).toBe(true);
+  });
+
+  it('loads a scientifically controlled next rep by changing exactly one launched variable', async () => {
+    const app = mountThrowLab();
+    const launch = Array.from(container.querySelectorAll('#throwlab-launch-controls button')).find((button) => button.textContent.includes('THROW PITCH'));
+    await clickAsync(launch);
+
+    const baselineResult = app.getData().throwlab.lastResult;
+    const trial = baselineResult.trial;
+    const recommendationPanel = container.querySelector('[data-throwlab-next-rep]');
+    const changedKey = recommendationPanel.getAttribute('data-throwlab-next-rep');
+    const apply = recommendationPanel.querySelector('button[aria-label^="Load the suggested one-variable next rep:"]');
+    await clickAsync(apply);
+
+    const state = app.getData().throwlab;
+    const launchedValues = {
+      speedMph: trial.speedMph,
+      aimDegV: trial.angleV,
+      aimDegH: trial.angleH,
+      spinRpm: trial.spinRpm,
+    };
+    expect(Object.keys(launchedValues)).toContain(changedKey);
+    for (const [key, value] of Object.entries(launchedValues)) {
+      if (key === changedKey) expect(state[key]).not.toBe(value);
+      else expect(state[key]).toBe(value);
+    }
+    expect(state.lastResult).toBe(baselineResult);
+    expect(state.replayActive).toBe(false);
+    expect(container.querySelector('[data-throwlab-next-trial-check="fair"]')).toBeTruthy();
+  });
+
+  it('keeps high-spin golf presets and half-court speed inside their visible controls', async () => {
+    mountThrowLab({
+      throwlabOverrides: {
+        mode: 'golf',
+        golfClub: 'wedge',
+        speedMph: 95,
+        releaseHeight: 0,
+        aimDegV: 50,
+        spinRpm: 9500,
+        spinAxisDeg: 0,
+        scaffoldTier: 3,
+      },
+    });
+
+    const golfSpin = container.querySelector('#tl-golf-slider-spin-rate');
+    expect(golfSpin.value).toBe('9500');
+    expect(golfSpin.max).toBe('12000');
+    expect(golfSpin.step).toBe('100');
+  });
 });

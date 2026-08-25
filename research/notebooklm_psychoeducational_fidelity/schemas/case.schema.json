@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/notebooklm-psychoed/case.schema.json",
+  "title": "Synthetic Psychoeducational Case",
+  "type": "object",
+  "required": [
+    "case_id",
+    "schema_version",
+    "case_status",
+    "synthetic_only",
+    "student_profile",
+    "referral_questions",
+    "sources",
+    "complexity_features",
+    "expected_sections",
+    "validation"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "pattern": "^CASE-[A-Z0-9_-]+$"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "case_status": {
+      "enum": ["draft", "under_review", "pilot_approved", "confirmatory_approved", "retired"]
+    },
+    "synthetic_only": {
+      "const": true
+    },
+    "student_profile": {
+      "type": "object",
+      "required": ["synthetic_name", "grade_band", "age_years"],
+      "properties": {
+        "synthetic_name": {"type": "string"},
+        "age_years": {"type": "number", "minimum": 3, "maximum": 22},
+        "grade_band": {
+          "enum": ["early_childhood", "elementary", "middle", "high", "transition"]
+        },
+        "pronouns": {"type": "string"},
+        "languages": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "educational_context": {"type": "string"},
+        "demographic_notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "referral_questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"}
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["source_id", "source_type", "title", "content_file", "date_or_period"],
+        "properties": {
+          "source_id": {"type": "string"},
+          "source_type": {
+            "enum": [
+              "referral",
+              "record_review",
+              "parent_interview",
+              "teacher_interview",
+              "student_interview",
+              "observation",
+              "intervention_data",
+              "attendance_grades",
+              "cognitive_scores",
+              "academic_scores",
+              "behavior_scores",
+              "adaptive_scores",
+              "executive_function_scores",
+              "eligibility_rules",
+              "other"
+            ]
+          },
+          "title": {"type": "string"},
+          "content_file": {"type": "string"},
+          "date_or_period": {"type": "string"},
+          "render_format": {
+            "enum": ["pdf_text", "docx", "google_doc", "plain_text", "csv", "other"]
+          },
+          "contains_tables": {"type": "boolean"},
+          "contains_deliberate_conflict": {"type": "boolean"},
+          "contains_deliberate_missingness": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "complexity_features": {
+      "type": "object",
+      "required": [
+        "informant_disagreement",
+        "temporal_change",
+        "deliberate_missingness",
+        "numeric_density",
+        "cross_source_synthesis"
+      ],
+      "properties": {
+        "informant_disagreement": {"type": "boolean"},
+        "temporal_change": {"type": "boolean"},
+        "deliberate_missingness": {"type": "boolean"},
+        "numeric_density": {"enum": ["low", "medium", "high"]},
+        "cross_source_synthesis": {"enum": ["low", "medium", "high"]},
+        "language_or_cultural_context": {"type": "boolean"},
+        "study_defined_eligibility": {"type": "boolean"},
+        "notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "expected_sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "reason_for_referral",
+          "background_and_educational_history",
+          "evaluation_procedures",
+          "behavioral_observations",
+          "assessment_results",
+          "integrated_summary",
+          "study_defined_eligibility",
+          "recommendations"
+        ]
+      }
+    },
+    "eligibility_simulation": {
+      "type": ["object", "null"],
+      "properties": {
+        "rule_source_id": {"type": "string"},
+        "expected_conclusion": {"type": "string"},
+        "required_qualifications": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      },
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object",
+      "required": ["pii_scan_passed", "secure_content_scan_passed", "review_status"],
+      "properties": {
+        "pii_scan_passed": {"type": "boolean"},
+        "secure_content_scan_passed": {"type": "boolean"},
+        "review_status": {
+          "enum": ["not_reviewed", "needs_revision", "approved"]
+        },
+        "reviewer_codes": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "review_notes": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

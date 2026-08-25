@@ -172,6 +172,24 @@
 .diss-stat { min-width: 0; padding: .58rem .68rem; border: 1px solid rgba(255,255,255,.18); border-radius: .8rem; background: rgba(15,23,42,.25); }
 .diss-stat__label { display: block; color: #a5f3fc; font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
 .diss-stat__value { display: block; margin-top: .15rem; overflow: hidden; color: #fff; font-size: .78rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }
+.diss-workspace-mode {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  padding: .65rem .75rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #eff6ff, #f0fdfa);
+}
+.diss-workspace-mode__copy { min-width: min(100%, 18rem); flex: 1 1 28rem; }
+.diss-workspace-mode__copy strong { display: block; color: #143b65; font-size: .78rem; }
+.diss-workspace-mode__copy span { display: block; margin-top: .16rem; color: #48647f; font-size: .68rem; line-height: 1.4; }
+.diss-workspace-mode__choices { display: inline-flex; gap: .25rem; padding: .25rem; border: 1px solid #a9c9ee; border-radius: .75rem; background: #fff; }
+.diss-workspace-mode__choices button { min-height: 2.5rem; padding: .48rem .72rem; border: 1px solid transparent; border-radius: .55rem; background: transparent; color: #36506f; font-size: .72rem; font-weight: 900; cursor: pointer; }
+.diss-workspace-mode__choices button[aria-pressed="true"] { border-color: #1766d2; background: #1766d2; color: #fff; }
 .diss-mode-rail {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -192,6 +210,42 @@
   cursor: pointer;
 }
 .diss-route-button[data-active="true"] { border-color: #8ab7ed; background: #fff; box-shadow: 0 5px 16px rgba(23,102,210,.12); color: #0b57b3; }
+[data-dissection-root][data-workspace-mode="essentials"] .diss-advanced-only,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-shortcuts,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-procedure__mode,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-procedure__metrics,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-advanced-row,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-scenario-console,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-attempt-comparison,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-instructor,
+[data-dissection-root][data-workspace-mode="essentials"] .diss-overlay-actions { display: none !important; }
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle layer cross-section"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Specimen condition"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle curated anatomical relationships"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Rendering quality"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle detailed pointer-following"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle specimen-specific surface"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle anatomical depth atlas"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle responsive tissue relief"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle animated direction markers"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle selected-structure focus"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle subtle pointer-responsive"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle live and reference split"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Lab light"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Laboratory light direction"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Generate another deterministic"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Toggle before and after"],
+[data-dissection-root][data-workspace-mode="essentials"] #diss-view-tools button[aria-label^="Animation speed"] { display: none !important; }
+.diss-objective-list { display: grid; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.diss-objective-item { padding: .6rem .65rem; border: 1px solid #a7f3d0; border-radius: .75rem; background: rgba(255,255,255,.78); }
+.diss-objective-item[data-objective-status="demonstrated"] { border-color: #34d399; background: #ecfdf5; }
+.diss-objective-item__head { display: flex; align-items: flex-start; justify-content: space-between; gap: .65rem; }
+.diss-objective-item__head strong { color: #254b45; font-size: .72rem; line-height: 1.45; }
+.diss-objective-item__status { flex: 0 0 auto; color: #47635f; font-size: .62rem; font-weight: 900; }
+.diss-objective-item[data-objective-status="demonstrated"] .diss-objective-item__status { color: #047857; }
+.diss-objective-item__meter { overflow: hidden; height: .4rem; margin-top: .45rem; border-radius: 999px; background: #d1fae5; }
+.diss-objective-item__meter span { display: block; height: 100%; border-radius: inherit; background: #0f8f86; }
+.diss-objective-item p { margin: .38rem 0 0; color: #47635f; font-size: .65rem; line-height: 1.45; }
 .diss-picker, .diss-layer-stepper { padding: .75rem; border: 1px solid var(--diss-line); border-radius: 1rem; background: #fff; box-shadow: 0 8px 24px rgba(15,23,42,.05); }
 .diss-section-heading { display: flex; align-items: end; justify-content: space-between; gap: .75rem; margin-bottom: .55rem; }
 .diss-section-heading h3 { margin: 0; color: #193454; font-size: .8rem; font-weight: 900; }
@@ -888,7 +942,7 @@
     questHooks: [
       { id: 'reveal_3_layers', label: 'Reveal 3 layers of a specimen', icon: '\uD83D\uDD2C', check: function(d) { return Object.keys(d.revealedLayers || {}).length >= 3; }, progress: function(d) { return Object.keys(d.revealedLayers || {}).length + '/3 layers'; } },
       { id: 'complete_guided', label: 'Complete a guided dissection', icon: '\uD83D\uDCDA', check: function(d) { return d.guidedComplete || false; }, progress: function(d) { return d.guidedComplete ? 'Done!' : 'In progress'; } },
-      { id: 'quiz_3_correct', label: 'Answer 3+ dissection quiz questions correctly', icon: '\uD83E\uDDE0', check: function(d) { return (d.quizScore || 0) >= 3; }, progress: function(d) { return (d.quizScore || 0) + '/3'; } },
+      { id: 'quiz_3_correct', label: 'Answer 3+ dissection quiz questions correctly on the first attempt', icon: '\uD83E\uDDE0', check: function(d) { return (d.assessmentRecordedScore || d.quizFirstAttemptScore || 0) >= 3; }, progress: function(d) { return (d.assessmentRecordedScore || d.quizFirstAttemptScore || 0) + '/3 first-attempt'; } },
       { id: 'try_2_specimens', label: 'Explore 2 different specimens', icon: '\uD83D\uDC38', check: function(d) { return Object.keys(d.specimensViewed || {}).length >= 2; }, progress: function(d) { return Object.keys(d.specimensViewed || {}).length + '/2'; } }
     ],
     render: function(ctx) {
@@ -1033,6 +1087,7 @@ var d = labToolData.dissection || {};
                 'Distinguish mesonephric kidneys from mammalian metanephric',
                 'Locate the cloaca and explain shared-opening anatomy'
               ],
+              objectiveTargets: [['heart'], ['dorsal_skin', 'lungs'], ['kidneys'], ['cloaca']],
               specTerms: [
                 { term: 'Cutaneous respiration', def: 'Gas exchange through moist, permeable skin.' },
                 { term: 'Buccal pumping', def: 'Throat-based breathing mechanism; frogs push air into lungs by raising the floor of the mouth.' },
@@ -1170,6 +1225,7 @@ var d = labToolData.dissection || {};
                 'Identify nephridia and compare to vertebrate kidneys',
                 'Describe the role of the clitellum in reproduction'
               ],
+              objectiveTargets: [['aortic_arches'], ['circular_m', 'longitudinal_m'], ['nephridia'], ['clitellum']],
               specTerms: [
                 { term: 'Peristalsis', def: 'Wave-like contraction of circular and longitudinal muscles for locomotion.' },
                 { term: 'Nephridium', def: 'Excretory tubule in each segment; filters coelomic fluid similar to a kidney nephron.' },
@@ -1255,6 +1311,7 @@ var d = labToolData.dissection || {};
 
               bodyShape: 'pig',
               objectives: ['Compare the 4-chambered pig heart to a human heart','Identify the diaphragm and explain negative-pressure breathing','Trace the fetal circulatory pathway through the umbilical cord','Locate the spiral colon and compare to human large intestine'],
+              objectiveTargets: [['heart_p'], ['diaphragm_p', 'lungs_p'], ['umbilical'], ['lg_int_p']],
               specTerms: [
                 { term: 'Diaphragm', def: 'Dome-shaped respiratory muscle separating thorax from abdomen; mammalian innovation.' },
                 { term: 'Umbilical vein', def: 'Carries oxygenated blood from placenta to fetus through the umbilical cord.' },
@@ -1367,6 +1424,7 @@ var d = labToolData.dissection || {};
 
               bodyShape: 'fish',
               objectives: ['Explain countercurrent flow in gill respiration','Trace single-circuit circulation through the 2-chambered heart','Identify the swim bladder and explain buoyancy regulation','Describe the lateral line sensory system'],
+              objectiveTargets: [['gills'], ['heart_f', 'gills'], ['swim_bladder'], ['lat_line']],
               specTerms: [
                 { term: 'Operculum', def: 'Bony gill cover that protects gills and actively pumps water for respiration.' },
                 { term: 'Countercurrent exchange', def: 'Blood flows opposite to water across gills, maximizing O\u2082 extraction (~80%).' },
@@ -1451,6 +1509,7 @@ var d = labToolData.dissection || {};
 
               bodyShape: 'crayfish',
               objectives: ['Compare open circulatory system to closed circulation in vertebrates','Identify the gastric mill and explain post-ingestion grinding','Explain ecdysis (molting) and the role of gastroliths','Describe the compound eye structure and motion detection'],
+              objectiveTargets: [['heart_c'], ['gastric_mill'], ['carapace', 'gastric_mill'], ['compound_eye']],
               specTerms: [
                 { term: 'Hemolymph', def: 'Open circulatory fluid combining blood and interstitial fluid; flows through sinuses, not vessels.' },
                 { term: 'Ecdysis', def: 'Periodic molting of the exoskeleton to allow growth; animal is vulnerable during hardening.' },
@@ -1533,6 +1592,7 @@ var d = labToolData.dissection || {};
 
               bodyShape: 'eye',
               objectives: ['Trace the path of light through the eye from cornea to retina','Explain accommodation and the role of the ciliary body','Compare the tapetum lucidum in sheep to the human eye','Identify the blind spot and explain why it exists'],
+              objectiveTargets: [['cornea', 'lens', 'retina'], ['lens', 'ciliary_body'], ['tapetum', 'retina'], ['optic_nerve']],
               specTerms: [
                 { term: 'Accommodation', def: 'Process by which the ciliary muscle changes lens shape to focus on near or far objects.' },
                 { term: 'Tapetum lucidum', def: 'Reflective layer behind the retina enhancing night vision; absent in humans.' },
@@ -1599,6 +1659,7 @@ var d = labToolData.dissection || {};
 
               bodyShape: 'heart',
               objectives: ['Trace blood flow through all four chambers and valves','Distinguish the coronary arteries and explain myocardial blood supply','Compare wall thickness of left vs right ventricles','Identify the conduction system pathway from SA node to Purkinje fibers'],
+              objectiveTargets: [['ra', 'tricuspid', 'rv', 'pulm_v', 'la', 'mitral', 'lv', 'aortic_v'], ['coronary_aa'], ['rv', 'lv'], ['conduction']],
               specTerms: [
                 { term: 'Chordae tendineae', def: 'Fibrous cords connecting AV valve leaflets to papillary muscles, preventing prolapse.' },
                 { term: 'Coronary sinus', def: 'Large venous channel collecting deoxygenated blood from the heart muscle itself.' },
@@ -1838,6 +1899,31 @@ var d = labToolData.dissection || {};
           var reducedMotionEnabled = !!d.reducedMotion || !!storedAccessibilityPreferences.reducedMotion;
           var largeTextEnabled = !!d.largeText || !!storedAccessibilityPreferences.largeText;
           var simplifiedInstructions = !!d.simplifiedInstructions || !!storedAccessibilityPreferences.simplifiedInstructions;
+          var storedWorkspaceMode = 'essentials';
+          try { storedWorkspaceMode = localStorage.getItem('dissection_workspace_mode') || 'essentials'; } catch (e) { storedWorkspaceMode = 'essentials'; }
+          var workspaceMode = d.workspaceMode === 'advanced' || d.workspaceMode === 'essentials'
+            ? d.workspaceMode
+            : (storedWorkspaceMode === 'advanced' ? 'advanced' : 'essentials');
+          var advancedWorkspace = workspaceMode === 'advanced';
+          function setDissectionWorkspaceMode(mode) {
+            var nextMode = mode === 'advanced' ? 'advanced' : 'essentials';
+            try { localStorage.setItem('dissection_workspace_mode', nextMode); } catch (e) {}
+            updMany(Object.assign({ workspaceMode: nextMode }, nextMode === 'essentials' ? {
+              toolbarToolsOpen: false,
+              compareTechniqueAttempts: false,
+              compareReplayPlaying: false,
+              showProcedureDebrief: false,
+              procedureScenario: 'precision-access',
+              scenarioStartedAt: 0,
+              scenarioTimeRemaining: 0,
+              scenarioCompletedAt: 0
+            } : {}));
+            var modeMessage = nextMode === 'advanced'
+              ? 'Advanced workspace enabled. Scenario, instructor, comparison, and detailed simulation controls are available.'
+              : 'Essentials workspace enabled. Core procedure, observation, evidence, and accessibility controls remain available.';
+            setProcedureFeedback(modeMessage, 'working');
+            if (typeof announceToSR === 'function') announceToSR(modeMessage);
+          }
           function setAccessibilityPreference(key, value, label) {
             var nextPreferences = Object.assign({}, storedAccessibilityPreferences);
             nextPreferences[key] = !!value;
@@ -1859,32 +1945,33 @@ var d = labToolData.dissection || {};
             };
           }
           var toolCalibration = normalizeToolCalibration(d.toolCalibration);
-          var procedureMode = d.procedureMode || 'guided';
-          var visualRealism = d.visualRealism || 'guided';
-          var labLight = d.labLight || 'neutral';
+          var procedureMode = advancedWorkspace && d.procedureMode === 'independent' ? 'independent' : 'guided';
+          livingFunctionEnabled = advancedWorkspace && livingFunctionEnabled;
+          var visualRealism = advancedWorkspace ? (d.visualRealism || 'guided') : 'guided';
+          var labLight = advancedWorkspace ? (d.labLight || 'neutral') : 'neutral';
           var lightIntensity = Math.max(20, Math.min(100, Number(d.lightIntensity) || 68));
-          var inspectionLens = !!d.inspectionLens;
-          var lensPinned = !!d.lensPinned;
+          var inspectionLens = advancedWorkspace && !!d.inspectionLens;
+          var lensPinned = advancedWorkspace && !!d.lensPinned;
           var lensMagnification = [2, 4, 6].indexOf(Number(d.lensMagnification)) >= 0 ? Number(d.lensMagnification) : 2;
           var lensFocusDepth = ['surface', 'structure', 'deep'].indexOf(d.lensFocusDepth) >= 0 ? d.lensFocusDepth : 'structure';
           var instrumentVisuals = d.instrumentVisuals !== false;
-          var macroInset = d.macroInset !== false;
-          var sceneDetail = d.sceneDetail !== false;
-          var depthAtlasEnabled = d.depthAtlas !== false;
+          var macroInset = advancedWorkspace && d.macroInset !== false;
+          var sceneDetail = advancedWorkspace ? d.sceneDetail !== false : true;
+          var depthAtlasEnabled = advancedWorkspace && d.depthAtlas !== false;
           var tissueReliefEnabled = d.tissueRelief !== false;
-          var relationshipMotion = d.relationshipMotion !== false;
+          var relationshipMotion = advancedWorkspace && d.relationshipMotion !== false;
           var focusMode = d.focusMode !== false;
-          var parallaxDepth = d.parallaxDepth !== false;
+          var parallaxDepth = advancedWorkspace && d.parallaxDepth !== false;
           var visualEvidence = Array.isArray(d.visualEvidence) ? d.visualEvidence.filter(function (entry) { return entry && entry.image; }).slice(-6) : [];
-          var splitComparison = !!d.splitComparison;
-          var lightDirection = ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
+          var splitComparison = advancedWorkspace && !!d.splitComparison;
+          var lightDirection = advancedWorkspace && ['overhead', 'left', 'right', 'raking'].indexOf(d.lightDirection) >= 0 ? d.lightDirection : 'overhead';
           var variationSeed = Number(d.variationSeed) || 1;
           var anatomicalView = ['dorsal', 'ventral', 'lateral', 'internal'].indexOf(d.anatomicalView) >= 0 ? d.anatomicalView : 'dorsal';
-          var crossSectionMode = !!d.crossSectionMode;
-          var specimenCondition = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen'].indexOf(d.specimenCondition) >= 0 ? d.specimenCondition : 'standard';
-          var relationshipMode = !!d.relationshipMode;
-          var renderQuality = ['auto', 'high', 'balanced'].indexOf(d.renderQuality) >= 0 ? d.renderQuality : 'auto';
-          var procedureScenario = d.procedureScenario || 'precision-access';
+          var crossSectionMode = advancedWorkspace && !!d.crossSectionMode;
+          var specimenCondition = advancedWorkspace && ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen'].indexOf(d.specimenCondition) >= 0 ? d.specimenCondition : 'standard';
+          var relationshipMode = advancedWorkspace && !!d.relationshipMode;
+          var renderQuality = advancedWorkspace && ['auto', 'high', 'balanced'].indexOf(d.renderQuality) >= 0 ? d.renderQuality : 'auto';
+          var procedureScenario = advancedWorkspace ? (d.procedureScenario || 'precision-access') : 'precision-access';
           var instructorTarget = Math.max(60, Math.min(95, Number(d.instructorTarget) || 75));
           var instructorMaxCautions = Math.max(0, Math.min(3, Number(d.instructorMaxCautions) || 1));
           var instructorRequiredStructures = Math.max(1, Math.min(5, Number(d.instructorRequiredStructures) || 2));
@@ -1899,7 +1986,7 @@ var d = labToolData.dissection || {};
             var restrictedFallbackAction = nextProcedureInfo().action;
             activeInstrument = procedureInstrumentForAction(restrictedFallbackAction === 'complete' ? 'probe' : restrictedFallbackAction);
           }
-          var activeFunctionalTraceKey = d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)));
+          var activeFunctionalTraceKey = advancedWorkspace ? (d.traceCirculation ? 'circulation' : (d.traceDigestion ? 'digestion' : (d.traceRespiration ? 'respiration' : (d.traceExcretory ? 'excretory' : null)))) : null;
           var activeFunctionalTraceLabel = { circulation: 'Circulatory', digestion: 'Digestive', respiration: 'Respiratory', excretory: 'Excretory' }[activeFunctionalTraceKey] || '';
 
           // Nearest-target hit testing also treats laid-out labels as interactive targets.
@@ -2357,7 +2444,7 @@ var d = labToolData.dissection || {};
             return variants[(seed + specimen.length + currentLayerIdx * 3) % variants.length];
           }
           function defaultTissueState() {
-            var condition = d.specimenCondition || specimenCondition || 'standard';
+            var condition = specimenCondition || 'standard';
             var variant = tissueVariantDefinition();
             var moisture = spec.bodyShape === 'worm' ? 86 : (spec.bodyShape === 'eye' ? 82 : 76);
             var tension = spec.bodyShape === 'heart' ? 54 : (spec.bodyShape === 'pig' ? 48 : 40);
@@ -2670,7 +2757,7 @@ var d = labToolData.dissection || {};
           }
           function procedureMaterialInteractionData(toolId, state) {
             var resistance = Math.max(0, Math.min(100, Number(procedureProtocol.cutResistance) || 40));
-            var condition = d.specimenCondition || specimenCondition;
+            var condition = specimenCondition;
             if (condition === 'dehydrated') resistance += 12;
             else if (condition === 'preserved') resistance += 7;
             else if (condition === 'swollen') resistance += 5;
@@ -3108,7 +3195,7 @@ var d = labToolData.dissection || {};
             { id: 'timed-practical', label: 'Timed practical', difficulty: 'Challenge', prompt: 'Complete the specimen protocol within four minutes while maintaining safe decisions.' }
           ];
           function currentScenarioDefinition() {
-            return ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === (d.procedureScenario || procedureScenario); }) || ADVANCED_SCENARIOS[0];
+            return ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === procedureScenario; }) || ADVANCED_SCENARIOS[0];
           }
           function formatScenarioTime(seconds) {
             seconds = Math.max(0, Math.round(Number(seconds) || 0));
@@ -3279,7 +3366,7 @@ var d = labToolData.dissection || {};
             setProcedureFeedback('Relationship traced: ' + nextRelationship.relation + ' ' + nextRelationship.organ.name + ' [' + nextRelationship.type + ']. Visual code: ' + anatomicalRelationshipEncodingText(nextRelationship.type) + '.' + (completesRelationshipScenario ? ' Objective complete.' : ''), 'success');
           }
           function specimenConditionDescription() {
-            return { standard: 'Standard teaching specimen', preserved: 'Preserved: firmer tissue response and muted surface color', dehydrated: 'Dehydrated: reduced sheen and greater simulated resistance', cloudy: spec.bodyShape === 'eye' ? 'Cloudy optics: reduced surface clarity' : 'Cloudy preservation film', swollen: 'Swollen: enlarged contours and tighter working space' }[d.specimenCondition || specimenCondition] || 'Standard teaching specimen';
+            return { standard: 'Standard teaching specimen', preserved: 'Preserved: firmer tissue response and muted surface color', dehydrated: 'Dehydrated: reduced sheen and greater simulated resistance', cloudy: spec.bodyShape === 'eye' ? 'Cloudy optics: reduced surface clarity' : 'Cloudy preservation film', swollen: 'Swollen: enlarged contours and tighter working space' }[specimenCondition] || 'Standard teaching specimen';
           }
           function specimenHydrationProfile() {
             return {
@@ -3487,8 +3574,8 @@ var d = labToolData.dissection || {};
             snapshot.savedAt = snapshot.id;
             snapshot.layer = activeLayer;
             snapshot.view = d.anatomicalView || anatomicalView;
-            snapshot.condition = d.specimenCondition || specimenCondition;
-            snapshot.mode = d.procedureMode || procedureMode;
+            snapshot.condition = specimenCondition;
+            snapshot.mode = procedureMode;
             snapshot.incisionPath = (currentProcedure.incisionPath || []).map(function (point) { return { x: point.x, y: point.y }; });
             snapshot.extensionPath = (currentProcedure.extensionPath || []).map(function (point) { return { x: point.x, y: point.y }; });
             snapshot.incisionSamples = compactProcedureSamples(currentProcedure.incisionSamples);
@@ -4002,7 +4089,7 @@ var d = labToolData.dissection || {};
             return {
               tool: toolId, specimen: specimen, layer: activeLayer, view: d.anatomicalView || anatomicalView || 'dorsal', pointerId: e && e.pointerId,
               procedureKey: directGestureProcedureKey(currentProcedure), calibrationKey: directGestureCalibrationKey(),
-              incisionDepth: d.incisionDepth || 'shallow', condition: d.specimenCondition || specimenCondition || 'standard',
+              incisionDepth: d.incisionDepth || 'shallow', condition: specimenCondition || 'standard',
               lightIntensity: Math.max(20, Math.min(100, Number(d.lightIntensity) || 68)),
               scenarioId: currentScenarioDefinition().id, scenarioStartedAt: Number(d.scenarioStartedAt) || 0, cameraKey: directGestureCameraKey(canvas),
               modeKey: [!!d.quizMode, !!d.practicalMode, !!d.annotateMode, !!d.rulerMode].join('|')
@@ -4012,7 +4099,7 @@ var d = labToolData.dissection || {};
             var canvas = typeof document !== 'undefined' ? document.querySelector('[data-diss-canvas]') : null;
             return !!context && context.specimen === specimen && context.layer === activeLayer && context.view === (d.anatomicalView || anatomicalView || 'dorsal') && context.tool === activeInstrument
               && context.procedureKey === directGestureProcedureKey(currentProcedure) && context.calibrationKey === directGestureCalibrationKey()
-              && context.incisionDepth === (d.incisionDepth || 'shallow') && context.condition === (d.specimenCondition || specimenCondition || 'standard')
+              && context.incisionDepth === (d.incisionDepth || 'shallow') && context.condition === (specimenCondition || 'standard')
               && context.lightIntensity === Math.max(20, Math.min(100, Number(d.lightIntensity) || 68))
               && context.scenarioId === currentScenarioDefinition().id && context.scenarioStartedAt === (Number(d.scenarioStartedAt) || 0) && !timedProcedureScenarioExpired() && context.cameraKey === directGestureCameraKey(canvas)
               && context.modeKey === [!!d.quizMode, !!d.practicalMode, !!d.annotateMode, !!d.rulerMode].join('|');
@@ -4078,7 +4165,7 @@ var d = labToolData.dissection || {};
               canvas._toolSamples.push({ pressure: Number(e.pressure) || 0.5, at: Date.now(), pointerType: e.pointerType || canvas._toolInputType || 'mouse' });
             }
             var corridorDistance = distanceToGuide(point, procedureGuidePoints());
-            var conditionFactor = { preserved: 1.15, dehydrated: 1.32, cloudy: 1.08, swollen: 1.2 }[d.specimenCondition || specimenCondition] || 1;
+            var conditionFactor = { preserved: 1.15, dehydrated: 1.32, cloudy: 1.08, swollen: 1.2 }[specimenCondition] || 1;
             var effectiveResistance = corridorDistance * conditionFactor;
             var resistanceLevel = effectiveResistance <= 0.04 ? 'low' : (effectiveResistance <= 0.075 ? 'moderate' : 'high');
             canvas._toolResistance = { level: resistanceLevel, value: Math.max(0.08, Math.min(1, effectiveResistance / 0.12)) };
@@ -4160,8 +4247,8 @@ var d = labToolData.dissection || {};
             var material = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
             var tissue = normalizeTissueState(currentProcedure.tissueState);
             var safeMax = 0.115 + (Number(material.compliance) || 0.5) * 0.085;
-            if ((d.specimenCondition || specimenCondition) === 'dehydrated') safeMax *= 0.78;
-            else if ((d.specimenCondition || specimenCondition) === 'swollen') safeMax *= 0.88;
+            if (specimenCondition === 'dehydrated') safeMax *= 0.78;
+            else if (specimenCondition === 'swollen') safeMax *= 0.88;
             var minimumLift = 0.032;
             var projectedTension = Math.round(Math.min(100, tissue.tension + distance / Math.max(0.01, safeMax) * 31 + Math.max(0, grip - 50) * 0.42));
             var peakSpeed = Math.max(Number(drag.peakSpeed) || 0, speed);
@@ -4236,7 +4323,7 @@ var d = labToolData.dissection || {};
             var speed = distance / (elapsed / 1000), grip = Math.max(35, Math.min(90, Number(toolCalibration.pinAngle) || 65));
             var material = SPECIMEN_MATERIAL_PROFILES[spec.bodyShape] || SPECIMEN_MATERIAL_PROFILES.frog;
             var safeTravel = 0.075 + (Number(material.compliance) || 0.5) * 0.045;
-            if ((d.specimenCondition || specimenCondition) === 'dehydrated') safeTravel *= 0.82;
+            if (specimenCondition === 'dehydrated') safeTravel *= 0.82;
             var projected = dx * drag.inward.x + dy * drag.inward.y;
             var alignment = distance > 0.002 ? Math.max(-1, Math.min(1, projected / distance)) : 1;
             var insertionPercent = Math.max(0, Math.min(100, Math.round(projected / Math.max(0.01, safeTravel) * 100)));
@@ -4667,6 +4754,10 @@ var d = labToolData.dissection || {};
           // Quiz: deterministic shuffling keeps questions stable during a render while
           // still varying their order for each new study session.
           var quizPool = organs.filter(function (o) { return o.fn; });
+          var specimenQuizPool = allSpecimenStructures().filter(function (o) { return o.fn; });
+          var encounteredQuizPool = specimenQuizPool.filter(function (organ) {
+            return quizPool.some(function (currentOrgan) { return currentOrgan.id === organ.id; }) || !!(d.exploredOrgans || {})[specimen + '|' + organ.id];
+          });
           // Hotspot questions must be answerable in the learner's current field.
           // The question itself stays fixed when the learner changes answer method.
           var visibleQuizPool = quizPool.filter(function (o) {
@@ -4683,19 +4774,22 @@ var d = labToolData.dissection || {};
               return dissHash(salt + '|' + a.id) - dissHash(salt + '|' + b.id);
             });
           }
-          var quizSalt = specimen + '|' + activeLayer + '|' + (d.quizSeed || 'default');
+          var quizSalt = specimen + '|assessment|' + (d.quizSeed || 'default');
           var practicalTargetIds = Array.isArray(d.practicalTargetIds) && d.practicalTargetIds.length
             ? d.practicalTargetIds
             : visibleQuizPool.map(function (organ) { return organ.id; });
+          var quizReviewIds = !d.practicalMode && Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [];
           var activeQuizPool = d.practicalMode
             ? quizPool.filter(function (organ) { return practicalTargetIds.indexOf(organ.id) >= 0; })
-            : quizPool;
+            : (d.quizReviewMode && quizReviewIds.length
+              ? specimenQuizPool.filter(function (organ) { return quizReviewIds.indexOf(organ.id) >= 0; })
+              : encounteredQuizPool);
           var orderedQuizPool = dissStableOrder(activeQuizPool, quizSalt);
-          var quizReviewIds = !d.practicalMode && Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [];
           var quizIndex = Number(d.quizIdx) || 0;
-          var reviewCycleIndex = quizIndex - orderedQuizPool.length;
-          var scheduledReviewId = reviewCycleIndex >= 0 && quizReviewIds.length ? quizReviewIds[reviewCycleIndex % quizReviewIds.length] : null;
-          var quizQ = d.quizMode && orderedQuizPool.length > 0 ? (orderedQuizPool.find(function (organ) { return organ.id === scheduledReviewId; }) || orderedQuizPool[quizIndex % orderedQuizPool.length]) : null;
+          var quizSessionLimit = Math.min(5, orderedQuizPool.length);
+          var quizQ = d.quizMode && orderedQuizPool.length > 0
+            ? (d.practicalMode ? orderedQuizPool[quizIndex % orderedQuizPool.length] : (!d.quizComplete && quizIndex < quizSessionLimit ? orderedQuizPool[quizIndex] : null))
+            : null;
           var hotspotQuizAvailable = !!quizQ && visibleQuizPool.some(function (organ) { return organ.id === quizQ.id; });
           var effectiveQuizAnswerMode = d.quizAnswerMode === 'hotspot' && hotspotQuizAvailable ? 'hotspot' : 'choices';
           var quizOptions = quizQ
@@ -4710,52 +4804,86 @@ var d = labToolData.dissection || {};
             };
           }
           quizOptions = dissStableOrder(quizOptions, quizSalt + '|options|' + (d.quizIdx || 0));
-          var quizKind = ((d.quizIdx || 0) % 2 === 0) ? 'function' : 'location';
           function dissDiagramRegion(org) {
             var displayed = displayedSpecimenPoint(org);
             var vertical = displayed.y < 0.34 ? 'upper' : (displayed.y > 0.66 ? 'lower' : 'middle');
             var horizontal = displayed.x < 0.4 ? 'left' : (displayed.x > 0.6 ? 'right' : 'central');
             return vertical + (horizontal === 'central' ? '-central' : '-' + horizontal);
           }
+          var requestedQuizKind = ((d.quizIdx || 0) % 2 === 0) ? 'function' : 'location';
+          var locationCandidateMap = {};
+          quizOptions.concat(hotspotQuizAvailable ? visibleQuizPool : []).forEach(function (organ) { locationCandidateMap[organ.id] = organ; });
+          var targetDiagramRegion = quizQ ? dissDiagramRegion(quizQ) : '';
+          var sameRegionCandidates = Object.keys(locationCandidateMap).map(function (id) { return locationCandidateMap[id]; }).filter(function (organ) {
+            return quizQ && dissDiagramRegion(organ) === targetDiagramRegion;
+          });
+          var quizKind = requestedQuizKind === 'location' && hotspotQuizAvailable && sameRegionCandidates.length === 1 ? 'location' : 'function';
           var quizPrompt = quizQ ? (quizKind === 'location'
-            ? 'Diagram location clue: which structure is in the ' + dissDiagramRegion(quizQ) + ' region of this view?'
+            ? 'Diagram location clue: which structure is in the ' + targetDiagramRegion + ' region of this view?'
             : 'Function clue: "' + quizQ.fn.split('.')[0] + '."') : '';
 
           function submitQuizAnswer(answerId) {
             if (!quizQ || d.quizFeedback) return;
             var correct = answerId === quizQ.id;
-            var nextScore = (d.quizScore || 0) + (correct ? 1 : 0);
             var retryState = d.quizRetry && d.quizRetry.questionId === quizQ.id ? d.quizRetry : null;
+            var firstAttempt = !retryState;
+            var scoredFirstAttempt = !d.practicalMode && !d.quizReviewMode && firstAttempt;
+            var firstAttemptTotal = Number(d.quizFirstAttemptTotal) || 0;
+            var firstAttemptScore = Number(d.quizFirstAttemptScore) || 0;
+            var supportedCount = Number(d.quizSupportedCount) || 0;
+            var reviewQueue = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
+            var assessmentEvidence = Object.assign({}, d.assessmentEvidence || {});
+            if (scoredFirstAttempt) {
+              firstAttemptTotal += 1;
+              if (correct) {
+                firstAttemptScore += 1;
+                assessmentEvidence[specimen + '|' + quizQ.id] = { correct: true, at: Date.now() };
+                reviewQueue = reviewQueue.filter(function (structureId) { return structureId !== quizQ.id; });
+              } else if (reviewQueue.indexOf(quizQ.id) < 0) reviewQueue.push(quizQ.id);
+            }
             if (!correct && !d.practicalMode) {
               var nextAttempt = (Number(retryState && retryState.attempts) || 0) + 1;
-              var locationClue = dissDiagramRegion(quizQ);
+              var retryMessage = quizKind === 'location'
+                ? 'Not yet. Re-read the prompt and compare candidates in the ' + targetDiagramRegion + ' region. Choose again, or reveal the answer for supported practice.'
+                : 'Not yet. Compare each candidate with the function clue. Choose again, or reveal the answer for supported practice.';
               updMany({
                 quizRetry: {
                   questionId: quizQ.id,
                   chosen: answerId,
                   attempts: nextAttempt,
-                  message: 'Not yet. Re-read the prompt and compare candidates in the ' + locationClue + ' region. Choose again, or reveal the answer for supported practice.'
+                  message: retryMessage
                 },
+                quizFirstAttemptScore: firstAttemptScore,
+                quizFirstAttemptTotal: firstAttemptTotal,
+                quizReviewQueue: reviewQueue,
+                assessmentEvidence: assessmentEvidence,
                 hoveredOrgan: null
               });
               if (addToast) addToast('Try again: use the location and function clues.', 'error');
               return;
             }
+            var supported = !d.practicalMode && (!!retryState || !!d.quizReviewMode);
+            if (supported && !d.quizReviewMode) supportedCount += 1;
+            var nextScore = d.practicalMode || d.quizReviewMode ? (Number(d.quizScore) || 0) + (correct ? 1 : 0) : firstAttemptScore;
             var nextTotal = (d.quizTotal || 0) + 1;
             updMany({
-              quizFeedback: { correct: correct, chosen: answerId },
+              quizFeedback: { correct: correct, chosen: answerId, supported: supported },
               quizScore: nextScore,
               quizTotal: nextTotal,
+              quizFirstAttemptScore: firstAttemptScore,
+              quizFirstAttemptTotal: firstAttemptTotal,
+              quizSupportedCount: supportedCount,
               quizExplanation: d.practicalMode && !correct ? null : quizQ.fn.split('.').slice(0, 2).join('.') + '.',
               quizRetry: null,
               hoveredOrgan: null,
-              quizReviewQueue: correct ? quizReviewIds.filter(function (organId) { return organId !== quizQ.id; }) : quizReviewIds
+              quizReviewQueue: reviewQueue,
+              assessmentEvidence: assessmentEvidence
             });
             if (d.practicalMode) {
               try { window.__alloDissectionPracticalScore = nextScore; } catch (e) {}
             }
-            if (correct && !d.practicalMode) awardStemXP('dissection', 2, 'Correct quiz answer');
-            if (addToast) addToast(d.practicalMode ? 'Response recorded for end-of-practical review.' : '\u2705 Correct!', d.practicalMode ? 'working' : 'success');
+            if (correct && scoredFirstAttempt) awardStemXP('dissection', 2, 'Correct first-attempt quiz answer');
+            if (addToast) addToast(d.practicalMode ? 'Response recorded for end-of-practical review.' : (supported ? 'Correct with support.' : '\u2705 Correct!'), d.practicalMode || supported ? 'working' : 'success');
           }
           function revealQuizAnswer() {
             if (!quizQ || d.practicalMode || d.quizFeedback || !d.quizRetry) return false;
@@ -4764,6 +4892,7 @@ var d = labToolData.dissection || {};
             updMany({
               quizFeedback: { correct: false, chosen: d.quizRetry.chosen, supported: true },
               quizTotal: (Number(d.quizTotal) || 0) + 1,
+              quizSupportedCount: (Number(d.quizSupportedCount) || 0) + (d.quizReviewMode ? 0 : 1),
               quizExplanation: quizQ.fn.split('.').slice(0, 2).join('.') + '.',
               quizRetry: null,
               quizReviewQueue: reviewQueue,
@@ -4903,7 +5032,8 @@ var d = labToolData.dissection || {};
             var dissScenarioTimer = setInterval(function () {
               if (!dissAlive || !canvas.isConnected || isDissectionHidden()) return;
               var latest = canvas._drawD || {};
-              if (latest.procedureScenario !== 'timed-practical' || !latest.scenarioStartedAt) return;
+              var latestWorkspaceMode = latest.workspaceMode === 'advanced' || latest.workspaceMode === 'essentials' ? latest.workspaceMode : workspaceMode;
+              if (latestWorkspaceMode !== 'advanced' || latest.procedureScenario !== 'timed-practical' || !latest.scenarioStartedAt) return;
               var liveLayer = latest.activeLayer || activeLayer;
               var liveProcedure = ((latest.procedureByLayer || {})[liveLayer]) || {};
               if (procedureStepIndex(liveProcedure) >= Math.max(1, (procedureProtocol.order || []).length)) return;
@@ -5133,6 +5263,25 @@ var d = labToolData.dissection || {};
 
               d = canvas._drawD || d;
 
+              // Essentials keeps advanced preferences available for a later return to Advanced,
+              // but the live specimen must not retain hidden scenarios, overlays, or challenge states.
+              var liveWorkspaceMode = d.workspaceMode === 'advanced' || d.workspaceMode === 'essentials' ? d.workspaceMode : workspaceMode;
+              if (liveWorkspaceMode !== 'advanced') {
+                d = Object.assign({}, d, {
+                  procedureMode: 'guided', procedureScenario: 'precision-access',
+                  visualRealism: 'guided', labLight: 'neutral', lightDirection: 'overhead',
+                  inspectionLens: false, lensPinned: false, macroInset: false,
+                  sceneDetail: true, depthAtlas: false, tissueRelief: true,
+                  relationshipMotion: false, focusMode: true, parallaxDepth: false,
+                  splitComparison: false, beforeTechniqueView: false,
+                  crossSectionMode: false, specimenCondition: 'standard', relationshipMode: false,
+                  renderQuality: 'auto', livingFunctionEnabled: false, livingFunctionPaused: false,
+                  traceNervous: false, traceCirculation: false, traceDigestion: false,
+                  traceRespiration: false, traceExcretory: false, showEndocrine: false,
+                  animSpeed: 'normal'
+                });
+              }
+
               specimen = canvas._drawSpecimen || specimen;
 
               guidedMode = canvas._drawGuidedMode;
@@ -5170,7 +5319,7 @@ var d = labToolData.dissection || {};
               relationshipMode = !!d.relationshipMode;
               renderQuality = ['auto', 'high', 'balanced'].indexOf(d.renderQuality) >= 0 ? d.renderQuality : 'auto';
               activeInstrument = d.activeInstrument || 'probe';
-              procedureMode = d.procedureMode || 'guided';
+              procedureMode = d.procedureMode === 'independent' ? 'independent' : 'guided';
               procedureScenario = d.procedureScenario || 'precision-access';
               toolCalibration = normalizeToolCalibration(d.toolCalibration);
               livingFunctionEnabled = !!d.livingFunctionEnabled;
@@ -12765,6 +12914,14 @@ var d = labToolData.dissection || {};
               revealedLayers: d.revealedLayers || {},
               quizScore: d.quizScore || 0,
               quizTotal: d.quizTotal || 0,
+              quizFirstAttemptScore: Number(d.quizFirstAttemptScore) || 0,
+              quizFirstAttemptTotal: Number(d.quizFirstAttemptTotal) || 0,
+              quizSupportedCount: Number(d.quizSupportedCount) || 0,
+              assessmentCompletedAt: Number(d.assessmentCompletedAt) || 0,
+              assessmentRecordedScore: Number(d.assessmentRecordedScore) || 0,
+              assessmentRecordedTotal: Number(d.assessmentRecordedTotal) || 0,
+              assessmentEvidence: d.assessmentEvidence || {},
+              quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [],
               completedObjectives: d.completedObjectives || {},
               organNotes: d.organNotes || {},
               organConfidence: d.organConfidence || {},
@@ -12775,7 +12932,7 @@ var d = labToolData.dissection || {};
               procedureByLayer: d.procedureByLayer || {},
               attemptArchive: d.attemptArchive || {},
               adaptiveGuidance: d.adaptiveGuidance !== false,
-              procedureMode: procedureMode,
+              procedureMode: d.procedureMode === 'independent' ? 'independent' : 'guided',
               activeInstrument: activeInstrument,
               livingFunctionEnabled: livingFunctionEnabled,
               livingFunctionPaused: livingFunctionPaused,
@@ -12817,7 +12974,7 @@ var d = labToolData.dissection || {};
               relationshipTraceIndex: Number(d.relationshipTraceIndex) || 0,
               relationshipTraceCount: Number(d.relationshipTraceCount) || 0,
               renderQuality: renderQuality,
-              procedureScenario: procedureScenario,
+              procedureScenario: d.procedureScenario || 'precision-access',
               scenarioStartedAt: Number(d.scenarioStartedAt) || 0,
               scenarioTimeRemaining: Math.max(0, Number(d.scenarioTimeRemaining) || 0),
               scenarioCompletedAt: Math.max(0, Number(d.scenarioCompletedAt) || 0),
@@ -12847,6 +13004,14 @@ var d = labToolData.dissection || {};
                 revealedLayers: data.revealedLayers || {},
                 quizScore: Number(data.quizScore) || 0,
                 quizTotal: Number(data.quizTotal) || 0,
+                quizFirstAttemptScore: Number(data.quizFirstAttemptScore) || 0,
+                quizFirstAttemptTotal: Number(data.quizFirstAttemptTotal) || 0,
+                quizSupportedCount: Number(data.quizSupportedCount) || 0,
+                assessmentCompletedAt: Number(data.assessmentCompletedAt) || 0,
+                assessmentRecordedScore: data.assessmentRecordedScore == null ? (Number(data.quizFirstAttemptScore) || 0) : (Number(data.assessmentRecordedScore) || 0),
+                assessmentRecordedTotal: data.assessmentRecordedTotal == null ? (Number(data.quizFirstAttemptTotal) || 0) : (Number(data.assessmentRecordedTotal) || 0),
+                assessmentEvidence: data.assessmentEvidence || {},
+                quizReviewQueue: Array.isArray(data.quizReviewQueue) ? data.quizReviewQueue : [],
                 completedObjectives: data.completedObjectives || {},
                 organNotes: data.organNotes || {},
                 organConfidence: data.organConfidence || {},
@@ -13115,13 +13280,13 @@ var d = labToolData.dissection || {};
               e.preventDefault();
               var keyboardViews = ['dorsal', 'ventral', 'lateral', 'internal'];
               changeAnatomicalView(keyboardViews[(keyboardViews.indexOf(d.anatomicalView || 'dorsal') + 1) % keyboardViews.length], 'keyboard shortcut V');
-            } else if (e.key === 'x' || e.key === 'X') {
+            } else if (advancedWorkspace && (e.key === 'x' || e.key === 'X')) {
               e.preventDefault(); upd('crossSectionMode', !d.crossSectionMode);
-            } else if (e.key === 'm' || e.key === 'M') {
+            } else if (advancedWorkspace && (e.key === 'm' || e.key === 'M')) {
               e.preventDefault(); cycleLensMagnification();
-            } else if (e.key === 'p' || e.key === 'P') {
+            } else if (advancedWorkspace && (e.key === 'p' || e.key === 'P')) {
               e.preventDefault(); toggleInspectionPin();
-            } else if (e.key === 'f' || e.key === 'F') {
+            } else if (advancedWorkspace && (e.key === 'f' || e.key === 'F')) {
               e.preventDefault(); cycleLensFocusDepth();
             } else if (/^[1-7]$/.test(e.key)) {
               var keyboardTool = PROCEDURE_INSTRUMENTS[Number(e.key) - 1];
@@ -13719,12 +13884,16 @@ var d = labToolData.dissection || {};
           var verifiedIdentificationGoal = Math.min(totalOrgansInSpecimen, Math.max(1, instructorRequiredStructures));
           var verifiedIdentificationPct = verifiedIdentificationGoal ? Math.min(100, Math.round(verifiedIdentificationCount / verifiedIdentificationGoal * 100)) : 100;
           var assessmentQuestionGoal = Math.min(3, Math.max(1, totalOrgansInSpecimen));
-          var assessmentCoveragePct = Math.min(100, Math.round((Number(d.quizTotal) || 0) / assessmentQuestionGoal * 100));
-          var assessmentAccuracyPct = (Number(d.quizTotal) || 0) ? Math.round((Number(d.quizScore) || 0) / Number(d.quizTotal) * 100) : 0;
+          var assessmentFirstAttemptScore = Number(d.quizFirstAttemptScore) || 0;
+          var assessmentFirstAttemptTotal = Number(d.quizFirstAttemptTotal) || 0;
+          var assessmentRecordedScore = d.assessmentCompletedAt ? (d.assessmentRecordedScore == null ? assessmentFirstAttemptScore : Number(d.assessmentRecordedScore) || 0) : 0;
+          var assessmentRecordedTotal = d.assessmentCompletedAt ? (d.assessmentRecordedTotal == null ? assessmentFirstAttemptTotal : Number(d.assessmentRecordedTotal) || 0) : 0;
+          var assessmentCoveragePct = Math.min(100, Math.round(assessmentRecordedTotal / assessmentQuestionGoal * 100));
+          var assessmentAccuracyPct = assessmentRecordedTotal ? Math.round(assessmentRecordedScore / assessmentRecordedTotal * 100) : 0;
           var assessmentUnderstandingPct = Math.min(assessmentCoveragePct, Math.min(100, Math.round(assessmentAccuracyPct / 80 * 100)));
           var understandingProgressPct = Math.round((verifiedIdentificationPct + assessmentUnderstandingPct) / 2);
           var masteryComplete = progressPct >= 100 && evidenceProgressPct >= 100 && techniqueLearningPct >= 100 &&
-            verifiedIdentificationCount >= verifiedIdentificationGoal && (Number(d.quizTotal) || 0) >= assessmentQuestionGoal &&
+            verifiedIdentificationCount >= verifiedIdentificationGoal && !!d.assessmentCompletedAt && assessmentRecordedTotal >= assessmentQuestionGoal &&
             assessmentAccuracyPct >= 80 && revealedLayerCount >= spec.layers.length;
           var masteryDimensions = [
             { id: 'technique', label: 'Technique', value: techniqueLearningPct },
@@ -13733,10 +13902,59 @@ var d = labToolData.dissection || {};
             { id: 'understanding', label: 'Understanding', value: understandingProgressPct }
           ];
           var masteryOverallPct = Math.round(masteryDimensions.reduce(function (sum, dimension) { return sum + dimension.value; }, 0) / masteryDimensions.length);
+          var assessmentEvidence = d.assessmentEvidence || {};
+          var objectiveEvidenceModels = (spec.objectives || []).map(function (objective, objectiveIndex) {
+            var targetIds = ((spec.objectiveTargets || [])[objectiveIndex] || []).filter(function (id, idx, ids) { return ids.indexOf(id) === idx; });
+            var targetStructures = targetIds.map(function (id) { return allSpecimenOrgans.find(function (organ) { return organ.id === id; }); }).filter(Boolean);
+            var targetCount = Math.max(1, targetStructures.length);
+            var observedCount = targetStructures.filter(function (organ) {
+              return !!exploredOrgans[specimen + '|' + organ.id];
+            }).length;
+            var recordedCount = targetStructures.filter(function (organ) {
+              var key = specimen + '|' + organ.id;
+              return !!String((d.organNotes || {})[key] || '').trim() && !!(d.organConfidence || {})[key];
+            }).length;
+            var understoodCount = targetStructures.filter(function (organ) {
+              var key = specimen + '|' + organ.id;
+              var verification = (d.verifiedIdentifications || {})[key];
+              return !!(assessmentEvidence[key] && assessmentEvidence[key].correct) || !!(verification && verification.status === 'verified');
+            }).length;
+            var requiresEveryVerification = /\b(identify|locate|distinguish)\b/i.test(objective);
+            var understandingGoal = requiresEveryVerification ? targetCount : 1;
+            var observationPct = Math.min(100, Math.round(observedCount / targetCount * 100));
+            var recordPct = Math.min(100, Math.round(recordedCount / targetCount * 100));
+            var understandingPct = Math.min(100, Math.round(understoodCount / understandingGoal * 100));
+            var objectivePct = Math.round((observationPct + recordPct + understandingPct) / 3);
+            var status = objectivePct >= 100 ? 'demonstrated' : (objectivePct > 0 ? 'developing' : 'not-started');
+            var missingObserved = targetStructures.filter(function (organ) { return !exploredOrgans[specimen + '|' + organ.id]; });
+            var missingRecorded = targetStructures.filter(function (organ) {
+              var key = specimen + '|' + organ.id;
+              return !String((d.organNotes || {})[key] || '').trim() || !(d.organConfidence || {})[key];
+            });
+            var nextEvidence = missingObserved.length
+              ? 'Next: inspect ' + missingObserved.map(function (organ) { return organ.name; }).join(', ') + '.'
+              : (missingRecorded.length
+                ? 'Next: add an observation note and confidence rating for ' + missingRecorded.map(function (organ) { return organ.name; }).join(', ') + '.'
+                : (understandingPct < 100
+                  ? 'Next: verify the target in Guided investigation or answer it correctly on the first assessment attempt.'
+                  : 'Evidence demonstrated: observation, recorded evidence, and verified understanding all align.'));
+            return {
+              objective: objective,
+              status: status,
+              progress: objectivePct,
+              targetCount: targetCount,
+              observedCount: observedCount,
+              recordedCount: recordedCount,
+              understoodCount: understoodCount,
+              nextEvidence: nextEvidence
+            };
+          });
           var nextToolDefinition = PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureNext.instrument; }) || { label: procedureNext.instrument || 'instrument' };
           var nextActionModel;
           if (d.practicalMode && quizQ) {
             nextActionModel = { step: 6, tone: 'assessment', phase: 'Timed practical', title: quizPrompt, description: 'Submit the current identification before time expires.', label: 'Go to practical question', action: 'quiz' };
+          } else if (d.quizMode && d.quizComplete) {
+            nextActionModel = { step: 6, tone: 'assessment', phase: d.quizReviewMode ? 'Supported review complete' : 'Assessment complete', title: d.quizReviewMode ? 'Review the supported-practice summary' : 'Review first-attempt evidence', description: 'The assessment has ended. Review the score, supported practice, and next recommendation.', label: 'Go to assessment summary', action: 'assessment-summary' };
           } else if (d.quizMode && quizQ) {
             nextActionModel = { step: 6, tone: 'assessment', phase: 'Practice assessment', title: quizPrompt, description: effectiveQuizAnswerMode === 'hotspot' ? 'Select a visible structure on the specimen, or use Arrow keys and Enter.' : 'Choose one answer in the assessment panel.', label: 'Go to assessment question', action: 'quiz' };
           } else if (d.flashcardMode) {
@@ -13843,6 +14061,8 @@ var d = labToolData.dissection || {};
               focusDissectionTarget('diss-canvas', nextActionModel.title + '. Use the pointer, or Arrow keys followed by Enter.');
             } else if (nextActionModel.action === 'quiz') {
               focusDissectionTarget('diss-quiz-panel');
+            } else if (nextActionModel.action === 'assessment-summary') {
+              focusDissectionTarget('diss-assessment-summary');
             } else if (nextActionModel.action === 'flashcards') {
               focusDissectionTarget('diss-flashcard-panel');
             } else if (nextActionModel.action === 'comparison') {
@@ -14069,8 +14289,8 @@ var d = labToolData.dissection || {};
           function selectSpecimen(sk) {
             var sp = SPECIMENS[sk];
             if (!sp || sk === specimen) return;
-            if (d.practicalMode) {
-              setProcedureFeedback('Specimen selection is locked during the timed practical. Exit the practical before changing specimens.', 'caution');
+            if (d.quizMode) {
+              setProcedureFeedback('Specimen selection is locked during an assessment. Return to the lab before changing specimens.', 'caution');
               return;
             }
             cancelActiveCanvasGesture('Specimen gesture canceled before changing specimens; no action was recorded.');
@@ -14078,7 +14298,7 @@ var d = labToolData.dissection || {};
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -14103,7 +14323,7 @@ var d = labToolData.dissection || {};
           }
           function confirmSpecimenReset() {
             closeTimedPractical();
-            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
+            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
@@ -14225,8 +14445,8 @@ var d = labToolData.dissection || {};
           function changeAnatomicalView(nextView, source) {
             var allowedViews = ['dorsal', 'ventral', 'lateral', 'internal'];
             if (allowedViews.indexOf(nextView) < 0) return;
-            if (d.practicalMode) {
-              setProcedureFeedback('The anatomical view is locked during the timed practical so every question stays answerable.', 'caution');
+            if (d.quizMode) {
+              setProcedureFeedback('The anatomical view is locked during an assessment so the current question stays stable.', 'caution');
               return;
             }
             var fromView = d.anatomicalView || anatomicalView || 'dorsal';
@@ -14252,8 +14472,8 @@ var d = labToolData.dissection || {};
           }
 
           function selectLayer(layerId) {
-            if (d.practicalMode) {
-              setProcedureFeedback('Layer navigation is locked during the timed practical. Finish or exit the practical first.', 'caution');
+            if (d.quizMode) {
+              setProcedureFeedback('Layer navigation is locked during an assessment so the current question stays stable.', 'caution');
               return;
             }
             var layerIdx = spec.layers.findIndex(function (layer) { return layer.id === layerId; });
@@ -14294,6 +14514,26 @@ var d = labToolData.dissection || {};
             try { if (window.__alloDissectionCompareReplayTimer) { clearTimeout(window.__alloDissectionCompareReplayTimer); window.__alloDissectionCompareReplayTimer = null; } } catch (e) {}
           }
 
+          function restartAssessmentSession(reviewOnly) {
+            var reviewIds = Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue.slice() : [];
+            if (reviewOnly && !reviewIds.length) {
+              setProcedureFeedback('No missed structures are waiting for supported review.', 'working');
+              return false;
+            }
+            clearAssessmentTeachingTimers();
+            updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null,
+              quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0,
+              quizFirstAttemptScore: reviewOnly ? assessmentRecordedScore : 0,
+              quizFirstAttemptTotal: reviewOnly ? assessmentRecordedTotal : 0,
+              quizSupportedCount: reviewOnly ? (Number(d.quizSupportedCount) || 0) : 0,
+              quizComplete: false, quizReviewMode: !!reviewOnly,
+              assessmentCompletedAt: Number(d.assessmentCompletedAt) || 0,
+              quizFeedback: null, quizExplanation: null, quizRetry: null,
+              quizReviewQueue: reviewIds, selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(),
+              toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false });
+            if (typeof announceToSR === 'function') announceToSR(reviewOnly ? 'Supported review started for missed structures.' : 'New practice assessment started with up to five encountered structures. First-attempt evidence has been reset for this set.');
+            return true;
+          }
           function setStudyRoute(route) {
             if (route === 'quiz' && d._incisionAnim && d._incisionAnim.active) {
               setProcedureFeedback('Finish the current layer transition before starting an assessment.', 'caution');
@@ -14325,12 +14565,12 @@ var d = labToolData.dissection || {};
               clearAssessmentTeachingTimers();
             } else if (route === 'quiz') {
               clearAssessmentTeachingTimers();
-              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [], selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
               updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
               if (typeof announceToSR === 'function') announceToSR('Practice assessment started. Choose multiple choice or answer directly on the specimen.');
             } else {
-              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: false, quizFeedback: null, toolbarStudyOpen: false });
-              if (typeof announceToSR === 'function') announceToSR('Free explore mode active.');
+              updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: false, quizComplete: false, quizReviewMode: false, quizFeedback: null, toolbarStudyOpen: false });
+              if (typeof announceToSR === 'function') announceToSR(advancedWorkspace ? 'Free explore mode active.' : 'Procedure practice mode active.');
             }
           }
           function chooseOrganFromDirectory(org) {
@@ -14373,6 +14613,7 @@ var d = labToolData.dissection || {};
             "data-reduced-motion": reducedMotionEnabled ? "true" : "false",
             "data-text-size": largeTextEnabled ? "large" : "default",
             "data-simplified-instructions": simplifiedInstructions ? "true" : "false",
+            "data-workspace-mode": workspaceMode,
             "data-assessment-mode": d.quizMode || d.practicalMode ? "true" : "false",
           },
             React.createElement("a", { className: "diss-skip-link", href: "#diss-canvas" }, 'Skip to interactive specimen'),
@@ -14418,9 +14659,22 @@ var d = labToolData.dissection || {};
             renderProcedureLearningCheckpoint(),
             renderGuidedObservationCheck(),
 
+            React.createElement("section", { className: "diss-workspace-mode", "data-dissection-workspace-mode": true, "aria-labelledby": "diss-workspace-mode-title" },
+              React.createElement("div", { className: "diss-workspace-mode__copy" },
+                React.createElement("strong", { id: "diss-workspace-mode-title" }, workspaceMode === 'advanced' ? 'Advanced workspace' : 'Essentials workspace'),
+                React.createElement("span", null, workspaceMode === 'advanced'
+                  ? 'Adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.'
+                  : 'Keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.')
+              ),
+              React.createElement("div", { className: "diss-workspace-mode__choices", role: "group", "aria-label": "Workspace detail" },
+                React.createElement("button", { type: "button", "aria-pressed": workspaceMode === 'essentials', onClick: function () { setDissectionWorkspaceMode('essentials'); } }, 'Essentials'),
+                React.createElement("button", { type: "button", "aria-pressed": workspaceMode === 'advanced', onClick: function () { setDissectionWorkspaceMode('advanced'); } }, 'Advanced')
+              )
+            ),
+
             React.createElement("div", { className: "diss-mode-rail", role: "toolbar", "aria-label": "Learning route", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
               [
-                { id: 'explore', icon: '🔎', label: __alloT('stem.dissection.free_explore', 'Free explore') },
+                { id: 'explore', icon: '🔎', label: advancedWorkspace ? __alloT('stem.dissection.free_explore', 'Free explore') : 'Procedure practice' },
                 { id: 'guided', icon: '🧭', label: __alloT('stem.dissection.guided_investigation', 'Guided investigation') },
                 { id: 'study', icon: '\uD83D\uDCDA', label: 'Study tools' },
                 { id: 'quiz', icon: '🧠', label: __alloT('stem.dissection.practice_assessment', 'Practice assessment') }
@@ -14455,8 +14709,8 @@ var d = labToolData.dissection || {};
                     key: sk,
                     id: 'diss-specimen-tab-' + sk,
                     role: "tab",
-                    disabled: !!d.practicalMode,
-                    "aria-label": d.practicalMode ? "Specimen locked during timed practical: " + sp.name : "Select specimen: " + sp.name,
+                    disabled: !!d.quizMode,
+                    "aria-label": d.quizMode ? "Specimen locked during assessment: " + sp.name : "Select specimen: " + sp.name,
                     "aria-selected": isActive,
                     "aria-controls": "diss-workspace",
                     tabIndex: isActive ? 0 : -1,
@@ -14484,9 +14738,9 @@ var d = labToolData.dissection || {};
                     key: layer.id,
                     className: "diss-layer-button",
                     "data-state": state,
-                    disabled: !isUnlocked || !!d.practicalMode,
+                    disabled: !isUnlocked || !!d.quizMode,
                     "aria-current": isCurrent ? "step" : undefined,
-                    "aria-label": 'Layer ' + (layerIdx + 1) + ': ' + layer.name + (d.practicalMode ? ', locked during timed practical' : isCurrent ? ', current' : isDone ? ', revealed' : isUnlocked ? ', available' : ', locked'),
+                    "aria-label": 'Layer ' + (layerIdx + 1) + ': ' + layer.name + (d.quizMode ? ', locked during assessment' : isCurrent ? ', current' : isDone ? ', revealed' : isUnlocked ? ', available' : ', locked'),
                     onClick: function () { selectLayer(layer.id); }
                   },
                     React.createElement("span", { className: "diss-layer-index", "aria-hidden": "true" }, String(layerIdx + 1)),
@@ -14509,7 +14763,7 @@ var d = labToolData.dissection || {};
               // ── Tools toggle ──
               !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Toggle Tools toolbar", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
                 onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
+                className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
               }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
 
               // ── Study toggle ──
@@ -14566,7 +14820,7 @@ var d = labToolData.dissection || {};
             ),
 
             // Tools group expanded
-            !d.quizMode && d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Lab tools" },
+            !d.quizMode && d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-advanced-only diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Lab tools" },
 
               React.createElement("button", { "aria-label": "Ruler", "aria-pressed": !!d.rulerMode,
                 onClick: function () { var enabled = !d.rulerMode; upd('rulerMode', enabled); if (enabled) upd('annotateMode', false); setProcedureFeedback(enabled ? 'Ruler active. Select two points on the specimen to measure their distance.' : 'Ruler off.'); },
@@ -14607,7 +14861,7 @@ var d = labToolData.dissection || {};
                 onClick: function () {
                   var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
                   report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
-                  report += 'Structures viewed: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nVerified identifications: ' + verifiedIdentificationCount + '\nPractice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
+                  report += 'Structures viewed: ' + exploredCount + '/' + totalOrgansInSpecimen + '\nVerified identifications: ' + verifiedIdentificationCount + '\nCompleted first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + (Number(d.quizSupportedCount) || 0) + '\n';
                   report += 'Active investigation time: ' + (d.timeSpent || 0) + ' seconds\n';
                   var techniqueLayers = spec.layers.map(function (layer) { return (d.procedureByLayer || {})[layer.id] || {}; });
                   var completedTechniques = techniqueLayers.filter(function (state) { return procedureStepIndex(state) >= (procedureProtocol.order || []).length; }).length;
@@ -14718,7 +14972,7 @@ var d = labToolData.dissection || {};
                     }
                     var previousLabelMode = d.labelMode || 'show';
                     try { if (window.__alloDissectionPracticalInterval) clearInterval(window.__alloDissectionPracticalInterval); window.__alloDissectionPracticalScore = 0; } catch (e) {}
-                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], practicalTimer: 120, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
+                    updMany({ _prePracticalLabelMode: previousLabelMode, guidedMode: false, flashcardMode: false, compareMode: false, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, practicalMode: true, labelMode: 'hidden', quizMode: true, quizComplete: false, quizReviewMode: false, quizAnswerMode: 'hotspot', quizSeed: Date.now(), quizIdx: 0, quizScore: 0, quizTotal: 0, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: [], practicalTimer: 120, practicalTargetIds: practicalIds, selectedOrgan: null, hoveredOrgan: null, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
                     updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
                     var remaining = 120;
                     var practicalTimerId = setInterval(function () {
@@ -14738,7 +14992,7 @@ var d = labToolData.dissection || {};
                   } else closeTimedPractical();
                 },
                 title: 'Practical — timed identification with a specimen hotspot and accessible answer choices',
-                className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white' + (!reducedMotionEnabled ? ' animate-pulse' : '') : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
+                className: "diss-advanced-only px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.practicalMode ? 'bg-red-600 text-white' + (!reducedMotionEnabled ? ' animate-pulse' : '') : 'transition-colors bg-white text-orange-700 border border-orange-200 hover:bg-orange-100 active:scale-[0.97]')
               }, d.practicalMode ? '\u23F0 ' + Math.floor((d.practicalTimer || 0) / 60) + ':' + String((d.practicalTimer || 0) % 60).padStart(2, '0') : '\u23F1 Practical')
 
             ),
@@ -14871,15 +15125,15 @@ var d = labToolData.dissection || {};
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
                       React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": "Fullscreen specimen view and tools" },
                       React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": "Exit fullscreen specimen mode", "aria-keyshortcuts": "Escape", title: "Exit fullscreen (Escape)", onClick: function () { try { var stage = document.querySelector('[data-diss-fullscreen-stage]'); if (!stage || !window.__alloStemFS) throw new Error('Fullscreen unavailable'); window.__alloStemFS(stage); setProcedureFeedback('Exited fullscreen specimen mode. View and tool controls remain available.', 'success'); } catch (e) { setProcedureFeedback('Use Escape to exit fullscreen.', 'caution'); } } }, 'Exit fullscreen'),
-                        React.createElement("button", { type: "button", disabled: !!d.practicalMode, onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock'); }, "aria-label": d.practicalMode ? "Fullscreen anatomical view locked during timed practical" : "Fullscreen anatomical view: cycle dorsal, ventral, lateral, and internal" }, 'View: ' + anatomicalView),
-                        React.createElement("button", { type: "button", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": "Fullscreen illumination color: cycle neutral, warm, and cool" }, 'Light: ' + labLight),
+                        React.createElement("button", { type: "button", disabled: !!d.quizMode, onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock'); }, "aria-label": d.quizMode ? "Fullscreen anatomical view locked during assessment" : "Fullscreen anatomical view: cycle dorsal, ventral, lateral, and internal" }, 'View: ' + anatomicalView),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": "Fullscreen illumination color: cycle neutral, warm, and cool" }, 'Light: ' + labLight),
                         React.createElement("label", null,
                           React.createElement("span", null, 'Illumination ' + lightIntensity + '%'),
                           React.createElement("input", { type: "range", min: 20, max: 100, step: 2, value: lightIntensity, disabled: !!d.practicalMode, onChange: function (event) { upd('lightIntensity', Number(event.target.value)); }, "aria-label": d.practicalMode ? "Fullscreen illumination locked during timed practical" : "Fullscreen illumination intensity", "aria-valuetext": lightIntensity + ' percent, ' + currentIllumination.label })
                         ),
-                        React.createElement("button", { type: "button", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, "aria-label": "Fullscreen light direction: cycle overhead, left, right, and raking" }, 'Angle: ' + lightDirection),
-                        React.createElement("button", { type: "button", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); } }, d.beforeTechniqueView ? 'Before view' : 'After view'),
-                        React.createElement("button", { type: "button", onClick: function () { var speed = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', speed); }, "aria-label": "Fullscreen animation speed: cycle normal, slow, and fast" }, 'Speed: ' + (d.animSpeed === 'slow' ? 'slow' : d.animSpeed === 'fast' ? 'fast' : 'normal')),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, "aria-label": "Fullscreen light direction: cycle overhead, left, right, and raking" }, 'Angle: ' + lightDirection),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": !!d.beforeTechniqueView, onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); } }, d.beforeTechniqueView ? 'Before view' : 'After view'),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var speed = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', speed); }, "aria-label": "Fullscreen animation speed: cycle normal, slow, and fast" }, 'Speed: ' + (d.animSpeed === 'slow' ? 'slow' : d.animSpeed === 'fast' ? 'fast' : 'normal')),
                         !d.quizMode && React.createElement("label", null,
                           React.createElement("span", null, 'Tool'),
                           React.createElement("select", { value: activeInstrument, onChange: function (event) { selectProcedureInstrument(event.target.value, 'fullscreen tool dock'); }, "aria-label": "Fullscreen active instrument" },
@@ -14925,7 +15179,7 @@ var d = labToolData.dissection || {};
                       'data-cursor-tone': pointerGuideData.tone,
                       'aria-roledescription': 'interactive specimen canvas',
                       'aria-labelledby': 'diss-canvas-label',
-                      'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V X M P F 1 2 3 4 5 6 7',
+                      'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Enter Space 0 R V' + (advancedWorkspace ? ' X M P F' : '') + ' 1 2 3 4 5 6 7',
                       tabIndex: 0,
                       'aria-label': d.quizMode
                         ? spec.name + ' practice assessment, ' + currentLayerDef.name + ' layer. ' + (effectiveQuizAnswerMode === 'hotspot' ? 'Select a structure on the specimen, or switch to the keyboard-accessible multiple-choice answers.' : 'Answer with the keyboard-accessible choices in the assessment panel.')
@@ -15504,17 +15758,17 @@ var d = labToolData.dissection || {};
                       React.createElement("span", { id: "diss-equivalent-technique-note", className: "diss-sr-only" }, 'This control provides a motor-neutral equivalent after you choose the plan and prepare the field. It records supported technique and still requires an explanation before the next step.'),
                       React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": "Show a generalized safe-technique demonstration on the specimen" }, '\u25B6 Show technique'),
                       React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": "Replay the recorded technique attempt on the specimen" }, '\u21BB Replay attempt'),
-                      React.createElement("button", { type: "button", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": "Save this technique attempt as a comparison baseline" }, '\u25A3 Save attempt'),
-                      React.createElement("button", { type: "button", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": "Start a new technique attempt for this layer" }, '\u21BB Start new attempt'),
-                      React.createElement("button", { type: "button", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": "Compare the current technique with the previous saved attempt" }, '\u21C4 Compare attempts'),
-                      React.createElement("button", { type: "button", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
-                      React.createElement("button", { type: "button", onClick: function () { var select = document.getElementById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
-                      React.createElement("button", { type: "button", "aria-pressed": !!d.showProcedureDebrief, onClick: function () { upd('showProcedureDebrief', !d.showProcedureDebrief); } }, '\uD83D\uDCDD Debrief'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": "Save this technique attempt as a comparison baseline" }, '\u25A3 Save attempt'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": "Start a new technique attempt for this layer" }, '\u21BB Start new attempt'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": "Compare the current technique with the previous saved attempt" }, '\u21C4 Compare attempts'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = document.getElementById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": !!d.showProcedureDebrief, onClick: function () { upd('showProcedureDebrief', !d.showProcedureDebrief); } }, '\uD83D\uDCDD Debrief'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
                       activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": "Wick excess saline from the visible pool edge" }, '\u25A7 Wick excess saline'),
                       React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": "Undo the last technique action and visually restore the previous tissue state" }, '\u21A9 Undo last technique action')
                     ),
-                    d.showProcedureDebrief && React.createElement("div", { className: "diss-debrief", role: "region", "aria-label": "Technique debrief" },
+                    advancedWorkspace && d.showProcedureDebrief && React.createElement("div", { className: "diss-debrief", role: "region", "aria-label": "Technique debrief" },
                       React.createElement("strong", null, 'Strength: '), procedureDebrief.strength + '. ',
                       React.createElement("strong", null, 'Next improvement: '), procedureDebrief.improve
                     ),
@@ -16151,7 +16405,9 @@ var d = labToolData.dissection || {};
 
                     React.createElement("h3", { id: "diss-quiz-title", className: "text-sm font-black text-amber-900" }, '\uD83E\uDDE0 ' + 'Identify'),
 
-                    d.quizScore > 0 && React.createElement("span", { className: "text-[11px] font-bold text-green-600 ml-auto" }, '\u2B50 ' + d.quizScore + '/' + (d.quizTotal || 0))
+                    React.createElement("span", { className: "text-[11px] font-bold text-green-700 ml-auto" }, d.practicalMode
+                      ? ('Recorded ' + (d.quizTotal || 0))
+                      : ('First attempt ' + assessmentFirstAttemptScore + '/' + assessmentFirstAttemptTotal + ' · Question ' + Math.min(quizSessionLimit, (Number(d.quizTotal) || 0) + 1) + '/' + quizSessionLimit))
 
                   ),
 
@@ -16200,20 +16456,25 @@ var d = labToolData.dissection || {};
                     className: "mt-3 p-2.5 rounded-lg border " + (d.quizFeedback.correct ? 'bg-emerald-50 border-emerald-300 text-emerald-800' : 'bg-rose-50 border-rose-300 text-rose-800'),
                     role: "status",
                     "aria-live": "assertive"
-                  }, d.quizFeedback.correct ? ('Correct — ' + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
+                  }, d.quizFeedback.correct ? ((d.quizFeedback.supported ? 'Correct with support — ' : 'Correct — ') + quizQ.name + '.') : ('Not quite. The correct structure is ' + quizQ.name + '.')),
                   d.practicalMode && d.quizFeedback && React.createElement("div", {
                     className: "mt-3 rounded-lg border border-blue-300 bg-blue-50 p-2.5 text-blue-900",
                     role: "status",
                     "aria-live": "assertive"
                   }, 'Response recorded. Correctness remains hidden until practical review.'),
 
-                  d.quizFeedback && React.createElement("button", { type: "button", "aria-label": "Next Question",
+                  d.quizFeedback && React.createElement("button", { type: "button", "aria-label": !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? "View assessment summary" : "Next Question",
 
-                    onClick: function () { updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null }); setTimeout(function () { var panel = document.getElementById('diss-quiz-panel'); if (panel) panel.focus(); }, 0); },
+                    onClick: function () {
+                      var sessionFinished = !d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit;
+                      if (sessionFinished) updMany({ quizComplete: true, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null, quizReviewQueue: d.quizReviewMode ? [] : quizReviewIds, assessmentCompletedAt: d.quizReviewMode ? (Number(d.assessmentCompletedAt) || 0) : Date.now(), assessmentRecordedScore: d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore, assessmentRecordedTotal: d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal });
+                      else updMany({ quizIdx: (d.quizIdx || 0) + 1, quizFeedback: null, quizExplanation: null, quizRetry: null, selectedOrgan: null, hoveredOrgan: null });
+                      setTimeout(function () { var panel = document.getElementById(sessionFinished ? 'diss-assessment-summary' : 'diss-quiz-panel'); if (panel) panel.focus(); }, 0);
+                    },
 
                     className: "transition-colors w-full min-h-11 mt-2 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 active:scale-[0.97]"
 
-                  }, 'Next Question' + ' \u2192'),
+                  }, (!d.practicalMode && (Number(d.quizTotal) || 0) >= quizSessionLimit ? 'View assessment summary' : 'Next Question') + ' \u2192'),
 
                   d.quizExplanation && React.createElement("div", { className: "mt-2 p-2 rounded-lg bg-white border border-amber-200" },
                     React.createElement("span", { className: "text-[11px] font-bold text-amber-600" }, '\uD83D\uDCA1 '),
@@ -16223,6 +16484,23 @@ var d = labToolData.dissection || {};
                 ),
 
 
+
+                d.quizMode && !d.practicalMode && d.quizComplete && React.createElement("section", { id: "diss-assessment-summary", tabIndex: -1, className: "rounded-xl border border-emerald-300 bg-gradient-to-br from-emerald-50 to-cyan-50 p-4", "data-dissection-assessment-summary": true, "aria-labelledby": "diss-assessment-summary-title" },
+                  React.createElement("h3", { id: "diss-assessment-summary-title", className: "text-sm font-black text-emerald-900" }, d.quizReviewMode ? 'Supported review complete' : 'Assessment complete'),
+                  React.createElement("p", { className: "mt-1 text-xs font-bold text-emerald-800" }, 'First-attempt evidence: ' + (d.quizReviewMode ? assessmentRecordedScore : assessmentFirstAttemptScore) + '/' + (d.quizReviewMode ? assessmentRecordedTotal : assessmentFirstAttemptTotal) + ' · ' + assessmentAccuracyPct + '% accuracy'),
+                  React.createElement("p", { className: "mt-1 text-xs text-slate-700" }, (Number(d.quizSupportedCount) || 0) + ' question' + ((Number(d.quizSupportedCount) || 0) === 1 ? '' : 's') + ' completed with retry or answer support. Supported practice is reported separately from first-attempt mastery.'),
+                  quizReviewIds.length
+                    ? React.createElement("p", { className: "mt-2 text-xs text-amber-900" }, 'Review next: ' + quizReviewIds.map(function (id) { var organ = specimenQuizPool.find(function (candidate) { return candidate.id === id; }); return organ ? organ.name : id; }).join(', ') + '.')
+                    : React.createElement("p", { className: "mt-2 text-xs text-emerald-800" }, 'No missed structures are waiting for supported review.'),
+                  React.createElement("p", { className: "mt-2 text-xs font-semibold text-slate-700" }, assessmentAccuracyPct >= 80 && assessmentFirstAttemptTotal >= assessmentQuestionGoal
+                    ? 'Evidence meets the current first-attempt understanding target. Continue linking answers to notes and verified identifications.'
+                    : 'Revisit missed structures, record evidence, then try a new scored set when ready.'),
+                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
+                    React.createElement("button", { type: "button", className: "min-h-11 rounded-lg border border-emerald-600 bg-white px-3 py-2 text-xs font-bold text-emerald-800", onClick: function () { setStudyRoute('explore'); } }, 'Return to lab'),
+                    !d.quizReviewMode && quizReviewIds.length > 0 && React.createElement("button", { type: "button", className: "min-h-11 rounded-lg border border-amber-600 bg-white px-3 py-2 text-xs font-bold text-amber-900", onClick: function () { restartAssessmentSession(true); } }, 'Review missed structures'),
+                    React.createElement("button", { type: "button", className: "min-h-11 rounded-lg bg-emerald-700 px-3 py-2 text-xs font-bold text-white", onClick: function () { restartAssessmentSession(false); } }, 'Try a new assessment')
+                  )
+                ),
 
                 // Layer + specimen info
 
@@ -16346,7 +16624,8 @@ var d = labToolData.dissection || {};
                       );
                     })
                   ),
-                  React.createElement("div", { className: "mt-1 text-[11px] text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 assessment ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0)),
+                  React.createElement("div", { className: "mt-1 text-[11px] text-slate-600" }, verifiedIdentificationCount + '/' + verifiedIdentificationGoal + ' guided identifications verified \u00B7 ' + specimenEvidenceCount + '/' + totalOrgansInSpecimen + ' evidence records \u00B7 completed first-attempt assessment ' + assessmentRecordedScore + '/' + assessmentRecordedTotal),
+                  !d.quizMode && quizReviewIds.length > 0 && React.createElement("button", { type: "button", className: "mt-2 min-h-11 w-full rounded-lg border border-amber-500 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100", onClick: function () { restartAssessmentSession(true); } }, 'Review ' + quizReviewIds.length + ' missed ' + (quizReviewIds.length === 1 ? 'structure' : 'structures')),
 
                   React.createElement("div", { className: "mt-2" },
 
@@ -16375,7 +16654,7 @@ var d = labToolData.dissection || {};
 
                         cert += 'Layers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
 
-                        cert += 'Practice score: ' + (d.quizScore || 0) + '/' + (d.quizTotal || 0) + '\n';
+                        cert += 'Completed first-attempt assessment: ' + assessmentRecordedScore + '/' + assessmentRecordedTotal + '; supported practice: ' + (Number(d.quizSupportedCount) || 0) + '\n';
 
                         cert += 'Date' + ': ' + new Date().toLocaleDateString() + '\n';
 
@@ -16425,9 +16704,9 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", null,
 
-                      React.createElement("div", { className: "text-lg font-bold text-amber-600 tracking-tight" }, String(d.quizScore || 0)),
+                      React.createElement("div", { className: "text-lg font-bold text-amber-600 tracking-tight" }, String(assessmentRecordedScore)),
 
-                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'Quiz Score')
+                      React.createElement("div", { className: "text-[11px] text-slate-600" }, 'First-attempt score')
 
                     ),
 
@@ -16474,31 +16753,18 @@ var d = labToolData.dissection || {};
 
                     ]).map(function (obj, oi) {
 
-                      var isComplete = (d.completedObjectives || {})[oi];
+                      var objectiveModel = objectiveEvidenceModels[oi] || { status: 'not-started', progress: 0, observedCount: 0, recordedCount: 0, understoodCount: 0, targetCount: 1, nextEvidence: 'Inspect and record evidence for the objective target.' };
 
-                      return React.createElement("button", {
-                        type: "button",
-                        key: oi,
-                        "aria-pressed": !!isComplete,
-
-                        onClick: function () {
-
-                          var co = Object.assign({}, d.completedObjectives || {});
-
-                          co[oi] = !co[oi];
-
-                          upd('completedObjectives', co);
-
-                        },
-
-                        className: "w-full min-h-10 transition-colors flex items-start gap-2 text-left text-xs cursor-pointer hover:bg-emerald-100 rounded-lg px-2 py-2 active:scale-[0.99]"
-
-                      },
-
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600' : 'text-slate-600' }, isComplete ? '\u2705' : '\u2B1C'),
-
-                        React.createElement("span", { className: isComplete ? 'text-emerald-600 line-through' : 'text-slate-600' }, obj)
-
+                      return React.createElement("article", { key: oi, className: "diss-objective-item", "data-objective-status": objectiveModel.status },
+                        React.createElement("div", { className: "diss-objective-item__head" },
+                          React.createElement("strong", null, obj),
+                          React.createElement("span", { className: "diss-objective-item__status" }, objectiveModel.status === 'demonstrated' ? '✓ Demonstrated' : (objectiveModel.status === 'developing' ? 'Developing' : 'Not started'))
+                        ),
+                        React.createElement("div", { className: "diss-objective-item__meter", role: "progressbar", "aria-label": "Evidence progress for objective " + (oi + 1), "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": objectiveModel.progress },
+                          React.createElement("span", { style: { width: objectiveModel.progress + '%' } })
+                        ),
+                        React.createElement("p", null, objectiveModel.observedCount + '/' + objectiveModel.targetCount + ' targets observed · ' + objectiveModel.recordedCount + '/' + objectiveModel.targetCount + ' evidence records · ' + objectiveModel.understoodCount + ' verified understanding checks.'),
+                        React.createElement("p", null, objectiveModel.nextEvidence)
                       );
 
                     })
@@ -16524,9 +16790,9 @@ var d = labToolData.dissection || {};
                     good: { label: 'Good progress', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Effective dissection — clean cuts, visible structures, moderate insight.' },
                     excellent: { label: 'Excellent dissection', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Patient, deep, careful work on a workable-sized specimen. Anatomy maximally exposed.' }
                   })[state];
-                  return React.createElement("details", { className: "diss-disclosure diss-disclosure--inset rounded-xl", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }, React.createElement("summary", { style: { color: sm.color } }, 'Advanced inquiry simulator'),
-                    React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Predict the Outcome'),
-                    React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure. Predict the outcome quality before reading it. No score, no reveal.'),
+                  return React.createElement("details", { className: "diss-advanced-only diss-disclosure diss-disclosure--inset rounded-xl", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }, React.createElement("summary", { style: { color: sm.color } }, 'Advanced inquiry simulator'),
+                    React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Explore the Outcome'),
+                    React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure, then observe how the modeled outcome changes. The result updates live; record a hypothesis or pattern you notice.'),
                     React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label),
                     React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },

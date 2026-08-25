@@ -26,6 +26,7 @@ const UI_STRINGS = path.join(ROOT, 'ui_strings.js');
 const HELP_STRINGS = path.join(ROOT, 'help_strings.js');
 const LANG_DIR = path.join(ROOT, 'lang');
 const BASELINE_PATH = path.join(__dirname, 'lang_source_baseline.json');
+const PACK_REVIEW_BASELINE_PATH = path.join(__dirname, 'lang_pack_review_baseline.json');
 const STALE_DIR = path.join(__dirname, 'lang_staleness');
 
 // Packs that are deliberately not held to translation quality the same way
@@ -107,6 +108,14 @@ function loadBaseline() {
   return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));
 }
 
+// Optional per-pack review ledger. Unlike lang_source_baseline.json, this does not
+// assert that every language is current for a key; it records only an explicitly
+// reviewed translation and the exact English/translation hashes reviewed together.
+function loadPackReviewBaseline() {
+  if (!fs.existsSync(PACK_REVIEW_BASELINE_PATH)) return {};
+  return JSON.parse(fs.readFileSync(PACK_REVIEW_BASELINE_PATH, 'utf8'));
+}
+
 // Single source of truth for "what is stale". Both check_lang_staleness.cjs and
 // merge_stale_translations.cjs use this so their notion of staleness can't drift.
 //   changedKeys : English keys whose wording changed since they were blessed
@@ -117,6 +126,7 @@ function loadBaseline() {
 function computeStaleness(opts) {
   opts = opts || {};
   const baseline = opts.baseline || loadBaseline() || {};
+  const packReviewBaseline = opts.packReviewBaseline || loadPackReviewBaseline() || {};
   const source = opts.source || loadSourceStrings();
   const slugs = opts.slugs || getLangSlugs();
   const changedKeys = [], newKeys = [];
@@ -134,6 +144,10 @@ function computeStaleness(opts) {
       const pv = pack[k];
       if (pv === undefined) continue;                 // missing → gap report's job
       if (norm(pv) === norm(source[k])) continue;     // still English (passthrough) → gap report's job
+      const reviewed = packReviewBaseline[slug] && packReviewBaseline[slug][k];
+      if (reviewed && typeof reviewed === 'object' &&
+          reviewed.sourceHash === hashEn(source[k]) &&
+          reviewed.translationHash === hashEn(pv)) continue;
       stale[k] = source[k];                           // real translation against OLD English → STALE
       (byKey[k] = byKey[k] || []).push(slug);
     }
@@ -143,7 +157,7 @@ function computeStaleness(opts) {
 }
 
 module.exports = {
-  ROOT, UI_STRINGS, HELP_STRINGS, LANG_DIR, BASELINE_PATH, STALE_DIR, EXCLUDE,
+  ROOT, UI_STRINGS, HELP_STRINGS, LANG_DIR, BASELINE_PATH, PACK_REVIEW_BASELINE_PATH, STALE_DIR, EXCLUDE,
   flatten, norm, hashEn, loadUiStrings, loadHelpStrings, loadSourceStrings, getLangSlugs, loadPack,
-  loadBaseline, computeStaleness,
+  loadBaseline, loadPackReviewBaseline, computeStaleness,
 };

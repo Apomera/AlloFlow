@@ -305,7 +305,7 @@ const ACHIEVEMENT_IDS = [
   'signal_perfect',
   'park_master',
   'three_point',
-  'speed_demon',
+  'speed_discipline',
   'moose_dodge',
   'five_scenarios',
   'emergency_yield',
@@ -471,6 +471,9 @@ describe('RoadReady rules-of-road content', () => {
     for (const relPath of ROADREADY_UI_STRING_FILES) {
       const src = readRoadReady(relPath);
 
+      // Duplicate top-level JSON keys parse without throwing but the later
+      // object silently replaces every earlier STEM catalog entry.
+      expect(src.match(/^  "stem": \{/gm)).toHaveLength(1);
       expect(src).toContain('"18_who_goes_first_scenarios": "20 \\"who goes first?\\" scenarios"');
       expect(src).toContain('"10_who_goes_first_intersection_puzzles": "20 right-of-way and intersection puzzles."');
       expect(src).toContain('"parking_practice_7_scenarios": "Parking Practice (9 Scenarios)"');
@@ -2013,8 +2016,66 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var cyCurrentStation = typeof cy._roadStation === \'number\'');
     expect(src).toContain('Math.abs(cyCurrentStation - cyPlayerStation) > MAP_SIZE * 0.6');
     expect(src).not.toContain('Math.abs(cy.y - carRef.current.y) > MAP_SIZE * 0.6');
+    expect(src).toContain('var station = typeof vehicle._roadStation === \'number\'');
+    expect(src).toContain('var station = typeof cyclist._roadStation === \'number\'');
+    expect(src).toContain('var safeStartPlayerStation = safeStartWorld ? startY : playerStartWorldY;');
+    expect(src).toContain('var safeStartState = function(actor)');
+    expect(src).toContain('var safeStartPushActor = function(actor, radius, push)');
+    expect(src).toContain('var stationDelta = safeStartTrafficState.station - safeStartPlayerStation;');
+    expect(src).toContain('inDangerZone = sameDir');
+    expect(src).toContain('function moveCrossStreetActorToSafeApproach(world, actor, playerStation, radius)');
+    expect(src).toContain('moveCrossStreetActorToSafeApproach(');
+    expect(src).not.toContain('if (Math.abs(t.y - playerStartWorldY) < 15) {\n            // Nearest cross-street intersection');
+    expect(src).toContain('function roadAwareRelativePosition(world, observer, target)');
+    expect(src).toContain('return roadAwareRelativePosition(hazardWorld, car, actor);');
+    expect(src).toContain('function mainRoadCoordinateDistance(world, a, b)');
+    expect(src).toContain('function hasMainRoadTrafficGap(world, list, candidate, minGap, ignoreIndex)');
+    expect(src).toContain('candidate._roadStation = candidateStation;');
+    expect(src).toContain('mainRoadCoordinateDistance(world, b, playerCar)');
+    expect(src).not.toContain('candidate.y = playerCar.y + side *');
+    expect(src).toContain('function pointOverlapsVehicle(vehicle, vehicleSize, point, pointRadius)');
+    expect(src).toContain('function vulnerableRoadUserFootprint(actor)');
+    expect(src).toContain('function vehicleSideClearance(observer, observerSize, target, targetSize)');
+    expect(src).toContain('function wildlifeCollisionRadius(actor)');
+    expect(src).toContain('function separateRoadUserAfterImpact(world, vehicle, actor, separation)');
+    expect(src).toContain('var pedestrianOverlap = pointOverlapsVehicle(');
+    expect(src).toContain('var wildlifeOverlap = landmarkVehicle');
+    expect(src).toContain('? vehicleRectsOverlap(car, hazardPlayerSize, w,');
+    expect(src).toContain(': pointOverlapsVehicle(car, hazardPlayerSize, w,');
+    expect(src).toContain('var cyclistOverlap = vehicleRectsOverlap(');
+    expect(src).toContain("var isOvertaking = cy.type === 'cyclist' && sameDirection");
+    expect(src).toContain('var clearanceFt = worldUnitsToFeet(vehicleSideClearance(');
+    expect(src).toContain('var pedestrianRelation = roadAwareRelativePosition(');
+    expect(src).toContain('var emergencyOverlap = vehicleRectsOverlap(');
+    expect(src).toContain('separatePedestrianAfterImpact(');
+    expect(src).toContain('separateRoadUserAfterImpact(');
+    expect(src).toContain('separateVehicleAfterImpact(infiniteWorldRef.current, car, t, 0.6);');
+    expect(src).toContain('m.rotation.z = cy._impactPose');
+    expect(src).toContain('s3._wlNode.rotation.y = -(Number(wl.heading) || 0);');
+    expect(src).toContain("var cLabel = cy.type === 'motorcycle' ? 'Motorcycle' : 'Cyclist';");
+    expect(src).not.toContain('cy.x = -99');
+    expect(src).not.toContain('if (!w.hit && dist < 1.2)');
+    expect(src).not.toContain('p.x += (p.x > car.x ? 2 : -2);');
+    expect(src).not.toContain('var emDist = Math.hypot(em.x - car.x, em.y - car.y);');
     expect(src).toContain('var mmTrailMaxJumpSq = 24 * 24;');
     expect(src).toContain('if (mmTrailDx * mmTrailDx + mmTrailDy * mmTrailDy > mmTrailMaxJumpSq)');
+  });
+});
+
+describe('RoadReady coherent sensory feedback', () => {
+  it.each(ROADREADY_FILES)('%s keeps one calm, readable driving-alert stream', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function driveAlertPriority(message, type)');
+    expect(src).toContain('function mergeDriveAlert(current, next, nowSeconds)');
+    expect(src).toContain('function driveAlertAppearance(message, explicitTone)');
+    expect(src).toContain('function canvasMessageLines(context, message, maxWidth, maxLines)');
+    expect(src).toContain('var hostAddToast = ctx.addToast');
+    expect(src).toContain("typeof showDriveAlert === 'function'");
+    expect(src).toContain('var staticAlert = !!(reducedMotionRef.current || calmDriveRef.current || hudCalm);');
+    expect(src).toContain("showDriveAlert('Hydroplaning — ease off the gas; avoid sudden braking or steering.'");
+    expect(src).toContain('calmDriveRef.current ? 0.025 : 0.06');
+    expect(src).toContain("if (last.text === text && (now - last.at) < 2000) return;");
+    expect(src).toContain("if ((now - last.anyAt) < (calmSpeech ? 3200 : 1600)) return;");
   });
 });
 
@@ -2264,5 +2325,74 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).not.toContain('slab.position.set(bumpCtrX, bumpHt + 0.04, bumpZ)');
     expect(src).not.toContain('new T.PlaneGeometry(roadHalfW * 2 * 0.95, CHUNK_SIZE)');
     expect(src).not.toContain('var ribbonVerts = new Float32Array(ribbonRows * 2 * 3)');
+  });
+
+  it.each(ROADREADY_FILES)('%s grades landmark and wildlife events in the authored road frame', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function mainRoadTravelSign(world, actor)');
+    expect(src).toContain('function roadRelativeHeadingError(world, actor, travelSign)');
+    expect(src).toContain('var landmarkTravelSign = mainRoadTravelSign');
+    expect(src).toContain('var elmAhead = (elmWorldY - playerRoadStationForWorld) * landmarkTravelSign');
+    expect(src).toContain('var landmarkEventLead = Math.min(70, Math.max(24,');
+    expect(src).toContain('var evtStation = elmWorldY');
+    expect(src).toContain('var evtSpawnLateral = evt.kind === \'schoolbus_arm\'');
+    expect(src).toContain('nearestAuthoredTrafficLaneOffset(evtProfile, evtBusTravelSign,');
+    expect(src).toContain('landmarkSide * roadsideOffsetFor(evtProfile, 0.8)');
+    expect(src).toContain('wlPlayerFrame.longitudinal + wlTravelSign * ahead');
+    expect(src).toContain('var wlSpawnLateral = wlSpawnSide * roadsideOffsetFor');
+    expect(src).toContain('initialRoadHeadingError: wlSpline');
+    expect(src).toContain('maxLateralSwerve: 0');
+    expect(src).toContain('w.minSpeed = Math.min');
+    expect(src).not.toContain('var elmDist = Math.abs(elmWorldY - playerRoadStationForWorld)');
+    expect(src).not.toContain('var spawnAhead = 6');
+    expect(src).not.toContain('wlPlayerFrame.longitudinal - wlTravelSign * ahead');
+    expect(src).not.toContain('Math.abs(car.heading - w.initialHeading)');
+  });
+
+  it.each(ROADREADY_FILES)('%s keeps school-bus and landmark-vehicle visuals aligned with grading', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('function landmarkVehicleAppearance(kind)');
+    expect(src).toContain('function hazardActorCategory(actor)');
+    expect(src).toContain('var eventBusRequirement = schoolBusStopRequirement(');
+    expect(src).toContain('var eventBusClearance =');
+    expect(src).toContain('var crossedEventBus = w._playerPreviousAhead != null');
+    expect(src).toContain('w.stopLightsActive = false');
+    expect(src).toContain('var hazardCategory = hazardActorCategory(w)');
+    expect(src).toContain('var landmarkVehicle = landmarkVehicleAppearance(w.kind)');
+    expect(src).toContain("hazardCategory === 'pedestrian'");
+    expect(src).toContain("hazardCategory === 'ball'");
+    expect(src).toContain("hazardCategory === 'emergency_vehicle'");
+    expect(src).toContain('var wlVehicleAppearance = landmarkVehicleAppearance(wl.kind)');
+    expect(src).toContain('var hvMedicalMat = new T.MeshBasicMaterial');
+    expect(src).toContain('var hvLadderMat = new T.MeshLambertMaterial');
+    expect(src).toContain('var hvStopSign = new T.Mesh');
+    expect(src).toContain('var isAdultPedestrian = wl.kind === \'pedestrian\'');
+    expect(src).toContain("} else if (wl.kind === 'ball') {");
+    expect(src).toContain('var wlFlashersActive = wl.kind !== \'schoolbus_arm\'');
+    expect(src).not.toContain('var busDist = Math.hypot(busDx, busDy)');
+    expect(src).not.toContain('w.life -= dt * 0.3');
+  });
+
+  it.each(ROADREADY_FILES)('%s keeps WebGL responsive without freezing the canvas at its launch size', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('renderer.setSize(W, H, false)');
+    expect(src).toContain('scn3d.renderer.setSize(w, h, false)');
+    expect(src).toContain('driveResizeObserver = new ResizeObserver(onResize)');
+    expect(src).toContain('driveResizeObserver.observe(canvas3dRef.current.parentElement)');
+    expect(src).toContain('if (driveResizeObserver) driveResizeObserver.disconnect()');
+    expect(src).not.toContain('renderer.setSize(W, H);');
+    expect(src).not.toContain('scn3d.renderer.setSize(w, h);');
+  });
+
+  it.each(ROADREADY_FILES)('%s contains HiDPI mirror passes and keeps HUD cards outside the mirror row', (relPath) => {
+    const src = readRoadReady(relPath);
+    expect(src).toContain('s3.renderer.getSize(new T.Vector2())');
+    expect(src).not.toContain('var rW = s3.renderer.domElement.width');
+    expect(src).not.toContain('var rH = s3.renderer.domElement.height');
+    expect(src).toContain('var hudTopStackY = Math.max(72, Math.ceil(H * 0.14))');
+    expect(src).toContain('var signX = W - 70, signY2 = hudTopStackY');
+    expect(src).toContain('var compassY = mirrorY + Math.max(4, mirrorH - 20)');
+    const drawHud = src.slice(src.indexOf('var drawHUD = function'), src.indexOf('// ── Main render loop'));
+    expect(drawHud).not.toMatch(/\bs3\b/);
   });
 });

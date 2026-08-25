@@ -44,7 +44,7 @@ describe('DNA Lab visual evidence chain', () => {
   it('shows Predict, Run, and Explain as a semantic progress strip', () => {
     const initial = renderDNA({ tab: 'build' });
     expect(initial).toContain('data-dna-scenario-steps="true"');
-    expect(initial).toContain('Current · Choose an effect');
+    expect(initial).toContain('Current · Choose what you expect');
 
     const complete = renderDNA({
       tab: 'mutate',

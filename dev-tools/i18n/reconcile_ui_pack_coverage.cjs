@@ -1,0 +1,261 @@
+#!/usr/bin/env node
+'use strict';
+
+// Add canonical English fallbacks for every string leaf in ui_strings.js that
+// is absent from a language pack. Existing non-empty values are never replaced.
+// This closes the complete catalog shape gap; runtime-specific reconciliation
+// remains available for narrower, reviewed namespaces.
+//
+// Usage:
+//   node dev-tools/i18n/reconcile_ui_pack_coverage.cjs --quiet
+//   node dev-tools/i18n/reconcile_ui_pack_coverage.cjs --namespace=stem
+//   node dev-tools/i18n/reconcile_ui_pack_coverage.cjs --all --apply
+//   node dev-tools/i18n/reconcile_ui_pack_coverage.cjs --all --gate --quiet
+//   node dev-tools/i18n/reconcile_ui_pack_coverage.cjs --all --lang=dari --merge-drift --apply
+
+const fs = require('node:fs');
+const path = require('node:path');
+const { LANGUAGE_CODES } = require('./main_ui_i18n_manifest.cjs');
+
+const ROOT = path.resolve(__dirname, '..', '..');
+const LANG_DIR = path.join(ROOT, 'lang');
+const MIRROR_DIR = path.join(ROOT, 'desktop', 'web-app', 'public', 'lang');
+const SOURCE_FILE = path.join(ROOT, 'ui_strings.js');
+const SOURCE_MIRROR_FILE = path.join(ROOT, 'desktop', 'web-app', 'public', 'ui_strings.js');
+const argv = process.argv.slice(2);
+const APPLY = argv.includes('--apply');
+const GATE = argv.includes('--gate');
+const JSON_OUTPUT = argv.includes('--json');
+const QUIET = argv.includes('--quiet');
+const ALL = argv.includes('--all');
+const SKIP_DRIFT = argv.includes('--skip-drift');
+const MERGE_DRIFT = argv.includes('--merge-drift');
+const namespaceArg = argv.find((arg) => arg.startsWith('--namespace='));
+const keyArg = argv.find((arg) => arg.startsWith('--key='));
+const langArg = argv.find((arg) => arg.startsWith('--lang='));
+const namespaces = namespaceArg
+  ? namespaceArg.slice('--namespace='.length).split(',').map((value) => value.trim()).filter(Boolean)
+  : [];
+const explicitKeys = keyArg
+  ? keyArg.slice('--key='.length).split(',').map((value) => value.trim()).filter(Boolean)
+  : [];
+const requestedSlug = langArg ? langArg.slice('--lang='.length).trim() : null;
+const hasExplicitScope = ALL || namespaces.length > 0 || explicitKeys.length > 0;
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+}
+
+function flatten(value, prefix = '', out = {}) {
+  if (value === null || value === undefined) return out;
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    if (prefix) out[prefix] = value;
+    return out;
+  }
+  for (const [key, child] of Object.entries(value)) {
+    flatten(child, prefix ? `${prefix}.${key}` : key, out);
+  }
+  return out;
+}
+
+function getDeep(target, dottedKey) {
+  return dottedKey.split('.').reduce((value, part) => value == null ? undefined : value[part], target);
+}
+
+function setDeep(target, dottedKey, value) {
+  const parts = dottedKey.split('.');
+  let cursor = target;
+  for (let index = 0; index < parts.length - 1; index += 1) {
+    const part = parts[index];
+    if (cursor[part] === undefined) cursor[part] = {};
+    if (!cursor[part] || typeof cursor[part] !== 'object' || Array.isArray(cursor[part])) {
+      throw new Error(`cannot create ${dottedKey}: ${parts.slice(0, index + 1).join('.')} is not an object`);
+    }
+    cursor = cursor[part];
+  }
+  cursor[parts[parts.length - 1]] = value;
+}
+
+function replaceFile(file, text) {
+  const temporary = `${file}.ui-pack-${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(temporary, text, 'utf8');
+    let lastError = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      try {
+        fs.renameSync(temporary, file);
+        return;
+      } catch (renameError) {
+        // OneDrive can transiently hold a destination open during sync.
+        if (!['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN'].includes(renameError.code)) throw renameError;
+        lastError = renameError;
+        try {
+          fs.copyFileSync(temporary, file);
+          return;
+        } catch (copyError) {
+          lastError = copyError;
+          if (!['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN'].includes(copyError.code)) throw copyError;
+          // A short bounded retry lets the sync client release the handle
+          // without turning a transient lock into a partial catalog pass.
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 350);
+        }
+      }
+    }
+    throw lastError;
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+}
+
+function fail(message, code = 2) {
+  if (JSON_OUTPUT) console.log(JSON.stringify({ errors: [message] }, null, 2));
+  else console.error(`reconcile_ui_pack_coverage: ${message}`);
+  process.exit(code);
+}
+
+if (APPLY && !hasExplicitScope) fail('--apply requires --all, --namespace=..., or --key=...');
+if (ALL && (namespaces.length || explicitKeys.length)) fail('--all cannot be combined with --namespace or --key');
+if (MERGE_DRIFT && !requestedSlug) fail('--merge-drift requires --lang=... so one named pair can be merged safely');
+if (MERGE_DRIFT && SKIP_DRIFT) fail('--merge-drift cannot be combined with --skip-drift');
+if (requestedSlug && !Object.prototype.hasOwnProperty.call(LANGUAGE_CODES, requestedSlug)) {
+  fail(`unknown language slug: ${requestedSlug}`);
+}
+
+const sourceText = fs.readFileSync(SOURCE_FILE, 'utf8');
+const sourceMirrorText = fs.readFileSync(SOURCE_MIRROR_FILE, 'utf8');
+if (sourceText !== sourceMirrorText) fail('ui_strings.js root/public mirror drift; refusing to write packs');
+
+const english = flatten(readJson(SOURCE_FILE));
+const targetKeys = Object.keys(english)
+  .filter((key) => typeof english[key] === 'string' && english[key].trim())
+  .filter((key) => ALL || explicitKeys.includes(key) || (!namespaces.length && !explicitKeys.length)
+    || namespaces.some((namespace) => key === namespace || key.startsWith(`${namespace}.`)))
+  .sort();
+
+for (const key of explicitKeys) {
+  if (typeof english[key] !== 'string' || !english[key].trim()) {
+    fail(`--key=${key} is not a non-empty ui_strings leaf`);
+  }
+}
+
+const slugs = requestedSlug ? [requestedSlug] : Object.keys(LANGUAGE_CODES);
+const errors = [];
+const skipped = [];
+const plans = [];
+const missingByNamespace = {};
+const mirrorMissingByNamespace = {};
+let totalMissing = 0;
+let totalMirrorMissing = 0;
+let totalWritten = 0;
+let mirrorDrift = 0;
+
+function collectMissing(pack, slug, side, namespaceCounts) {
+  const missing = [];
+  for (const key of targetKeys) {
+    const current = getDeep(pack, key);
+    if (current === undefined || current === null || (typeof current === 'string' && current.trim() === '')) {
+      missing.push({ key, value: english[key] });
+      const group = key.split('.')[0];
+      namespaceCounts[group] = (namespaceCounts[group] || 0) + 1;
+    } else if (typeof current !== 'string') {
+      errors.push(`${slug} ${side}: ${key} resolves to a non-string value`);
+    }
+  }
+  return missing;
+}
+
+for (const slug of slugs) {
+  const rootFile = path.join(LANG_DIR, `${slug}.js`);
+  const mirrorFile = path.join(MIRROR_DIR, `${slug}.js`);
+  if (!fs.existsSync(rootFile) || !fs.existsSync(mirrorFile)) {
+    errors.push(`${slug}: root or deployed pack is missing`);
+    continue;
+  }
+  const rootText = fs.readFileSync(rootFile, 'utf8');
+  const mirrorText = fs.readFileSync(mirrorFile, 'utf8');
+  const drift = rootText !== mirrorText;
+  if (drift) {
+    mirrorDrift += 1;
+    if (!MERGE_DRIFT) {
+      if (SKIP_DRIFT) skipped.push(`${slug}: root/public mirror drift`);
+      else errors.push(`${slug}: root/public mirror drift; refusing to overwrite it`);
+      continue;
+    }
+  }
+  let rootPack;
+  let mirrorPack;
+  try {
+    rootPack = readJson(rootFile);
+    mirrorPack = drift ? readJson(mirrorFile) : rootPack;
+  } catch (error) {
+    errors.push(`${slug}: invalid JSON (${error.message})`);
+    continue;
+  }
+  const rootMissing = collectMissing(rootPack, slug, 'root', missingByNamespace);
+  const mirrorMissing = drift
+    ? collectMissing(mirrorPack, slug, 'mirror', mirrorMissingByNamespace)
+    : rootMissing;
+  totalMissing += rootMissing.length;
+  totalMirrorMissing += mirrorMissing.length;
+  plans.push({ slug, rootFile, mirrorFile, rootPack, mirrorPack, rootMissing, mirrorMissing, drift });
+}
+
+if (errors.length) {
+  if (JSON_OUTPUT) console.log(JSON.stringify({ errors }, null, 2));
+  else {
+    console.error(`reconcile_ui_pack_coverage: ${errors.length} problem(s); nothing written.`);
+    errors.slice(0, 80).forEach((error) => console.error(`  - ${error}`));
+  }
+  process.exit(1);
+}
+
+if (APPLY) {
+  for (const plan of plans) {
+    if (!plan.rootMissing.length && !plan.mirrorMissing.length) continue;
+    for (const item of plan.rootMissing) setDeep(plan.rootPack, item.key, item.value);
+    for (const item of plan.mirrorMissing) setDeep(plan.mirrorPack, item.key, item.value);
+    const rootOutput = JSON.stringify(plan.rootPack, null, 2) + '\n';
+    const mirrorOutput = plan.drift ? JSON.stringify(plan.mirrorPack, null, 2) + '\n' : rootOutput;
+    replaceFile(plan.rootFile, rootOutput);
+    replaceFile(plan.mirrorFile, mirrorOutput);
+    totalWritten += plan.rootMissing.length + (plan.drift ? plan.mirrorMissing.length : 0);
+  }
+}
+
+const report = {
+  apply: APPLY,
+  scope: ALL ? 'all ui_strings string leaves' : namespaces.length ? namespaces : explicitKeys,
+  catalogKeys: targetKeys.length,
+  packCount: plans.length,
+  totalMissing,
+  totalMirrorMissing,
+  totalWritten,
+  mirrorDrift,
+  mergeDrift: MERGE_DRIFT,
+  skipped,
+  missingByNamespace: Object.fromEntries(Object.entries(missingByNamespace).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))),
+  mirrorMissingByNamespace: Object.fromEntries(Object.entries(mirrorMissingByNamespace).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))),
+  packs: Object.fromEntries(plans.filter((plan) => plan.rootMissing.length).map((plan) => [plan.slug, plan.rootMissing.length])),
+  mirrorPacks: Object.fromEntries(plans.filter((plan) => plan.drift && plan.mirrorMissing.length).map((plan) => [plan.slug, plan.mirrorMissing.length])),
+};
+
+if (JSON_OUTPUT) {
+  console.log(JSON.stringify(report, null, 2));
+} else if (!QUIET) {
+  console.log(`reconcile_ui_pack_coverage: ${targetKeys.length} catalog keys x ${plans.length} pack(s)`);
+  console.log(`  Missing root leaves before apply: ${totalMissing}`);
+  if (MERGE_DRIFT) console.log(`  Missing mirror leaves before apply: ${totalMirrorMissing}`);
+  if (skipped.length) console.log(`  Skipped due to mirror drift: ${skipped.length}`);
+  console.log(`  ${APPLY ? `Added ${totalWritten} canonical English fallback(s) to root/deploy mirrors.` : 'Dry run only; pass --apply with an explicit scope to write.'}`);
+  for (const [namespace, count] of Object.entries(report.missingByNamespace).slice(0, 30)) {
+    console.log(`  ${namespace.padEnd(24)} ${String(count).padStart(7)} missing`);
+  }
+} else {
+  console.log(`reconcile_ui_pack_coverage: keys=${targetKeys.length}; packs=${plans.length}; missing=${totalMissing}; mirrorMissing=${totalMirrorMissing}; written=${totalWritten}; skipped=${skipped.length}`);
+}
+
+if (GATE && (totalMissing > 0 || totalMirrorMissing > 0 || skipped.length > 0)) {
+  if (!APPLY) console.error(`reconcile_ui_pack_coverage: gate failed with ${totalMissing} missing root leaves, ${totalMirrorMissing} missing mirror leaves, and ${skipped.length} skipped drift pack(s); run with --apply first and resolve drift.`);
+  else if (skipped.length) console.error(`reconcile_ui_pack_coverage: gate failed with ${skipped.length} skipped drift pack(s); resolve root/public parity before gating.`);
+  process.exit(1);
+}

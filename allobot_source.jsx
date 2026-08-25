@@ -1,5 +1,156 @@
 // @section SPEECH_BUBBLE — Allobot speech bubble component
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false }) => {
+// This component is exported independently of AlloBot, so its essential visual
+// treatment cannot depend on a host Tailwind build being present.
+const ALLOBOT_BUBBLE_CSS = `
+  .allobot-speech-bubble {
+      --allobot-bubble-bg: #FFFFFF;
+      --allobot-bubble-text: #312E81;
+      --allobot-bubble-border: #E0E7FF;
+      --allobot-bubble-accent: #4338CA;
+      --allobot-bubble-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+      position: absolute;
+      box-sizing: border-box;
+      z-index: 50;
+      width: max-content;
+      max-width: min(200px, calc(100vw - 24px));
+      padding: 12px 16px;
+      border: 1px solid var(--allobot-bubble-border);
+      border-radius: 16px;
+      background: var(--allobot-bubble-bg);
+      color: var(--allobot-bubble-text);
+      box-shadow: var(--allobot-bubble-shadow);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+      transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-theme="dark"] {
+      --allobot-bubble-bg: #0F172A;
+      --allobot-bubble-text: #F8FAFC;
+      --allobot-bubble-border: #64748B;
+      --allobot-bubble-accent: #C7D2FE;
+      --allobot-bubble-shadow: 0 14px 32px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+  .allobot-speech-bubble[data-allobot-bubble-theme="contrast"] {
+      --allobot-bubble-bg: #FFFFFF;
+      --allobot-bubble-text: #000000;
+      --allobot-bubble-border: #000000;
+      --allobot-bubble-accent: #000000;
+      --allobot-bubble-shadow: 4px 4px 0 #000000;
+      border-width: 2px;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"] { border-radius: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-state="visible"] {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+  }
+  .allobot-speech-bubble[data-allobot-bubble-motion="static"] { transition: none; }
+  .allobot-speech-bubble[data-allobot-bubble-placement="top-right"] {
+      inset: auto 0 100% auto;
+      margin: 0 0 16px;
+      transform-origin: bottom right;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="top-left"] {
+      inset: auto auto 100% 0;
+      margin: 0 0 16px;
+      transform-origin: bottom left;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="bottom-right"] {
+      inset: 100% 0 auto auto;
+      margin: 16px 0 0;
+      transform-origin: top right;
+  }
+  .allobot-speech-bubble[data-allobot-bubble-placement="bottom-left"] {
+      inset: 100% auto auto 0;
+      margin: 16px 0 0;
+      transform-origin: top left;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"][data-allobot-bubble-placement="top-right"] {
+      right: 48px;
+      margin-bottom: 4px;
+  }
+  .allobot-speech-bubble[data-allobot-bubble="thought"][data-allobot-bubble-placement="top-left"] {
+      left: 48px;
+      margin-bottom: 4px;
+  }
+  .allobot-bubble-live {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+  }
+  .allobot-bubble-text { display: block; }
+  .allobot-bubble-read-more {
+      display: inline-flex;
+      min-height: 24px;
+      align-items: center;
+      margin-top: 4px;
+      padding: 0 4px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--allobot-bubble-accent);
+      font-size: 11px;
+      font-weight: 900;
+      text-decoration: underline;
+      cursor: pointer;
+      pointer-events: auto;
+  }
+  .allobot-bubble-read-more:focus-visible {
+      outline: 2px solid var(--allobot-bubble-accent);
+      outline-offset: 2px;
+  }
+  .allobot-speech-arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow="top-right"],
+  .allobot-speech-arrow[data-allobot-speech-arrow="top-left"] {
+      top: 100%;
+      border-top: 8px solid var(--allobot-bubble-bg);
+      border-bottom: 0;
+      filter: drop-shadow(0 1px 0 var(--allobot-bubble-border));
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow="bottom-right"],
+  .allobot-speech-arrow[data-allobot-speech-arrow="bottom-left"] {
+      bottom: 100%;
+      border-top: 0;
+      border-bottom: 8px solid var(--allobot-bubble-bg);
+      filter: drop-shadow(0 -1px 0 var(--allobot-bubble-border));
+  }
+  .allobot-speech-arrow[data-allobot-speech-arrow$="right"] { right: 24px; }
+  .allobot-speech-arrow[data-allobot-speech-arrow$="left"] { left: 24px; }
+  .allobot-thought-dot {
+      position: absolute;
+      box-sizing: border-box;
+      border: 1px solid var(--allobot-bubble-border);
+      border-radius: 9999px;
+      background: var(--allobot-bubble-bg);
+  }
+  .allobot-thought-dot[data-allobot-thought-dot="large"] { width: 12px; height: 12px; }
+  .allobot-thought-dot[data-allobot-thought-dot="small"] { width: 6px; height: 6px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="top"] .allobot-thought-dot[data-allobot-thought-dot="large"] { bottom: -16px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="top"] .allobot-thought-dot[data-allobot-thought-dot="small"] { bottom: -28px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="bottom"] .allobot-thought-dot[data-allobot-thought-dot="large"] { top: -16px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement^="bottom"] .allobot-thought-dot[data-allobot-thought-dot="small"] { top: -28px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="right"] .allobot-thought-dot[data-allobot-thought-dot="large"] { right: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="right"] .allobot-thought-dot[data-allobot-thought-dot="small"] { right: 20px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="large"] { left: 32px; }
+  .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="small"] { left: 20px; }
+`;
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false, theme = 'light' }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState('top-right');
@@ -83,20 +234,25 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
       'bottom-left': 'bottom-full left-6 border-b-[8px] border-x-[6px] border-t-0 border-b-white border-x-transparent',
   };
   const renderThoughtTrail = () => {
-      const isTop = placement.includes('top');
-      const isRight = placement.includes('right');
       return (
           <>
-            <div className={`absolute w-3 h-3 bg-white border border-indigo-100 rounded-full ${isTop ? '-bottom-4' : '-top-4'} ${isRight ? 'right-8' : 'left-8'}`}></div>
-            <div className={`absolute w-1.5 h-1.5 bg-white border border-indigo-100 rounded-full ${isTop ? '-bottom-7' : '-top-7'} ${isRight ? 'right-5' : 'left-5'}`}></div>
+            <div data-allobot-thought-dot="large" className="allobot-thought-dot"></div>
+            <div data-allobot-thought-dot="small" className="allobot-thought-dot"></div>
           </>
       );
   };
   return (
+    <>
+    <style>{ALLOBOT_BUBBLE_CSS}</style>
     <div
         ref={bubbleRef}
+        data-allobot-bubble={variant}
+        data-allobot-bubble-theme={theme}
+        data-allobot-bubble-placement={placement}
+        data-allobot-bubble-state={isVisible ? 'visible' : 'hidden'}
+        data-allobot-bubble-motion={disableAnimations ? 'static' : 'animated'}
         className={`
-            absolute ${posClasses[placement]}
+            allobot-speech-bubble absolute ${posClasses[placement]}
             bg-white text-indigo-900 text-xs font-bold px-4 py-3
             shadow-xl border border-indigo-100
             transition-all motion-reduce:transition-none duration-300 ease-out
@@ -105,8 +261,8 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
             ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}
         `}
     >
-        <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">{isVisible ? text : ''}</span>
-        <span aria-hidden="true">{displayedText}</span>
+        <span role="status" aria-live="polite" aria-atomic="true" className="sr-only allobot-bubble-live">{isVisible ? text : ''}</span>
+        <span aria-hidden="true" className="allobot-bubble-text">{displayedText}</span>
         {isVisible && isTruncated && displayedText.length === text?.length && (
             <button
                 type="button"
@@ -114,27 +270,227 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
                     e.stopPropagation();
                     if (onReadMore) onReadMore();
                 }}
-                className="mt-1 inline-flex min-h-6 items-center px-1 text-[11px] font-black text-indigo-700 hover:text-indigo-900 underline cursor-pointer pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
+                className="allobot-bubble-read-more mt-1 inline-flex min-h-6 items-center px-1 text-[11px] font-black text-indigo-700 hover:text-indigo-900 underline cursor-pointer pointer-events-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-700"
             >
                 {t('common.read_more')}
             </button>
         )}
         {variant === 'speech' ? (
-             <div className={`absolute w-0 h-0 ${arrowClasses[placement]}`}></div>
+             <div data-allobot-speech-arrow={placement} className={`allobot-speech-arrow absolute w-0 h-0 ${arrowClasses[placement]}`}></div>
         ) : (
              renderThoughtTrail()
         )}
     </div>
+    </>
   );
 });
+
+// Exported motion effects must remain visually complete when they are rendered
+// outside AlloBot's large internal style block (for example in previews).
+const ALLOBOT_EFFECTS_CSS = `
+  .allobot-effect-layer {
+      pointer-events: none;
+      user-select: none;
+  }
+  .allobot-landing-dust {
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      z-index: -1;
+      width: 96px;
+      height: 48px;
+      overflow: visible;
+      transform: translateX(-50%);
+  }
+  .allobot-dust-cloud {
+      position: absolute;
+      left: 50%;
+      border-radius: 9999px;
+      will-change: transform, opacity;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="left"],
+  .allobot-dust-cloud[data-allobot-dust-cloud="right"] {
+      bottom: 8px;
+      width: 32px;
+      height: 32px;
+      margin-left: -16px;
+      background: radial-gradient(circle, rgba(203, 213, 225, 0.72) 0%, rgba(226, 232, 240, 0.42) 48%, rgba(248, 250, 252, 0) 74%);
+      filter: blur(5px);
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="left"] {
+      animation: allobot-effect-dust-left 0.6s ease-out forwards;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="right"] {
+      animation: allobot-effect-dust-right 0.6s ease-out forwards;
+  }
+  .allobot-dust-cloud[data-allobot-dust-cloud="puff"] {
+      bottom: 4px;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.92) 0%, rgba(226, 232, 240, 0.52) 55%, rgba(255, 255, 255, 0) 76%);
+      filter: blur(3px);
+      animation: allobot-effect-dust-puff 0.8s ease-out forwards;
+  }
+  @keyframes allobot-effect-dust-left {
+      0% { transform: translateX(0) scale(0.5); opacity: 0.68; }
+      100% { transform: translateX(-32px) translateY(-6px) scale(1.55); opacity: 0; }
+  }
+  @keyframes allobot-effect-dust-right {
+      0% { transform: translateX(0) scale(0.5); opacity: 0.68; }
+      100% { transform: translateX(32px) translateY(-6px) scale(1.55); opacity: 0; }
+  }
+  @keyframes allobot-effect-dust-puff {
+      0% { transform: translateY(0) scale(0.45); opacity: 0.9; }
+      100% { transform: translateY(-16px) scale(2.1); opacity: 0; }
+  }
+  .allobot-jetpack-particles {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: visible;
+  }
+  .allobot-jetpack-particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 9999px;
+      background: #F59E0B;
+      box-shadow: 0 0 7px rgba(251, 191, 36, 0.75);
+      filter: blur(2px);
+      animation-name: allobot-effect-jetpack-smoke;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+      will-change: transform, opacity, filter;
+  }
+  @keyframes allobot-effect-jetpack-smoke {
+      0% {
+          transform: translate(0, 0) scale(0.45);
+          background: #F59E0B;
+          box-shadow: 0 0 8px rgba(251, 191, 36, 0.82);
+          filter: blur(1px);
+          opacity: 0.95;
+      }
+      38% {
+          background: #FBBF24;
+          box-shadow: 0 0 4px rgba(251, 191, 36, 0.42);
+          opacity: 0.72;
+      }
+      100% {
+          transform: translate(var(--drift), 100px) scale(2.5);
+          background: #E2E8F0;
+          box-shadow: none;
+          filter: blur(5px);
+          opacity: 0;
+      }
+  }
+  .allobot-reaction-bubble {
+      position: absolute;
+      top: -4px;
+      right: 50%;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      width: 48px;
+      height: 48px;
+      border: 2px solid rgba(129, 140, 248, 0.68);
+      border-radius: 9999px;
+      background: radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.99), rgba(238, 242, 255, 0.95) 62%, rgba(199, 210, 254, 0.92));
+      box-shadow: 0 8px 18px rgba(49, 46, 129, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      font-size: 34px;
+      line-height: 1;
+      isolation: isolate;
+      filter: saturate(1.08);
+      animation: allobot-effect-float-reaction 1.5s ease-out forwards;
+      will-change: transform, opacity;
+  }
+  .allobot-reaction-bubble::before {
+      content: '';
+      position: absolute;
+      inset: -7px;
+      z-index: -1;
+      border-radius: inherit;
+      background: radial-gradient(circle, rgba(165, 180, 252, 0.38), rgba(165, 180, 252, 0));
+  }
+  .allobot-reaction-bubble::after {
+      content: '';
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  }
+  @keyframes allobot-effect-float-reaction {
+      0% { transform: translate(50%, 0) scale(0.5) rotate(-5deg); opacity: 0; }
+      18% { transform: translate(50%, -30px) scale(1.14) rotate(4deg); opacity: 1; }
+      38% { transform: translate(50%, -42px) scale(1) rotate(-2deg); opacity: 1; }
+      100% { transform: translate(50%, -104px) scale(0.92) rotate(3deg); opacity: 0; }
+  }
+  .allobot-confetti-burst {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: -1;
+      width: 0;
+      height: 0;
+      overflow: visible;
+  }
+  .allobot-confetti-burst::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(129, 140, 248, 0.72);
+      border-radius: 9999px;
+      animation: allobot-effect-confetti-ring 0.55s ease-out forwards;
+  }
+  .allobot-confetti-particle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: allobot-effect-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+      will-change: transform, opacity;
+  }
+  .allobot-confetti-particle[data-allobot-confetti-shape="round"] { border-radius: 9999px; }
+  .allobot-confetti-particle[data-allobot-confetti-shape="square"] { border-radius: 2px; }
+  .allobot-confetti-particle[data-allobot-confetti-shape="dash"] { border-radius: 9999px; }
+  @keyframes allobot-effect-confetti-ring {
+      0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; }
+  }
+  @keyframes allobot-effect-confetti {
+      0% { transform: translate(-50%, -50%) scale(0.55) rotate(0deg); opacity: 1; }
+      100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.18) rotate(var(--spin)); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+      .allobot-dust-cloud,
+      .allobot-jetpack-particle,
+      .allobot-reaction-bubble,
+      .allobot-confetti-burst::before,
+      .allobot-confetti-particle {
+          animation-duration: 1ms !important;
+          animation-delay: 0ms !important;
+      }
+  }
+`;
+const AlloEffectStyles = () => <style data-allobot-effect-styles="true">{ALLOBOT_EFFECTS_CSS}</style>;
+
 const LandingDust = ({ active }) => {
   if (!active) return null;
   return (
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 flex justify-center items-end w-24 h-12 pointer-events-none z-[-1]">
-           <div className="absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-left" />
-           <div className="absolute bottom-2 w-8 h-8 bg-slate-300/40 rounded-full blur-md animate-dust-right" />
-           <div className="absolute bottom-1 w-6 h-6 bg-white/60 rounded-full blur-sm animate-dust-puff" />
+      <>
+      <AlloEffectStyles />
+      <div aria-hidden="true" data-allobot-effect="landing-dust" className="allobot-effect-layer allobot-landing-dust">
+           <div data-allobot-dust-cloud="left" className="allobot-dust-cloud" />
+           <div data-allobot-dust-cloud="right" className="allobot-dust-cloud" />
+           <div data-allobot-dust-cloud="puff" className="allobot-dust-cloud" />
       </div>
+      </>
   );
 };
 const JetpackParticles = ({ active }) => {
@@ -165,11 +521,19 @@ const JetpackParticles = ({ active }) => {
       }
   }, [particles, active]);
   return (
-    <div className="absolute inset-0 pointer-events-none z-0">
+    <>
+    <AlloEffectStyles />
+    <div
+      aria-hidden="true"
+      data-allobot-effect="jetpack-particles"
+      data-allobot-effect-state={active ? 'active' : 'idle'}
+      className="allobot-effect-layer allobot-jetpack-particles"
+    >
         {particles.map(p => (
             <div
                 key={p.id}
-                className="absolute w-3 h-3 rounded-full blur-[2px] animate-jetpack-smoke"
+                data-allobot-jetpack-side={p.side}
+                className="allobot-jetpack-particle"
                 style={{
                     left: p.side === 'left' ? `calc(20% + ${p.offset}px)` : `calc(80% + ${p.offset}px)`,
                     top: '82%',
@@ -180,15 +544,21 @@ const JetpackParticles = ({ active }) => {
             />
         ))}
     </div>
+    </>
   );
 };
 const ReactionBubble = ({ emoji, onComplete }) => (
+  <>
+  <AlloEffectStyles />
   <div
-    className="absolute top-0 right-1/2 translate-x-1/2 text-4xl animate-float-reaction pointer-events-none select-none z-50 filter drop-shadow-md"
+    aria-hidden="true"
+    data-allobot-effect="reaction-bubble"
+    className="allobot-effect-layer allobot-reaction-bubble"
     onAnimationEnd={onComplete}
   >
     {emoji}
   </div>
+  </>
 );
 const BotConfettiBurst = ({ onComplete }) => {
   const calledRef = useRef(false);
@@ -204,26 +574,33 @@ const BotConfettiBurst = ({ onComplete }) => {
       dist: 80 + Math.random() * 50,
       color: ['#FCD34D', '#F87171', '#60A5FA', '#34D399', '#A78BFA', '#F472B6'][Math.floor(Math.random() * 6)],
       size: 4 + Math.random() * 4,
-      delay: Math.random() * 0.1
+      delay: Math.random() * 0.1,
+      shape: ['round', 'square', 'dash'][i % 3],
+      spin: (i % 2 === 0 ? 1 : -1) * (360 + Math.random() * 360)
   })), []);
   return (
-      <div className="absolute top-1/2 left-1/2 w-0 h-0 z-[-1] pointer-events-none">
+      <>
+      <AlloEffectStyles />
+      <div aria-hidden="true" data-allobot-effect="confetti-burst" className="allobot-effect-layer allobot-confetti-burst">
           {particles.map((p, i) => (
              <div
                 key={p.id}
-                className="absolute rounded-full animate-bot-confetti"
+                data-allobot-confetti-shape={p.shape}
+                className="allobot-confetti-particle"
                 style={{
                     backgroundColor: p.color,
-                    width: p.size,
-                    height: p.size,
+                    width: p.shape === 'dash' ? p.size * 1.8 : p.size,
+                    height: p.shape === 'dash' ? p.size * 0.58 : p.size,
                     '--tx': `${Math.cos(p.angle * Math.PI / 180) * p.dist}px`,
                     '--ty': `${Math.sin(p.angle * Math.PI / 180) * p.dist}px`,
+                    '--spin': `${p.spin}deg`,
                     animationDelay: `${p.delay}s`
                 }}
                 onAnimationEnd={i === 0 ? handleEnd : undefined}
              />
           ))}
       </div>
+      </>
   );
 };
 // ── A4: microphone input meter ──────────────────────────────────────────────
@@ -1007,6 +1384,95 @@ const alloBotGenerationFamily = (generationType, activeView) => {
     || 'generic';
 };
 
+// Pure side props can move to the opposite side when the bot is parked too
+// close to a viewport edge. Headwear and mixed head/side outfits are excluded:
+// translating those would detach the wearable portion from Allobot. Keeping the
+// preferred side explicit also lets the face and nearest hand acknowledge the
+// prop without guessing from SVG geometry.
+const ALLOBOT_SIDE_ACCESSORY_SIDE = Object.freeze({
+  microscope: 'left',
+  historian: 'left',
+  'teacher-stack': 'left',
+  'persona-masks': 'left',
+  'sentence-frames': 'right',
+  'outline-doc': 'left',
+  'sticky-notes': 'left',
+  'anchor-easel': 'left',
+  'behavior-watch': 'left',
+  'choice-fan': 'left',
+  'alignment-target': 'left',
+  'wayfinder-sign': 'left',
+  'question-cards': 'left',
+  'test-prep-kit': 'left',
+  'source-inbox': 'left',
+  'progress-orbit': 'left',
+  'maze-scroll': 'left',
+  'resource-folder': 'left',
+  'math-tools': 'left',
+  gear: 'left',
+  'game-pad': 'left',
+});
+const ALLOBOT_SIDE_ACCESSORY_ACCENT = Object.freeze({
+  microscope: '#22D3EE',
+  historian: '#F59E0B',
+  'teacher-stack': '#EF4444',
+  'persona-masks': '#A78BFA',
+  'sentence-frames': '#EC4899',
+  'outline-doc': '#6366F1',
+  'sticky-notes': '#FACC15',
+  'anchor-easel': '#22C55E',
+  'behavior-watch': '#06B6D4',
+  'choice-fan': '#8B5CF6',
+  'alignment-target': '#F43F5E',
+  'wayfinder-sign': '#F59E0B',
+  'question-cards': '#A855F7',
+  'test-prep-kit': '#F59E0B',
+  'source-inbox': '#3B82F6',
+  'progress-orbit': '#10B981',
+  'maze-scroll': '#F97316',
+  'resource-folder': '#EAB308',
+  'math-tools': '#3B82F6',
+  gear: '#94A3B8',
+  'game-pad': '#EC4899',
+});
+// Keep the side-prop family equally readable at Allobot's usual 64px size.
+// Wide/tall teaching aids retain their current footprint; compact controls get
+// a small lift. The prop-facing transform origin preserves the handoff point
+// beside the shell, so scaling grows away from Allobot rather than into it.
+const ALLOBOT_SIDE_ACCESSORY_SCALE = Object.freeze({
+  microscope: 1,
+  historian: 1.06,
+  'teacher-stack': 1.05,
+  'persona-masks': 1.02,
+  'sentence-frames': 1,
+  'outline-doc': 1.04,
+  'sticky-notes': 1.05,
+  'anchor-easel': 1,
+  'behavior-watch': 1.1,
+  'choice-fan': 1.04,
+  'alignment-target': 1.05,
+  'wayfinder-sign': 1,
+  'question-cards': 1.03,
+  'test-prep-kit': 1.05,
+  'source-inbox': 1.06,
+  'progress-orbit': 1.05,
+  'maze-scroll': 1.04,
+  'resource-folder': 1.06,
+  'math-tools': 1.03,
+  gear: 1.1,
+  'game-pad': 1.1,
+});
+// A small optical gap for silhouettes whose artwork naturally reaches the
+// visor boundary. The sign is resolved from the rendered side, so edge-driven
+// mirroring keeps the same separation on either side of Allobot.
+const ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE = Object.freeze({
+  'persona-masks': 6,
+  'sentence-frames': 10,
+  'choice-fan': 2,
+});
+const ALLOBOT_AVATAR_WIDTH = 64;
+const ALLOBOT_PROP_SAFE_GUTTER = 46;
+
 const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = '', generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
@@ -1015,13 +1481,13 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   // each other, and never scaled down — scale-75 would drag a 36px target back
   // under the 24px WCAG 2.2 minimum.
   const satelliteBase = coarsePointer
-      ? 'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none'
-      : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none';
+      ? 'inline-flex min-h-9 min-w-9 items-center justify-center rounded-full shadow-md z-50 border-2 duration-200 focus:outline-none allobot-satellite-control'
+      : 'inline-flex min-h-8 min-w-8 items-center justify-center rounded-full p-1.5 shadow-md opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity z-50 scale-75 hover:scale-100 duration-200 border-2 focus:opacity-100 focus:outline-none allobot-satellite-control';
   const satellitePos = {
-      tl: coarsePointer ? 'absolute -top-2.5 -left-2.5' : 'absolute -top-2 -left-2',
-      tr: coarsePointer ? 'absolute -top-2.5 -right-2.5' : 'absolute -top-2 -right-2',
-      bl: coarsePointer ? 'absolute -bottom-2.5 -left-2.5' : 'absolute -bottom-1 -left-2',
-      br: coarsePointer ? 'absolute -bottom-2.5 -right-2.5' : 'absolute -bottom-1 -right-2',
+      tl: coarsePointer ? 'absolute -top-2.5 -left-2.5 allobot-satellite--tl' : 'absolute -top-2 -left-2 allobot-satellite--tl',
+      tr: coarsePointer ? 'absolute -top-2.5 -right-2.5 allobot-satellite--tr' : 'absolute -top-2 -right-2 allobot-satellite--tr',
+      bl: coarsePointer ? 'absolute -bottom-2.5 -left-2.5 allobot-satellite--bl' : 'absolute -bottom-1 -left-2 allobot-satellite--bl',
+      br: coarsePointer ? 'absolute -bottom-2.5 -right-2.5 allobot-satellite--br' : 'absolute -bottom-1 -right-2 allobot-satellite--br',
   };
   // A tap on one of these must not also start a drag. The container's
   // onTouchStart calls preventDefault() to own the gesture, and preventDefault
@@ -1041,6 +1507,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           return { x: 24, y: 20 };
       }
   });
+  const [viewportWidth, setViewportWidth] = useState(() => {
+      try { return typeof window !== 'undefined' ? window.innerWidth : 1024; } catch (e) { return 1024; }
+  });
+  useEffect(() => {
+      if (typeof window === 'undefined') return undefined;
+      const syncViewportWidth = () => setViewportWidth(window.innerWidth || 1024);
+      syncViewportWidth();
+      window.addEventListener('resize', syncViewportWidth);
+      return () => window.removeEventListener('resize', syncViewportWidth);
+  }, []);
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [pulseScale, setPulseScale] = useState(1);
@@ -1168,6 +1644,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [idleAnimation, setIdleAnimation] = useState(null);
   const [internalMood, setInternalMood] = useState(null);
   const effectiveMood = internalMood || mood;
+  // SVG fragment identifiers resolve against the entire document, not just the
+  // nearest <svg>. Scope every paint server and internal group to this React
+  // instance so comparison previews (or any host rendering two AlloBots) cannot
+  // borrow the first bot's mood/theme gradients.
+  const svgPaintPrefix = `allobot-${React.useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+  const svgPaintIds = {
+      body: `${svgPaintPrefix}-body-${effectiveMood}`,
+      rim: `${svgPaintPrefix}-rim`,
+      hologram: `${svgPaintPrefix}-hologram`,
+      beam: `${svgPaintPrefix}-beam`,
+      visor: `${svgPaintPrefix}-visor`,
+      groundShadow: `${svgPaintPrefix}-ground-shadow`,
+      heldItem: `${svgPaintPrefix}-held-item`,
+      accessories: `${svgPaintPrefix}-accessories`,
+  };
   const generationProgressCurrent = Number(generationProgress?.current);
   const generationProgressTotal = Number(generationProgress?.total);
   const generationProgressFraction = Number.isFinite(generationProgressCurrent)
@@ -1307,6 +1798,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       if (isFlightActive || isSleeping) return null;
       switch (activeView) {
           case 'math': return 'calculator';
+          case 'math-fluency-maze': return 'calculator';
           case 'adventure': return 'map';
           case 'quiz': return 'pencil';
           case 'sentence-frames': return 'pencil';
@@ -2542,8 +3034,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
              ...base,
              gradFrom: '#FACC15',
              gradTo: '#CA8A04',
-             eye: '#000000',
-             mouth: '#000000',
+             eye: '#FFFFFF',
+             mouth: '#FACC15',
              glow: '#FFFFFF',
              screenBg: '#000000',
              antenna: '#FACC15',
@@ -2593,6 +3085,46 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       const t = setTimeout(() => { setDisplayedAccessory(targetAccessory); setAccExiting(false); }, 200);
       return () => clearTimeout(t);
   }, [targetAccessory, displayedAccessory, motionDisabled, isSleeping]);
+  const accessoryPreferredSide = ALLOBOT_SIDE_ACCESSORY_SIDE[effectiveAccessory] || null;
+  const botLeftRoom = Math.max(0, viewportWidth - position.x - ALLOBOT_AVATAR_WIDTH);
+  const botRightRoom = Math.max(0, position.x);
+  let accessoryRenderSide = accessoryPreferredSide;
+  if (accessoryPreferredSide === 'left' && botLeftRoom < ALLOBOT_PROP_SAFE_GUTTER && botRightRoom > botLeftRoom) {
+      accessoryRenderSide = 'right';
+  } else if (accessoryPreferredSide === 'right' && botRightRoom < ALLOBOT_PROP_SAFE_GUTTER && botLeftRoom > botRightRoom) {
+      accessoryRenderSide = 'left';
+  }
+  const accessoryShiftX = !accessoryPreferredSide || accessoryRenderSide === accessoryPreferredSide
+      ? 0
+      // Left-authored props have asymmetric bounds; 124 places their nearest
+      // edge just beyond the right hand instead of inside the visor. The one
+      // native-right prop has a tighter authored anchor and mirrors cleanly at
+      // the original 100-unit distance.
+      : (accessoryPreferredSide === 'left' ? 124 : -100);
+  const accessoryGapNudge = ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE[effectiveAccessory] || 0;
+  const accessoryTranslateX = accessoryShiftX + (accessoryRenderSide === 'left'
+      ? -accessoryGapNudge
+      : (accessoryRenderSide === 'right' ? accessoryGapNudge : 0));
+  const accessoryAccent = ALLOBOT_SIDE_ACCESSORY_ACCENT[effectiveAccessory] || colors.glow;
+  const accessoryScale = ALLOBOT_SIDE_ACCESSORY_SCALE[effectiveAccessory] || 1;
+  const accessoryDepthFilter = !accessoryRenderSide
+      ? undefined
+      : theme === 'contrast'
+          ? 'drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #FFF)'
+          : theme === 'dark'
+              ? 'drop-shadow(0 1.4px 1.4px rgba(0,0,0,0.72)) drop-shadow(0 0 0.8px rgba(255,255,255,0.22))'
+              : 'drop-shadow(0 1.3px 1.2px rgba(15,23,42,0.28))';
+  const propGazeX = accessoryRenderSide === 'left' ? -1.6 : (accessoryRenderSide === 'right' ? 1.6 : 0);
+  const propGazeY = accessoryRenderSide ? 0.55 : 0;
+  const resolvedGazeX = Math.max(-3.2, Math.min(3.2, eyePosition.x + propGazeX));
+  const resolvedGazeY = Math.max(-2.2, Math.min(2.2, eyePosition.y + propGazeY));
+  const leftHandX = accessoryRenderSide === 'left' ? 6.5 : 10;
+  const leftHandY = accessoryRenderSide === 'left' ? 63.5 : 65;
+  const rightHandX = accessoryRenderSide === 'right' ? 93.5 : 90;
+  const rightHandY = accessoryRenderSide === 'right' ? 63.5 : 65;
+  // Keep held tools opposite a side prop so the silhouettes do not merge when
+  // a left-preferring accessory has to move right on a narrow viewport.
+  const heldItemRenderSide = heldItem && accessoryRenderSide === 'right' ? 'left' : 'right';
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
@@ -2632,9 +3164,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
     }
   };
+  // The inline flight filter used to resolve to `none` while parked, which
+  // overrode the wrapper's Tailwind drop-shadow class and flattened Allobot's
+  // silhouette. Own a restrained depth treatment here, then compose the flight
+  // echoes onto it so both states retain clear separation from the workspace.
+  const avatarDepthFilter = theme === 'contrast'
+      ? 'drop-shadow(0 2px 0 #000000)'
+      : theme === 'dark'
+          ? 'drop-shadow(0 2px 3px rgba(0,0,0,0.70)) drop-shadow(0 0 1px rgba(255,255,255,0.16))'
+          : 'drop-shadow(0 2px 3px rgba(15,23,42,0.28))';
   const trailFilter = isFlightActive
-      ? `drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
-      : 'none';
+      ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
+      : avatarDepthFilter;
   const renderHologramContent = () => {
       const generationFamily = alloBotGenerationFamily(generationType, activeView);
       switch (generationFamily) {
@@ -2873,6 +3414,78 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     <p id="allobot-move-instructions" className="sr-only">{t('bot.move_instructions') || 'Use the arrow keys to move AlloBot. Hold Shift with an arrow key for a larger step.'}</p>
     <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{keyboardMoveStatus}</div>
     <style>{`
+        /* Orbit controls own their essential geometry and state colors so the
+           external Allobot module remains polished in desktop/embedded hosts
+           that do not provide the app's Tailwind bundle. Tailwind utilities
+           remain on the elements as progressive enhancement. */
+        .allobot-satellite-control {
+            position: absolute;
+            box-sizing: border-box;
+            display: inline-flex;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border: 2px solid #E0E7FF;
+            border-radius: 9999px;
+            background: #FFFFFF;
+            color: #6366F1;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+            opacity: 0;
+            transform: scale(0.75);
+            transform-origin: center;
+            transition: opacity 180ms ease, transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+            appearance: none;
+            cursor: pointer;
+            z-index: 50;
+        }
+        .allobot-satellite--tl { top: -8px; left: -8px; }
+        .allobot-satellite--tr { top: -8px; right: -8px; }
+        .allobot-satellite--bl { bottom: -4px; left: -8px; }
+        .allobot-satellite--br { bottom: -4px; right: -8px; }
+        .group:hover .allobot-satellite-control,
+        .group:focus-within .allobot-satellite-control,
+        .allobot-satellite-control:focus-visible { opacity: 1; }
+        .allobot-satellite-control:hover,
+        .allobot-satellite-control:focus-visible { transform: scale(1); }
+        .allobot-satellite-control[data-allobot-satellite-kind="hide"] {
+            background: #E2E8F0;
+            color: #475569;
+            border-color: #FFFFFF;
+        }
+        .allobot-satellite-control[data-allobot-satellite-kind="hide"]:hover {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+        .allobot-satellite-control[data-allobot-satellite-state="muted"] {
+            background: #F1F5F9;
+            color: #475569;
+            border-color: #CBD5E1;
+        }
+        .allobot-satellite-control[data-allobot-satellite-state="listening"] {
+            background: #B91C1C;
+            color: #FFFFFF;
+            border-color: #F87171;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 10px rgba(15, 23, 42, 0.2);
+        }
+        @media (hover: none), (pointer: coarse) {
+            .allobot-satellite-control {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+                padding: 8px;
+                opacity: 1;
+                transform: scale(1);
+            }
+            .allobot-satellite--tl { top: -10px; left: -10px; }
+            .allobot-satellite--tr { top: -10px; right: -10px; }
+            .allobot-satellite--bl { bottom: -10px; left: -10px; }
+            .allobot-satellite--br { bottom: -10px; right: -10px; }
+        }
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
         /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
@@ -3021,8 +3634,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         }
         .animate-bot-breathe { animation: bot-breathe 3s ease-in-out infinite; }
         @keyframes shadow-pulse {
-            0%, 100% { transform: translateY(0px) scale(1); opacity: 0.2; }
-            50% { transform: translateY(8px) scale(0.6); opacity: 0.05; }
+            0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
+            50% { transform: translateY(8px) scale(0.6); opacity: 0.3; }
         }
         .animate-shadow-pulse { animation: shadow-pulse 3s ease-in-out infinite; transform-origin: 50px 90px; }
         @keyframes zzz-float {
@@ -3125,6 +3738,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
    transforms (these classes live on INNER wrapper groups). Named animate-* so
    they are auto-disabled by the app reduce-motion toggle (.reduce-motion
    [class*="animate-"]) and OS prefers-reduced-motion (block below). */
+@keyframes allobotAccessoryArriveLeft { 0% { transform: translateX(-5px) scale(0.96); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+@keyframes allobotAccessoryArriveRight { 0% { transform: translateX(5px) scale(0.96); opacity: 0; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+.animate-allobot-accessory-arrive-left { transform-box: fill-box; transform-origin: center; animation: allobotAccessoryArriveLeft 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
+.animate-allobot-accessory-arrive-right { transform-box: fill-box; transform-origin: center; animation: allobotAccessoryArriveRight 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
 @keyframes allobotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
 @keyframes allobotPerk { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-2.5px); } }
 @keyframes allobotTwinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
@@ -3136,6 +3753,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 @keyframes allobotSway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
 .animate-allobot-tick { transform-box: fill-box; transform-origin: center bottom; animation: allobotTick 6s steps(12) infinite; }
 .animate-allobot-sway { transform-box: fill-box; transform-origin: center bottom; animation: allobotSway 3.5s ease-in-out infinite; }
+/* Context micro-interactions: one quiet visual verb per learning prop. */
+@keyframes allobotStopwatchHand { to { transform: rotate(360deg); } }
+@keyframes allobotInboxDrop { 0%, 72%, 100% { transform: translateY(0); opacity: 1; } 82% { transform: translateY(2px); opacity: 0.55; } 90% { transform: translateY(-1px); opacity: 1; } }
+@keyframes allobotProgressPulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.92); opacity: 0.72; } }
+@keyframes allobotMazeFlag { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(4deg); } }
+@keyframes allobotFolderPage { 0%, 72%, 100% { transform: translateY(0); } 84% { transform: translateY(-2px); } 92% { transform: translateY(-0.5px); } }
+.animate-allobot-stopwatch-hand { transform-box: view-box; transform-origin: 0px 4px; animation: allobotStopwatchHand 8s steps(12) infinite; }
+.animate-allobot-inbox-drop { animation: allobotInboxDrop 3.4s ease-in-out infinite; }
+.animate-allobot-progress-pulse { transform-box: fill-box; transform-origin: center; animation: allobotProgressPulse 2.8s ease-in-out infinite; }
+.animate-allobot-maze-flag { transform-box: fill-box; transform-origin: left bottom; animation: allobotMazeFlag 4.2s ease-in-out infinite; }
+.animate-allobot-folder-page { animation: allobotFolderPage 4s ease-in-out infinite; }
 /* State-reactive: accessory "works" while generating, then a one-shot pop when done.
    Targets the animate-allobot-* wrappers, so the reduce-motion [class*="animate-"]
    override below still wins and disables these too. */
@@ -3269,6 +3897,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             soundEnabled={soundEnabled && !isSleeping}
             variant={effectiveMood === 'thinking' && !isTalking ? 'thought' : 'speech'}
             disableAnimations={motionDisabled}
+            theme={theme}
           />
           {!motionDisabled && reactions.map(r => (
               <ReactionBubble
@@ -3284,7 +3913,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               />
           ))}
           <div
-            className={`relative drop-shadow-2xl ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
+            data-allobot-depth={theme}
+            className={`relative ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
             style={{
                 filter: trailFilter,
                 transition: motionDisabled ? 'none' : 'filter 0.3s ease',
@@ -3299,6 +3929,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               {!isDragging && !isPoofing && !isSleeping && (
                   <>
                     <button data-help-key="bot_sleep_btn"
+                        data-allobot-satellite-kind="hide"
                         type="button"
                         onClick={(e) => {
                              e.preventDefault();
@@ -3313,6 +3944,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         <X size={satelliteIconSize} strokeWidth={3} />
                     </button>
                     <button data-help-key="bot_settings_btn"
+                        data-allobot-satellite-kind="settings"
                         type="button"
                         onClick={(e) => {
                             e.preventDefault();
@@ -3329,6 +3961,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     </button>
                     {onToggleMute && (
                         <button data-help-key="bot_mute_btn"
+                            data-allobot-satellite-kind="sound"
+                            data-allobot-satellite-state={!soundEnabled ? 'muted' : 'enabled'}
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -3346,6 +3980,8 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     )}
                     {onMicClick && (
                         <button data-help-key="bot_mic_btn"
+                            data-allobot-satellite-kind="mic"
+                            data-allobot-satellite-state={isListening ? 'listening' : 'idle'}
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -3401,14 +4037,30 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                    </g>
                 )}
                 {!isFlightActive && !isDragging && (
-                    <ellipse
-                        cx="50"
-                        cy="90"
-                        rx="18"
-                        ry="4"
-                        fill="#000"
-                        className={isSleeping || motionDisabled ? "opacity-20" : "animate-shadow-pulse"}
-                    />
+                    <g
+                        data-allobot-ground-shadow={theme}
+                        className={isSleeping || motionDisabled ? undefined : "animate-shadow-pulse"}
+                    >
+                        <ellipse
+                            data-allobot-shadow-layer="ambient"
+                            cx="50"
+                            cy="90"
+                            rx="21"
+                            ry="4.8"
+                            fill="#0F172A"
+                            opacity={theme === 'contrast' ? '0.28' : (theme === 'dark' ? '0.24' : '0.16')}
+                            filter={theme === 'contrast' ? undefined : `url(#${svgPaintIds.groundShadow})`}
+                        />
+                        <ellipse
+                            data-allobot-shadow-layer="contact"
+                            cx="50"
+                            cy="89.5"
+                            rx="12"
+                            ry="1.8"
+                            fill={theme === 'contrast' ? '#000000' : '#020617'}
+                            opacity={theme === 'contrast' ? '0.58' : (theme === 'dark' ? '0.42' : '0.30')}
+                        />
+                    </g>
                 )}
                     <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
                     <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke={colors.jetpackStroke} strokeWidth="2" />
@@ -3451,7 +4103,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         />
                         <path
                             d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
-                            fill="url(#hologram-beam)"
+                            fill={`url(#${svgPaintIds.beam})`}
                             style={{ mixBlendMode: 'screen', pointerEvents: 'none' }}
                             opacity="0.6"
                         >
@@ -3502,6 +4154,15 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         '--start-deg': `${wobbleState.deg}deg`
                     }}
                 >
+                    {theme === 'contrast' && (
+                        <path
+                            d="M50 15V5"
+                            stroke="#000000"
+                            strokeWidth="7"
+                            strokeLinecap="round"
+                            data-allobot-antenna-outline="true"
+                        />
+                    )}
                     <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
                     {antennaAction === 'signal' && !motionDisabled && !isSleeping && effectiveMood !== 'thinking' && (
                         <g>
@@ -3513,6 +4174,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     <circle
                         cx="50" cy="5" r="5"
                         fill={isSleeping ? "#64748B" : "#FACC15"}
+                        stroke={theme === 'contrast' ? '#000000' : 'none'}
+                        strokeWidth={theme === 'contrast' ? '2' : '0'}
+                        data-allobot-antenna-light={theme}
                         className={
                             effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
                             (!motionDisabled && isTalking ? "animate-pulse motion-reduce:animate-none" :
@@ -3525,7 +4189,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     <g className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '1.5s' }}>
                         <path
                             d="M 35 40 L 15 5 L 85 5 L 65 40 Z"
-                            fill="url(#hologram-gradient)"
+                            fill={`url(#${svgPaintIds.hologram})`}
                             opacity="0.6"
                         />
                         <path d="M 15 10 L 85 10" stroke="#22D3EE" strokeWidth="1" opacity="0.4">
@@ -3534,27 +4198,58 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         </path>
                     </g>
                 )}
-                <circle cx="50" cy="55" r="35" fill={`url(#bodyGradient-${effectiveMood})`} />
-                <circle cx="50" cy="55" r="35" fill="url(#rimLightGradient)" />
+                <circle
+                    cx="50" cy="55" r="35"
+                    fill={`url(#${svgPaintIds.body})`}
+                    stroke={theme === 'contrast' ? '#000000' : 'none'}
+                    strokeWidth={theme === 'contrast' ? '2.5' : '0'}
+                    data-allobot-shell={theme}
+                />
+                <circle cx="50" cy="55" r="35" fill={`url(#${svgPaintIds.rim})`} />
+                {accessoryRenderSide && (
+                    <g data-allobot-accessory-reflection={accessoryRenderSide} pointerEvents="none">
+                        <ellipse
+                            cx={accessoryRenderSide === 'left' ? 32 : 68}
+                            cy="55"
+                            rx="18"
+                            ry="26"
+                            fill={accessoryAccent}
+                            opacity={theme === 'contrast' ? '0.16' : '0.11'}
+                        />
+                        <path
+                            d={accessoryRenderSide === 'left'
+                                ? 'M30 28 Q15 39 15 57 Q16 74 29 82'
+                                : 'M70 28 Q85 39 85 57 Q84 74 71 82'}
+                            stroke={accessoryAccent}
+                            strokeWidth="2.6"
+                            strokeLinecap="round"
+                            fill="none"
+                            opacity={theme === 'contrast' ? '0.55' : '0.34'}
+                        />
+                    </g>
+                )}
                 {activeView === 'faq' && !isSleeping && !motionDisabled && (
                      <g className="animate-bounce motion-reduce:animate-none" style={{ animationDuration: '2.5s' }}>
                           <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
                      </g>
                 )}
-                <g style={{ transform: `translate(${visorPosition.x}px, ${visorPosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
+                <g
+                    data-allobot-visor={theme}
+                    style={{ transform: `translate(${visorPosition.x + (propGazeX * 0.3)}px, ${visorPosition.y + (propGazeY * 0.3)}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}
+                >
                     <rect
                         x="20"
                         y="30"
                         width="60"
                         height="36"
                         rx="14"
-                        fill={isTalking ? '#312E81' : colors.screenBg}
+                        fill={theme === 'contrast' ? colors.screenBg : (isTalking ? '#312E81' : colors.screenBg)}
                         className="transition-colors duration-200"
                     />
                     <path
                         d="M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36"
                         fill="none"
-                        stroke="url(#visorReflect)"
+                        stroke={`url(#${svgPaintIds.visor})`}
                         strokeWidth="3"
                         strokeLinecap="round"
                         opacity="0.9"
@@ -3566,15 +4261,16 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         height="36"
                         rx="14"
                         fill="none"
-                        stroke={isTalking ? "#6366F1" : "rgba(255,255,255,0.15)"}
-                        strokeWidth="2"
+                        stroke={theme === 'contrast' ? colors.glow : (isTalking ? "#6366F1" : "rgba(255,255,255,0.15)")}
+                        strokeWidth={theme === 'contrast' ? '3' : '2'}
                     />
                 </g>
                 <g
                     className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
                 >
-                    <circle cx="10" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                    <circle cx={leftHandX} cy={leftHandY} r="6.5" fill={colors.gradFrom} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} data-allobot-hand="left" style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
+                    <circle cx={leftHandX - 2} cy={leftHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.55'} pointerEvents="none" />
                     {activeView === 'image' && !isSleeping && (
                         <g transform="translate(10, 65) rotate(15)">
                             <path
@@ -3623,17 +4319,21 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
                 >
-                    <circle cx="90" cy="65" r="6.5" fill={colors.gradFrom} stroke={colors.jetpackStroke} strokeWidth="1.5" />
+                    <circle cx={rightHandX} cy={rightHandY} r="6.5" fill={colors.gradFrom} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} data-allobot-hand="right" style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
+                    <circle cx={rightHandX - 2} cy={rightHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.55'} pointerEvents="none" />
                 </g>
                 {heldItem && !isSleeping && !isDragging && (
                     <g
-                        id="held-item"
+                        id={svgPaintIds.heldItem}
+                        data-allobot-held-item="true"
+                        data-held-item-side={heldItemRenderSide}
                         className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : ""}`}
                         style={{
                             transformOrigin: '90px 65px',
                             transform: isMoving ? `rotate(${propRotation}deg)` : undefined
                         }}
                     >
+                        <g transform={heldItemRenderSide === 'left' ? 'translate(100 0) scale(-1 1)' : undefined}>
                         {heldItem === 'pointer' && (
                             <g className="animate-tap-pointer">
                                 <line x1="90" y1="65" x2="115" y2="25" stroke="#D4A373" strokeWidth="3" strokeLinecap="round" />
@@ -3735,64 +4435,83 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse motion-reduce:animate-none" />
                             </g>
                         )}
+                        </g>
                     </g>
                 )}
-                <g style={{ transform: `translate(${eyePosition.x}px, ${eyePosition.y}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}>
-                    {isSleeping ? (
-                        <g className="transition-all motion-reduce:transition-none duration-500">
-                            <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
-                            <path d="M56 49 Q61 53 66 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                {isSleeping ? (
+                    <g className="transition-all motion-reduce:transition-none duration-500">
+                        <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                        <path d="M56 49 Q61 53 66 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+                    </g>
+                ) : (
+                    <g>
+                        {/* Keep the eye sockets anchored in the visor; only the pupils
+                            track the pointer/prop so Allobot looks rather than sliding
+                            its whole face—including its mouth—around the screen. */}
+                        <ellipse
+                            cx="38" cy="48"
+                            rx={eyeRx} ry={eyeRy * blinkScale}
+                            fill={colors.eye}
+                            className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        />
+                        <ellipse
+                            cx="62" cy="48"
+                            rx={eyeRx} ry={eyeRy * blinkScale}
+                            fill={colors.eye}
+                            className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                        />
+                        <g
+                            data-allobot-prop-gaze={accessoryRenderSide || 'center'}
+                            style={{ transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}
+                        >
+                            <ellipse cx="38" cy="48" rx="2.5" ry={Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale} fill={colors.screenBg} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse cx="62" cy="48" rx="2.5" ry={Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale} fill={colors.screenBg} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <circle cx="37.2" cy="47.1" r={0.75 * blinkScale} fill="white" opacity="0.9" />
+                            <circle cx="61.2" cy="47.1" r={0.75 * blinkScale} fill="white" opacity="0.9" />
                         </g>
-                    ) : (
-                        <g>
-                            <ellipse
-                                cx="38" cy="48"
-                                rx={eyeRx} ry={eyeRy * blinkScale}
-                                fill={colors.eye}
-                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                            />
-                            <ellipse
-                                cx="62" cy="48"
-                                rx={eyeRx} ry={eyeRy * blinkScale}
-                                fill={colors.eye}
-                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                            />
-                            <ellipse
-                                cx="40" cy={48 - (2 * blinkScale)}
-                                rx="2.5" ry={2.5 * blinkScale}
-                                fill="white" opacity="0.8"
-                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                            />
-                            <ellipse
-                                cx="64" cy={48 - (2 * blinkScale)}
-                                rx="2.5" ry={2.5 * blinkScale}
-                                fill="white" opacity="0.8"
-                                className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
-                            />
-                        </g>
-                    )}
-                    <path
-                        d={getMouthPath()}
-                        stroke={colors.mouth}
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill="none"
-                        className="mouth-transition"
-                    />
-                    {!isSleeping && effectiveMood !== 'idle' && (
-                        <g className="transition-all motion-reduce:transition-none duration-300">
-                            {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                            {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                            {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                            {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                            {effectiveMood === 'sad' && <path d="M57 43 Q62 41 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                            {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                        </g>
-                    )}
-                </g>
+                    </g>
+                )}
+                <path
+                    d={getMouthPath()}
+                    stroke={colors.mouth}
+                    strokeWidth={theme === 'contrast' ? '2.5' : '2'}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                    className="mouth-transition"
+                />
+                {!isSleeping && effectiveMood !== 'idle' && (
+                    <g className="transition-all motion-reduce:transition-none duration-300">
+                        {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'sad' && <path d="M57 43 Q62 41 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                    </g>
+                )}
                 {effectiveAccessory && (
-                    <g id="accessories" className={`${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : '')}`.trim() || undefined}>
+                    <g
+                        id={svgPaintIds.accessories}
+                        data-allobot-accessories="true"
+                        data-accessory-side={accessoryRenderSide || 'center'}
+                        data-accessory-preferred-side={accessoryPreferredSide || 'center'}
+                        className={`${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : '')}`.trim() || undefined}
+                    >
+                      <g transform={accessoryTranslateX ? `translate(${accessoryTranslateX} 0)` : undefined}>
+                        <g
+                            key={`${effectiveAccessory}-${accessoryRenderSide || 'center'}`}
+                            className={!motionDisabled && accessoryRenderSide ? `animate-allobot-accessory-arrive-${accessoryRenderSide}` : undefined}
+                        >
+                          <g
+                              data-accessory-scale={accessoryScale}
+                              style={accessoryRenderSide ? {
+                                  transform: `scale(${accessoryScale})`,
+                                  transformBox: 'fill-box',
+                                  transformOrigin: accessoryRenderSide === 'left' ? 'right center' : 'left center',
+                                  filter: accessoryDepthFilter,
+                              } : undefined}
+                          >
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
                             <g className="animate-allobot-perk" style={{ animationDelay: '1.2s' }}>
@@ -3861,7 +4580,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'microscope' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 8)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 8)" data-accessory-placement="side-left" data-accessory-name="Microscope">
                                 <ellipse cx="8" cy="82" rx="14" ry="4" fill="#334155" />
                                 <rect x="2" y="78" width="12" height="4" rx="1" fill="#475569" />
                                 <rect x="6" y="38" width="4" height="42" rx="1" fill="#64748B" />
@@ -3882,7 +4601,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'historian' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-22, 38)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-22, 38)" data-accessory-placement="side-left" data-accessory-name="History Sources">
                                 <ellipse cx="14" cy="48" rx="18" ry="3" fill="#7C2D12" opacity="0.25" />
                                 <g transform="rotate(-14 6 32)">
                                     <rect x="-4" y="14" width="20" height="26" rx="1" fill="#FEF3C7" stroke="#92400E" strokeWidth="1" />
@@ -3917,7 +4636,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'teacher-stack' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-20, 34)" data-accessory-placement="side-left" data-accessory-name="Teacher Resource Stack">
                             <g className="animate-allobot-float" style={{ animationDelay: '3.5s' }}>
                                 <ellipse cx="16" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.18" />
                                 <rect x="0" y="40" width="34" height="11" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" transform="rotate(-3 17 45)" />
@@ -4107,7 +4826,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'persona-masks' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-24, 40)" data-accessory-placement="side-left" data-accessory-name="Persona Masks">
                             <g className="animate-allobot-sway" style={{ animationDelay: '0s' }}>
                                 <ellipse cx="14" cy="46" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="rotate(-8 8 26)">
@@ -4124,7 +4843,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'sentence-frames' && (
-                            <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)">
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500" transform="translate(76, 36)" data-accessory-placement="side-right" data-accessory-name="Sentence Frames">
                             <g className="animate-allobot-float" style={{ animationDelay: '0.7s' }}>
                                 <rect x="0" y="0" width="40" height="30" rx="2.5" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="2" />
                                 <rect x="4" y="4" width="32" height="22" rx="1" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="0.8" opacity="0.6" />
@@ -4138,7 +4857,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'outline-doc' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Outline Document">
                             <g className="animate-allobot-float" style={{ animationDelay: '1.4s' }}>
                                 <ellipse cx="18" cy="50" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                 <rect x="2" y="6" width="34" height="42" rx="2" fill={colors.accPaper} stroke={colors.accInk} strokeWidth="1.5" />
@@ -4163,7 +4882,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'anchor-easel' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 18)" data-accessory-placement="side-left" data-accessory-name="Anchor Chart Easel">
                             <g className="animate-allobot-float" style={{ animationDelay: '2.1s' }}>
                                 <line x1="6" y1="20" x2="-2" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
                                 <line x1="30" y1="20" x2="38" y2="62" stroke="#92400E" strokeWidth="2.4" strokeLinecap="round" />
@@ -4178,7 +4897,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'behavior-watch' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-28, 42)" data-accessory-placement="side-left" data-accessory-name="Behavior Timer">
                             <g className="animate-allobot-float" style={{ animationDelay: '2.8s' }}>
                                 <ellipse cx="15" cy="42" rx="15" ry="3" fill="#1F2937" opacity="0.16" />
                                 <g transform="translate(15, 24)">
@@ -4209,8 +4928,178 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                             </g>
                         )}
+                        {effectiveAccessory === 'phoneme-headset' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center" data-accessory-placement="head-and-ears" data-accessory-name="Phoneme Phones">
+                                <g className="animate-allobot-perk" style={{ animationDelay: '1.8s' }}>
+                                    <path d="M18 52 C18 19 29 5 50 5 C71 5 82 19 82 52" stroke="#4F46E5" strokeWidth="5" fill="none" strokeLinecap="round" />
+                                    <path d="M23 42 C23 18 33 10 50 10 C67 10 77 18 77 42" stroke="#A5B4FC" strokeWidth="2" fill="none" opacity="0.85" />
+                                    <rect x="13" y="42" width="15" height="24" rx="7" fill="#6366F1" stroke="#312E81" strokeWidth="1.4" />
+                                    <rect x="17" y="46" width="7" height="16" rx="3.5" fill="#C7D2FE" stroke="#4338CA" strokeWidth="0.8" />
+                                    <rect x="72" y="42" width="15" height="24" rx="7" fill="#6366F1" stroke="#312E81" strokeWidth="1.4" />
+                                    <rect x="76" y="46" width="7" height="16" rx="3.5" fill="#C7D2FE" stroke="#4338CA" strokeWidth="0.8" />
+                                    <path d="M80 61 Q83 71 70 72" stroke="#312E81" strokeWidth="2" fill="none" strokeLinecap="round" />
+                                    <circle cx="68" cy="72" r="2.4" fill="#F472B6" stroke="#9D174D" strokeWidth="0.7" />
+                                    <g transform="translate(50 3)">
+                                        <rect x="-11" y="-5" width="22" height="12" rx="6" fill="#FDF2F8" stroke="#BE185D" strokeWidth="1" />
+                                        <text x="0" y="3" fontFamily="Arial" fontSize="7" fontWeight="bold" fill="#9D174D" textAnchor="middle">/m/</text>
+                                    </g>
+                                    <path d="M89 47 Q94 51 89 55 M92 43 Q101 51 92 59" stroke="#22D3EE" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'choice-fan' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="UDL Choice Fan">
+                                <g className="animate-allobot-float" style={{ animationDelay: '1.3s' }}>
+                                    <ellipse cx="18" cy="50" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <g transform="rotate(-17 14 43)">
+                                        <rect x="2" y="8" width="22" height="38" rx="3" fill="#DBEAFE" stroke="#1D4ED8" strokeWidth="1.2" />
+                                        <circle cx="13" cy="20" r="6" fill="#60A5FA" stroke="#1E40AF" strokeWidth="0.8" />
+                                        <text x="13" y="23" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#172554" textAnchor="middle">R</text>
+                                        <line x1="7" y1="32" x2="19" y2="32" stroke="#1D4ED8" strokeWidth="1.2" /><line x1="7" y1="37" x2="17" y2="37" stroke="#1D4ED8" strokeWidth="1.2" />
+                                    </g>
+                                    <g transform="rotate(2 20 42)">
+                                        <rect x="9" y="5" width="22" height="40" rx="3" fill="#FEF3C7" stroke="#B45309" strokeWidth="1.2" />
+                                        <path d="M20 13 L22 18 L27 18 L23 21 L25 26 L20 23 L15 26 L17 21 L13 18 L18 18 Z" fill="#FBBF24" stroke="#92400E" strokeWidth="0.7" />
+                                        <text x="20" y="37" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#78350F" textAnchor="middle">E</text>
+                                    </g>
+                                    <g transform="rotate(18 25 43)">
+                                        <rect x="15" y="9" width="22" height="38" rx="3" fill="#D1FAE5" stroke="#047857" strokeWidth="1.2" />
+                                        <path d="M21 23 L25 27 L33 17" stroke="#059669" strokeWidth="2.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                        <text x="26" y="39" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#064E3B" textAnchor="middle">A</text>
+                                    </g>
+                                    <circle cx="19" cy="45" r="3" fill="#475569" stroke="#1F2937" strokeWidth="0.8" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'alignment-target' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Alignment Target">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.2s' }}>
+                                    <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <line x1="7" y1="43" x2="2" y2="52" stroke="#475569" strokeWidth="2.2" strokeLinecap="round" />
+                                    <line x1="29" y1="43" x2="34" y2="52" stroke="#475569" strokeWidth="2.2" strokeLinecap="round" />
+                                    <circle cx="18" cy="25" r="19" fill="#F8FAFC" stroke="#334155" strokeWidth="1.5" />
+                                    <circle cx="18" cy="25" r="14" fill="#CCFBF1" stroke="#0F766E" strokeWidth="1" />
+                                    <circle cx="18" cy="25" r="8" fill="#5EEAD4" stroke="#0F766E" strokeWidth="1" />
+                                    <circle cx="18" cy="25" r="3" fill="#0F766E" />
+                                    <path d="M4 38 L9 43 L17 34" stroke="#22C55E" strokeWidth="2.2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                    <g transform="rotate(-13 25 16)">
+                                        <line x1="18" y1="25" x2="34" y2="8" stroke="#F97316" strokeWidth="2" strokeLinecap="round" />
+                                        <path d="M34 8 L31 15 L37 13 Z" fill="#FB923C" stroke="#C2410C" strokeWidth="0.7" />
+                                    </g>
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'wayfinder-sign' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 27)" data-accessory-placement="side-left" data-accessory-name="Next-Step Signpost">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.7s' }}>
+                                    <ellipse cx="18" cy="58" rx="17" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <rect x="16" y="10" width="4" height="48" rx="1.5" fill="#92400E" stroke="#78350F" strokeWidth="0.8" />
+                                    <path d="M2 12 H27 L35 19 L27 26 H2 Z" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="1.2" />
+                                    <text x="17" y="22" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#172554" textAnchor="middle">1</text>
+                                    <path d="M34 29 H10 L2 36 L10 43 H34 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.2" />
+                                    <text x="19" y="39" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#78350F" textAnchor="middle">2</text>
+                                    <circle cx="18" cy="8" r="4" fill="#34D399" stroke="#047857" strokeWidth="1" />
+                                    <path d="M16 8 L18 10 L22 6" stroke="#ECFDF5" strokeWidth="1.3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'question-cards' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Curiosity Cards">
+                                <g className="animate-allobot-float" style={{ animationDelay: '3.1s' }}>
+                                    <ellipse cx="18" cy="49" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <g transform="rotate(-9 14 27)">
+                                        <rect x="1" y="9" width="25" height="36" rx="3" fill="#FCE7F3" stroke="#BE185D" strokeWidth="1.2" />
+                                        <text x="13.5" y="33" fontFamily="Arial" fontSize="22" fontWeight="bold" fill="#BE185D" textAnchor="middle">?</text>
+                                    </g>
+                                    <g transform="rotate(8 24 25)">
+                                        <rect x="12" y="5" width="25" height="36" rx="3" fill="#EDE9FE" stroke="#6D28D9" strokeWidth="1.2" />
+                                        <circle cx="24.5" cy="18" r="5" fill="#A78BFA" stroke="#5B21B6" strokeWidth="0.8" />
+                                        <text x="24.5" y="21" fontFamily="Arial" fontSize="8" fontWeight="bold" fill="#3B0764" textAnchor="middle">?</text>
+                                        <line x1="17" y1="29" x2="32" y2="29" stroke="#6D28D9" strokeWidth="1.2" /><line x1="17" y1="34" x2="29" y2="34" stroke="#6D28D9" strokeWidth="1.2" />
+                                    </g>
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'test-prep-kit' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 30)" data-accessory-placement="side-left" data-accessory-name="Ready, Set, Prep Kit">
+                                <g className="animate-allobot-float" style={{ animationDelay: '1.6s' }}>
+                                    <ellipse cx="18" cy="53" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <rect x="2" y="11" width="29" height="38" rx="3" fill="#FFFBEB" stroke="#92400E" strokeWidth="1.3" transform="rotate(-4 16 30)" />
+                                    <rect x="5" y="7" width="29" height="39" rx="3" fill="#EEF2FF" stroke="#4338CA" strokeWidth="1.4" />
+                                    <rect x="5" y="7" width="29" height="10" rx="3" fill="#6366F1" />
+                                    <text x="19.5" y="14" fontFamily="Arial" fontSize="5.5" fontWeight="bold" fill="#FFFFFF" textAnchor="middle">PREP</text>
+                                    <circle cx="11" cy="24" r="2" fill="none" stroke="#4F46E5" strokeWidth="1" /><line x1="16" y1="24" x2="29" y2="24" stroke="#4F46E5" strokeWidth="1" />
+                                    <circle cx="11" cy="31" r="2" fill="none" stroke="#4F46E5" strokeWidth="1" /><line x1="16" y1="31" x2="27" y2="31" stroke="#4F46E5" strokeWidth="1" />
+                                    <path d="M9 39 L12 42 L17 36" stroke="#16A34A" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                    <g transform="translate(31 10)">
+                                        <rect x="-2" y="-5" width="4" height="4" rx="1" fill="#475569" />
+                                        <circle cx="0" cy="4" r="9" fill="#F8FAFC" stroke="#334155" strokeWidth="1.3" />
+                                        <g className="animate-allobot-stopwatch-hand">
+                                            <line x1="0" y1="4" x2="0" y2="-2" stroke="#DC2626" strokeWidth="1.3" strokeLinecap="round" />
+                                            <line x1="0" y1="4" x2="4" y2="6" stroke="#334155" strokeWidth="1.2" strokeLinecap="round" />
+                                        </g>
+                                        <circle cx="0" cy="4" r="1.2" fill="#334155" />
+                                    </g>
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'source-inbox' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Source Inbox">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.0s' }}>
+                                    <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <rect x="7" y="4" width="26" height="31" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.2" transform="rotate(5 20 19)" />
+                                    <rect x="3" y="7" width="27" height="31" rx="2" fill="#F8FAFC" stroke="#334155" strokeWidth="1.3" transform="rotate(-4 16 22)" />
+                                    <line x1="8" y1="15" x2="25" y2="15" stroke="#6366F1" strokeWidth="1.4" /><line x1="8" y1="21" x2="23" y2="21" stroke="#94A3B8" strokeWidth="1.2" /><line x1="8" y1="27" x2="26" y2="27" stroke="#94A3B8" strokeWidth="1.2" />
+                                    <path d="M1 31 H11 L15 37 H24 L28 31 H36 L33 49 H4 Z" fill="#FDE68A" stroke="#92400E" strokeWidth="1.4" strokeLinejoin="round" />
+                                    <path d="M18 3 V14 M14 10 L18 14 L22 10" stroke="#2563EB" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" className="animate-allobot-inbox-drop" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'progress-orbit' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 32)" data-accessory-placement="side-left" data-accessory-name="Progress Pulse">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.3s' }}>
+                                    <ellipse cx="18" cy="51" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <rect x="0" y="6" width="36" height="42" rx="4" fill="#F8FAFC" stroke="#334155" strokeWidth="1.4" />
+                                    <rect x="0" y="6" width="36" height="9" rx="4" fill="#0F766E" />
+                                    <circle cx="7" cy="10.5" r="1.5" fill="#99F6E4" /><circle cx="12" cy="10.5" r="1.5" fill="#5EEAD4" />
+                                    <circle cx="12" cy="27" r="8" fill="none" stroke="#CCFBF1" strokeWidth="4" />
+                                    <path d="M12 19 A8 8 0 1 1 5.5 31.5" fill="none" stroke="#14B8A6" strokeWidth="4" strokeLinecap="round" className="animate-allobot-progress-pulse" />
+                                    <path d="M23 39 V29 H28 V39 M29 39 V22 H34 V39" fill="#60A5FA" stroke="#1D4ED8" strokeWidth="0.8" />
+                                    <path d="M7 40 L10 43 L16 36" stroke="#22C55E" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'maze-scroll' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 31)" data-accessory-placement="side-left" data-accessory-name="Fluency Maze Map">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.6s' }}>
+                                    <ellipse cx="18" cy="52" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M3 8 Q7 5 11 8 H31 Q35 5 38 9 V45 Q34 48 30 45 H10 Q6 49 2 45 Z" fill="#FEF3C7" stroke="#92400E" strokeWidth="1.4" />
+                                    <path d="M8 14 H31 V20 H15 V26 H29 V33 H10 V40 H33" stroke="#B45309" strokeWidth="2" fill="none" strokeLinecap="square" strokeLinejoin="round" />
+                                    <circle cx="8" cy="14" r="2.5" fill="#3B82F6" stroke="#1E40AF" strokeWidth="0.8" />
+                                    <g transform="translate(31 35)">
+                                        <line x1="0" y1="0" x2="0" y2="-13" stroke="#475569" strokeWidth="1.5" />
+                                        <path d="M0 -13 H8 L5 -9 L8 -5 H0 Z" fill="#EF4444" stroke="#991B1B" strokeWidth="0.7" className="animate-allobot-maze-flag" />
+                                    </g>
+                                    <path d="M2 12 Q6 15 10 12 M31 43 Q35 46 38 43" stroke="#FDE68A" strokeWidth="3" fill="none" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'resource-folder' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-31, 34)" data-accessory-placement="side-left" data-accessory-name="Resource Review Folder">
+                                <g className="animate-allobot-float" style={{ animationDelay: '2.9s' }}>
+                                    <ellipse cx="18" cy="48" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
+                                    <path d="M2 13 H15 L19 18 H35 V44 H2 Z" fill="#FCD34D" stroke="#92400E" strokeWidth="1.3" />
+                                    <g className="animate-allobot-folder-page">
+                                        <rect x="8" y="10" width="23" height="30" rx="2" fill="#FFFFFF" stroke="#475569" strokeWidth="1.2" transform="rotate(4 19 25)" />
+                                        <line x1="13" y1="18" x2="27" y2="18" stroke="#6366F1" strokeWidth="1.4" /><line x1="13" y1="24" x2="26" y2="24" stroke="#94A3B8" strokeWidth="1.1" />
+                                        <path d="M13 31 L16 34 L22 27" stroke="#16A34A" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                    </g>
+                                    <path d="M1 25 H36 L31 47 H6 Z" fill="#FDE68A" stroke="#92400E" strokeWidth="1.4" strokeLinejoin="round" />
+                                </g>
+                            </g>
+                        )}
                         {effectiveAccessory === 'math-tools' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-30, 32)" data-accessory-placement="side-left" data-accessory-name="Math Tools">
                                 <g className="animate-allobot-float" style={{ animationDelay: '0.5s' }}>
                                     <ellipse cx="18" cy="48" rx="16" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M2 46 L2 20 L30 46 Z" fill="#93C5FD" stroke="#1D4ED8" strokeWidth="1.4" />
@@ -4241,7 +5130,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {effectiveAccessory === 'game-pad' && (
-                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)">
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-32, 40)" data-accessory-placement="side-left" data-accessory-name="STEM Game Pad">
                                 <g className="animate-allobot-float" style={{ animationDelay: '1.1s' }}>
                                     <ellipse cx="19" cy="34" rx="18" ry="3" fill="#1F2937" opacity="0.16" />
                                     <path d="M5 14 Q0 15 1 24 L4 31 Q7 34 12 31 L26 31 Q31 34 34 31 L37 24 Q38 15 33 14 Q19 11 5 14 Z" fill="#5B6472" stroke="#1F2937" strokeWidth="1.4" />
@@ -4252,30 +5141,36 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 </g>
                             </g>
                         )}
+                          </g>
+                        </g>
+                      </g>
                     </g>
                 )}
                 <defs>
-                  <radialGradient id={`bodyGradient-${effectiveMood}`} cx="35%" cy="35%" r="65%" fx="30%" fy="30%">
+                  <radialGradient id={svgPaintIds.body} cx="35%" cy="35%" r="65%" fx="30%" fy="30%">
                     <stop offset="0%" stopColor={colors.gradFrom} />
                     <stop offset="100%" stopColor={colors.gradTo} />
                   </radialGradient>
-                  <radialGradient id="rimLightGradient" cx="70%" cy="70%" r="70%">
+                  <radialGradient id={svgPaintIds.rim} cx="70%" cy="70%" r="70%">
                     <stop offset="82%" stopColor="#fff" stopOpacity="0" />
                     <stop offset="100%" stopColor="#fff" stopOpacity="0.4" />
                   </radialGradient>
-                  <linearGradient id="hologram-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id={svgPaintIds.hologram} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#22D3EE" stopOpacity="0" />
                     <stop offset="20%" stopColor="#22D3EE" stopOpacity="0.1" />
                     <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.6" />
                   </linearGradient>
-                  <linearGradient id="visorReflect" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <linearGradient id={svgPaintIds.visor} x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor="white" stopOpacity="0.4" />
                     <stop offset="100%" stopColor="white" stopOpacity="0" />
                   </linearGradient>
-                  <linearGradient id="hologram-beam" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <linearGradient id={svgPaintIds.beam} x1="0%" y1="100%" x2="0%" y2="0%">
                     <stop offset="0%" stopColor="#06B6D4" stopOpacity="0.6" />
                     <stop offset="100%" stopColor="#06B6D4" stopOpacity="0" />
                   </linearGradient>
+                  <filter id={svgPaintIds.groundShadow} x="-35%" y="-150%" width="170%" height="400%" colorInterpolationFilters="sRGB">
+                    <feGaussianBlur stdDeviation="2.4" />
+                  </filter>
                 </defs>
               </svg>
           </div>

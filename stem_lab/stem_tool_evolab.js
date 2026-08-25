@@ -1,8 +1,8 @@
 // ═══════════════════════════════════════════
 // stem_tool_evolab.js — EvoLab: Evolution & Natural Selection
-// Interactive evolution lab with three core simulators (Selection Sandbox, Beak
-// Lab, Phylogenetic Tree Builder) plus four quick labs (Hardy-Weinberg, Genetic
-// Drift, Common Ancestry Viewer, Misconceptions Quiz). Teaches the *process* of
+// Interactive evolution lab with 17 student modules spanning simulators, quick
+// concept labs, reasoning challenges, and a persistent Capstone investigation.
+// Teaches the *process* of
 // evolution — variation → selection → reproduction → inheritance — alongside
 // real-world relevance (Maine wildlife examples sprinkled throughout) and
 // targeted misconception correction.
@@ -107,7 +107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
   window.StemLab.registerTool('evoLab', {
     name: 'EvoLab — Evolution',
     icon: '\uD83D\uDC12',
-    desc: 'Evolution and natural selection — three interactive simulators (Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder) plus four quick labs covering Hardy-Weinberg, genetic drift, common ancestry, and the most common evolution misconceptions. Real-world relevance: includes Maine wildlife examples (snowshoe hare coat color, Maine finches, moose tick mortality).',
+    desc: 'Evolution and natural selection through 17 student modules: seven core simulators, six quick concept labs, three reasoning challenges, and a persistent Capstone investigation. Includes population genetics, common ancestry, climate pressure, coevolution, and Maine wildlife examples.',
     category: 'biology',
     aliases: ['evolution', 'natural selection', 'Darwin', 'Hardy-Weinberg'],
     render: function(ctx) {
@@ -196,14 +196,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // BackBar — title bar with back-to-menu button. Used at the top of every
       // sub-module view for consistent navigation.
       function BackBar(props) {
-        return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
-          h('button', {
-            onClick: function() { setView('menu'); upd('view', 'menu'); },
-            'aria-label': t('stem.evolab.back_to_evolab_menu', 'Back to EvoLab menu'),
-            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
-          }, t('stem.evolab.menu', '← Menu')),
-          h('span', { className: 'text-3xl' }, props.icon),
-          h('h1', { className: 'text-xl font-black flex-1' }, props.title)
+        var mission = d.evoCapstone && d.evoCapstone.scenarioId && d.evoCapstone.module === view ? d.evoCapstone : null;
+        var missionItems = mission && Array.isArray(mission.dataMission) ? mission.dataMission : [];
+        return h(React.Fragment, null,
+          h('div', { className: 'flex flex-wrap items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
+            h('button', {
+              onClick: function() { setView('menu'); upd('view', 'menu'); },
+              'aria-label': t('stem.evolab.back_to_evolab_menu', 'Back to EvoLab menu'),
+              className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
+            }, t('stem.evolab.menu', '← Menu')),
+            h('span', { className: 'text-3xl' }, props.icon),
+            h('h1', { className: 'text-xl font-black flex-1' }, props.title),
+            d.evoCapstone && d.evoCapstone.scenarioId && view !== 'capstone' && h('button', {
+              onClick: function() { goto('capstone'); },
+              'aria-label': t('stem.evolab.return_to_capstone_project', 'Return to your in-progress Capstone Project'),
+              className: 'px-3 py-1.5 rounded-lg bg-amber-300 text-amber-950 hover:bg-amber-200 font-bold text-sm transition-colors shadow'
+            }, t('stem.evolab.return_to_project', '🎓 Return to project'))
+          ),
+          mission && h('aside', {
+            'aria-label': 'Capstone data mission',
+            className: 'evolab-no-print border-b-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 shadow-sm'
+          },
+            h('div', { className: 'mx-auto flex max-w-6xl flex-col gap-3 lg:flex-row lg:items-start lg:justify-between' },
+              h('div', { className: 'min-w-0' },
+                h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-amber-800' }, '📍 Capstone field mission'),
+                h('div', { className: 'font-black text-slate-900' }, mission.scenarioTitle || 'Active investigation'),
+                h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, mission.moduleHint || 'Run the model, record exact settings, and compare the outcome with your prediction.')
+              ),
+              missionItems.length > 0 && h('ol', { className: 'grid min-w-0 flex-1 grid-cols-1 gap-1 text-xs text-slate-700 sm:grid-cols-3' },
+                missionItems.map(function(item, index) {
+                  return h('li', { key: index, className: 'flex items-start gap-2 rounded-lg border border-amber-200 bg-white/80 p-2' },
+                    h('span', { className: 'flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-amber-700 text-[10px] font-black text-white' }, index + 1),
+                    h('span', null, item)
+                  );
+                })
+              ),
+              h('button', {
+                type: 'button',
+                onClick: function() { goto('capstone'); },
+                className: 'flex-shrink-0 rounded-xl bg-amber-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
+              }, 'Return to notebook →')
+            )
+          )
         );
       }
 
@@ -251,17 +285,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             className: 'transition-colors cursor-pointer text-sm font-bold text-amber-900 hover:text-amber-700 select-none flex items-center justify-between gap-3',
             'aria-label': t('stem.evolab.teacher_notes_discussion_questions_sta', 'Teacher Notes — discussion questions, standards alignment, and extension activities')
           },
-            h('span', null, t('stem.evolab.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand')),
-            // Print button — uses native window.print(); print stylesheet hides
-            // controls and force-expands details so the printed page includes
-            // the full educational + teacher-facing content.
-            h('span', {
-              role: 'button',
-              tabIndex: 0,
+            h('span', null, t('stem.evolab.teacher_notes_click_to_expand', '🍎 Teacher Notes — click to expand'))
+          ),
+          // Keep Print outside <summary>: nesting an interactive button inside
+          // the disclosure control creates two overlapping keyboard targets.
+          h('div', { className: 'evolab-no-print mt-2 flex justify-end' },
+            h('button', {
+              type: 'button',
               'aria-label': t('stem.evolab.print_this_module_page_includes_teache', 'Print this module page (includes Teacher Notes)'),
-              onClick: function(e) { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} },
-              onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); try { window.print(); } catch (_) {} } },
-              className: 'transition-colors evolab-no-print text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-300 hover:bg-amber-100 text-amber-800'
+              onClick: function() { try { window.print(); } catch (_) {} },
+              className: 'transition-colors text-xs font-semibold normal-case px-2 py-1 rounded bg-white border border-amber-600 hover:bg-amber-100 text-amber-900'
             }, t('stem.evolab.print', '🖨️ Print'))
           ),
           h('div', { className: 'mt-3 space-y-3 text-sm' },
@@ -430,8 +463,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           },
           {
             id: 'capstone', title: t('stem.evolab.capstone_project', 'Capstone Project'), icon: '🎓',
-            subtitle: t('stem.evolab.predict_run_reflect', 'Predict, run, reflect'),
-            desc: t('stem.evolab.a_guided_4_step_research_project_pick_', 'A guided 4-step research project. Pick a real-world scenario, predict the outcome, run the matching simulation, then write up your findings. Generates a print-ready lab report.'),
+            subtitle: t('stem.evolab.predict_run_reflect', 'Predict, test, explain'),
+            desc: t('stem.evolab.a_guided_4_step_research_project_pick_', 'A guided investigation with a persistent evidence notebook. Pick a real-world scenario, predict the outcome, test it in a linked simulation, record data, and generate a print-ready lab report.'),
             color: 'from-emerald-700 to-cyan-800',
             ring: 'ring-emerald-700/40'
           }
@@ -493,6 +526,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           { label: 'Inheritance', desc: 'Helpful traits become more common.' },
           { label: 'Population shift', desc: 'The group changes over generations.' }
         ];
+        var capstoneDraft = d.evoCapstone || {};
+        var capstoneSteps = ['Pick scenario', 'Predict', 'Collect evidence', 'Evaluate', 'Report'];
 
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
@@ -675,6 +710,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               })
             )
           ),
+          capstoneDraft.scenarioId && h('section', {
+            className: 'mb-6 rounded-2xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm',
+            'aria-label': t('stem.evolab.in_progress_investigation', 'In-progress Capstone investigation')
+          },
+            h('div', { className: 'flex flex-col sm:flex-row sm:items-center justify-between gap-3' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('span', { className: 'text-3xl', 'aria-hidden': true }, '📓'),
+                h('div', null,
+                  h('div', { className: 'text-xs font-black uppercase tracking-widest text-amber-800' }, t('stem.evolab.investigation_saved', 'Investigation saved in this session')),
+                  h('div', { className: 'font-black text-slate-900' }, capstoneDraft.scenarioTitle || t('stem.evolab.capstone_investigation', 'Capstone investigation')),
+                  h('div', { className: 'text-sm text-slate-700' },
+                    (capstoneSteps[clamp(capstoneDraft.step || 0, 0, 4)] || capstoneSteps[0]) + ' · Step ' + (clamp(capstoneDraft.step || 0, 0, 4) + 1) + ' of 5'
+                  )
+                )
+              ),
+              h('button', {
+                onClick: function() { goto('capstone'); },
+                className: 'rounded-xl bg-amber-700 px-4 py-2.5 text-sm font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
+              }, t('stem.evolab.resume_investigation', 'Resume investigation →'))
+            )
+          ),
           h('details', { className: 'mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden' },
             h('summary', { className: 'cursor-pointer select-none px-4 py-3 font-black text-slate-800 flex flex-wrap items-center justify-between gap-2' },
               h('span', null, 'Browse every EvoLab module'),
@@ -732,7 +788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               h('div', { className: 'p-5' },
                 h('p', { className: 'text-sm text-slate-700 leading-relaxed' },
-                  t('stem.evolab.visual_flowchart_showing_the_11_studen', 'Visual flowchart showing the 11 student modules organized by conceptual scale (alleles → populations → species → all of life). Includes Quick / Standard / Deep-dive learning paths.'))
+                  t('stem.evolab.visual_flowchart_showing_the_11_studen', 'Visual flowchart showing all 17 student modules organized by conceptual scale (alleles → populations → species → all of life). Includes Quick / Standard / Deep-dive learning paths.'))
               )
             ),
             h('button', {
@@ -1256,7 +1312,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           snowshoe: {
             label: t('stem.evolab.maine_snowshoe_hare_climate_change', 'Maine Snowshoe Hare — Climate Change'),
             description: t('stem.evolab.real_ongoing_research_as_maine_winters', 'Real ongoing research: as Maine winters shorten, hares are still molting white in November but the snow arrives later. White-coated hares against bare ground are easy prey. Selection now favors hares that delay their molt.'),
-            ideal: 0.32, width: 0.12, mode: 'gaussian',
+            ideal: 0.68, width: 0.12, mode: 'gaussian',
             envColor: '#cbd5e1', traitLabel: 'Molt timing (early ↔ late)'
           }
         };
@@ -1673,7 +1729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('li', null, h('strong', null, t('stem.evolab.stabilizing_keeps_the_mean_stable', 'Stabilizing keeps the mean stable: ')), t('stem.evolab.switch_to_the_stabilizing_birth_weight', 'Switch to the stabilizing (birth weight) preset. The mean stays near 0.5 but the standard deviation SHRINKS over generations as extremes are pruned. Variation decreases without the mean moving.')),
                 h('li', null, h('strong', null, t('stem.evolab.disruptive_splits_the_population', 'Disruptive splits the population: ')), t('stem.evolab.switch_to_disruptive_after_15_20_gener', 'Switch to disruptive. After 15-20 generations the histogram becomes BIMODAL — two peaks at 0.2 and 0.8 with a valley at 0.5. This is how one species can begin to split into two.')),
                 h('li', null, h('strong', null, t('stem.evolab.mutation_matters', 'Mutation matters: ')), t('stem.evolab.on_the_directional_preset_with_selecti', 'On the directional preset with selection ON, set Mutation Size to 0 (no variation introduced). After convergence the population stops changing — selection has nothing left to act on. Then bump Mutation Size up — convergence resumes faster.')),
-                h('li', null, h('strong', null, t('stem.evolab.snowshoe_hare_scenario', 'Snowshoe hare scenario: ')), t('stem.evolab.switch_to_the_snowshoe_hare_preset_the', 'Switch to the snowshoe hare preset. The "ideal" trait is 0.32 (delayed molt) — selection now pushes hares away from their ancestral early-molt genes. This is real ongoing Maine evolution.'))
+                h('li', null, h('strong', null, t('stem.evolab.snowshoe_hare_scenario', 'Snowshoe hare scenario: ')), t('stem.evolab.switch_to_the_snowshoe_hare_preset_the', 'Switch to the snowshoe hare preset. The "ideal" trait is 0.68 (later molt) — selection now pushes hares away from their ancestral early-molt genes. This is real ongoing Maine evolution.'))
               )
             ),
             // Cross-module suggestion — invites learners to the next natural step.
@@ -6134,6 +6190,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'antibioticLab',
             moduleLabel: '💊 Antibiotic Resistance Lab',
             moduleHint: 'Use the Antibiotic Resistance Lab as your model — same mechanism, different organism. Set Starting Resistance to 1%, Apply Antibiotic, and run for 10-30 ticks.',
+            mechanismCue: 'Natural selection changes allele frequencies when resistance is heritable and pesticide exposure changes which pests reproduce.',
+            dataMission: [
+              'Record the starting resistance percentage and population size.',
+              'Keep the treatment consistent and note how many rounds you run.',
+              'Record final resistance and population size; look for population recovery after the first crash.'
+            ],
+            reflectionLabels: ['Compare', 'Explain impact', 'Apply'],
             predictPrompts: [
               'After 10 generations of pesticide use, will the pest population go extinct, stay the same, or shift toward resistance?',
               'What % of pests will be resistant after 10 generations? (Make a numerical estimate.)',
@@ -6154,6 +6217,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'geneticDrift',
             moduleLabel: '🎲 Genetic Drift Simulator',
             moduleHint: 'Use the Genetic Drift Simulator with N=10 (matches the founders) and 100 generations. Run multiple lineages to see the range of possible outcomes.',
+            mechanismCue: 'Genetic drift is random sampling. Its effects are stronger in small populations, and repeated lineages can end differently even from identical starting conditions.',
+            dataMission: [
+              'Confirm N = 10 and a starting allele frequency of 0.50.',
+              'Run several lineages for the same number of generations.',
+              'Record the range of final frequencies and how many lineages reached fixation or loss.'
+            ],
+            reflectionLabels: ['Compare', 'Explain pattern', 'Apply'],
             predictPrompts: [
               'Will the island population\'s allele frequencies stay near 50/50, drift to fixation (0 or 1), or something else?',
               'If you run this scenario 5 different times, will the outcomes be similar to each other or different? Why?',
@@ -6173,7 +6243,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             problem: 'Maine winters are getting shorter. Historically, snowshoe hares molted to white fur in November to match the snow. Today, the snow often doesn\'t arrive until December — leaving white-coated hares against bare brown ground for weeks. Over the next 50 generations, what will happen to the hare population\'s molt-timing genes?',
             module: 'selectionSandbox',
             moduleLabel: '🧪 Selection Sandbox',
-            moduleHint: 'Use the Selection Sandbox with the "Maine Snowshoe Hare" preset. The "ideal" trait is set to 0.32 (delayed molt). Run for 30+ generations.',
+            moduleHint: 'Use the Selection Sandbox with the "Maine Snowshoe Hare" preset. The "ideal" trait is set to 0.68 (later molt). Run for 30+ generations.',
+            mechanismCue: 'Directional selection can shift a population only when useful variation is heritable. Whether adaptation keeps pace also depends on population size and the rate of environmental change.',
+            dataMission: [
+              'Record the starting mean trait, ideal trait, and population size.',
+              'Keep the selection settings fixed and note the generations elapsed.',
+              'Record the final mean trait and population size; compare the trait shift with the environmental shift.'
+            ],
+            reflectionLabels: ['Compare', 'Explain pace', 'Apply'],
             predictPrompts: [
               'Will the population shift toward earlier molting, later molting, or stay the same? Why?',
               'How fast can selection respond to climate change? What does the speed depend on?',
@@ -6194,6 +6271,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'coevolution',
             moduleLabel: '🐆 Coevolution Lab',
             moduleHint: 'Use the Coevolution Lab as a model. Treat predator = invasive species, prey = native plant. Apply Hunt Pressure for the invasive\'s strong selection. Try with and without "Cost of Speed" enabled.',
+            mechanismCue: 'Coevolution requires reciprocal selection: each population changes the selective environment experienced by the other. A one-sided response is adaptation, but not necessarily coevolution.',
+            dataMission: [
+              'Record both populations\' starting trait values and sizes.',
+              'Run the same duration with and without the tradeoff setting.',
+              'Record how both populations change; look for reciprocal change rather than a one-sided response.'
+            ],
+            reflectionLabels: ['Evaluate model', 'Explain limits', 'Apply'],
             predictPrompts: [
               'Will native plants evolve resistance to garlic mustard\'s chemicals over 200 years? Why or why not?',
               'Will garlic mustard evolve in response? In what direction?',
@@ -6214,6 +6298,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: null,
             moduleLabel: 'Pick the most relevant module from the menu',
             moduleHint: 'Match your scenario to a module: selection in one population → Selection Sandbox; two populations → Speciation or Coevolution; small isolated population → Genetic Drift; molecular timescale → Antibiotic Lab. If your scenario is purely conceptual, use the module that best fits the underlying mechanism.',
+            mechanismCue: 'Name the mechanism your model represents, then explain what the model leaves out. A simulation is evidence about the model\'s behavior, not direct proof of a real-world claim.',
+            dataMission: [
+              'Name the independent variable you will change and the outcome you will measure.',
+              'Record your starting state, settings, duration, and number of trials.',
+              'Record the result and one limitation that matters when connecting the model to the real scenario.'
+            ],
+            reflectionLabels: ['Compare', 'Evaluate model', 'Extend'],
             predictPrompts: [
               'Describe your scenario in your own words.',
               'What evolutionary mechanism do you think drives the change (selection, drift, mutation, gene flow, or some combination)?',
@@ -6227,37 +6318,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           }
         ];
 
-        var stepState = useState(0), step = stepState[0], setStep = stepState[1];
-        var scenarioState = useState(null), scenarioId = scenarioState[0], setScenarioId = scenarioState[1];
-        var nameState = useState(''), studentName = nameState[0], setStudentName = nameState[1];
-        var predictionsState = useState(['', '', '']), predictions = predictionsState[0], setPredictions = predictionsState[1];
-        var reflectionsState = useState(['', '', '']), reflections = reflectionsState[0], setReflections = reflectionsState[1];
+        // Keep the investigation in host-owned toolData rather than component
+        // state. Students leave this view to run a simulator; local hook state
+        // would be destroyed on that navigation and erase their predictions.
+        // Session state also lets every linked lab offer a direct return route.
+        var capstone = d.evoCapstone || {};
+        var step = clamp(capstone.step == null ? 0 : capstone.step, 0, 4);
+        var scenarioId = capstone.scenarioId || null;
+        var studentName = capstone.studentName || '';
+        var predictions = Array.isArray(capstone.predictions) ? capstone.predictions : ['', '', ''];
+        var reflections = Array.isArray(capstone.reflections) ? capstone.reflections : ['', '', ''];
+        var notebook = Object.assign({ baseline: '', settings: '', outcome: '', surprise: '' }, capstone.notebook || {});
+        var evidenceVerdict = capstone.evidenceVerdict || '';
+        var EVIDENCE_VERDICTS = [
+          { value: 'supported', label: 'Supported', detail: 'The observed pattern matched the prediction.' },
+          { value: 'partly', label: 'Partly supported', detail: 'Some parts matched, while others differed.' },
+          { value: 'not-supported', label: 'Not supported', detail: 'The observed pattern differed from the prediction.' },
+          { value: 'inconclusive', label: 'Inconclusive', detail: 'The run did not provide enough evidence to decide.' }
+        ];
+        var evidenceVerdictLabel = (EVIDENCE_VERDICTS.filter(function(option) { return option.value === evidenceVerdict; })[0] || {}).label || 'Not evaluated';
+
+        var saveCapstone = function(patch) {
+          upd('evoCapstone', Object.assign({}, capstone, patch));
+        };
+        var setStep = function(nextStep) { saveCapstone({ step: clamp(nextStep, 0, 4) }); };
+        var setStudentName = function(name) { saveCapstone({ studentName: name }); };
 
         var scenario = scenarioId ? SCENARIOS.find(function(s) { return s.id === scenarioId; }) : null;
 
         var resetAll = function() {
-          setStep(0); setScenarioId(null); setStudentName('');
-          setPredictions(['', '', '']); setReflections(['', '', '']);
+          upd('evoCapstone', { step: 0, scenarioId: null, scenarioTitle: '', studentName: '', predictions: ['', '', ''], reflections: ['', '', ''], notebook: { baseline: '', settings: '', outcome: '', surprise: '' }, evidenceVerdict: '', module: null, moduleLabel: '', moduleHint: '', mechanismCue: '', dataMission: [] });
           announce('Capstone Project reset.');
         };
 
         var canAdvance = function() {
           if (step === 0) return !!scenarioId;
           if (step === 1) return predictions.every(function(p) { return p.trim().length >= 10; });
-          if (step === 2) return true; // Just running the sim is enough to advance
-          if (step === 3) return reflections.every(function(r) { return r.trim().length >= 10; });
+          if (step === 2) return notebook.baseline.trim().length >= 10 && notebook.outcome.trim().length >= 10;
+          if (step === 3) return !!evidenceVerdict && reflections.every(function(r) { return r.trim().length >= 10; });
           return false;
         };
 
         var setPrediction = function(idx, val) {
           var next = predictions.slice();
           next[idx] = val;
-          setPredictions(next);
+          saveCapstone({ predictions: next });
         };
         var setReflection = function(idx, val) {
           var next = reflections.slice();
           next[idx] = val;
-          setReflections(next);
+          saveCapstone({ reflections: next });
+        };
+        var setNotebook = function(key, val) {
+          var next = Object.assign({}, notebook);
+          next[key] = val;
+          saveCapstone({ notebook: next });
+        };
+        var setEvidenceVerdict = function(value) {
+          saveCapstone({ evidenceVerdict: value });
+          announce('Evidence verdict selected: ' + value + '.');
         };
 
         // Step 0: Pick a scenario
@@ -6270,7 +6389,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 var selected = scenarioId === s.id;
                 return h('button', {
                   key: s.id,
-                  onClick: function() { setScenarioId(s.id); },
+                  onClick: function() {
+                    if (scenarioId === s.id) return;
+                    saveCapstone({
+                      scenarioId: s.id,
+                      scenarioTitle: s.title,
+                      predictions: ['', '', ''],
+                      reflections: ['', '', ''],
+                      notebook: { baseline: '', settings: '', outcome: '', surprise: '' },
+                      evidenceVerdict: '',
+                      module: s.module,
+                      moduleLabel: s.moduleLabel,
+                      moduleHint: s.moduleHint,
+                      mechanismCue: s.mechanismCue,
+                      dataMission: s.dataMission
+                    });
+                  },
                   'aria-pressed': selected,
                   'aria-label': 'Pick scenario: ' + s.title,
                   className: 'text-left rounded-xl border-2 ' + (selected ? 'border-emerald-500 ring-4 ring-emerald-200' : 'transition-colors border-slate-200 hover:border-slate-400') + ' bg-white overflow-hidden transition-all'
@@ -6339,41 +6473,135 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'text-base font-bold text-slate-800 mb-2' }, scenario.moduleLabel),
               h('p', { className: 'text-sm text-slate-700 mb-3' }, scenario.moduleHint),
               scenario.module && h('button', {
-                onClick: function() { goto(scenario.module); },
+                onClick: function() {
+                  saveCapstone({
+                    module: scenario.module,
+                    moduleLabel: scenario.moduleLabel,
+                    moduleHint: scenario.moduleHint,
+                    mechanismCue: scenario.mechanismCue,
+                    dataMission: scenario.dataMission
+                  });
+                  goto(scenario.module);
+                },
                 'aria-label': 'Open ' + scenario.moduleLabel + ' to run the simulation',
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg'
               }, '→ Open ' + scenario.moduleLabel)
             ),
-            h('div', { className: 'bg-amber-50 border border-amber-300 rounded-xl p-4' },
-              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, t('stem.evolab.what_to_record', '📓 What to record')),
-              h('ul', { className: 'list-disc list-inside text-sm text-slate-700 space-y-1' },
-                h('li', null, t('stem.evolab.the_starting_state_of_the_simulation_p', 'The starting state of the simulation (population size, trait distribution).')),
-                h('li', null, t('stem.evolab.any_settings_you_adjusted_selection_st', 'Any settings you adjusted (selection strength, mutation rate, etc.).')),
-                h('li', null, t('stem.evolab.the_state_after_running_for_the_recomm', 'The state after running for the recommended number of generations.')),
-                h('li', null, t('stem.evolab.any_patterns_or_surprises_you_noticed', 'Any patterns or surprises you noticed.'))
+            h('section', { 'aria-label': 'Scenario data mission', className: 'rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4' },
+              h('div', { className: 'text-xs font-black uppercase tracking-wider text-cyan-900' }, '🔎 Your data mission'),
+              h('p', { className: 'mt-1 text-sm text-slate-700' }, 'Use the same settings for each trial. Exact values make your result easier to compare, explain, and repeat.'),
+              h('ol', { className: 'mt-3 grid grid-cols-1 gap-2 md:grid-cols-3' },
+                scenario.dataMission.map(function(item, index) {
+                  return h('li', { key: index, className: 'flex items-start gap-2 rounded-lg border border-cyan-200 bg-white p-3 text-sm text-slate-700' },
+                    h('span', { className: 'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-cyan-700 text-xs font-black text-white' }, index + 1),
+                    h('span', null, item)
+                  );
+                })
+              )
+            ),
+            h('section', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.evidence_notebook', '📓 Evidence notebook')),
+                h('div', { className: 'text-[10px] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-1' }, t('stem.evolab.saved_during_lab_visits', 'Saved during lab visits'))
               ),
-              h('p', { className: 'text-sm text-slate-600 mt-2 italic' }, t('stem.evolab.take_screenshots_write_notes_you_ll_us', 'Take screenshots, write notes — you\'ll use them in the next step.'))
+              h('p', { className: 'text-sm text-slate-700 mb-3' }, t('stem.evolab.record_numbers_not_just_impressions', 'Record numbers, not just impressions. At minimum, capture a starting condition and an observed outcome so another student could understand what changed.')),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                [
+                  { key: 'baseline', label: 'Starting conditions *', prompt: 'Population size, generation 0, trait or allele frequency…' },
+                  { key: 'settings', label: 'Test settings', prompt: 'What did you change? Include values, generations, and number of trials.' },
+                  { key: 'outcome', label: 'Observed outcome *', prompt: 'What changed? Include at least one number or a clearly described pattern.' },
+                  { key: 'surprise', label: 'Surprise or model limit', prompt: 'What surprised you, or what can this simplified model not show?' }
+                ].map(function(field) {
+                  var required = field.key === 'baseline' || field.key === 'outcome';
+                  var complete = !required || (notebook[field.key] || '').trim().length >= 10;
+                  return h('div', { key: field.key },
+                    h('label', { htmlFor: 'evo-capstone-' + field.key, className: 'block text-xs font-black text-slate-800 mb-1' }, field.label),
+                    h('textarea', {
+                      id: 'evo-capstone-' + field.key,
+                      value: notebook[field.key] || '',
+                      onChange: function(e) { setNotebook(field.key, e.target.value); },
+                      rows: 3,
+                      placeholder: field.prompt,
+                      className: 'w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-400'
+                    }),
+                    required && h('div', { className: 'mt-1 text-[10px] ' + (complete ? 'font-bold text-emerald-700' : 'text-slate-600') }, complete ? '✓ Evidence recorded' : 'Add at least 10 characters')
+                  );
+                })
+              )
             ),
             h('div', { className: 'text-center' },
               h('button', {
                 onClick: function() { setStep(3); },
+                disabled: !canAdvance(),
                 'aria-label': t('stem.evolab.i_ve_run_the_simulation_advance_to_the', 'I\'ve run the simulation; advance to the reflection step'),
-                className: 'transition-colors px-5 py-2.5 rounded-lg font-bold bg-cyan-700 hover:bg-cyan-800 text-white'
-              }, t('stem.evolab.i_ve_run_it_continue', '✓ I\'ve run it — continue'))
+                className: 'px-5 py-2.5 rounded-lg font-bold ' + (canAdvance() ? 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white' : 'bg-slate-200 text-slate-700 cursor-not-allowed')
+              }, canAdvance() ? t('stem.evolab.evidence_recorded_continue', '✓ Evidence recorded — continue') : t('stem.evolab.record_required_evidence', 'Record starting conditions + outcome'))
             )
           );
         };
 
-        // Step 3: Reflect
+        // Step 3: Evaluate evidence
         var renderStep3 = function() {
           if (!scenario) return null;
+          var reflectionLabels = scenario.reflectionLabels || ['Compare', 'Explain', 'Apply'];
+          var completedPieces = (evidenceVerdict ? 1 : 0) + reflections.filter(function(answer) { return answer.trim().length >= 10; }).length;
+          var explanationPct = Math.round((completedPieces / 4) * 100);
           return h('div', { className: 'space-y-3' },
-            h('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, t('stem.evolab.step_4_reflect_on_your_findings', 'Step 4: Reflect on your findings')),
-            h('p', { className: 'text-sm text-slate-600 mb-4' }, t('stem.evolab.compare_what_you_observed_to_what_you_', 'Compare what you observed to what you predicted. Be honest if your prediction was wrong — that\'s how you learn.')),
+            h('div', null,
+              h('h3', { className: 'text-lg font-black text-slate-800' }, t('stem.evolab.step_4_reflect_on_your_findings', 'Step 4: Evaluate the evidence')),
+              h('p', { className: 'mt-1 text-sm text-slate-600' }, 'A strong explanation connects what you predicted, what you observed, and why the population changed. An unsupported prediction is still a useful scientific result.')
+            ),
+            h('section', { 'aria-label': 'Evidence replay', className: 'overflow-hidden rounded-xl border-2 border-violet-300 bg-violet-50' },
+              h('div', { className: 'border-b border-violet-200 px-4 py-2 text-xs font-black uppercase tracking-wider text-violet-900' }, '↔ Evidence replay'),
+              h('div', { className: 'grid grid-cols-1 gap-0 md:grid-cols-2' },
+                h('div', { className: 'border-b border-violet-200 p-4 md:border-b-0 md:border-r' },
+                  h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, 'Before the test — prediction'),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-800' }, predictions[0] || '(no prediction recorded)')
+                ),
+                h('div', { className: 'p-4' },
+                  h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, 'After the test — observed outcome'),
+                  h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-800' }, notebook.outcome || '(no outcome recorded)')
+                )
+              )
+            ),
+            h('fieldset', { className: 'rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4' },
+              h('legend', { className: 'px-1 text-sm font-black text-emerald-900' }, 'What does the evidence say about your prediction?'),
+              h('p', { className: 'mb-3 text-xs text-slate-700' }, 'Choose the verdict that best fits the observed pattern—not the answer you hoped to get.'),
+              h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2' },
+                EVIDENCE_VERDICTS.map(function(option) {
+                  var selected = evidenceVerdict === option.value;
+                  return h('button', {
+                    key: option.value,
+                    type: 'button',
+                    onClick: function() { setEvidenceVerdict(option.value); },
+                    'aria-pressed': selected,
+                    className: 'rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-4 focus:ring-emerald-300 ' + (selected ? 'border-emerald-700 bg-white shadow' : 'border-emerald-200 bg-white/70 hover:border-emerald-500')
+                  },
+                    h('div', { className: 'font-black text-slate-900' }, (selected ? '✓ ' : '') + option.label),
+                    h('div', { className: 'mt-1 text-xs leading-relaxed text-slate-600' }, option.detail)
+                  );
+                })
+              )
+            ),
+            h('aside', { className: 'rounded-xl border border-blue-300 bg-blue-50 p-4' },
+              h('div', { className: 'text-xs font-black uppercase tracking-wider text-blue-900' }, '🧠 Mechanism cue'),
+              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, scenario.mechanismCue)
+            ),
+            h('div', { 'aria-live': 'polite', className: 'rounded-xl border border-slate-300 bg-slate-50 p-3' },
+              h('div', { className: 'flex items-center justify-between gap-3 text-xs font-bold text-slate-700' },
+                h('span', null, 'Explanation strength'),
+                h('span', null, completedPieces + ' of 4 pieces complete')
+              ),
+              h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200', 'aria-hidden': true },
+                h('div', { className: 'h-full rounded-full bg-emerald-600 transition-all', style: { width: explanationPct + '%' } })
+              ),
+              h('div', { className: 'mt-2 text-[11px] text-slate-600' }, 'Verdict + Compare + Explain + Apply')
+            ),
             scenario.reflectPrompts.map(function(prompt, i) {
               return h('div', { key: i, className: 'mb-3' },
-                h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 block' },
-                  'Reflection ' + (i + 1)
+                h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1 flex items-center gap-2' },
+                  h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-full bg-slate-800 text-[10px] text-white' }, i + 1),
+                  h('span', null, reflectionLabels[i] || ('Reflection ' + (i + 1)))
                 ),
                 h('div', { className: 'text-sm text-slate-700 mb-2 italic' }, prompt),
                 h('textarea', {
@@ -6432,9 +6660,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   })
                 )
               ),
+              // Evidence notebook
+              h('div', null,
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-emerald-800 mb-2' }, t('stem.evolab.3_evidence_notebook', '3. Evidence Notebook')),
+                h('dl', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  [
+                    ['Starting conditions', notebook.baseline],
+                    ['Test settings', notebook.settings],
+                    ['Observed outcome', notebook.outcome],
+                    ['Surprise or model limit', notebook.surprise]
+                  ].map(function(entry) {
+                    return h('div', { key: entry[0], className: 'rounded-lg border border-slate-300 p-3' },
+                      h('dt', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 mb-1' }, entry[0]),
+                      h('dd', { className: 'text-sm text-slate-800 leading-relaxed' }, entry[1] || t('stem.evolab.no_answer_recorded_3', '(no answer recorded)'))
+                    );
+                  })
+                ),
+                h('div', { className: 'mt-3 rounded-lg border-2 border-emerald-300 bg-emerald-50 p-3 text-sm text-slate-800' },
+                  h('strong', null, 'Evidence verdict: '),
+                  evidenceVerdictLabel,
+                  h('span', { className: 'block mt-1 text-xs text-slate-600' }, 'This verdict compares the first prediction with the recorded outcome; it does not grade whether the prediction was correct.')
+                )
+              ),
               // Reflections
               h('div', null,
-                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-emerald-800 mb-1' }, t('stem.evolab.3_findings_reflection_after_running_th', '3. Findings & Reflection (after running the sim)')),
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-emerald-800 mb-1' }, t('stem.evolab.4_findings_reflection_after_running_th', '4. Findings & Reflection (after running the sim)')),
                 h('ol', { className: 'list-decimal list-outside pl-5 space-y-2' },
                   scenario.reflectPrompts.map(function(prompt, i) {
                     return h('li', { key: i, className: 'text-sm text-slate-800 leading-relaxed' },
@@ -6462,7 +6712,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           );
         };
 
-        var STEPS = ['Pick scenario', 'Predict', 'Run sim', 'Reflect', 'Report'];
+        var STEPS = ['Pick scenario', 'Predict', 'Collect evidence', 'Evaluate', 'Report'];
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🎓', title: t('stem.evolab.capstone_project_2', 'Capstone Project') }),
@@ -6472,8 +6722,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'flex items-start gap-3' },
                 h('span', { className: 'text-5xl' }, '🎓'),
                 h('div', null,
-                  h('h2', { className: 'text-2xl font-black' }, t('stem.evolab.design_predict_run_reflect', 'Design, predict, run, reflect')),
-                  h('p', { className: 'text-sm text-emerald-50 mt-1' }, t('stem.evolab.a_4_step_research_project_pick_a_real_', 'A 4-step research project. Pick a real-world evolutionary scenario, predict what will happen, run the matching simulation, then reflect on what you observed. The final step generates a print-ready lab report. Tip: be willing to be wrong — incorrect predictions are how you learn.'))
+                  h('h2', { className: 'text-2xl font-black' }, t('stem.evolab.design_predict_run_reflect', 'Predict, test, explain')),
+                  h('p', { className: 'text-sm text-emerald-50 mt-1' }, t('stem.evolab.a_4_step_research_project_pick_a_real_', 'A 5-step investigation. Pick a real-world scenario, predict what will happen, run the matching simulation, record evidence, and explain what the result means. The final step generates a print-ready lab report. Tip: a prediction that is not supported can teach you the most.'))
                 )
               )
             ),
@@ -6540,12 +6790,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // MODULE MAP — visual flowchart of how modules connect
       // ─────────────────────────────────────────────────────
-      // Shows the 11 modules organized into concentric "scales" of evolution:
+      // Shows all 17 student modules organized into conceptual scales:
       // alleles (innermost) → traits in one population → traits between
       // populations → all of life → application/cleanup (outermost). Lines
       // between modules show the recommended flow ("Next up" suggestions).
       // Helps teachers and students see the conceptual architecture instead
-      // of feeling lost in a flat menu of 11 cards.
+      // of feeling lost in a flat catalog of activities.
       function ModuleMap() {
         // Map cluster groups — each row is a row in the visual map.
         var GROUPS = [
@@ -6559,10 +6809,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           },
           {
             id: 'within', label: t('stem.evolab.within_one_population', 'Within one population'), color: 'bg-emerald-100 border-emerald-400 text-emerald-900',
-            description: t('stem.evolab.how_a_single_species_changes_over_gene', 'How a single species changes over generations under selection.'),
+            description: t('stem.evolab.how_a_single_species_changes_over_gene', 'How survival, mate choice, and environmental change shift a population over generations.'),
             modules: [
+              { id: 'predatorVision', icon: '👁️', name: t('stem.evolab.predator_vision', 'Predator Vision') },
               { id: 'selectionSandbox', icon: '🧪', name: t('stem.evolab.selection_sandbox_3', 'Selection Sandbox') },
               { id: 'beakLab', icon: '🐦', name: t('stem.evolab.beak_lab', 'Beak Lab') },
+              { id: 'climatePressure', icon: '🌡️', name: t('stem.evolab.climate_pressure_lab', 'Climate Pressure Lab') },
+              { id: 'mateChoice', icon: '🦚', name: t('stem.evolab.mate_choice_lab', 'Mate Choice Lab') },
               { id: 'antibioticLab', icon: '💊', name: t('stem.evolab.antibiotic_resistance_2', 'Antibiotic Resistance') }
             ]
           },
@@ -6579,15 +6832,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             description: t('stem.evolab.macroevolutionary_patterns_common_ance', 'Macroevolutionary patterns. Common ancestry. The tree of life.'),
             modules: [
               { id: 'phyloBuilder', icon: '🌳', name: t('stem.evolab.phylo_tree_builder', 'Phylo Tree Builder') },
-              { id: 'commonAncestry', icon: '🦴', name: t('stem.evolab.common_ancestry_2', 'Common Ancestry') }
+              { id: 'commonAncestry', icon: '🦴', name: t('stem.evolab.common_ancestry_2', 'Common Ancestry') },
+              { id: 'homologySleuth', icon: '🔎', name: t('stem.evolab.homology_vs_analogy', 'Homology vs Analogy') }
             ]
           },
           {
-            id: 'meta', label: t('stem.evolab.context_cleanup', 'Context & cleanup'), color: 'bg-stone-100 border-stone-400 text-stone-900',
-            description: t('stem.evolab.history_of_the_science_and_the_most_co', 'History of the science, and the most common student misconceptions.'),
+            id: 'meta', label: t('stem.evolab.context_cleanup', 'Context, reasoning & synthesis'), color: 'bg-stone-100 border-stone-400 text-stone-900',
+            description: t('stem.evolab.history_of_the_science_and_the_most_co', 'History, misconception repair, mechanism practice, and an evidence-based final investigation.'),
             modules: [
               { id: 'discoveryTimeline', icon: '📜', name: t('stem.evolab.discovery_timeline_3', 'Discovery Timeline') },
-              { id: 'misconceptions', icon: '❓', name: t('stem.evolab.misconceptions_quiz_2', 'Misconceptions Quiz') }
+              { id: 'misconceptions', icon: '❓', name: t('stem.evolab.misconceptions_quiz_2', 'Misconceptions Quiz') },
+              { id: 'selectionSleuth', icon: '🕵️', name: t('stem.evolab.selection_sleuth', 'Selection Sleuth') },
+              { id: 'capstone', icon: '🎓', name: t('stem.evolab.capstone_project', 'Capstone Project') }
             ]
           }
         ];
@@ -6596,15 +6852,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // Mirrors the cross-module 'Next up' suggestions in each module.
         var FLOW = [
           ['hardyWeinberg', 'geneticDrift'],
-          ['geneticDrift', 'selectionSandbox'],
+          ['geneticDrift', 'predatorVision'],
+          ['predatorVision', 'selectionSandbox'],
           ['selectionSandbox', 'beakLab'],
-          ['beakLab', 'speciation'],
+          ['beakLab', 'climatePressure'],
+          ['climatePressure', 'mateChoice'],
+          ['mateChoice', 'speciation'],
           ['speciation', 'coevolution'],
           ['coevolution', 'antibioticLab'],
           ['antibioticLab', 'phyloBuilder'],
           ['phyloBuilder', 'commonAncestry'],
-          ['commonAncestry', 'discoveryTimeline'],
-          ['discoveryTimeline', 'misconceptions']
+          ['commonAncestry', 'homologySleuth'],
+          ['homologySleuth', 'discoveryTimeline'],
+          ['discoveryTimeline', 'misconceptions'],
+          ['misconceptions', 'selectionSleuth'],
+          ['selectionSleuth', 'capstone']
         ];
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
@@ -6616,7 +6878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('span', { className: 'text-5xl' }, '🗺️'),
                 h('div', null,
                   h('h2', { className: 'text-2xl font-black' }, t('stem.evolab.how_the_modules_connect', 'How the modules connect')),
-                  h('p', { className: 'text-sm text-amber-50 mt-1' }, t('stem.evolab.evolab_s_11_modules_are_organized_into', 'EvoLab\'s 11 modules are organized into 5 conceptual scales — from individual alleles changing in a population, all the way out to the history and cleanup of evolution as a science. The recommended flow (the dotted arrows) walks you through them in a natural learning order, but you can jump anywhere anytime.'))
+                  h('p', { className: 'text-sm text-amber-50 mt-1' }, t('stem.evolab.evolab_s_11_modules_are_organized_into', 'EvoLab\'s 17 student modules are organized into 5 conceptual scales — from allele frequencies, to changing populations, to common ancestry and scientific synthesis. The recommended flow walks through every module, but you can jump anywhere anytime.'))
                 )
               )
             ),
@@ -6697,7 +6959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               ),
               h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-3' },
                 h('h4', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1' }, t('stem.evolab.standard_5_days', '📚 Standard (5 days)')),
-                h('div', { className: 'text-sm text-slate-700 mb-2' }, t('stem.evolab.see_the_5_day_curriculum_guide_walks_t', 'See the 5-Day Curriculum Guide. Walks through all 11 modules in 5 fifty-minute periods.')),
+                h('div', { className: 'text-sm text-slate-700 mb-2' }, t('stem.evolab.see_the_5_day_curriculum_guide_walks_t', 'See the 5-Day Curriculum Guide for a 10-module core sequence, with additional reasoning challenges and the Capstone available for extension or assessment.')),
                 h('button', {
                   onClick: function() { setView('curriculumGuide'); upd('view', 'curriculumGuide'); },
                   className: 'text-xs font-bold text-emerald-700 hover:underline'

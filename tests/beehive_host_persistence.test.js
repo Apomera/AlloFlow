@@ -48,6 +48,10 @@ describe('Beehive host persistence', () => {
     const state = {
       day: 18,
       honey: 42.5,
+      modelVersion: 'colony-daily-1.0',
+      simulationSeed: 18436572,
+      randomState: 305419896,
+      seededFromDay: 0,
       autoAdvance: true,
       notebook: { drone: { evidence: 'Reached the DCA with 31% energy.' } },
       queen: { active: true, paused: false, day: 6, career: { matches: 3, wins: 2 } },
@@ -78,6 +82,12 @@ describe('Beehive host persistence', () => {
     expect(restored._persistenceVersion).toBe(version);
     expect(restored.day).toBe(18);
     expect(restored.honey).toBe(42.5);
+    expect(restored).toMatchObject({
+      modelVersion: 'colony-daily-1.0',
+      simulationSeed: 18436572,
+      randomState: 305419896,
+      seededFromDay: 0,
+    });
     expect(restored).not.toHaveProperty('autoAdvance');
     expect(restored.notebook).toEqual(state.notebook);
     expect(restored.queen).toEqual({ active: true, paused: true, day: 6, career: { matches: 3, wins: 2 } });

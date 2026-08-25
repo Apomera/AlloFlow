@@ -118,10 +118,15 @@ describe('Body & Breath Reset plugin', () => {
     expect(html).toContain('aria-describedby="somatic-reset-visual-description"');
     expect(html).toContain('data-visual-description="ripples"');
     expect(html).toContain('Visual motion');
+    expect(html).toContain('Visual tone');
+    expect(html).toContain('data-visual-theme-select="true"');
+    expect(html).toContain('System colors');
+    expect(html).toContain('Warm ember');
     expect(html).toContain('Large visual: off');
     expect(html).toContain('Quiet view');
     expect(html).toContain('Breath count: on');
     expect(html).toContain('Sound cue: off');
+    expect(html).toContain('Phase tones: off');
     expect(html).toContain('Countdown: shown');
     expect(html).toContain('Guidance words');
     expect(html).toContain('Full cue');
@@ -172,6 +177,9 @@ describe('Body & Breath Reset plugin', () => {
     expect(html).toContain('data-countdown-hidden="true"');
     expect(html).toContain('role="timer"');
     expect(html).not.toContain('role="progressbar"');
+    expect(html).toContain('data-breath-cycle-display="hidden"');
+    expect(html).not.toContain('data-breath-cycle-map="true"');
+    expect(html).not.toContain('CYCLE 1 / 6');
   });
 
   it('can hide guidance words while preserving an accessible phase cue', () => {
@@ -248,6 +256,12 @@ describe('Body & Breath Reset plugin', () => {
         }));
       });
       expect(host.querySelector('[data-guidance-detail="phase"]')?.textContent).toBe('Ready');
+      const readyRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(readyRail?.getAttribute('data-breath-cycle-number')).toBe('1');
+      expect(readyRail?.getAttribute('data-breath-cycle-total')).toBe('6');
+      expect(readyRail?.getAttribute('data-breath-cycle-display')).toBe('visible');
+      expect(readyRail?.querySelectorAll('[data-breath-cycle-marker]').length).toBe(6);
+      expect(readyRail?.querySelectorAll('[data-breath-cycle-marker-state="upcoming"]').length).toBe(6);
 
       const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Start');
       await React.act(async () => { start.click(); });
@@ -258,6 +272,14 @@ describe('Body & Breath Reset plugin', () => {
       expect(host.querySelector('[data-guidance-detail="phase"]')?.textContent).toBe('Out');
       expect(host.querySelector('[data-guidance-phase="out"]')).toBeTruthy();
 
+      await React.act(async () => { vi.advanceTimersByTime(6000); });
+      const secondCycleRail = host.querySelector('[data-breath-phase-rail="true"]');
+      expect(secondCycleRail?.getAttribute('data-breath-cycle-number')).toBe('2');
+      expect(secondCycleRail?.querySelector('[data-breath-phase-status="true"]')?.textContent).toContain('CYCLE 2 / 6');
+      expect(secondCycleRail?.querySelector('[data-breath-cycle-marker="1"]')?.getAttribute('data-breath-cycle-marker-state')).toBe('complete');
+      expect(secondCycleRail?.querySelector('[data-breath-cycle-marker="2"]')?.getAttribute('data-breath-cycle-marker-state')).toBe('current');
+      expect(secondCycleRail?.querySelector('[data-breath-cycle-marker="3"]')?.getAttribute('data-breath-cycle-marker-state')).toBe('upcoming');
+
       const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Pause');
       await React.act(async () => { pause.click(); });
       expect(host.querySelector('[data-guidance-detail="phase"]')?.textContent).toBe('Paused');
@@ -267,6 +289,74 @@ describe('Body & Breath Reset plugin', () => {
     } finally {
       await React.act(async () => { root.unmount(); });
       host.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it('runs a smooth visual clock, sleeps while hidden, and preserves fractional pause position', async () => {
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const visibilityDescriptor = Object.getOwnPropertyDescriptor(document, 'visibilityState');
+    const originalRaf = window.requestAnimationFrame;
+    const originalCancelRaf = window.cancelAnimationFrame;
+    let visibility = 'visible';
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibility });
+    window.requestAnimationFrame = (callback) => window.setTimeout(() => callback(Date.now()), 16);
+    window.cancelAnimationFrame = (id) => window.clearTimeout(id);
+    const toolData = {
+      somaticReset: {
+        view: 'practice', selectedProtocol: 'shoulder_soften', visualMode: 'circle',
+        visualMotion: 'gentle', pacedBreathing: true, guidanceMode: 'hidden', soundEnabled: false
+      }
+    };
+    const root = createRoot(host);
+    const circleProgress = () => Number(host.querySelector('[data-breath-circle="true"]')?.getAttribute('data-circle-phase-progress'));
+    try {
+      await React.act(async () => {
+        root.render(React.createElement(function SmoothClockHost() {
+          return window.SelHub.renderTool('somaticReset', makeCtx({ toolData }));
+        }));
+      });
+      const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Start');
+      await React.act(async () => { start.click(); });
+      expect(host.querySelector('[data-visual-clock="smooth"]')).toBeTruthy();
+
+      await React.act(async () => { vi.advanceTimersByTime(500); });
+      expect(circleProgress()).toBeGreaterThan(5);
+      expect(circleProgress()).toBeLessThan(20);
+      const visualSessionProgress = Number(host.querySelector('[data-session-progress]')?.getAttribute('data-session-progress-visual'));
+      expect(visualSessionProgress).toBeGreaterThan(0);
+      expect(visualSessionProgress).toBeLessThan(2);
+
+      visibility = 'hidden';
+      await React.act(async () => { document.dispatchEvent(new Event('visibilitychange')); });
+      const hiddenProgress = circleProgress();
+      await React.act(async () => { vi.advanceTimersByTime(500); });
+      expect(circleProgress()).toBe(hiddenProgress);
+
+      visibility = 'visible';
+      await React.act(async () => { document.dispatchEvent(new Event('visibilitychange')); });
+      await React.act(async () => { vi.advanceTimersByTime(100); });
+      const visibleProgress = circleProgress();
+      expect(visibleProgress).toBeGreaterThan(hiddenProgress);
+
+      const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Pause');
+      await React.act(async () => { pause.click(); });
+      expect(host.querySelector('[data-visual-clock="static"]')).toBeTruthy();
+      await React.act(async () => { vi.advanceTimersByTime(1000); });
+      const resume = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Resume');
+      await React.act(async () => { resume.click(); vi.advanceTimersByTime(100); });
+      expect(circleProgress()).toBeGreaterThan(visibleProgress);
+      expect(circleProgress()).toBeLessThan(visibleProgress + 10);
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      window.requestAnimationFrame = originalRaf;
+      window.cancelAnimationFrame = originalCancelRaf;
+      if (visibilityDescriptor) Object.defineProperty(document, 'visibilityState', visibilityDescriptor);
+      else delete document.visibilityState;
       vi.useRealTimers();
     }
   });
@@ -515,6 +605,8 @@ describe('Body & Breath Reset plugin', () => {
 
       const preview = host.querySelector('button[data-visual-preview-toggle="true"]');
       await React.act(async () => { preview.click(); });
+      const initialPreviewProgress = host.querySelector('[data-visual-preview-progress="true"]');
+      expect(initialPreviewProgress?.getAttribute('aria-valuenow')).toBe('0');
       const inhaleRail = host.querySelector('[data-breath-phase-rail="true"]');
       expect(inhaleRail?.getAttribute('data-breath-phase')).toBe('in');
       expect(inhaleRail?.getAttribute('data-breath-phase-progress')).toBe('100');
@@ -524,6 +616,11 @@ describe('Body & Breath Reset plugin', () => {
       expect(inhaleVisual?.getAttribute('aria-label')).toContain('Preview inhale phase');
       expect(inhaleRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('active');
       expect(inhaleRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('upcoming');
+
+      await React.act(async () => { vi.advanceTimersByTime(2000); });
+      const midPreviewProgress = host.querySelector('[data-visual-preview-progress="true"]');
+      expect(Number(midPreviewProgress?.getAttribute('aria-valuenow'))).toBeGreaterThan(0);
+      expect(Number(midPreviewProgress?.getAttribute('aria-valuenow'))).toBeLessThan(100);
 
       await React.act(async () => { vi.advanceTimersByTime(4000); });
       const exhaleRail = host.querySelector('[data-breath-phase-rail="true"]');
@@ -535,6 +632,57 @@ describe('Body & Breath Reset plugin', () => {
       expect(exhaleVisual?.getAttribute('aria-label')).toContain('Preview exhale phase');
       expect(exhaleRail?.querySelector('[data-breath-phase-segment="in"]')?.getAttribute('data-breath-phase-segment-state')).toBe('complete');
       expect(exhaleRail?.querySelector('[data-breath-phase-segment="out"]')?.getAttribute('data-breath-phase-segment-state')).toBe('active');
+    } finally {
+      await React.act(async () => { root.unmount(); });
+      host.remove();
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps phase tones opt-in and plays a quiet cue when the paced phase changes', async () => {
+    vi.useFakeTimers();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    const beepCalls = [];
+
+    function PhaseToneHost() {
+      const [toolData, setToolData] = React.useState({
+        somaticReset: {
+          view: 'practice',
+          selectedProtocol: 'shoulder_soften',
+          visualMode: 'circle',
+          pacedBreathing: true,
+          soundEnabled: true,
+          phaseSoundEnabled: true
+        }
+      });
+      const ctx = Object.assign({}, makeCtx({ toolData }), {
+        toolData,
+        beep(...args) { beepCalls.push(args); },
+        updateMulti(id, patch) {
+          setToolData((previous) => ({
+            ...previous,
+            [id]: { ...(previous[id] || {}), ...patch }
+          }));
+        }
+      });
+      return window.SelHub.renderTool('somaticReset', ctx);
+    }
+
+    const root = createRoot(host);
+    try {
+      await React.act(async () => { root.render(React.createElement(PhaseToneHost)); });
+      expect(host.textContent).toContain('Phase tones: on');
+      const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Start');
+      expect(start).toBeTruthy();
+      await React.act(async () => { start.click(); });
+      const startBeepCount = beepCalls.length;
+      expect(startBeepCount).toBeGreaterThan(0);
+
+      await React.act(async () => { vi.advanceTimersByTime(4250); });
+      expect(beepCalls.length).toBeGreaterThan(startBeepCount);
+      expect(beepCalls.at(-1)?.[0]).toBe(392);
     } finally {
       await React.act(async () => { root.unmount(); });
       host.remove();
@@ -1431,9 +1579,13 @@ describe('Body & Breath Reset plugin', () => {
       await React.act(async () => { vi.advanceTimersByTime(9250); });
       let orbit = host.querySelector('[data-breath-orbit="true"]');
       marker = host.querySelector('[data-orbit-marker="true"]');
-      expect(orbit?.getAttribute('data-orbit-progress')).toBe('90');
+      const lateExhaleProgress = Number(orbit?.getAttribute('data-orbit-progress'));
+      const lateExhaleRotation = Number(orbit?.getAttribute('data-orbit-rotation'));
+      expect(lateExhaleProgress).toBeGreaterThan(90);
+      expect(lateExhaleProgress).toBeLessThan(95);
       expect(orbit?.getAttribute('data-orbit-turn')).toBe('0');
-      expect(orbit?.getAttribute('data-orbit-rotation')).toBe('324');
+      expect(lateExhaleRotation).toBeGreaterThan(324);
+      expect(lateExhaleRotation).toBeLessThan(342);
       expect(orbit?.getAttribute('data-orbit-active-segment')).toBe('out');
       expect(orbit?.getAttribute('data-orbit-destination')).toBe('return');
       expect(Number(orbit?.getAttribute('data-orbit-phase-progress'))).toBeGreaterThan(80);
@@ -1452,15 +1604,19 @@ describe('Body & Breath Reset plugin', () => {
       expect(orbit?.querySelector('[data-orbit-center-status="true"]')?.getAttribute('data-orbit-center-status-state')).toBe('moving');
       expect(orbit?.querySelector('[data-orbit-phase-label="in"]')?.getAttribute('data-orbit-label-state')).toBe('inactive');
       expect(orbit?.querySelector('[data-orbit-phase-label="out"]')?.getAttribute('data-orbit-label-emphasis')).toBe('underlined');
-      expect(marker?.style.transform).toBe('rotate(324deg)');
+      expect(marker?.style.transform).toBe('rotate(' + lateExhaleRotation + 'deg)');
       expect(marker?.style.transition).not.toBe('none');
 
       await React.act(async () => { vi.advanceTimersByTime(2000); });
       orbit = host.querySelector('[data-breath-orbit="true"]');
       marker = host.querySelector('[data-orbit-marker="true"]');
-      expect(orbit?.getAttribute('data-orbit-progress')).toBe('10');
+      const nextCycleProgress = Number(orbit?.getAttribute('data-orbit-progress'));
+      const nextCycleRotation = Number(orbit?.getAttribute('data-orbit-rotation'));
+      expect(nextCycleProgress).toBeGreaterThan(10);
+      expect(nextCycleProgress).toBeLessThan(15);
       expect(orbit?.getAttribute('data-orbit-turn')).toBe('1');
-      expect(orbit?.getAttribute('data-orbit-rotation')).toBe('396');
+      expect(nextCycleRotation).toBeGreaterThan(396);
+      expect(nextCycleRotation).toBeLessThan(414);
       expect(orbit?.getAttribute('data-orbit-active-segment')).toBe('in');
       expect(orbit?.getAttribute('data-orbit-destination')).toBe('handoff');
       expect(Number(orbit?.getAttribute('data-orbit-phase-progress'))).toBeGreaterThan(20);
@@ -1477,7 +1633,7 @@ describe('Body & Breath Reset plugin', () => {
       expect(orbit?.querySelector('[data-orbit-center-status="true"]')?.getAttribute('data-orbit-center-status-state')).toBe('moving');
       expect(orbit?.querySelector('[data-orbit-phase-label="in"]')?.getAttribute('data-orbit-label-emphasis')).toBe('underlined');
       expect(orbit?.querySelector('[data-orbit-phase-label="out"]')?.getAttribute('data-orbit-label-state')).toBe('inactive');
-      expect(marker?.style.transform).toBe('rotate(396deg)');
+      expect(marker?.style.transform).toBe('rotate(' + nextCycleRotation + 'deg)');
 
       const pause = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Pause');
       await React.act(async () => { pause.click(); });
@@ -1500,7 +1656,7 @@ describe('Body & Breath Reset plugin', () => {
       expect(host.querySelector('[data-orbit-phase-label="in"]')?.getAttribute('data-orbit-label-state')).toBe('steady');
       expect(host.querySelector('[data-orbit-phase-label="out"]')?.getAttribute('data-orbit-label-state')).toBe('steady');
       expect(marker?.querySelector('[data-orbit-direction-cue="clockwise"]')).toBeNull();
-      expect(marker?.style.transform).toBe('rotate(396deg)');
+      expect(marker?.style.transform).toBe('rotate(' + nextCycleRotation + 'deg)');
       expect(marker?.style.transition).toBe('none');
 
       const restart = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Restart timer');
@@ -1785,6 +1941,16 @@ describe('Body & Breath Reset plugin', () => {
       expect(host.querySelector('[data-breath-path="true"]')?.getAttribute('data-path-direction')).toBe('steady');
       expect(host.querySelector('[data-visual-description="path"]')?.textContent).toContain('directional point');
       expect(announcements).toContain('Breath path selected.');
+
+      const theme = host.querySelector('select[data-visual-theme-select="true"]');
+      expect(theme?.value).toBe('system');
+      await React.act(async () => {
+        theme.value = 'warm';
+        theme.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(host.querySelector('[data-visual-mode="path"]')?.getAttribute('data-visual-theme')).toBe('warm');
+      expect(host.querySelector('[data-visual-theme-wrapper="true"]')?.style.filter).toContain('hue-rotate(225deg)');
+      expect(announcements).toContain('Visual tone set to warm ember.');
 
       const motion = host.querySelector('select[data-visual-motion-select="true"]');
       expect(motion?.value).toBe('gentle');
@@ -2344,8 +2510,11 @@ describe('Body & Breath Reset plugin', () => {
 
   it('uses a deadline-based timer and moves focus when workflow views change', () => {
     const source = readFileSync(TOOL_FILE, 'utf8');
-    expect(source).toContain('deadlineRef.current = Date.now() + next * 1000');
+    expect(source).toContain('deadlineRef.current = Date.now() + nextMs');
+    expect(source).toContain('pausedRemainingMsRef.current = nextMs');
     expect(source).toContain('window.setInterval(syncRemaining, 250)');
+    expect(source).toContain('window.requestAnimationFrame.bind(window)');
+    expect(source).toContain("document.addEventListener('visibilitychange'");
     expect(source).toContain('viewHeadingRef.current.focus()');
     expect(source).toContain("tabIndex: -1");
   });

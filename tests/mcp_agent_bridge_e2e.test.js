@@ -64,12 +64,14 @@ function rpc(method, params) {
   });
 }
 
-async function call(name, args) {
+async function callResult(name, args) {
   const r = await rpc('tools/call', { name, arguments: args });
   expect(r.error, name + ' rpc error').toBeUndefined();
   expect(r.result.isError, name + ' tool error: ' + JSON.stringify(r.result.content).slice(0, 500)).toBeFalsy();
-  return r.result.structuredContent;
+  return r.result;
 }
+
+async function call(name, args) { return (await callResult(name, args)).structuredContent; }
 
 beforeAll(async () => {
   writeFileSync(pdfPath, driver._buildSelfTestPdf());
@@ -95,17 +97,29 @@ describe('agent-bridge remediation (client-model transport, keyless)', () => {
     expect(started.runId).toMatch(/^arun-/);
 
     let answered = 0;
+    let correlatedVisionImages = 0;
     let view;
     const startedAt = Date.now();
     for (;;) {
       expect(Date.now() - startedAt, 'agent-bridge run exceeded the test wall clock').toBeLessThan(5 * 60 * 1000);
-      view = await call('remediation_agent_requests', {
-        run_id: started.runId, wait_seconds: 15, include_images: false,
+      const requestResult = await callResult('remediation_agent_requests', {
+        run_id: started.runId, wait_seconds: 15, include_images: true,
       });
+      view = requestResult.structuredContent;
+      const imageBlocks = (requestResult.content || []).filter((item) => item.type === 'image');
+      for (const image of imageBlocks) {
+        expect(image.data.length).toBeGreaterThan(0);
+        expect(image._meta && image._meta.alloflowRequestId).toMatch(/^mreq-/);
+        expect(Number.isSafeInteger(image._meta.alloflowImageIndex)).toBe(true);
+        correlatedVisionImages++;
+      }
       if (view.status !== 'running') break;
       for (const req of view.pendingRequests) {
         expect(req.kind === 'text' || req.kind === 'vision').toBe(true);
         expect(req.prompt.length).toBeGreaterThan(0);
+        expect(req.promptOffset).toBe(0);
+        expect(req.promptTotalChars).toBeGreaterThanOrEqual(req.prompt.length);
+        expect(req.promptNextOffset === null || Number.isSafeInteger(req.promptNextOffset)).toBe(true);
         // The driver's own selftest script IS the reply contract — one pinned source.
         const reply = driver._selfTestScriptedReply(req.prompt);
         const ack = await call('remediation_agent_respond', {
@@ -119,6 +133,7 @@ describe('agent-bridge remediation (client-model transport, keyless)', () => {
     expect(view.status, 'run failed: ' + view.error + ' — log tail: ' + JSON.stringify((view.log || []).slice(-8))).toBe('completed');
     expect(answered).toBeGreaterThanOrEqual(5); // a real pipeline run asks many times, not once
     expect(view.modelCallsSoFar).toBe(answered); // every model call went through the bridge
+    expect(correlatedVisionImages).toBeGreaterThan(0); // proves image bytes reach the client with request correlation
 
     const result = view.result;
     expect(result.modelTransport).toBe('agent-bridge');

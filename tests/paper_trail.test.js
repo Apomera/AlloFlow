@@ -51,6 +51,16 @@ describe('PaperTrail — renders and is wired', () => {
       expect(html.length, JSON.stringify(state)).toBeGreaterThan(100);
     }
   });
+
+  it('chooses text tokens for the host surface rather than dark app chrome', () => {
+    loadTool(FILE, 'paperTrail');
+    const light = renderTool('paperTrail', {}, { theme: 'light', isDark: false, isContrast: false });
+    const darkApp = renderTool('paperTrail', {}, { theme: 'dark', isDark: true, isContrast: false });
+    const contrast = renderTool('paperTrail', {}, { theme: 'contrast', isDark: true, isContrast: true });
+
+    expect(darkApp).toBe(light);
+    expect(contrast).not.toBe(light);
+  });
 });
 
 describe('PaperTrail — never-real-data contract', () => {

@@ -247,10 +247,14 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     setItems(getPlanItems(config));
   }, [config]);
   const syncChanges = (newItems) => {
-    setItems(newItems);
+    const existingTextContext = config?.instructionalContext || {};
+    const acceptedItems = existingTextContext.adaptedTextPolicy === 'prohibited'
+      ? newItems.filter(item => item && item.type !== 'simplified')
+      : newItems;
+    setItems(acceptedItems);
     // Carry the row identity back into the config. Without this every teacher
     // edit re-derived positional ids and broke the plan<->resource binding.
-    const resourcePlan = newItems.map(i => ({
+    const resourcePlan = acceptedItems.map(i => ({
       tool: i.type,
       directive: i.directive || "",
       uiId: i.id,
@@ -280,6 +284,16 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     }, {});
     const newConfig = {
       ...config,
+      instructionalContext: {
+        ...existingTextContext,
+        adaptedTextPolicy: existingTextContext.adaptedTextPolicy === 'prohibited'
+          ? 'prohibited'
+          : (resourcePlan.some(row => row.tool === 'simplified') ? 'include' : 'omit'),
+        adaptedTextPolicySource: existingTextContext.adaptedTextPolicy === 'prohibited'
+          ? 'standard' : 'educator',
+        textAccessReason: existingTextContext.adaptedTextPolicy === 'prohibited'
+          ? 'sourced-adaptation-prohibition' : 'educator-choice',
+      },
       resourcePlan,
       recommendedResources: resourcePlan.map(i => i.tool),
       toolDirectives
@@ -313,6 +327,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     setReorderStatus(t('blueprint.moved_position', { position: nextIndex + 1 }) || `Moved plan step to position ${nextIndex + 1}.`);
   };
   const handleTypeChange = (index, newType) => {
+    if (newType === 'simplified' && config?.instructionalContext?.adaptedTextPolicy === 'prohibited') return;
     const newItems = [...items];
     newItems[index].type = newType;
     // A resource-type change is a new instructional designation. Do not carry
@@ -355,11 +370,13 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     syncChanges(newItems);
   };
   const handleAddStep = () => {
+    const defaultType = config?.instructionalContext?.adaptedTextPolicy === 'prohibited'
+      ? 'glossary' : 'simplified';
     const newItem = {
         id: `new-${Date.now()}`,
-        type: 'simplified',
+        type: defaultType,
         directive: 'New step...',
-        instructionalText: getPlanInstructionalText('simplified', null),
+        instructionalText: getPlanInstructionalText(defaultType, null),
     };
     syncChanges([...items, newItem]);
   };
@@ -384,7 +401,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
     }
     return [
       { value: 'analysis', label: t('sidebar.tool_analysis') || 'Analysis' },
-      { value: 'simplified', label: t('sidebar.tool_simplified') || 'Simplified Text' },
+      { value: 'simplified', label: t('sidebar.tool_simplified') || 'Adapted Text' },
       { value: 'glossary', label: t('sidebar.tool_glossary') || 'Glossary' },
       { value: 'outline', label: t('sidebar.tool_outline') || 'Outline' },
       { value: 'image', label: t('sidebar.tool_visual') || 'Visual' },
@@ -418,6 +435,10 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
   const hasFailureDiagnostics = Boolean(run && Object.values(run.rows || {}).some(row =>
       row && ['partial', 'failed', 'interrupted', 'stopped'].includes(row.status)));
   const blueprintSettings = config?.globalSettings || {};
+  const blueprintTextContext = config?.instructionalContext || {};
+  const blueprintAdaptedPolicy = blueprintTextContext.adaptedTextPolicy
+      || (items.some(item => item && item.type === 'simplified') ? 'include' : 'omit');
+  const blueprintPrimaryAccess = blueprintTextContext.primaryTextAccess || 'available';
   const blueprintVariants = items.flatMap(item => Array.isArray(item.generationVariants) ? item.generationVariants : []);
   const blueprintMatrixModuleReady = (() => {
       try {
@@ -556,6 +577,19 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               <span className="font-semibold">{t('blueprint.output_languages') || 'Output languages'}:</span>{' '}
               {(blueprintLanguages.length ? blueprintLanguages : configuredLanguages).join(', ')}
           </div>
+          <div className="mt-1" data-testid="bp-text-access-summary">
+              <span className="font-semibold">{t('blueprint.primary_text_access') || 'Source text'}:</span>{' '}
+              {blueprintPrimaryAccess === 'required'
+                  ? (t('blueprint.primary_text_required') || 'required primary text')
+                  : (t('blueprint.primary_text_available') || 'available as the primary reference')}
+              {' Â· '}
+              <span className="font-semibold">{t('blueprint.adapted_text') || 'Adapted Text'}:</span>{' '}
+              {blueprintAdaptedPolicy === 'include'
+                  ? (t('blueprint.adapted_included') || 'included as a supplemental companion')
+                  : (blueprintAdaptedPolicy === 'prohibited'
+                      ? (t('blueprint.adapted_prohibited') || 'not included because a sourced standard prohibits adaptation')
+                      : (t('blueprint.adapted_omitted') || 'omitted by educator choice'))}
+          </div>
           <div className="mt-0.5">
               {blueprintMatrixUnavailable
                   ? (t('blueprint.matrix_unavailable_summary') || 'Exact call, reuse, and audience-version counts are unavailable; Blueprint will not generate until the planner is ready.')
@@ -658,7 +692,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                     className="w-full text-xs font-bold text-slate-700 bg-white border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
                                 >
                                     {toolOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option
+                                            key={opt.value}
+                                            value={opt.value}
+                                            disabled={opt.value === 'simplified' && blueprintAdaptedPolicy === 'prohibited'}
+                                        >{opt.label}</option>
                                     ))}
                                 </select>
                                 {/* Swapping a step meant choosing blind between 20

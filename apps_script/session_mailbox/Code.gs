@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 18;
+var VERSION = 19;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -678,6 +678,20 @@ function validOrganizerProgressValue(value) {
   if (!validWsMetricNumber(value.attempts, 10000) || !validWsMetricNumber(value.at, 999999999999999)) return false;
   return true;
 }
+function validActivityProgressValue(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { version: 1, activityId: 1, kind: 1, status: 1, completed: 1, total: 1, at: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 7) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (value.version !== 1) return false;
+  if (!(typeof value.activityId === 'string' && /^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(value.activityId))) return false;
+  if (!(typeof value.kind === 'string' && /^[a-z][a-z0-9_]{0,39}$/.test(value.kind))) return false;
+  if (['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused'].indexOf(value.status) < 0) return false;
+  if (!validWsMetricNumber(value.completed) || !validWsMetricNumber(value.total) || value.completed > Math.max(value.total, 0)) return false;
+  if (!validWsMetricNumber(value.at, 999999999999999) || value.at <= 0) return false;
+  return true;
+}
 function validLiveHostPresenceValue(value) {
   if (value === null) return true;
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -705,6 +719,7 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'wsProgress') return validWsProgressValue(value);
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   if (field === 'organizerProgress') return validOrganizerProgressValue(value);
+  if (field === 'activityProgress') return validActivityProgressValue(value);
   return false;
 }
 function validQuizResponseReceipt(value) {
@@ -772,7 +787,7 @@ function participantCanPatchSession(updates, uid, sessionData) {
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingResourceAt: 1, viewingResourceStatus: 1, viewingAt: 1,
-    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, lastSeen: 1
+    wsProgress: 1, wsProbeResult: 1, organizerProgress: 1, activityProgress: 1, lastSeen: 1
   };
   var roots = [
     'bridgeReactions.' + uid,

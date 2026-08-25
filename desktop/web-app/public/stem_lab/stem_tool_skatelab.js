@@ -5756,7 +5756,7 @@ window.StemLab = window.StemLab || {
           var svgPts = pts.map(function(p) { return (20 + (p[0] / maxX) * 280) + ',' + (130 - (p[1] / maxY) * 110); }).join(' ');
           return h('div', { style: { background: sm.bg, border: '1px solid ' + sm.border, borderRadius: 12, padding: 14, marginBottom: 12, color: '#e8f0f5' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.skatelab.air_spin_inquiry', '🔬 Air / Spin Inquiry')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.skatelab.set_takeoff_speed_angle_mass_and_your_', 'Set takeoff speed, angle, mass, and your rotation rate. Predict the biggest rotation you can land cleanly. No score, no reveal.')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.skatelab.set_takeoff_speed_angle_mass_and_your_', 'Set takeoff speed, angle, mass, and rotation rate, then observe the largest modeled rotation that can land cleanly. The result updates live; record a hypothesis or pattern you notice.')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 20, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · feasible max ≈ ' + maxTrick),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { className: 'sk-inquiry-grid', style: { marginBottom: 10 } },

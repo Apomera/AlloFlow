@@ -3016,52 +3016,61 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Cycle 1 of the inquiry-learning study: Predict-Observe-Explain ──
-      // Pattern: learner sees a circuit, predicts brightness, then sees the answer with V=IR
+      // Pattern: learner sees a circuit, predicts an objective electrical quantity,
+      // then sees the answer with V=IR and P=VI reasoning.
       // reasoning. Productive struggle from explicit pre-commitment.
       var POE_SCENARIOS = [
         {
           id: 's1',
           title: 'One bulb, 1.5 V battery',
           svg: { battery: 1.5, bulbs: [{ R: 5 }], topology: 'simple' },
-          predict: { question: 'How bright will the bulb be?', options: ['Off (no current)', 'Very dim', 'Medium', 'Bright', 'Burns out'] },
-          answerIndex: 2,
-          explanation: 'Current I = V/R = 1.5 V ÷ 5 Ω = 0.3 A. Power = V·I = 0.45 W — a medium glow for a small bulb. The bulb conducts because the circuit is closed, and V=IR splits the energy across the only resistor.'
+          predict: { question: 'How much electrical power will the bulb use?', options: ['0 W', '0.11 W', '0.30 W', '0.45 W', 'More than 1 W'] },
+          answerIndex: 3,
+          explanation: 'Current I = V/R = 1.5 V ÷ 5 Ω = 0.3 A. Power P = V·I = 0.45 W. The circuit uses power as a consistent brightness proxy; perceived brightness in a real bulb also depends on its rating and construction.'
         },
         {
           id: 's2',
           title: 'Two bulbs in SERIES, same battery',
           svg: { battery: 1.5, bulbs: [{ R: 5 }, { R: 5 }], topology: 'series' },
-          predict: { question: 'How does each bulb compare to scenario 1?', options: ['Brighter than s1', 'Same as s1', 'Half as bright', 'Quarter as bright', 'Off'] },
-          answerIndex: 3,
-          explanation: 'In series, resistances add: 10 Ω total. Current drops to 0.15 A. Each bulb gets only 0.75 V (half the battery) and 0.11 W — about ¼ the power of s1. Series circuits split voltage; that\'s why old Christmas-light strings dimmed when you added bulbs.'
+          predict: { question: 'How much power does each bulb use compared with scenario 1?', options: ['The same power', 'One-half as much power', 'One-quarter as much power', 'No power'] },
+          answerIndex: 2,
+          explanation: 'In series, resistances add: 10 Ω total. Current drops to 0.15 A. Each bulb receives 0.75 V and uses about 0.11 W — one-quarter of scenario 1\'s 0.45 W. Power, rather than an undefined brightness word, is the comparison measured by this model.'
         },
         {
           id: 's3',
           title: 'Two bulbs in PARALLEL, same battery',
           svg: { battery: 1.5, bulbs: [{ R: 5 }, { R: 5 }], topology: 'parallel' },
-          predict: { question: 'How does each parallel bulb compare to s1?', options: ['Brighter than s1', 'Same as s1', 'Half as bright', 'Quarter as bright', 'Off'] },
+          predict: { question: 'How much power does each parallel bulb use compared with scenario 1?', options: ['More power', 'The same power', 'One-half as much power', 'One-quarter as much power', 'No power'] },
           answerIndex: 1,
-          explanation: 'In parallel, each bulb sees the full 1.5 V. Each draws 0.3 A independently and glows just as brightly as in s1 — but now the battery delivers 0.6 A total and drains twice as fast. Parallel splits current; voltage stays.'
+          explanation: 'In parallel, each bulb receives the full 1.5 V, draws 0.3 A, and uses 0.45 W — the same power as the bulb in scenario 1. The battery supplies 0.6 A total, so it drains faster.'
         },
         {
           id: 's4',
           title: 'Swap one bulb for a 1 Ω resistor (in series with a 10 Ω bulb)',
           svg: { battery: 1.5, bulbs: [{ R: 10, isBulb: true }, { R: 1, isBulb: false }], topology: 'series' },
-          predict: { question: 'How bright is the 10 Ω bulb?', options: ['Off', 'Very dim', 'Dim', 'Medium', 'Bright']  },
+          predict: { question: 'Approximately how much voltage is across the 10 Ω bulb?', options: ['0 V', '0.14 V', '0.75 V', '1.36 V', '1.50 V']  },
           answerIndex: 3,
-          explanation: 'Total R = 11 Ω, so I ≈ 0.136 A. Voltage across the bulb is I·R_bulb = 1.36 V; voltage across the small resistor is just 0.14 V. The bulb gets most of the voltage because it has most of the resistance — a key insight: voltage divides in proportion to resistance.'
+          explanation: 'Total R = 11 Ω, so I ≈ 0.136 A. Voltage across the 10 Ω bulb is I·R = 1.36 V; voltage across the 1 Ω resistor is about 0.14 V. In a series circuit, voltage divides in proportion to resistance.'
         }
       ];
 
       function renderPoebulbSection() {
-        var state = d2.poeb || { stage: {}, score: 0 };
+        var state = d2.poeb || { stage: {} };
         function setPoe(patch) {
           setLabToolData(function(prev) {
             var prior = (prev && prev.circuit) || {};
-            var pb = Object.assign({}, prior.poeb || { stage: {}, score: 0 }, patch);
+            var pb = Object.assign({}, prior.poeb || { stage: {} }, patch);
             return Object.assign({}, prev, { circuit: Object.assign({}, prior, { poeb: pb }) });
           });
         }
+        function updatePoeStage(scenarioId, patch) {
+          var nextStage = Object.assign({}, state.stage);
+          nextStage[scenarioId] = Object.assign({ picked: null, revealed: false, revision: '', reason: '', complete: false }, nextStage[scenarioId] || {}, patch);
+          setPoe({ stage: nextStage });
+        }
+        var inquiryComplete = Object.keys(state.stage || {}).filter(function(scenarioId) {
+          return state.stage[scenarioId] && state.stage[scenarioId].complete === true;
+        }).length;
         // Tiny SVG schematic generator — kept lightweight so the lesson stays the focus
         function drawSchematic(scenario) {
           var s = scenario.svg;
@@ -3122,11 +3131,12 @@ window.StemLab = window.StemLab || {
           return h('svg', { viewBox: '0 0 250 130', width: '100%', role: 'img', 'aria-label': schematicLabel, style: { maxWidth: 280, height: 'auto', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', borderRadius: 8, padding: 4 } }, svgChildren);
         }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
-          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict the bulb'),
+          h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '💡 Predict, test, and revise with electrical evidence'),
           h('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' },
-            'Look at the circuit. Predict what you think will happen ', h('em', null, 'before'), ' clicking "Show answer". This is how scientists work — commit to a hypothesis first; the result is more memorable.'),
+            'Use the labeled voltage and resistance to predict a measurable result ', h('em', null, 'before'), ' revealing the model evidence. Prediction accuracy is not graded; each completed comparison and evidence-based revision earns inquiry credit. Power is this model\'s brightness proxy; real perceived brightness also depends on the bulb.'),
           POE_SCENARIOS.map(function(scenario, i) {
-            var stg = state.stage[scenario.id] || { picked: null, revealed: false };
+            var stg = Object.assign({ picked: null, revealed: false, revision: '', reason: '', complete: false }, state.stage[scenario.id] || {});
+            var reflectionReady = !!stg.revision && String(stg.reason || '').trim().length >= 12;
             return h('div', { key: scenario.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-2' },
                 h('span', { className: 'text-[10px] font-mono text-amber-700 font-bold' }, '#' + (i + 1)),
@@ -3140,15 +3150,16 @@ window.StemLab = window.StemLab || {
                   var revealed = stg.revealed;
                   var correct = scenario.answerIndex === oi;
                   var bg = revealed
-                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-amber-100 text-amber-900 border-amber-400' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-amber-50 active:scale-[0.97]');
                   return h('button', {
                     key: oi,
+                    type: 'button',
                     disabled: revealed,
+                    'aria-disabled': revealed ? 'true' : 'false',
                     onClick: function() {
-                      var newStage = Object.assign({}, state.stage);
-                      newStage[scenario.id] = { picked: oi, revealed: false };
-                      setPoe({ stage: newStage });
+                      if (revealed) return;
+                      updatePoeStage(scenario.id, { picked: oi, revealed: false, revision: '', reason: '', complete: false });
                     },
                     'aria-pressed': picked ? 'true' : 'false',
                     className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + bg
@@ -3157,26 +3168,46 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'mt-2 flex items-center gap-2' },
                 h('button', {
+                  type: 'button',
                   disabled: stg.picked == null || stg.revealed,
+                  'aria-disabled': stg.picked == null || stg.revealed ? 'true' : 'false',
                   onClick: function() {
-                    var newStage = Object.assign({}, state.stage);
-                    newStage[scenario.id] = { picked: stg.picked, revealed: true };
-                    var bonus = scenario.answerIndex === stg.picked ? 1 : 0;
-                    setPoe({ stage: newStage, score: (state.score || 0) + bonus });
+                    if (stg.picked == null || stg.revealed) return;
+                    updatePoeStage(scenario.id, { picked: stg.picked, revealed: true, revision: '', reason: '', complete: false });
                   },
                   className: 'transition-colors px-3 py-1 rounded-md text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 disabled:opacity-40 disabled:cursor-not-allowed focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
-                }, stg.revealed ? '✓ Revealed' : 'Show answer'),
-                stg.revealed && h('span', { className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-rose-700 font-bold') },
-                  scenario.answerIndex === stg.picked ? '✓ Correct' : '✗ Try the reasoning')
+                }, stg.revealed ? '✓ Evidence revealed' : 'Reveal model evidence'),
+                stg.revealed && h('span', { role: 'status', className: 'text-[11px] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-amber-800 font-bold') },
+                  scenario.answerIndex === stg.picked ? 'Evidence supported your estimate' : 'The model produced a different result')
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
-                h('strong', { className: 'text-amber-900' }, 'Why: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation))
+                h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation)),
+              stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-200 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
+                h('legend', { className: 'px-1 text-[10px] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
+                h('p', { className: 'text-[10px] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
+                h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'How the circuit evidence affected your thinking for scenario ' + (i + 1) },
+                  [
+                    { id: 'supported', label: 'It strengthened my reasoning' },
+                    { id: 'revised', label: 'I need to revise my reasoning' },
+                    { id: 'uncertain', label: 'I would run another test' }
+                  ].map(function(option) {
+                    var selectedRevision = stg.revision === option.id;
+                    return h('label', { key: option.id, className: 'flex cursor-pointer gap-1.5 rounded border p-1.5 text-[10px] font-bold ' + (selectedRevision ? 'border-violet-500 bg-violet-50 text-violet-950' : 'border-slate-200 text-slate-700') },
+                      h('input', { type: 'radio', name: 'circuit-poe-revision-' + scenario.id, value: option.id, checked: selectedRevision, onChange: function() { updatePoeStage(scenario.id, { revision: option.id, complete: false }); }, className: 'mt-0.5 h-4 w-4 accent-violet-700' }),
+                      h('span', null, option.label)
+                    );
+                  })
+                ),
+                h('label', { htmlFor: 'circuit-poe-reason-' + scenario.id, className: 'mt-2 block text-[10px] font-black text-violet-900' }, 'What evidence supports your revision?'),
+                h('textarea', { id: 'circuit-poe-reason-' + scenario.id, rows: 2, maxLength: 400, value: stg.reason || '', onChange: function(e) { updatePoeStage(scenario.id, { reason: e.target.value.slice(0, 400), complete: false }); }, placeholder: 'The voltage, current, or power evidence shows...', className: 'mt-1 w-full rounded border border-violet-200 bg-white p-2 text-[10px] text-slate-800' }),
+                h('button', { type: 'button', disabled: !reflectionReady || stg.complete, 'aria-disabled': reflectionReady && !stg.complete ? 'false' : 'true', onClick: function() { if (!reflectionReady || stg.complete) return; updatePoeStage(scenario.id, { complete: true }); }, className: 'mt-1.5 rounded bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, stg.complete ? 'Inquiry credit recorded' : 'Record comparison and revision')
+              )
             );
           }),
-          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex items-center gap-2' },
+          h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700 flex flex-wrap items-center gap-2', 'data-circuit-inquiry-credit': 'completion-revision' },
             h('span', null, '🎯'),
-            h('strong', null, 'Score: ' + (state.score || 0) + ' / ' + POE_SCENARIOS.length),
-            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Each scenario commits you to a prediction; getting the reasoning matters more than the score.')
+            h('strong', null, 'Inquiry progress: ' + inquiryComplete + ' / ' + POE_SCENARIOS.length),
+            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Credit comes from comparing evidence and revising your reasoning, regardless of whether the initial prediction matched.')
           )
         );
       }
@@ -3855,7 +3886,7 @@ window.StemLab = window.StemLab || {
         var hereY = 130 - Math.min(120, current * 100);
         return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Ohm Inquiry — V/I/R/P Discovery'),
-          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set voltage and resistance. Predict where the dissipation crosses from harmless to component-killing. No score, no reveal — you mark your own understanding.'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set voltage and resistance, then observe where dissipation moves from harmless to component-damaging. The safety band updates live; record a hypothesis or pattern you notice.'),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },

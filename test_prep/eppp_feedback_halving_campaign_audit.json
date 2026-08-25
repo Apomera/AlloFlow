@@ -59,7 +59,7 @@
   "fingerprints": {
     "selection": "796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7",
     "composition": "86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a",
-    "protectedContent": "5ab5a2f6ae17c5be0c90856b44d16af8d2887639d5baa055028ed9c115f1f561"
+    "protectedContent": "32fb70e368d88526ab3357ef4ca4b8186f0a95b6cd6b34627006a94322cf7427"
   },
   "summary": {
     "selectedItems": 420,
@@ -471,7 +471,7 @@
       "id": "eppp-b011-social-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "6ae3c1de04d122f32540d35ada31a7bb57f389c9ef08d3d13445759cf6f6c3d9",
+      "protectedFingerprint": "6fd145b2087be3a6da6779146558e7f90edbfa4392b5e8cb6919ee620d4ab25a",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -482,7 +482,7 @@
       "id": "eppp-b012-assessment-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "da8d7525df7e2bb31c2fd2a533283efbc03d10daec6435f3f319374361a6a822",
+      "protectedFingerprint": "0881030354dd59cb6de9cbe7b18bb771145e194958d962a3a360a221d607237c",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -746,7 +746,7 @@
       "id": "eppp-b014-social-1",
       "family": "triple-ceg",
       "expectedAnswerIndex": 0,
-      "protectedFingerprint": "4eb20fe70c74b86c829f04a1404d32947d5cd4b4e3823dfd07094f312ccc5472",
+      "protectedFingerprint": "f87e1eb1cd0d95df41a0f41cf2c8e5cb1c3b8d32fafc7950c8f3b1e8837c32f5",
       "modes": {
         "1": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -966,7 +966,7 @@
       "id": "eppp-b016-research-2",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "74dda3e410d70689fb00f8627be3cce932a798943c86b81c97d865a82e73034e",
+      "protectedFingerprint": "20a86102c83d0e27af4cb66879dc161efa0c2afd02d66cf92214482715a171ca",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -2792,7 +2792,7 @@
       "id": "eppp-v2-biological-006",
       "family": "triple-insufficient",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "eac1b787d5843ca5680dd91676067be26c64dc4fe1a6a96fb11a2b0aec4318bc",
+      "protectedFingerprint": "d1012d6b035dcd58ebf866028ff5938f8d06d00483b0e461c8c614d55bdf1582",
       "modes": {
         "0": "source-reviewed-legacy-reason-expanded",
         "2": "source-reviewed-legacy-reason-expanded",
@@ -4068,7 +4068,7 @@
       "id": "eppp-v3-assessment-050",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "7374f1d9f90c534510696475eeacb1461f05abbd6751ac875a708a14ad1f2fdb",
+      "protectedFingerprint": "a0ec62b76fee107c8693236cef362fd7629aa28489ec1f26f9436838a9d42f7a",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4090,7 +4090,7 @@
       "id": "eppp-v3-assessment-070",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "9fd2173ea3adcaac45de7a579f9d9d8b960101db121d97f3e82ec20e85dbd8a4",
+      "protectedFingerprint": "e8e3b6d179bd4c03d1fc06768debaac222ca0767844e4eb811d7dd87caa908f2",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4475,7 +4475,7 @@
       "id": "eppp-v3-professional-056",
       "family": "triple-ceg",
       "expectedAnswerIndex": 3,
-      "protectedFingerprint": "077ea0a49bd7051f07b588608eccecb43a8bd3c9b635d9c2fb77bf8918b74b17",
+      "protectedFingerprint": "a8b8998a0ec6cb80fd137e3e25d59e30ec4226db37296a5e1610fbca7f958899",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",
@@ -4640,7 +4640,7 @@
       "id": "eppp-v3-social-cultural-036",
       "family": "triple-ceg",
       "expectedAnswerIndex": 1,
-      "protectedFingerprint": "a66912e707ea935aafcf1ad007c5e299e748aa7e5428a579a29235d663efe16f",
+      "protectedFingerprint": "1ad106bacf7ab7d19af6e72201d76d0769ae459c196d2573c5a4e21999348800",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "2": "rationale-grounded-option-contrast-draft",
@@ -4651,7 +4651,7 @@
       "id": "eppp-v3-social-cultural-037",
       "family": "triple-ceg",
       "expectedAnswerIndex": 2,
-      "protectedFingerprint": "cd96ba47df97847965bfbe2ef82a095348ac8cd7608b54989039bbb6d4e556e3",
+      "protectedFingerprint": "d47836d66c4666bf545863c3e25ad2b508bfc0a9b8199c8175c5907ec8bddee3",
       "modes": {
         "0": "rationale-grounded-option-contrast-draft",
         "1": "rationale-grounded-option-contrast-draft",

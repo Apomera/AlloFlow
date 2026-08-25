@@ -41,13 +41,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for archS
 
 exports[`science-sim + studio render goldens > renders + pins a digest for artStudio [ssr] 1`] = `
 {
-  "buttons": 18,
-  "canvases": 1,
-  "inputs": 3,
-  "lengthBucket": 40,
+  "buttons": 9,
+  "canvases": 0,
+  "inputs": 0,
+  "lengthBucket": 38,
   "paths": 0,
   "selects": 0,
-  "sha": "721ce3372d818f67",
+  "sha": "75323c13d4d3fccf",
   "svgs": 0,
 }
 `;
@@ -278,10 +278,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for physi
   "buttons": 36,
   "canvases": 1,
   "inputs": 9,
-  "lengthBucket": 101,
+  "lengthBucket": 102,
   "paths": 0,
   "selects": 0,
-  "sha": "77c2807c0fb342a3",
+  "sha": "e7091ef78afa35f4",
   "svgs": 0,
 }
 `;

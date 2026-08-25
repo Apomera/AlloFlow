@@ -1,0 +1,10 @@
+{
+  "langName": "turkish",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1430,
+  "translatedKeys": 1424,
+  "missingKeys": 0,
+  "passthroughKeys": 6,
+  "coveragePct": 99.6,
+  "missing": {}
+}

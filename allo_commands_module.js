@@ -939,9 +939,14 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openStudentSignals();
       return t("cmd.open_student_signal_done", "Teacher signal panel opened. Pick one option to send.");
     } },
-    { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data", "research suite", "research dashboard", "embedded research", "study", "irb", "likert", "assessment center", "progress monitoring"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
+    { id: "open_class_analytics", opensPanel: "classAnalytics", icon: "\u{1F4C8}", roles: "teacher", label: t("cmd.open_class_analytics", "Open class analytics"), aliases: ["analytics", "class data", "progress data", "assessment center", "educator hub assessment center", "progress monitoring"], hint: t("cmd.open_class_analytics_hint", "Whole-class progress"), run: (c) => {
       c.setShowClassAnalytics(true);
       return t("cmd.open_class_analytics_done", "Class analytics opened.");
+    } },
+    { id: "open_research_suite", opensPanel: "researchSuite", icon: "\u{1F4C7}", roles: "teacher", when: (c) => typeof c.setIsResearchSuiteOpen === "function", label: t("cmd.open_research_suite", "Open Research Suite"), aliases: ["research suite", "educator hub research suite", "research dashboard", "embedded research", "study dashboard", "irb study", "likert study"], hint: t("cmd.open_research_suite_hint", "Open study design, consent, fidelity, and research export tools"), run: (c) => {
+      if (typeof c.setShowClassAnalytics === "function") c.setShowClassAnalytics(false);
+      c.setIsResearchSuiteOpen(true);
+      return t("cmd.open_research_suite_done", "Research Suite opened.");
     } },
     { id: "open_share_collect", opensPanel: "recentQrShares", icon: "\u{1F517}", roles: "teacher", label: t("cmd.open_share_collect", "Open Share & Collect"), aliases: ["share and collect", "share collect", "polls", "poll results", "sign-up sheet", "signup results", "survey", "surveys", "send survey", "survey link", "survey results", "collect responses", "availability poll", "parent survey"], hint: t("cmd.open_share_collect_hint", "Polls, sign-ups, surveys and their results"), run: (c) => {
       c.setShowRecentQrShares(true);
@@ -991,6 +996,10 @@ function buildAlloCommands(ctx, opts = {}) {
       c.goToDashboard();
       return t("cmd.go_dashboard_done", "Dashboard.");
     } },
+    { id: "return_to_start", icon: "\u21A9\uFE0F", roles: "all", when: (c) => typeof c.returnToStart === "function", label: t("cmd.return_to_start", "Return to Start"), aliases: ["return to start", "back to start", "start screen", "launch screen", "choose another mode"], hint: t("cmd.return_to_start_hint", "Return to the AlloFlow launch choices without reloading"), run: (c) => {
+      c.returnToStart();
+      return t("cmd.return_to_start_done", "Returned to Start.");
+    } },
     { id: "open_roster", icon: "\u{1F9D1}\u200D\u{1F91D}\u200D\u{1F9D1}", roles: "teacher", label: t("cmd.open_roster", "Open the class roster"), aliases: ["roster", "manage roster", "class roster", "roster key"], hint: t("cmd.open_roster_hint", "Manage your class groups"), run: (c) => {
       c.openRoster();
       return t("cmd.open_roster_done", "Class roster opened.");
@@ -1037,12 +1046,12 @@ function buildAlloCommands(ctx, opts = {}) {
       icon: "\u{1F9ED}",
       roles: "teacher",
       when: (c) => typeof c.startLessonFlow === "function",
-      label: t("cmd.start_lesson_blueprint", "Start Auto-Fill lesson blueprint"),
-      aliases: ["start auto fill", "start autofill", "auto fill mode", "autofill mode", "start blueprint mode", "make a lesson blueprint", "create a lesson blueprint", "plan with allobot"],
-      hint: t("cmd.start_lesson_blueprint_hint", "Opens AlloBot in Auto-Fill mode so you can describe and review a lesson plan"),
+      label: t("cmd.start_blueprint_mode", "Blueprint Mode \u2014 build a lesson"),
+      aliases: ["blueprint mode", "build a lesson", "start auto fill", "start autofill", "auto fill mode", "autofill mode", "start blueprint mode", "make a lesson blueprint", "create a lesson blueprint", "plan with allobot"],
+      hint: t("cmd.start_blueprint_mode_hint", "Open Blueprint Mode to describe and review a lesson plan"),
       run: (c, p) => {
         c.startLessonFlow(p || {});
-        return p && p.topic ? t("cmd.start_lesson_blueprint_done_topic", "Auto-Fill Blueprint mode is open for \u201C") + p.topic + t("cmd.start_lesson_blueprint_done_topic2", "\u201D. Continue with AlloBot to review the resource plan before generating.") : t("cmd.start_lesson_blueprint_done", "Auto-Fill Blueprint mode is open. Tell AlloBot the topic, grade, goals, and learner needs; you will review the plan before generating.");
+        return p && p.topic ? t("cmd.start_blueprint_mode_done_topic", "Blueprint Mode is open for \u201C") + p.topic + t("cmd.start_blueprint_mode_done_topic2", "\u201D. Continue with AlloBot to review the resource plan before generating.") : t("cmd.start_blueprint_mode_done", "Blueprint Mode is open. Tell AlloBot the topic, grade, goals, and learner needs; you will review the plan before generating.");
       }
     },
     {
@@ -1269,7 +1278,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startWordScrambleGame();
       return t("cmd.start_word_scramble_done", "Word scramble on.");
     } },
-    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
+    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing", "glossary audio review", "review glossary audio"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
       const kind = c.toggleContentEditing();
       return kind ? t("cmd.toggle_content_editing_done", "Edit mode toggled for the ") + kind + "." : t("cmd.toggle_content_editing_miss", "This view doesn\u2019t have an edit mode.");
     } },
@@ -1560,7 +1569,7 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.pipeline_tour_done", "Starting the results tour.");
     } },
     // ── Parameter-carrying commands (S3) ──
-    { id: "create_lesson", icon: "\u{1F9D1}\u200D\u{1F3EB}", roles: "teacher", when: (c) => !!c.startLessonFlow, label: t("cmd.create_lesson", "Create a lesson (tell me the topic)"), aliases: ["create a lesson", "make a lesson", "new lesson about", "plan a lesson", "lesson about"], hint: t("cmd.create_lesson_hint", "Starts the guided flow \u2014 say a topic and grade"), run: (c, p) => {
+    { id: "create_lesson", icon: "\u{1F9D1}\u200D\u{1F3EB}", roles: "teacher", when: (c) => !!c.startLessonFlow, label: t("cmd.create_lesson", "Create a lesson (tell me the topic)"), aliases: ["create a lesson", "generate a lesson", "make a lesson", "new lesson about", "plan a lesson", "lesson about", "turn this discussion into a lesson", "turn this conversation into a lesson"], hint: t("cmd.create_lesson_hint", "Starts the guided flow \u2014 say a topic and grade"), run: (c, p) => {
       c.startLessonFlow(p || {});
       return p && p.topic ? t("cmd.create_lesson_done", "Starting a lesson flow about \u201C") + p.topic + "\u201D" + (p.grade ? t("cmd.create_lesson_done2", " for grade ") + p.grade : "") + t("cmd.create_lesson_done3", " \u2014 AlloBot will guide the next steps.") : t("cmd.create_lesson_done_blank", "Starting the guided lesson flow \u2014 AlloBot will ask for your topic.");
     } },
@@ -1605,7 +1614,7 @@ function buildAlloCommands(ctx, opts = {}) {
     } },
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
     //    (verified by symbol in AlloFlowANTI.txt). Grouped via CMD_GROUP / CMD_CONTEXT above. ──
-    { id: "stop_reading", icon: "\u23F9\uFE0F", roles: "all", label: t("cmd.stop_reading", "Stop reading aloud"), aliases: ["stop reading", "stop talking", "be quiet", "silence", "stop speech", "stop the voice"], hint: t("cmd.stop_reading_hint", "Interrupt the current text-to-speech"), run: (c) => {
+    { id: "stop_reading", icon: "\u23F9\uFE0F", roles: "all", label: t("cmd.stop_reading", "Stop reading aloud"), aliases: ["stop reading", "stop talking", "be quiet", "silence", "stop speech", "stop the voice", "skip audio", "stop audio", "cut off audio"], hint: t("cmd.stop_reading_hint", "Interrupt the current text-to-speech"), run: (c) => {
       c.stopReading();
       return t("cmd.stop_reading_done", "Stopped reading aloud.");
     } },
@@ -3121,6 +3130,7 @@ const DIRECT_ACT_COMMAND_IDS = /* @__PURE__ */ new Set([
   "describe_current_media",
   "repeat_last_response",
   "go_back",
+  "return_to_start",
   "close_current_surface",
   "open_text_settings",
   "open_voice_settings",
@@ -3191,7 +3201,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const _grammars = [
     { id: "find_reading", re: /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\s*(?:about|on|for)?\s*(.*?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: "find_reading", re: /^(?:i\s+want\s+to\s+(?:learn|read)\s+about|i'?m\s+looking\s+for\s+(?:a\s+)?(?:book|source|reading|article|text)\s+about|something\s+about|what\s+can\s+i\s+read\s+about)\s+(.+?)\??$/i, params: (m) => _readingParams(m[1], null) },
-    { id: "create_lesson", re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
+    { id: "create_lesson", re: /^(?:turn|use)\s+(?:this|our|the)\s+(?:lesson\s+)?(?:discussion|conversation|idea|guidance)\s+(?:into|for)\s+(?:a\s+)?lesson\s*\??$/i, params: () => ({ topic: null, grade: null }) },
+    { id: "create_lesson", re: /^(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || "").trim() || null, grade: m[2] || null }) },
     { id: "set_grade_level", re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
     { id: "set_source_tone", re: /^(?:set|change|make)\s+(?:the\s+)?(?:source\s+)?tone\s*(?:to)?\s*([a-z -]{3,40})\s*\??$/i, params: (m) => ({ tone: m[1].trim() }) },
     { id: "set_source_length", re: /^(?:set|change|make)\s+(?:the\s+)?(?:source|text|reading|passage)?\s*(?:length|word count)\s*(?:to)?\s*([a-z]+|\d{1,4})(?:\s*words?)?\s*\??$/i, params: (m) => ({ length: m[1] || null }) },
@@ -4299,7 +4310,7 @@ try {
 } catch (_) {
 }
 function createVoiceLoop(getCtx, opts = {}) {
-  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
+  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null, speechSkipKeyHandler = null;
   let micMeterRelease = null;
   let sharedRecognition = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
@@ -4485,27 +4496,42 @@ function createVoiceLoop(getCtx, opts = {}) {
       bargeAudioCtx = null;
     }
   };
-  const cutReply = () => {
-    if (!speaking) return;
-    const externalStop = externalSpeech && externalSpeech.stop;
-    const resumeNow = activeResume;
+  const interruptSpeech = (reason = "speech-skipped", interruptOpts = {}) => {
+    const currentExternal = externalSpeech;
+    const hadOutput = !!(speaking || currentExternal || replyAudio || pendingReply);
+    if (!hadOutput) return false;
+    clearPendingReply();
+    ++speakSerial;
+    externalSpeech = null;
+    const currentAudio = replyAudio;
+    replyAudio = null;
+    speaking = false;
+    activeResume = null;
     try {
-      if (replyAudio) replyAudio.pause();
+      if (currentAudio) currentAudio.pause();
     } catch (_) {
     }
     try {
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     } catch (_) {
     }
-    noteUserSpeech(true);
-    if (typeof externalStop === "function") {
+    stopBargeWatch();
+    if (currentExternal && typeof currentExternal.stop === "function") {
       try {
-        externalStop("barge-in");
+        currentExternal.stop(reason || "speech-skipped");
       } catch (_) {
       }
     }
-    stopBargeWatch();
-    if (resumeNow) resumeNow();
+    if (interruptOpts.userSpeaking) noteUserSpeech(true);
+    else noteUserTurnEnd();
+    if (!interruptOpts.suppressResume) resumeInputAfterOutput();
+    if (!interruptOpts.suppressStatus && active) {
+      updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+    }
+    return hadOutput;
+  };
+  const cutReply = () => {
+    interruptSpeech("barge-in", { userSpeaking: true });
   };
   const startBargeWatch = () => {
     stopBargeWatch();
@@ -4591,21 +4617,8 @@ function createVoiceLoop(getCtx, opts = {}) {
     return true;
   };
   const stopReplyOutputForMute = () => {
+    if (interruptSpeech("global-muted")) return;
     clearPendingReply();
-    ++speakSerial;
-    if (externalSpeech) stopExternalSpeech("global-muted", { suppressResume: true });
-    try {
-      if (replyAudio) replyAudio.pause();
-    } catch (_) {
-    }
-    replyAudio = null;
-    try {
-      if (window.speechSynthesis) window.speechSynthesis.cancel();
-    } catch (_) {
-    }
-    speaking = false;
-    activeResume = null;
-    stopBargeWatch();
     resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
@@ -4908,26 +4921,33 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (speak) speakReply(msg, c);
     else if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
-  const converseWith = async (text, ctx) => {
+  const converseWith = async (text, ctx, conversationOpts = {}) => {
     const c = ctx || getCtx() || {};
     const t = _mkT(c && c.t);
+    const isCurrent = typeof conversationOpts.isCurrent === "function" ? conversationOpts.isCurrent : () => true;
     if (typeof c.converse !== "function") {
       announce(t("voice_control.no_chat_surface", "I heard you. I can only run app commands from here right now, so ask AlloBot in the chat and it will answer there."));
       return;
     }
     updateVoiceSession("processing", "Asking AlloBot.");
+    suspendInputForOutput();
     let reply = null;
     try {
       reply = await Promise.resolve(c.converse(text, { channel: "voice" }));
     } catch (_) {
       reply = null;
     }
-    if (!active) return;
+    if (!active || !isCurrent()) return;
     const replyText = typeof reply === "string" ? reply : reply && typeof reply === "object" ? reply.narration : "";
     if (replyText && String(replyText).trim()) {
       announce(String(replyText).trim(), true, { toast: false });
+      if (!speaking && !pendingReply) {
+        resumeInputAfterOutput();
+        updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
+      }
       return;
     }
+    resumeInputAfterOutput();
     updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
   };
   const armPendingConfirmation = (pending) => {
@@ -4969,7 +4989,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
   };
   const stop = (reason, stopOpts = {}) => {
-    if (externalSpeech) stopExternalSpeech("voice-stopped", { suppressResume: true });
+    interruptSpeech("voice-stopped", { suppressResume: true, suppressStatus: true });
     cancelRoute();
     clearPendingConfirmation();
     try {
@@ -5006,6 +5026,13 @@ function createVoiceLoop(getCtx, opts = {}) {
       } catch (_) {
       }
       muteChangeHandler = null;
+    }
+    if (speechSkipKeyHandler) {
+      try {
+        window.removeEventListener("keydown", speechSkipKeyHandler, true);
+      } catch (_) {
+      }
+      speechSkipKeyHandler = null;
     }
     if (!active) return;
     active = false;
@@ -5068,7 +5095,7 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (c && c.setVoiceActive) c.setVoiceActive(false);
     } catch (_) {
     }
-    if (reason) announce(reason);
+    if (reason) announce(reason, false);
   };
   const handleUtterance = async (text, recognitionMeta = {}) => {
     errStreak = 0;
@@ -5227,17 +5254,24 @@ function createVoiceLoop(getCtx, opts = {}) {
     const controller = typeof AbortController === "function" ? new AbortController() : null;
     routeController = controller;
     const signal = controller ? controller.signal : null;
+    const routeIsCurrent = () => active && currentRouteSerial === routeSerial && !(signal && signal.aborted);
+    const converseCurrent = () => converseWith(text, cc, { isCurrent: routeIsCurrent });
     try {
+      const pendingGuidedChoice = typeof cc.hasPendingGuidedChoice === "function" ? !!cc.hasPendingGuidedChoice() : !!cc.hasPendingGuidedChoice;
+      if (pendingGuidedChoice && !explicitCommand) {
+        await converseCurrent();
+        return;
+      }
       if (looksMultiStep(text)) {
         const steps = await planUtterance(cc, text, { signal, allowInteractive: false });
         if (!active || currentRouteSerial !== routeSerial || signal && signal.aborted) return;
         if (!steps || steps.length < 2) {
-          await converseWith(text, cc);
+          await converseCurrent();
           return;
         }
         const report = validatePlan(cc, steps, { allowInteractive: false, maxSteps: COMMAND_PLAN_MAX_STEPS });
         if (!report.ok) {
-          await converseWith(text, cc);
+          await converseCurrent();
           return;
         }
         const exactSteps = report.items.map((item) => ({ commandId: item.commandId, params: Object.freeze(Object.assign({}, item.params || {})), why: item.why || "" }));
@@ -5253,10 +5287,10 @@ function createVoiceLoop(getCtx, opts = {}) {
         armPendingConfirmation({ kind: "kernel-command", commandId: r.commandId, scopeId: r.scopeId || null, prompt, offered: !!r.offered });
         announce(prompt);
       } else if (r && r.handled) announce(r.narration, !r.suppressVoiceReply);
-      else await converseWith(text, cc);
+      else await converseCurrent();
     } catch (error) {
       if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-      await converseWith(text, cc);
+      await converseCurrent();
     } finally {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
@@ -5318,7 +5352,11 @@ function createVoiceLoop(getCtx, opts = {}) {
         updateVoiceSession("recovering", message + " Listening will continue.");
       }
     });
-    const started = sharedRecognition && sharedRecognition.start();
+    if (!sharedRecognition || typeof sharedRecognition.start !== "function") {
+      sharedRecognition = null;
+      return false;
+    }
+    const started = sharedRecognition.start();
     if (started === false) {
       sharedRecognition = null;
       return false;
@@ -5451,7 +5489,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     activeRecognitionEngine = "";
     activeRecognitionEngineLabel = "";
     let acquiredLease = null;
-    const coordinator = opts && opts.voiceCoordinator || typeof window !== "undefined" && window.AlloFlowVoice;
+    const coordinator = opts && (opts.voiceCoordinator || opts.voiceService) || typeof window !== "undefined" && window.AlloFlowVoice;
     if (coordinator && typeof coordinator.acquireVoiceSession === "function") {
       try {
         acquiredLease = coordinator.acquireVoiceSession("agent-command", {
@@ -5491,9 +5529,37 @@ function createVoiceLoop(getCtx, opts = {}) {
     } catch (_) {
       muteChangeHandler = null;
     }
+    speechSkipKeyHandler = (event) => {
+      if (!active || !speaking || !event || event.defaultPrevented || event.repeat || event.isComposing) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (event.code !== "Space" && event.key !== " " && event.key !== "Spacebar") return;
+      const target = event.target;
+      const tag = String(target && target.tagName || "").toLowerCase();
+      if (target && (target.isContentEditable || tag === "input" || tag === "textarea" || tag === "select")) return;
+      if (target && typeof target.closest === "function" && target.closest('button, a[href], summary, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"], [role="tab"], [role="textbox"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      interruptSpeech("keyboard-skip");
+    };
+    try {
+      window.addEventListener("keydown", speechSkipKeyHandler, true);
+    } catch (_) {
+      speechSkipKeyHandler = null;
+    }
     const standbyWanted = _voiceStandbyPref();
-    const sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
-    if (sharedStarted !== null) return sharedStarted;
+    let sharedStarted = null;
+    try {
+      sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
+    } catch (error) {
+      stop(tx(c, "voice.control_start_failed", "Voice control could not start: {error}", { error: error && error.message || "unknown" }));
+      return false;
+    }
+    if (sharedStarted !== null) {
+      if (sharedStarted === false) {
+        stop(tx(c, "voice.control_start_failed", "Voice control could not start: {error}", { error: "recognizer unavailable" }));
+      }
+      return sharedStarted;
+    }
     try {
       if (_modelPolicy() === "auto") {
         if (!whisperProfile.supported) {
@@ -5557,7 +5623,7 @@ function createVoiceLoop(getCtx, opts = {}) {
   };
   const pause = (pauseOpts = {}) => {
     if (!active || paused) return false;
-    if (externalSpeech) stopExternalSpeech("voice-paused", { suppressResume: true });
+    interruptSpeech("voice-paused", { suppressResume: true, suppressStatus: true });
     const hasAutoResume = !!pauseOpts && Object.prototype.hasOwnProperty.call(pauseOpts, "autoResumeMs");
     const requestedAutoResumeMs = Number(pauseOpts && pauseOpts.autoResumeMs);
     const autoResumeMs = hasAutoResume && Number.isFinite(requestedAutoResumeMs) ? Math.max(MIN_SPOKEN_PAUSE_MS, Math.min(MAX_SPOKEN_PAUSE_MS, requestedAutoResumeMs)) : 0;
@@ -5664,6 +5730,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     stop: () => stop("Voice control off \u2014 the microphone is released."),
     pause,
     resume,
+    stopSpeaking: (reason = "manual-skip") => interruptSpeech(reason),
     isPaused: () => paused,
     isActive: () => active,
     engine: () => engineName,
@@ -5846,6 +5913,8 @@ const CMD_GROUP = {
   toggle_cloud_sync: "navigate",
   generate_outline: "create",
   export_pack: "create",
+  open_research_suite: "navigate",
+  return_to_start: "navigate",
   launch_flashcards: "create",
   clear_my_answers: "create",
   clear_workspace: "create",
@@ -6018,6 +6087,7 @@ const CMD_CONTEXT = {
   open_udl_guide: ["educatorHub", "content"],
   open_command_blueprints: ["educatorHub", "content"],
   start_lesson_blueprint: ["educatorHub", "content"],
+  open_research_suite: ["educatorHub"],
   run_lesson_blueprint: ["content"],
   plan_full_pack: ["content"],
   generate_full_pack: ["content"],
@@ -6083,9 +6153,9 @@ function _recordCommandUse(commandId) {
   } catch (_) {
   }
 }
-const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", learningWebExplorer: "learningWebExplorerOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
-const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchHub", "litLab", "learningWebExplorer", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
-const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", learningWebExplorer: "Here \u2014 Learning Web: Explore", mindMap: "Here \u2014 Learning Web: Unit Path", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
+const CTX_FLAG = { liveSession: "liveSessionActive", pipeline: "pipelineOpen", educatorHub: "educatorHubOpen", learningHub: "learningHubOpen", sourceSetup: "sourceSetupOpen", symbolStudio: "symbolStudioOpen", videoStudio: "videoStudioOpen", alloStudio: "alloStudioOpen", cinematicStudio: "cinematicStudioOpen", stemLab: "stemLabOpen", openGroove: "openGrooveOpen", timelineStudio: "timelineStudioOpen", linguaPractice: "linguaPracticeOpen", testPrepHub: "testPrepHubOpen", researchSuite: "researchSuiteOpen", researchHub: "researchHubOpen", litLab: "litLabOpen", learningWebExplorer: "learningWebExplorerOpen", mindMap: "mindMapOpen", poetTree: "poetTreeOpen", behaviorLens: "behaviorLensOpen", content: "contentLoaded", reading: (c) => !!(c.zenActive || c.focusActive) };
+const CTX_PRIORITY = ["sourceSetup", "liveSession", "videoStudio", "alloStudio", "cinematicStudio", "symbolStudio", "stemLab", "openGroove", "timelineStudio", "linguaPractice", "testPrepHub", "researchSuite", "researchHub", "litLab", "learningWebExplorer", "mindMap", "poetTree", "behaviorLens", "pipeline", "educatorHub", "learningHub", "content", "reading"];
+const CONTEXT_LABEL_FALLBACK = { sourceSetup: "Here \u2014 Source setup", liveSession: "Here \u2014 Live session", pipeline: "Here \u2014 Pipeline results", educatorHub: "Here \u2014 Educator Hub", learningHub: "Here \u2014 Learning Hub", symbolStudio: "Here \u2014 Symbol Studio", videoStudio: "Here \u2014 Video Studio", alloStudio: "Here \u2014 Page Designer", cinematicStudio: "Here \u2014 Cinematic Studio", stemLab: "Here \u2014 STEAM Lab", openGroove: "Here \u2014 Open Groove Studio", timelineStudio: "Here \u2014 Timeline Studio", linguaPractice: "Here \u2014 Lingua Practice", testPrepHub: "Here \u2014 Test Prep Hub", researchSuite: "Here \u2014 Research Suite", researchHub: "Here \u2014 Research Hub", litLab: "Here \u2014 Lit Lab", learningWebExplorer: "Here \u2014 Learning Web: Explore", mindMap: "Here \u2014 Learning Web: Unit Path", poetTree: "Here \u2014 Poet Tree", behaviorLens: "Here \u2014 Behavior Lens", content: "Here \u2014 this content", reading: "Here \u2014 Reading mode" };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => {

@@ -416,11 +416,39 @@ const d = labToolData.artStudio || {};
             { id: 'space', icon: '\uD83D\uDDFF', label: 'Space & sculpture', tabs: ['sculpt3d'] },
             { id: 'perception', icon: '\u25C9', label: 'Perception & access', tabs: ['opArt', 'contrast', 'harmonyHunt'] }
           ];
+          const STUDIO_START_PATHS = [
+            { id: 'paint', tab: 'watercolor', icon: '\uD83C\uDFA8', eyebrow: 'Paint', title: 'Paint something', description: 'Start with a responsive watercolor canvas, then explore pigment and paper when you are ready.', accent: 'border-teal-300 hover:border-teal-500 hover:bg-teal-50' },
+            { id: 'digital', tab: 'pixel', icon: '\uD83D\uDDBC', eyebrow: 'Digital', title: 'Make pixel art', description: 'Build a sprite or icon one deliberate cell at a time.', accent: 'border-blue-300 hover:border-blue-500 hover:bg-blue-50' },
+            { id: 'pattern', tab: 'symmetry', icon: '\u2728', eyebrow: 'Pattern', title: 'Create a pattern', description: 'Draw once and let reflection, rotation, and repetition transform the mark.', accent: 'border-violet-300 hover:border-violet-500 hover:bg-violet-50' },
+            { id: 'sculpt', tab: 'sculpt3d', icon: '\uD83D\uDDFF', eyebrow: 'Space', title: 'Build in 3D', description: 'Combine simple forms into a sculpture you can orbit and photograph.', accent: 'border-amber-300 hover:border-amber-500 hover:bg-amber-50' },
+            { id: 'artists', tab: 'artistExplorer', icon: '\uD83C\uDF0D', eyebrow: 'Learn', title: 'Explore an artist', description: 'Study a creative decision and carry the question, not a copied style, into your own work.', accent: 'border-rose-300 hover:border-rose-500 hover:bg-rose-50' },
+            { id: 'access', tab: 'contrast', icon: '\u25C9', eyebrow: 'Inspect', title: 'Design accessible color', description: 'Test color choices and understand how contrast changes who can use a design.', accent: 'border-cyan-300 hover:border-cyan-500 hover:bg-cyan-50' }
+          ];
           const artStudioGroupForTab = function (tabId) {
             return ART_STUDIO_GROUPS.filter(function (group) { return group.tabs.indexOf(tabId) !== -1; })[0] || ART_STUDIO_GROUPS[0];
           };
           const activeArtStudioGroup = artStudioGroupForTab(tab);
           const visibleArtStudioTabs = ART_STUDIO_TAB_ITEMS.filter(function (item) { return activeArtStudioGroup.tabs.indexOf(item.id) !== -1; });
+          const canvasArtworkAvailable = ['colorWheel', 'watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'spinArt', 'stringArt', 'opArt', 'tessellation', 'fractal', 'gradient', 'stereogram', 'sculpt3d'].indexOf(tab) !== -1;
+          const studioHomeOpen = d.studioHome === true || (d.studioHome !== false && (!d.tab || d.tab === 'color'));
+          const focusArtStudioTarget = function (targetId) {
+            if (typeof window === 'undefined' || typeof document === 'undefined') return;
+            window.setTimeout(function () {
+              var target = document.getElementById(targetId);
+              if (target && typeof target.focus === 'function') target.focus();
+            }, 0);
+          };
+          const beginStudioPath = function (nextTab, label) {
+            var safeTab = ART_STUDIO_TAB_ORDER.indexOf(nextTab) !== -1 ? nextTab : 'colorWheel';
+            updMany({
+              tab: safeTab,
+              artNavGroup: artStudioGroupForTab(safeTab).id,
+              studioHome: false,
+              studioStarted: true
+            });
+            focusArtStudioTarget('artstudio-panel-' + safeTab);
+            if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'studioStart', 'Opened ' + (label || ART_STUDIO_TAB_LABELS[safeTab] || 'Art Studio') + '.', { debounce: 300 });
+          };
           const WATERCOLOR_PIGMENTS = [
             { id: 'ultramarine', color: '#2f6fb0', label: 'Ultramarine', description: 'granulating, transparent, low staining, medium mobility', values: { watercolorGranulation: 78, watercolorStaining: 34, watercolorOpacity: 28, watercolorMobility: 62 } },
             { id: 'crimson', color: '#b4233c', label: 'Crimson', description: 'smooth, transparent, high staining, high mobility', values: { watercolorGranulation: 18, watercolorStaining: 84, watercolorOpacity: 22, watercolorMobility: 82 } },
@@ -456,13 +484,35 @@ const d = labToolData.artStudio || {};
             });
             return { color: mixedColor, values: mixedValues, firstWeight: firstWeight, secondWeight: secondWeight };
           };
+          const persistWatercolorBeforeLeave = function () {
+            if (tab !== 'watercolor' || typeof document === 'undefined') return;
+            var watercolorCanvas = document.getElementById('watercolorCanvas');
+            if (!watercolorCanvas || !watercolorCanvas._watercolorEngine || !watercolorCanvas._watercolorEngine.captureSnapshot) return;
+            var watercolorEngine = watercolorCanvas._watercolorEngine;
+            if (watercolorEngine.persistState) watercolorEngine.persistState();
+            else {
+              var flatSnapshot = watercolorEngine.captureSnapshot();
+              if (watercolorEngine.captureState) {
+                var liveState = watercolorEngine.captureState();
+                liveState.flatSnapshot = flatSnapshot;
+                _artStudioWatercolorCache.state = liveState;
+              }
+              upd('watercolorSnapshot', flatSnapshot);
+            }
+          };
+          const openStudioHome = function () {
+            persistWatercolorBeforeLeave();
+            upd('studioHome', true);
+            focusArtStudioTarget('artstudio-home-title');
+          };
           const captureCurrentArtwork = function () {
             if (typeof document === 'undefined') return null;
             var panel = document.getElementById('artstudio-panel-' + tab);
             if (!panel) return null;
             var canvases = panel.querySelectorAll('canvas');
-            var canvas = null;
-            for (var ci = 0; ci < canvases.length; ci++) {
+            var preferredCanvasId = tab === 'stereogram' ? ((d.stereoAnimMode || 'static') === 'animate' ? 'stereoAnimCanvas' : 'stereoCanvas') : '';
+            var canvas = preferredCanvasId ? panel.querySelector('#' + preferredCanvasId) : null;
+            for (var ci = 0; !canvas && ci < canvases.length; ci++) {
               var candidate = canvases[ci];
               if (candidate && candidate.getAttribute('aria-hidden') !== 'true' && candidate.width > 0 && candidate.height > 0) {
                 canvas = candidate;
@@ -489,6 +539,7 @@ const d = labToolData.artStudio || {};
             };
           };
           const sendArtworkTo = function (destination) {
+            persistWatercolorBeforeLeave();
             var artwork = captureCurrentArtwork();
             if (!artwork) {
               if (typeof addToast === 'function') addToast('Finish or open an artwork canvas on this tab before sending it.', 'info');
@@ -519,23 +570,8 @@ const d = labToolData.artStudio || {};
             }
           };
           const selectArtStudioTab = function (nextTab, label) {
-            if (tab === 'watercolor' && nextTab !== 'watercolor' && typeof document !== 'undefined') {
-              var watercolorCanvas = document.getElementById('watercolorCanvas');
-              if (watercolorCanvas && watercolorCanvas._watercolorEngine && watercolorCanvas._watercolorEngine.captureSnapshot) {
-                var watercolorEngine = watercolorCanvas._watercolorEngine;
-                if (watercolorEngine.persistState) watercolorEngine.persistState();
-                else {
-                  var flatSnapshot = watercolorEngine.captureSnapshot();
-                  if (watercolorEngine.captureState) {
-                    var liveState = watercolorEngine.captureState();
-                    liveState.flatSnapshot = flatSnapshot;
-                    _artStudioWatercolorCache.state = liveState;
-                  }
-                  upd('watercolorSnapshot', flatSnapshot);
-                }
-              }
-            }
-            updMany({ tab: nextTab, artNavGroup: artStudioGroupForTab(nextTab).id });
+            if (nextTab !== 'watercolor') persistWatercolorBeforeLeave();
+            updMany({ tab: nextTab, artNavGroup: artStudioGroupForTab(nextTab).id, studioHome: false, studioStarted: true });
             if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + label + ' canvas tool.', { debounce: 500 });
           };
           const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
@@ -543,7 +579,7 @@ const d = labToolData.artStudio || {};
 
           // Canvas Narration: Art Studio init
           if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'init', {
-            first: 'Art Studio loaded. Explore color theory, watercolor, pixel art, symmetry drawing, spirographs, fractals, and more. Use the tabs to switch between tools.',
+            first: studioHomeOpen ? 'Art Studio loaded. Choose a creative path to begin, or ask for a surprise.' : 'Art Studio loaded. Explore color theory, watercolor, pixel art, symmetry drawing, spirographs, fractals, and more. Use the tabs to switch between tools.',
             repeat: 'Art Studio ready.',
             terse: 'Art Studio ready.'
           });
@@ -3246,34 +3282,96 @@ const d = labToolData.artStudio || {};
             }
 
 
+          const renderStudioHome = function () {
+            var recentTab = ART_STUDIO_TAB_ORDER.indexOf(d.tab) !== -1 ? d.tab : null;
+            var surpriseTabs = ['watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'sculpt3d'];
+            return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", 'data-artstudio-home': 'true' },
+              React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
+                React.createElement("button", { type: "button", onClick: function () { setStemLabTool(null); }, className: "p-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                React.createElement("div", { className: "min-w-0 flex-1" },
+                  React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, 'Creative desk'),
+                  React.createElement("p", { className: "truncate text-lg font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
+                ),
+                React.createElement("button", { type: "button", onClick: function () { var picked = surpriseTabs[Math.floor(Math.random() * surpriseTabs.length)]; beginStudioPath(picked, 'a surprise creative lab'); }, className: "ml-auto px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800" }, '\u2726 Surprise me')
+              ),
 
+              React.createElement("section", { className: "relative overflow-hidden rounded-3xl bg-slate-950 text-white p-6 sm:p-8 shadow-xl", 'aria-labelledby': "artstudio-home-title" },
+                React.createElement("div", { className: "absolute -right-16 -top-20 h-56 w-56 rounded-full bg-pink-500/25 blur-3xl", 'aria-hidden': "true" }),
+                React.createElement("div", { className: "absolute -bottom-20 left-1/3 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl", 'aria-hidden': "true" }),
+                React.createElement("div", { className: "relative max-w-2xl" },
+                  React.createElement("p", { className: "text-xs font-black uppercase tracking-[0.2em] text-pink-300" }, 'Begin with an intention'),
+                  React.createElement("h1", { id: "artstudio-home-title", tabIndex: -1, className: "mt-2 text-3xl sm:text-4xl font-black tracking-tight focus:outline-none" }, 'What do you want to make?'),
+                  React.createElement("p", { className: "mt-3 text-sm sm:text-base leading-relaxed text-slate-300" }, 'Choose a creative direction. The canvas comes first; techniques, artists, mathematics, and accessibility stay close when you want to look deeper.'),
+                  React.createElement("div", { className: "mt-5 flex flex-wrap gap-2", role: "group", 'aria-label': "Studio lenses" },
+                    ['\u270E Create', '\u25CE Learn', '\u2315 Inspect'].map(function (lens) { return React.createElement("span", { key: lens, className: "rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-white" }, lens); })
+                  )
+                )
+              ),
 
+              recentTab && React.createElement("button", { type: "button", onClick: function () { beginStudioPath(recentTab, ART_STUDIO_TAB_LABELS[recentTab]); }, className: "mt-4 w-full flex items-center gap-4 rounded-2xl border-2 border-pink-200 bg-pink-50 p-4 text-left hover:border-pink-400 hover:bg-pink-100 transition-colors" },
+                React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-white text-xl shadow-sm", 'aria-hidden': "true" }, "\u21BB"),
+                React.createElement("span", { className: "flex-1" },
+                  React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-wider text-pink-700" }, 'Continue creating'),
+                  React.createElement("span", { className: "block text-sm font-black text-slate-900" }, ART_STUDIO_TAB_LABELS[recentTab])
+                ),
+                React.createElement("span", { className: "text-pink-700 font-black", 'aria-hidden': "true" }, "\u2192")
+              ),
 
-          return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fade-in duration-200" },
-
-            React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-3" },
-
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "transition-colors p-1.5 hover:bg-slate-100 rounded-lg", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18, className: "text-slate-600" })),
-
-              React.createElement("h3", { className: "text-lg font-bold text-slate-800" }, __alloT('stem.artstudio.art_design_studio', "\uD83C\uDFA8 Art & Design Studio")),
-
-              React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
-
-              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Builder \u2192")),
-
-              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": __alloT('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour"),
-
-              typeof onUseArtwork === 'function' && React.createElement("div", { className: "flex items-center gap-1.5 ml-auto", role: "group", "aria-label": "Use this artwork" },
-                React.createElement("span", { className: "text-[10px] font-bold text-slate-500 hidden sm:inline" }, "Use artwork:"),
-                React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('page-designer'); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-300 hover:bg-indigo-100 transition-colors", title: "Insert this static image into Page Designer" }, "↗ Page Designer"),
-                React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('visual-support'); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-800 border border-violet-300 hover:bg-violet-100 transition-colors", title: "Save this static image as a Visual Support" }, "＋ Visual Support")
+              React.createElement("section", { className: "mt-6", 'aria-labelledby': "artstudio-starting-points-title" },
+                React.createElement("div", { className: "flex items-end justify-between gap-3 mb-3" },
+                  React.createElement("div", null,
+                    React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, 'Starting points'),
+                    React.createElement("h2", { id: "artstudio-starting-points-title", className: "text-xl font-black text-slate-900" }, 'Choose a creative path')
+                  ),
+                  React.createElement("button", { type: "button", onClick: function () { beginStudioPath('colorWheel', 'the full lab navigator'); }, className: "text-xs font-black text-pink-700 hover:text-pink-900" }, 'Open full lab navigator \u2192')
+                ),
+                React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" },
+                  STUDIO_START_PATHS.map(function (path) {
+                    return React.createElement("button", { type: "button", key: path.id, onClick: function () { beginStudioPath(path.tab, path.title); }, className: "group min-h-[150px] rounded-2xl border-2 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md " + path.accent, 'aria-label': path.title + '. ' + path.description },
+                      React.createElement("div", { className: "flex items-start justify-between gap-3" },
+                        React.createElement("span", { className: "grid h-11 w-11 place-items-center rounded-xl bg-slate-100 text-2xl group-hover:bg-white", 'aria-hidden': "true" }, path.icon),
+                        React.createElement("span", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-slate-500" }, path.eyebrow)
+                      ),
+                      React.createElement("span", { className: "mt-4 block text-base font-black text-slate-900" }, path.title),
+                      React.createElement("span", { className: "mt-1 block text-xs leading-relaxed text-slate-600" }, path.description)
+                    );
+                  })
+                )
               )
+            );
+          };
 
+          if (studioHomeOpen) return renderStudioHome();
+
+          return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
+
+            React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
+              React.createElement("button", { type: "button", onClick: function () { persistWatercolorBeforeLeave(); setStemLabTool(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("div", { className: "min-w-0" },
+                React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, 'Creative desk'),
+                React.createElement("h3", { className: "truncate text-sm sm:text-base font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
+              ),
+              React.createElement("span", { className: "hidden sm:inline-flex px-2 py-1 bg-slate-100 text-slate-700 text-[10px] font-black rounded-full" }, ART_STUDIO_TAB_LABELS[tab] || "CREATIVE"),
+              React.createElement("div", { className: "ml-auto flex items-center gap-1.5" },
+                React.createElement("button", { type: "button", onClick: openStudioHome, className: "px-3 py-2 rounded-xl text-xs font-black text-slate-700 hover:bg-slate-100", 'aria-label': 'Open Studio home' }, "Home"),
+                React.createElement("button", { type: "button", onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-2 rounded-xl text-xs font-black " + (d.showTour ? "bg-pink-700 text-white" : "text-pink-800 bg-pink-50 hover:bg-pink-100"), "aria-label": d.showTour ? 'Close Studio learning guide' : 'Open Studio learning guide', 'aria-expanded': !!d.showTour, 'aria-controls': 'artstudio-tour' }, d.showTour ? "Close tour" : "Learn"),
+                React.createElement("details", { className: "relative" },
+                  React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': "Open Studio actions" }, "Actions"),
+                  React.createElement("div", { className: "absolute right-0 mt-2 w-56 space-y-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl" },
+                    React.createElement("p", { className: "px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, 'Save or continue in'),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.artstudio.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: __alloT('stem.artstudio.art_studio', 'Art Studio'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, __alloT('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('page-designer'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50", title: "Insert this static image into Page Designer" }, "↗ Page Designer"),
+                    typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('visual-support'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-violet-800 hover:bg-violet-50", title: "Save this static image as a Visual Support" }, "＋ Visual Support"),
+                    typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-600" }, 'Artwork handoff is available in canvas labs.'),
+                    React.createElement("button", { type: "button", onClick: function () { persistWatercolorBeforeLeave(); setStemLabTool('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
+                  )
+                )
+              )
             ),
 
             /* ── Art Studio Tour/Welcome Panel ── */
-            d.showTour && React.createElement("div", { className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
-              React.createElement("h4", { className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, __alloT('stem.artstudio.welcome_to_the_art_design_studio', "\uD83C\uDFA8 Welcome to the Art & Design Studio!")),
+            d.showTour && React.createElement("div", { id: "artstudio-tour", role: "region", 'aria-labelledby': "artstudio-tour-title", className: "mb-4 bg-gradient-to-br from-pink-50 via-purple-50 to-indigo-50 rounded-xl border-2 border-pink-200 p-4 animate-in fade-in duration-200" },
+              React.createElement("h4", { id: "artstudio-tour-title", className: "text-sm font-black text-pink-800 mb-3 flex items-center gap-2" }, __alloT('stem.artstudio.welcome_to_the_art_design_studio', "\uD83C\uDFA8 Welcome to the Art & Design Studio!")),
               React.createElement("p", { className: "text-xs text-slate-600 mb-3 leading-relaxed" }, __alloT('stem.artstudio.explore_15_interactive_tools_that_teac', "Explore artists and traditions alongside 17 interactive labs for color theory, mathematical art, generative design, sculpture, sound, and visual accessibility.")),
               React.createElement("div", { className: "grid grid-cols-3 sm:grid-cols-5 gap-2 mb-3" },
                 [
@@ -3313,20 +3411,52 @@ const d = labToolData.artStudio || {};
             ),
 
             React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
-              React.createElement('div', { className: 'flex gap-1 overflow-x-auto rounded-xl border border-slate-400 bg-slate-100 p-1', role: 'group', 'aria-label': 'Art Studio tool groups' }, ART_STUDIO_GROUPS.map(function (group) {
-                var groupActive = group.id === activeArtStudioGroup.id;
-                return React.createElement('button', {
-                  type: 'button', key: group.id, 'aria-pressed': groupActive,
-                  onClick: function () { var firstTab = group.tabs[0]; selectArtStudioTab(firstTab, ART_STUDIO_TAB_LABELS[firstTab] || group.label); },
-                  className: 'min-h-[42px] shrink-0 rounded-lg px-3 text-xs font-black transition-all ' + (groupActive ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50')
-                }, group.icon + ' ' + group.label);
-              })),
-              React.createElement('div', { id: 'artstudio-group-tools', className: 'flex flex-wrap gap-1 rounded-xl border border-rose-200 bg-rose-50/60 p-1', role: 'tablist', 'aria-label': activeArtStudioGroup.label + ' tools' },
-                visibleArtStudioTabs.map(function (tb, tabIndex) {
-                  return React.createElement('button', { 'aria-label': 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex, activeArtStudioGroup.tabs); }, className: 'min-h-[40px] flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all ' + (tab === tb.id ? 'bg-white text-pink-700 shadow-md ring-1 ring-rose-200' : 'text-slate-700 hover:bg-white/70') }, tb.icon + ' ' + tb.label);
-                })
+              React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-300 bg-white p-3 shadow-sm' },
+                React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[11px] font-black uppercase tracking-wider text-slate-600' }, 'Choose a studio tool'),
+                React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-400 bg-white px-3 text-sm font-bold text-slate-900' },
+                  ART_STUDIO_GROUPS.map(function (group) {
+                    return React.createElement('optgroup', { key: group.id, label: group.label },
+                      ART_STUDIO_TAB_ITEMS.filter(function (item) { return group.tabs.indexOf(item.id) !== -1; }).map(function (item) {
+                        return React.createElement('option', { key: item.id, value: item.id }, item.label);
+                      })
+                    );
+                  })
+                )
+              ),
+              React.createElement('div', { className: 'hidden sm:block space-y-2' },
+                React.createElement('div', { className: 'grid grid-cols-3 lg:grid-cols-6 gap-1 rounded-xl border border-slate-400 bg-slate-100 p-1', role: 'group', 'aria-label': 'Art Studio tool groups' }, ART_STUDIO_GROUPS.map(function (group) {
+                  var groupActive = group.id === activeArtStudioGroup.id;
+                  return React.createElement('button', {
+                    type: 'button', key: group.id, 'aria-pressed': groupActive,
+                    onClick: function () { var firstTab = group.tabs[0]; selectArtStudioTab(firstTab, ART_STUDIO_TAB_LABELS[firstTab] || group.label); },
+                    className: 'min-h-[42px] rounded-lg px-2 text-xs font-black transition-all ' + (groupActive ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-700 hover:bg-slate-50')
+                  }, group.icon + ' ' + group.label);
+                })),
+                React.createElement('div', { id: 'artstudio-group-tools', className: 'flex flex-wrap gap-1 rounded-xl border border-rose-200 bg-rose-50/60 p-1', role: 'tablist', 'aria-label': activeArtStudioGroup.label + ' tools' },
+                  visibleArtStudioTabs.map(function (tb, tabIndex) {
+                    return React.createElement('button', { 'aria-label': 'Switch to ' + tb.label + ' tab', key: tb.id, id: 'artstudio-tab-' + tb.id, 'aria-controls': 'artstudio-panel-' + tb.id, onClick: function () { selectArtStudioTab(tb.id, tb.label); }, role: 'tab', 'aria-selected': tab === tb.id, tabIndex: tab === tb.id ? 0 : -1, onKeyDown: function (e) { artStudioTabKeyDown(e, tabIndex, activeArtStudioGroup.tabs); }, className: 'min-h-[40px] flex-1 rounded-lg px-3 py-2 text-xs font-bold transition-all ' + (tab === tb.id ? 'bg-white text-pink-700 shadow-md ring-1 ring-rose-200' : 'text-slate-700 hover:bg-white/70') }, tb.icon + ' ' + tb.label);
+                  })
+                )
               )
             ),
+
+            visibleArtStudioTabs.filter(function (tb) { return tb.id !== tab; }).map(function (tb) {
+              return React.createElement('div', {
+                key: 'artstudio-inactive-panel-' + tb.id,
+                id: 'artstudio-panel-' + tb.id,
+                role: 'tabpanel',
+                'aria-labelledby': 'artstudio-tab-' + tb.id,
+                hidden: true
+              });
+            }),
+
+            React.createElement('section', {
+              role: 'tabpanel', id: 'artstudio-panel-' + tab,
+              'aria-labelledby': 'artstudio-tab-' + tab, tabIndex: 0,
+              'aria-label': (ART_STUDIO_TAB_LABELS[tab] || 'Art Studio') + ' workspace',
+              'data-artstudio-workspace': tab,
+              className: 'space-y-4 focus:outline-none'
+            },
 
             // ── Topic-accent hero band per tab ──
             (function() {
@@ -3346,14 +3476,14 @@ const d = labToolData.artStudio || {};
                 fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: __alloT('stem.artstudio.fractal_self_similar_at_every_scale', 'Fractal \u2014 self-similar at every scale'),                  hint: __alloT('stem.artstudio.mandelbrot_1975_cauliflower_coastlines', 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D') },
                 gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: __alloT('stem.artstudio.gradient_smooth_color_transitions', 'Gradient \u2014 smooth color transitions'),                    hint: __alloT('stem.artstudio.css_gives_you_linear_radial_and_conic_', 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.') },
                 stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: __alloT('stem.artstudio.stereogram_3d_from_a_flat_page', 'Stereogram \u2014 3D from a flat page'),                       hint: __alloT('stem.artstudio.90s_magic_eye_craze_each_eye_sees_a_sl', '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.') },
+                sculpt3d:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)', icon: '\uD83D\uDDFF', title: '3D Sculpture \u2014 form, balance, and space',                    hint: 'Build with simple forms, then orbit the work to study silhouette, balance, negative space, scale, and how a sculpture changes from every viewpoint.' },
 
                 contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: __alloT('stem.artstudio.contrast_wcag_4_5_1_3_1_apca', 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA'),                   hint: __alloT('stem.artstudio.wcag_2_1_normal_text_4_5_1_large_3_1_w', 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.') },
                 harmonyHunt:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFB6', title: __alloT('stem.artstudio.harmony_lab_title', 'Harmony - sound, ratio, and color'), hint: __alloT('stem.artstudio.harmony_lab_hint', 'Compare consonant and dissonant intervals, connect frequency ratios to pattern, and translate musical relationships into visual harmony.') }
               };
               var meta = TAB_META[tab] || TAB_META.colorWheel;
               return React.createElement('div', {
-                role: 'tabpanel', id: 'artstudio-panel-' + tab,
-                'aria-labelledby': 'artstudio-tab-' + tab, tabIndex: 0,
+                'data-artstudio-tab-intro': 'true',
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
@@ -3780,6 +3910,24 @@ const d = labToolData.artStudio || {};
                 )
               ),
 
+              React.createElement("section", { 'aria-label': "Watercolor canvas workspace", className: "space-y-2" },
+                React.createElement("div", { className: "rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg" },
+                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.', 'aria-describedby': "artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: 'none' } })
+                ),
+                React.createElement("div", { className: "flex gap-2 flex-wrap items-center" },
+                  React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor undone.' : 'Nothing to undo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
+                  React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor redone.' : 'Nothing to redo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
+                  React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
+                  React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? 'All watercolor masking fluid removed.' : 'No masking fluid to remove.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR('Watercolor canvas cleared.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR('Watercolor brush reloaded.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR('Watercolor dried.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
+                  React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Watercolor PNG exported without diagnostic overlays.'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
+                ),
+                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[11px] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+                React.createElement("div", { id: "artstudio-watercolor-status", role: "status", 'aria-live': "polite", 'aria-atomic': "true", className: "text-[11px] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on.")
+              ),
+
               (function () {
                 var stainingValue = isFinite(Number(d.watercolorStaining)) ? Number(d.watercolorStaining) : 50;
                 var opacityValue = isFinite(Number(d.watercolorOpacity)) ? Number(d.watercolorOpacity) : 40;
@@ -3795,6 +3943,8 @@ const d = labToolData.artStudio || {};
                 );
               })(),
 
+              React.createElement("details", { id: "artstudio-watercolor-mixing-disclosure", open: !!d.watercolorMixingOpen, onToggle: function (event) { var nextOpen = !!event.currentTarget.open; if (nextOpen !== !!d.watercolorMixingOpen) upd('watercolorMixingOpen', nextOpen); }, className: "rounded-xl border border-amber-300 bg-amber-50/60" },
+                React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-black text-amber-950" }, 'Mix pigments'),
               (function () {
                 var firstPigment = getWatercolorPigment(d.watercolorMixA || 'ultramarine');
                 var secondPigment = getWatercolorPigment(d.watercolorMixB || 'ochre');
@@ -3840,7 +3990,7 @@ const d = labToolData.artStudio || {};
                     )
                   )
                 );
-              })(),
+              })()),
 
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
                 React.createElement("span", { className: "text-xs font-bold text-slate-600" }, __alloT('stem.artstudio.watercolor_brush', "Brush:")),
@@ -3857,6 +4007,9 @@ const d = labToolData.artStudio || {};
                 })
               ),
 
+              React.createElement("details", { id: "artstudio-watercolor-inspector", open: !!d.watercolorInspectorOpen, onToggle: function (event) { var nextOpen = !!event.currentTarget.open; if (nextOpen !== !!d.watercolorInspectorOpen) upd('watercolorInspectorOpen', nextOpen); }, className: "rounded-xl border border-cyan-300 bg-cyan-50/50" },
+                React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-black text-cyan-950" }, 'Diagnostics and presets'),
+                React.createElement("div", { className: "space-y-2 border-t border-cyan-200 p-3" },
               React.createElement("div", { id: "artstudio-watercolor-diagnostics", role: "group", 'aria-label': "Watercolor diagnostics", className: "flex items-center gap-2 flex-wrap rounded-xl border border-cyan-200 bg-cyan-50 p-2" },
                 React.createElement("span", { className: "text-xs font-bold text-cyan-950" }, __alloT('stem.artstudio.watercolor_diagnostics', 'View diagnostics:')),
                 React.createElement("button", { id: "artstudio-watercolor-wetness-map", type: "button", 'aria-pressed': !!d.watercolorShowWetness, onClick: function () { upd('watercolorShowWetness', !d.watercolorShowWetness); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.watercolorShowWetness ? 'bg-cyan-700 text-white' : 'bg-white text-cyan-800 border border-cyan-200 hover:bg-cyan-100') }, __alloT('stem.artstudio.wetness_map', 'Wetness map')),
@@ -3876,6 +4029,8 @@ const d = labToolData.artStudio || {};
                 [{ id: 'dry', label: __alloT('stem.artstudio.dry_studio', 'Dry studio'), description: '20% humidity and 55% airflow', values: { watercolorHumidity: 20, watercolorAirflow: 55, watercolorDrying: 65 } }, { id: 'balanced', label: __alloT('stem.artstudio.balanced_studio', 'Balanced'), description: '45% humidity and 25% airflow', values: { watercolorHumidity: 45, watercolorAirflow: 25, watercolorDrying: 50 } }, { id: 'humid', label: __alloT('stem.artstudio.humid_studio', 'Humid studio'), description: '78% humidity and 10% airflow', values: { watercolorHumidity: 78, watercolorAirflow: 10, watercolorDrying: 35 } }].map(function (preset) {
                   return React.createElement("button", { type: "button", key: preset.id, title: preset.description, 'aria-label': preset.label + ', ' + preset.description, onClick: function () { Object.keys(preset.values).forEach(function (key) { upd(key, preset.values[key]); }); if (typeof announceToSR === 'function') announceToSR(preset.label + ' climate applied: ' + preset.description + '.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-emerald-800 border border-emerald-200 hover:bg-emerald-100" }, preset.label);
                 })
+              )
+                )
               ),
 
               (function () {
@@ -3918,6 +4073,9 @@ const d = labToolData.artStudio || {};
                 );
               })(),
 
+              React.createElement("details", { className: "rounded-xl border border-teal-300 bg-white" },
+                React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-black text-teal-950" }, "Learn why watercolor behaves this way"),
+                React.createElement("div", { className: "space-y-2 border-t border-teal-200 p-3" },
               React.createElement("p", { role: "note", className: "text-[11px] text-violet-900 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2" },
                 React.createElement("strong", null, __alloT('stem.artstudio.separation_tip', 'Chromatic separation: ')),
                 __alloT('stem.artstudio.separation_tip_desc', 'When pigments with different mobility meet on wet paper, higher settings let faster color channels travel ahead of heavier ones. Premixed pigments remain more uniform.')
@@ -3933,28 +4091,11 @@ const d = labToolData.artStudio || {};
                 __alloT('stem.artstudio.paper_chemistry_tip_desc', 'Higher sizing keeps water and pigment near the surface, extending flow and making dry color easier to lift. Lower sizing pulls washes into the fibers sooner. Bloom sensitivity controls how strongly wetness boundaries create backruns and cauliflower edges.')
               ),
 
-              React.createElement("div", { className: "rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg" },
-                React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 512, height: 512, role: "img", 'aria-label': 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.', 'aria-describedby': "artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full max-w-[640px] focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { aspectRatio: '1 / 1', touchAction: 'none' } })
-              ),
-
-              React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[11px] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
-
-              React.createElement("div", { id: "artstudio-watercolor-status", role: "status", 'aria-live': "polite", 'aria-atomic': "true", className: "text-[11px] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
-
-              React.createElement("div", { className: "flex gap-2 flex-wrap" },
-                React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor undone.' : 'Nothing to undo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
-                React.createElement("button", { id: "artstudio-watercolor-redo", type: "button", disabled: true, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.redo()); if (typeof announceToSR === 'function') announceToSR(changed ? 'Watercolor redone.' : 'Nothing to redo.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.redo_watercolor', "Redo")),
-                React.createElement("button", { id: "artstudio-watercolor-pause", type: "button", 'aria-pressed': false, 'data-pause-label': __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying"), 'data-resume-label': __alloT('stem.artstudio.resume_watercolor_drying', "Resume drying"), onClick: function () { var c = document.getElementById('watercolorCanvas'); var isPaused = !!(c && c._watercolorEngine && c._watercolorEngine.togglePause()); if (typeof announceToSR === 'function') announceToSR(isPaused ? 'Watercolor drying paused.' : 'Watercolor drying resumed.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100" }, __alloT('stem.artstudio.pause_watercolor_drying', "Pause drying")),
-                React.createElement("button", { id: "artstudio-watercolor-remove-mask", type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.removeMask()); if (typeof announceToSR === 'function') announceToSR(changed ? 'All watercolor masking fluid removed.' : 'No masking fluid to remove.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-slate-700 border border-slate-300 hover:bg-slate-100" }, __alloT('stem.artstudio.remove_all_masking_fluid', "Remove all mask")),
-                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.clear(); else saveWatercolorMetadata('', ''); if (typeof announceToSR === 'function') announceToSR('Watercolor canvas cleared.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100" }, __alloT('stem.artstudio.clear_watercolor', "Clear")),
-                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.reload(); if (typeof announceToSR === 'function') announceToSR('Watercolor brush reloaded.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100" }, __alloT('stem.artstudio.reload_watercolor_brush', "Reload brush")),
-                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (c && c._watercolorEngine) c._watercolorEngine.dry(); if (typeof announceToSR === 'function') announceToSR('Watercolor dried.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100" }, __alloT('stem.artstudio.dry_watercolor', "Dry paint")),
-                React.createElement("button", { type: "button", onClick: function () { var c = document.getElementById('watercolorCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'watercolor-' + Date.now() + '.png'; link.href = c._watercolorEngine && c._watercolorEngine.captureSnapshot ? c._watercolorEngine.captureSnapshot() : c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 Watercolor PNG exported!', 'success'); if (typeof announceToSR === 'function') announceToSR('Watercolor PNG exported without diagnostic overlays.'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, __alloT('stem.artstudio.export_watercolor_png', "Export PNG"))
-              ),
-
               React.createElement("div", { className: "bg-teal-50 rounded-xl p-3 border border-teal-200" },
                 React.createElement("p", { className: "text-[11px] text-teal-900 leading-relaxed" }, React.createElement("strong", null, __alloT('stem.artstudio.watercolor_science', "Why it looks wet: ")), __alloT('stem.artstudio.watercolor_science_desc', "Water diffuses pigment into nearby paper fibers. Every deposited wash carries its own granulation, staining, opacity, and mobility through mixtures. Each color channel retains mobility-weighted transport, so faster pigments can separate at wet edges while heavier colors lag and settle. Granulating particles collect in texture, staining colors resist lifting, and opaque particles scatter more light. Paper sizing controls how long water and pigment remain mobile on the surface before absorption; highly sized sheets lift and rewet more readily, while lightly sized sheets anchor washes sooner. Bloom sensitivity controls the strength of backruns at uneven wetness boundaries. Dry layers can be selectively remobilized by clear water or wet glazes; low-staining color releases more readily while staining and granulation anchor pigment in the fibers. Studio humidity slows evaporation and preserves blooms, while airflow accelerates surface drying. Round, flat, mop, rigger, wash, and dry brushes vary footprint, softness, water load, spacing, and reservoir drain. Slow, pressured strokes deposit more paint, stylus tilt spreads the footprint, and optical absorption deepens mixtures. Masking fluid, evaporation, gravity, clear water, salt, blooms, and tide marks remain physically layered. Wetness maps and flow guides visualize the simulation without changing saved artwork."))
               )
+                )
+              ),
 
             ),
 
@@ -9988,9 +10129,9 @@ const d = labToolData.artStudio || {};
 
                 )
 
-              ),
+              )
 
-            React.createElement("button", { "aria-label": __alloT('stem.artstudio.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: __alloT('stem.artstudio.art_studio', 'Art Studio'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "mt-4 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-pink-600 to-rose-600 rounded-full hover:from-pink-600 hover:to-rose-600 shadow-md hover:shadow-lg transition-all" }, __alloT('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot"))
+            )
 
           );
       })();

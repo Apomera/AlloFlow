@@ -833,9 +833,14 @@ window.StemLab = window.StemLab || {
       if (isNaN(dnaReadingFrame) || dnaReadingFrame < 1 || dnaReadingFrame > 3) dnaReadingFrame = 1;
       var dnaScenarioId = d.dnaScenarioId || 'frameshift_deletion';
       var dnaScenarioPrediction = d.dnaScenarioPrediction || '';
+      var dnaScenarioLockedPrediction = d.dnaScenarioLockedPrediction || '';
+      var dnaScenarioPlan = d.dnaScenarioPlan && typeof d.dnaScenarioPlan === 'object' ? d.dnaScenarioPlan : null;
       var dnaScenarioFeedback = d.dnaScenarioFeedback || '';
       var dnaScenarioScore = parseInt(d.dnaScenarioScore, 10) || 0;
-      var dnaScenarioRun = d.dnaScenarioRun === true;
+      var dnaScenarioRevision = ['supported', 'revised', 'uncertain'].indexOf(d.dnaScenarioRevision) >= 0 ? d.dnaScenarioRevision : '';
+      var dnaScenarioRevisionReason = typeof d.dnaScenarioRevisionReason === 'string' ? d.dnaScenarioRevisionReason.slice(0, 500) : '';
+      var dnaScenarioComplete = d.dnaScenarioComplete === true;
+      var dnaScenarioRun = d.dnaScenarioRun === true && (!dnaScenarioPlan || dnaScenarioPlan.sequenceAfter === dnaSeq);
 
       // ═══ DERIVED VALUES ═══
       var complementStrand = dnaSeq.split('').map(function(b) { return BASE_COMPLEMENT[b] || 'N'; }).join('');
@@ -1127,8 +1132,11 @@ window.StemLab = window.StemLab || {
           'Evidence check score: ' + dnaEvidenceScore + '/3',
           'Scenario Challenge',
           'Scenario: ' + dnaScenarioId,
-          'Prediction: ' + (dnaScenarioPrediction || 'Not selected'),
-          'Scenario score: ' + dnaScenarioScore + '/2',
+          'Prediction: ' + (dnaScenarioLockedPrediction || dnaScenarioPrediction || 'Not selected'),
+          'Observed effect: ' + (dnaScenarioRun ? (latestMutationEffect || 'Unknown') : 'Not run'),
+          'Revision choice: ' + (dnaScenarioRevision || 'Not selected'),
+          'Revision reasoning: ' + (dnaScenarioRevisionReason || 'Not entered'),
+          'Inquiry progress: ' + dnaScenarioScore + '/3',
           'Scenario feedback: ' + (dnaScenarioFeedback || 'Not entered'),
           '',
           'XP: ' + getStemXP('dnaLab')
@@ -1894,33 +1902,145 @@ window.StemLab = window.StemLab || {
         {
           id: 'frameshift_deletion',
           label: 'Delete one base',
-          prompt: 'Predict what will happen when one base is deleted from the coding sequence.',
           mutationType: 'Deletion',
-          choices: ['Frameshift', 'In-frame indel', 'Silent', 'Missense', 'Nonsense']
+          choices: [
+            {
+              value: 'Frameshift',
+              label: gradeText('The groups of 3 shift', 'Groups of 3 shift (frameshift)', 'Frameshift - downstream codons regroup', 'Frameshift - the downstream reading frame changes'),
+              description: gradeText('The next groups start in new places, so the protein message can change from there.', 'The groups of 3 restart in new places after the edit.', 'Downstream bases are regrouped into different codons.', 'The downstream reading frame changes, regrouping later codons.')
+            },
+            {
+              value: 'In-frame indel',
+              label: gradeText('The groups stay lined up', 'Groups of 3 stay lined up (in-frame)', 'In-frame edit - downstream codons stay aligned', 'In-frame indel - the downstream reading frame is preserved'),
+              description: gradeText('The next groups still start in the same places.', 'The groups of 3 keep the same starting places after the edit.', 'Downstream codons stay aligned in the original reading frame.', 'The downstream reading frame is preserved, so later codon boundaries stay aligned.')
+            }
+          ]
         },
         {
           id: 'frameshift_insertion',
           label: 'Insert one base',
-          prompt: 'Predict what will happen when one extra base is inserted into the coding sequence.',
           mutationType: 'Insertion',
-          choices: ['Frameshift', 'In-frame indel', 'Silent', 'Missense', 'Nonsense']
+          choices: [
+            {
+              value: 'Frameshift',
+              label: gradeText('The groups of 3 shift', 'Groups of 3 shift (frameshift)', 'Frameshift - downstream codons regroup', 'Frameshift - the downstream reading frame changes'),
+              description: gradeText('The next groups start in new places, so the protein message can change from there.', 'The groups of 3 restart in new places after the edit.', 'Downstream bases are regrouped into different codons.', 'The downstream reading frame changes, regrouping later codons.')
+            },
+            {
+              value: 'In-frame indel',
+              label: gradeText('The groups stay lined up', 'Groups of 3 stay lined up (in-frame)', 'In-frame edit - downstream codons stay aligned', 'In-frame indel - the downstream reading frame is preserved'),
+              description: gradeText('The next groups still start in the same places.', 'The groups of 3 keep the same starting places after the edit.', 'Downstream codons stay aligned in the original reading frame.', 'The downstream reading frame is preserved, so later codon boundaries stay aligned.')
+            }
+          ]
         },
         {
           id: 'substitution',
           label: 'Substitute one base',
-          prompt: 'Predict whether a one-base substitution will change the coding effect.',
           mutationType: 'Substitution',
-          choices: ['Silent', 'Missense', 'Nonsense', 'Frameshift', 'In-frame indel']
+          choices: [
+            {
+              value: 'Silent',
+              label: gradeText('The protein message stays the same', 'Same amino acid (silent)', 'Silent - the amino acid stays the same', 'Silent substitution - protein sequence is unchanged'),
+              description: gradeText('The DNA letter changes, but the protein does not.', 'The codon changes but still names the same amino acid.', 'A different codon encodes the same amino acid.', 'Codon redundancy preserves the translated amino acid.')
+            },
+            {
+              value: 'Missense',
+              label: gradeText('The protein changes in one place', 'One amino acid changes (missense)', 'Missense - one amino acid changes', 'Missense substitution - one amino acid is replaced'),
+              description: gradeText('The changed DNA letter makes one part of the protein different.', 'The new codon names a different amino acid.', 'The substitution changes the encoded amino acid.', 'The new codon encodes a different amino acid without creating a stop.')
+            },
+            {
+              value: 'Nonsense',
+              label: gradeText('The protein gets an early stop sign', 'An early stop appears (nonsense)', 'Nonsense - an early stop codon appears', 'Nonsense substitution - a premature stop codon appears'),
+              description: gradeText('The changed DNA letter tells the protein message to stop too soon.', 'The new codon is a stop signal.', 'The substitution creates a premature stop codon.', 'The substitution converts an amino-acid codon into a premature termination codon.')
+            }
+          ]
         }
       ];
       function getDnaScenario() {
         return DNA_SCENARIO_OPTIONS.filter(function(option) { return option.id === dnaScenarioId; })[0] || DNA_SCENARIO_OPTIONS[0];
       }
+      function getDnaScenarioPlan(scenario) {
+        var sequenceBefore = dnaSeq;
+        var seq = sequenceBefore.split('');
+        var pos = Math.min(3, Math.max(1, seq.length - 2));
+        var original = seq[pos];
+        var replacement = 'A';
+        if (original === replacement) replacement = 'T';
+        if (original === replacement) replacement = 'G';
+        if (scenario.mutationType === 'Deletion') seq.splice(pos, 1);
+        else if (scenario.mutationType === 'Insertion') seq.splice(pos, 0, replacement);
+        else seq[pos] = replacement;
+        var sequenceAfter = seq.join('');
+        var codonStart = Math.floor(pos / 3) * 3;
+        function toMrnaCodon(sequence) {
+          return sequence.substring(codonStart, codonStart + 3).split('').map(function(base) { return CODING_TO_RNA[base] || 'N'; }).join('');
+        }
+        return {
+          scenarioId: scenario.id,
+          mutationType: scenario.mutationType,
+          sequenceBefore: sequenceBefore,
+          sequenceAfter: sequenceAfter,
+          pos: pos,
+          position: pos + 1,
+          from: scenario.mutationType === 'Insertion' ? '' : original,
+          to: scenario.mutationType === 'Deletion' ? '' : replacement,
+          beforeMrnaCodon: toMrnaCodon(sequenceBefore),
+          afterMrnaCodon: toMrnaCodon(sequenceAfter)
+        };
+      }
+      function getDnaScenarioPrompt(scenario, plan) {
+        if (scenario.mutationType === 'Deletion') {
+          return gradeText(
+            'We will remove the ' + plan.from + ' DNA letter at spot ' + plan.position + '. What will happen to the groups of 3 after that spot?',
+            'Base ' + plan.position + ' (' + plan.from + ') will be removed. What will happen to the groups of 3 after that position?',
+            'Base ' + plan.position + ' (' + plan.from + ') will be deleted. Predict whether downstream codons will shift or stay aligned.',
+            'A one-nucleotide deletion will remove ' + plan.from + ' at coding-DNA position ' + plan.position + '. Predict the downstream reading-frame effect.'
+          );
+        }
+        if (scenario.mutationType === 'Insertion') {
+          return gradeText(
+            'We will add a new ' + plan.to + ' DNA letter before spot ' + plan.position + '. What will happen to the groups of 3 after that spot?',
+            'A new ' + plan.to + ' will be inserted before base ' + plan.position + '. What will happen to the groups of 3 after that position?',
+            'A new ' + plan.to + ' will be inserted before base ' + plan.position + '. Predict whether downstream codons will shift or stay aligned.',
+            'A one-nucleotide insertion will add ' + plan.to + ' before coding-DNA position ' + plan.position + '. Predict the downstream reading-frame effect.'
+          );
+        }
+        return gradeText(
+          'At spot ' + plan.position + ', ' + plan.from + ' will change to ' + plan.to + '. What do you think will happen to the protein message?',
+          'Base ' + plan.position + ' changes from ' + plan.from + ' to ' + plan.to + '. What effect do you predict for the protein?',
+          'At base ' + plan.position + ', ' + plan.from + ' changes to ' + plan.to + ', so the mRNA codon changes ' + plan.beforeMrnaCodon + ' to ' + plan.afterMrnaCodon + '. Predict the coding effect.',
+          'The planned substitution is coding-DNA ' + plan.position + ' ' + plan.from + '>' + plan.to + ' (mRNA codon ' + plan.beforeMrnaCodon + '>' + plan.afterMrnaCodon + '). Predict the translated effect.'
+        );
+      }
+      function chooseDnaScenarioPrediction(nextPrediction) {
+        if (dnaScenarioRun) return;
+        var scenario = getDnaScenario();
+        var validChoice = scenario.choices.filter(function(choice) { return choice.value === nextPrediction; })[0];
+        if (!validChoice) return;
+        updMulti({
+          dnaScenarioPrediction: validChoice.value,
+          dnaScenarioLockedPrediction: '',
+          dnaScenarioPreparedPlan: getDnaScenarioPlan(scenario),
+          dnaScenarioPredictionSequence: dnaSeq,
+          dnaScenarioPlan: null,
+          dnaScenarioFeedback: '',
+          dnaScenarioScore: 0,
+          dnaScenarioRevision: '',
+          dnaScenarioRevisionReason: '',
+          dnaScenarioComplete: false,
+          dnaScenarioRun: false
+        });
+      }
       function selectDnaScenario(nextId) {
+        if (dnaScenarioRun) return;
         var valid = DNA_SCENARIO_OPTIONS.filter(function(option) { return option.id === nextId; })[0];
         if (!valid) return;
-        updMulti({ dnaScenarioId: valid.id, dnaScenarioPrediction: '', dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRun: false });
+        updMulti({ dnaScenarioId: valid.id, dnaScenarioPrediction: '', dnaScenarioLockedPrediction: '', dnaScenarioPreparedPlan: null, dnaScenarioPredictionSequence: '', dnaScenarioPlan: null, dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRevision: '', dnaScenarioRevisionReason: '', dnaScenarioComplete: false, dnaScenarioRun: false });
         announceToSR(valid.label + ' scenario selected.');
+      }
+      function resetDnaScenarioChallenge() {
+        updMulti({ dnaScenarioPrediction: '', dnaScenarioLockedPrediction: '', dnaScenarioPreparedPlan: null, dnaScenarioPredictionSequence: '', dnaScenarioPlan: null, dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRevision: '', dnaScenarioRevisionReason: '', dnaScenarioComplete: false, dnaScenarioRun: false });
+        announceToSR('New DNA prediction ready. The current sequence will be used.');
       }
       function runDnaScenario() {
         var scenario = getDnaScenario();
@@ -1933,19 +2053,25 @@ window.StemLab = window.StemLab || {
           upd('dnaScenarioFeedback', 'This scenario is already complete. Compare the result below, then check your prediction.');
           return;
         }
+        if (d.dnaScenarioPredictionSequence && d.dnaScenarioPredictionSequence !== dnaSeq) {
+          updMulti({ dnaScenarioPrediction: '', dnaScenarioLockedPrediction: '', dnaScenarioPreparedPlan: null, dnaScenarioPredictionSequence: '', dnaScenarioFeedback: 'The DNA changed after that prediction. Review the new planned edit and choose again.', dnaScenarioScore: 0, dnaScenarioRevision: '', dnaScenarioRevisionReason: '', dnaScenarioComplete: false, dnaScenarioRun: false });
+          announceToSR('The DNA changed. Review the new planned edit and choose a new prediction.');
+          return;
+        }
+        var plan = d.dnaScenarioPreparedPlan && d.dnaScenarioPreparedPlan.scenarioId === scenario.id && d.dnaScenarioPreparedPlan.sequenceBefore === dnaSeq
+          ? d.dnaScenarioPreparedPlan
+          : getDnaScenarioPlan(scenario);
         var seq = dnaSeq.split('');
-        var pos = Math.min(3, Math.max(1, seq.length - 2));
-        var original = seq[pos];
-        var replacement = 'A';
-        if (original === replacement) replacement = 'T';
-        if (original === replacement) replacement = 'G';
+        var pos = plan.pos;
+        var original = plan.from;
+        var replacement = plan.to;
         var newLog = (d.mutationLog || []).slice();
         if (scenario.mutationType === 'Deletion') {
           var removed = seq.splice(pos, 1)[0];
-          newLog.push({ type: 'Deletion', pos: pos, from: removed, scenario: scenario.id });
+          newLog.push({ type: 'Deletion', pos: pos, from: removed, length: 1, scenario: scenario.id });
         } else if (scenario.mutationType === 'Insertion') {
           seq.splice(pos, 0, replacement);
-          newLog.push({ type: 'Insertion', pos: pos, to: replacement, scenario: scenario.id });
+          newLog.push({ type: 'Insertion', pos: pos, to: replacement, length: 1, scenario: scenario.id });
         } else {
           seq[pos] = replacement;
           newLog.push({ type: 'Substitution', pos: pos, from: original, to: replacement, scenario: scenario.id });
@@ -1959,13 +2085,20 @@ window.StemLab = window.StemLab || {
           animStep: 0,
           mutationLog: newLog,
           dnaScenarioRun: true,
-          dnaScenarioScore: 0,
-          dnaScenarioFeedback: 'Scenario run complete. Inspect the actual effect, then check your prediction.',
+          dnaScenarioLockedPrediction: dnaScenarioPrediction,
+          dnaScenarioPlan: plan,
+          dnaScenarioScore: 1,
+          dnaScenarioFeedback: 'Prediction locked. Inspect the actual effect, then check your prediction.',
+          dnaScenarioRevision: '',
+          dnaScenarioRevisionReason: '',
+          dnaScenarioComplete: false,
+          dnaEvidenceScore: 0,
+          dnaEvidenceFeedback: '',
           tab: 'mutate',
           visitedTabs: nextVisited
         });
         awardStemXP('dnaLab', 3, 'Ran DNA scenario');
-        announceToSR('Scenario run complete. Inspect the actual mutation effect.');
+        announceToSR('Prediction locked and scenario complete. Inspect the actual mutation effect.');
       }
       function checkDnaScenarioPrediction() {
         if (!dnaScenarioRun) {
@@ -1973,19 +2106,25 @@ window.StemLab = window.StemLab || {
           return;
         }
         var actual = latestMutationEffect || 'Unknown';
-        var predictionCorrect = dnaScenarioPrediction === actual;
+        var committedPrediction = dnaScenarioLockedPrediction || dnaScenarioPrediction;
+        var predictionMatched = committedPrediction === actual;
         var explanationComplete = dnaEvidenceScore >= 3;
-        var score = (predictionCorrect ? 1 : 0) + (explanationComplete ? 1 : 0);
-        var feedback = predictionCorrect
-          ? 'Prediction correct: the actual effect is ' + actual + '.'
-          : 'Prediction not yet supported: the actual effect is ' + actual + '. Review the before/after codons.';
+        var revisionMinimum = gradeBand === 'K-2' ? 3 : 12;
+        var revisionComplete = !!dnaScenarioRevision && dnaScenarioRevisionReason.trim().length >= revisionMinimum;
+        var score = (committedPrediction ? 1 : 0) + (explanationComplete ? 1 : 0) + (revisionComplete ? 1 : 0);
+        var feedback = predictionMatched
+          ? 'The result matched your prediction: the actual effect is ' + actual + '.'
+          : 'The result differed from your prediction: the actual effect is ' + actual + '. That mismatch is useful evidence - compare the before and after codons.';
         feedback += explanationComplete
-          ? ' Your Evidence & Reasoning response also earns the explanation point.'
-          : ' Complete the Evidence & Reasoning check for the explanation point.';
-        updMulti({ dnaScenarioScore: score, dnaScenarioFeedback: feedback });
-        announceToSR('Scenario score ' + score + ' out of 2. ' + feedback);
-        if (score === 2) {
-          awardStemXP('dnaLab', 10, 'Completed DNA scenario challenge');
+          ? ' Your Evidence & Reasoning response records the evidence point.'
+          : ' Complete the Evidence & Reasoning check to record the evidence point.';
+        feedback += revisionComplete
+          ? ' Your reflection records the revision point; prediction accuracy does not affect inquiry progress.'
+          : ' Choose how the evidence affected your thinking and explain why to record the revision point.';
+        updMulti({ dnaScenarioScore: score, dnaScenarioFeedback: feedback, dnaScenarioComplete: score === 3 });
+        announceToSR('Inquiry progress ' + score + ' out of 3. ' + feedback);
+        if (score === 3 && !dnaScenarioComplete) {
+          awardStemXP('dnaLab', 10, 'Completed DNA inquiry cycle');
           if (typeof stemCelebrate === 'function') stemCelebrate();
         }
       }
@@ -3698,6 +3837,20 @@ window.StemLab = window.StemLab || {
       }
 
       var learnTopicState = typeof d.learnOpenTopic === 'string' ? d.learnOpenTopic : null;
+      var dnaScenarioForDisplay = getDnaScenario();
+      var dnaScenarioPreviewPlan = dnaScenarioRun && dnaScenarioPlan && dnaScenarioPlan.scenarioId === dnaScenarioForDisplay.id
+        ? dnaScenarioPlan
+        : getDnaScenarioPlan(dnaScenarioForDisplay);
+      var dnaScenarioCommittedPrediction = dnaScenarioRun ? (dnaScenarioLockedPrediction || dnaScenarioPrediction) : dnaScenarioPrediction;
+      var dnaScenarioCommittedChoice = dnaScenarioForDisplay.choices.filter(function(choice) { return choice.value === dnaScenarioCommittedPrediction; })[0] || null;
+      var dnaScenarioPredictionStale = !dnaScenarioRun && !!dnaScenarioPrediction && !!d.dnaScenarioPredictionSequence && d.dnaScenarioPredictionSequence !== dnaSeq;
+      var dnaScenarioRevisionMinimum = gradeBand === 'K-2' ? 3 : 12;
+      var dnaScenarioRevisionReady = !!dnaScenarioRevision && dnaScenarioRevisionReason.trim().length >= dnaScenarioRevisionMinimum;
+      var dnaScenarioPlanSummary = dnaScenarioForDisplay.mutationType === 'Deletion'
+        ? 'Remove ' + dnaScenarioPreviewPlan.from + ' at base ' + dnaScenarioPreviewPlan.position
+        : dnaScenarioForDisplay.mutationType === 'Insertion'
+          ? 'Add ' + dnaScenarioPreviewPlan.to + ' before base ' + dnaScenarioPreviewPlan.position
+          : 'Change base ' + dnaScenarioPreviewPlan.position + ': ' + dnaScenarioPreviewPlan.from + ' \u2192 ' + dnaScenarioPreviewPlan.to;
       var __dnaMainView = h("div", { className: "space-y-3 max-w-7xl mx-auto animate-in fade-in duration-200", "data-dna-tool": true, "data-dna-active-tab": tab },
 
         // ═══ COMMAND HEADER ═══
@@ -3876,17 +4029,24 @@ window.StemLab = window.StemLab || {
         h("section", { className: "rounded-xl border-2 border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 to-violet-50 p-4 shadow-sm", "data-dna-scenario-challenge": true, role: "region", "aria-labelledby": "dna-scenario-title" },
           h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
             h("div", null,
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-700" }, "Scenario Challenge"),
-              h("h4", { id: "dna-scenario-title", className: "mt-1 text-sm font-black text-slate-900" }, "Predict before you experiment"),
-              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Make a prediction, run one controlled mutation, then use the comparison and Evidence & Reasoning tools to explain what happened.")
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-700" }, "Inquiry cycle"),
+              h("h4", { id: "dna-scenario-title", className: "mt-1 text-sm font-black text-slate-900" }, "Predict an outcome before running the model"),
+              h("p", { className: "mt-1 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, gradeText(
+                "First see the exact DNA change. Choose what you think will happen, lock your choice, and then compare it with the model.",
+                "Review the exact DNA edit, choose what you expect, then lock the prediction before the model runs.",
+                "Review the controlled edit, commit to one coding effect, then compare the prediction with molecular evidence.",
+                "Review the specified variant, preregister its expected coding consequence, then evaluate it against the translated evidence."
+              ))
             ),
-            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800" }, "Score: " + dnaScenarioScore + "/2")
+            h("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800", "data-dna-inquiry-credit": "commit-evidence-revision" }, "Inquiry progress: " + dnaScenarioScore + "/3")
           ),
-          h("ol", { className: "mt-3 grid gap-2 sm:grid-cols-3", "data-dna-scenario-steps": true, "aria-label": "Scenario Challenge progress" },
+          h("p", { className: "mt-2 rounded-lg border border-fuchsia-200 bg-white/80 p-2 text-[10px] font-bold leading-relaxed text-fuchsia-950" }, "Your prediction is a hypothesis, not a graded answer. Progress comes from committing before the run, citing evidence, and revising or strengthening your explanation."),
+          h("ol", { className: "mt-3 grid gap-2 sm:grid-cols-4", "data-dna-scenario-steps": true, "aria-label": "Scenario inquiry progress" },
             [
-              { label: "Predict", complete: !!dnaScenarioPrediction, current: !dnaScenarioPrediction, hint: "Choose an effect" },
-              { label: "Run", complete: dnaScenarioRun, current: !!dnaScenarioPrediction && !dnaScenarioRun, hint: "Apply one mutation" },
-              { label: "Explain", complete: dnaScenarioRun && dnaEvidenceScore >= 3, current: dnaScenarioRun && dnaEvidenceScore < 3, hint: "Connect the evidence" }
+              { label: "Predict", complete: !!dnaScenarioCommittedPrediction, current: !dnaScenarioCommittedPrediction && !dnaScenarioRun, hint: "Choose what you expect" },
+              { label: "Run", complete: dnaScenarioRun, current: !!dnaScenarioPrediction && !dnaScenarioRun, hint: "Lock and apply one edit" },
+              { label: "Explain", complete: dnaScenarioRun && dnaEvidenceScore >= 3, current: dnaScenarioRun && dnaEvidenceScore < 3, hint: "Connect the evidence" },
+              { label: "Revise", complete: dnaScenarioComplete, current: dnaScenarioRun && dnaEvidenceScore >= 3 && !dnaScenarioComplete, hint: "Update your thinking" }
             ].map(function(step, stepIndex) {
               var stepState = step.complete ? "complete" : step.current ? "current" : "upcoming";
               return h("li", { key: step.label, className: "rounded-lg border px-3 py-2 " + (stepState === "complete" ? "border-emerald-200 bg-emerald-50" : stepState === "current" ? "border-fuchsia-400 bg-white ring-2 ring-fuchsia-100" : "border-slate-200 bg-white/70"), "data-state": stepState, "aria-current": stepState === "current" ? "step" : undefined },
@@ -3899,31 +4059,50 @@ window.StemLab = window.StemLab || {
                 )
               );
             })
-          ),          h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
+          ),
+          h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
             h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-fuchsia-800" },
               "Scenario",
-              h("select", { value: dnaScenarioId, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", "aria-label": "Choose a DNA scenario" },
+              h("select", { value: dnaScenarioId, disabled: dnaScenarioRun, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Choose a DNA scenario" },
                 DNA_SCENARIO_OPTIONS.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
               )
             ),
             h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
-              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Prompt"),
-              h("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, getDnaScenario().prompt)
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Planned change"),
+              h("div", { className: "mt-1 inline-flex rounded-md bg-fuchsia-100 px-2 py-1 font-mono text-[11px] font-black text-fuchsia-950", "data-dna-scenario-plan": true }, dnaScenarioPlanSummary),
+              h("p", { id: "dna-scenario-prompt", className: "mt-2 text-[11px] leading-relaxed text-slate-700" }, getDnaScenarioPrompt(dnaScenarioForDisplay, dnaScenarioPreviewPlan))
             )
           ),
-          h("label", { className: "mt-3 block rounded-lg border border-fuchsia-200 bg-white p-3" },
-            h("span", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Your prediction"),
-            h("select", { value: dnaScenarioPrediction, onChange: function(e) { updMulti({ dnaScenarioPrediction: e.target.value, dnaScenarioFeedback: '', dnaScenarioScore: 0, dnaScenarioRun: false }); }, className: "mt-2 w-full rounded-md border border-slate-300 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", "aria-label": "Predict the mutation effect" },
-              h("option", { value: "" }, "Choose the predicted effect"),
-              getDnaScenario().choices.map(function(choice) { return h("option", { key: choice, value: choice }, choice); })
+          h("fieldset", { disabled: dnaScenarioRun, className: "mt-3 rounded-lg border border-fuchsia-200 bg-white p-3", "aria-describedby": "dna-scenario-prompt" },
+            h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, dnaScenarioRun ? "Locked prediction" : "Your prediction"),
+            h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioRun ? "This choice is frozen for the completed trial." : "Choose the description that best matches what you expect. The science term and its meaning are shown together."),
+            h("div", { className: "mt-2 grid gap-2 md:grid-cols-2", role: "radiogroup", "aria-label": "Predict the mutation effect" },
+              dnaScenarioForDisplay.choices.map(function(choice) {
+                var selected = dnaScenarioPrediction === choice.value || (dnaScenarioRun && dnaScenarioLockedPrediction === choice.value);
+                return h("label", { key: choice.value, className: "flex cursor-pointer gap-2 rounded-lg border p-3 " + (selected ? "border-fuchsia-600 bg-fuchsia-50 ring-2 ring-fuchsia-100" : "border-slate-200 bg-white hover:border-fuchsia-300") + (dnaScenarioRun ? " cursor-not-allowed" : ""), "data-dna-prediction-choice": choice.value },
+                  h("input", { type: "radio", name: "dna-scenario-prediction", value: choice.value, checked: selected, disabled: dnaScenarioRun, onChange: function() { chooseDnaScenarioPrediction(choice.value); }, className: "mt-1 h-4 w-4 accent-fuchsia-700" }),
+                  h("span", { className: "min-w-0" },
+                    h("span", { className: "block text-[11px] font-black text-slate-900" }, choice.label),
+                    h("span", { className: "mt-1 block text-[10px] leading-relaxed text-slate-600" }, choice.description),
+                    gradeBand === 'K-2' && h("span", { className: "mt-1 block text-[9px] font-bold text-fuchsia-800" }, "Science word: " + choice.value)
+                  )
+                );
+              })
             )
           ),
+          dnaScenarioPredictionStale && h("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2 text-[10px] font-bold text-amber-900", role: "alert" }, "The DNA changed after this choice. Select a prediction again for the new planned edit."),
           h("div", { className: "mt-3 flex flex-wrap items-center gap-2" },
-            h("button", { type: "button", onClick: runDnaScenario, disabled: dnaScenarioRun, className: "rounded-lg bg-fuchsia-700 px-3 py-2 text-[11px] font-black text-white hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioRun ? "Scenario run complete" : "Run scenario"),
-            h("button", { type: "button", onClick: checkDnaScenarioPrediction, disabled: !dnaScenarioRun, className: "rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-[11px] font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-50" }, "Check prediction"),
+            h("button", { type: "button", onClick: runDnaScenario, disabled: dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale, "aria-disabled": dnaScenarioRun || !dnaScenarioPrediction || dnaScenarioPredictionStale ? "true" : "false", className: "rounded-lg bg-fuchsia-700 px-3 py-2 text-[11px] font-black text-white hover:bg-fuchsia-800 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioRun ? "Prediction locked" : dnaScenarioPrediction ? "Lock prediction and run" : "Choose a prediction first"),
+            h("button", { type: "button", onClick: checkDnaScenarioPrediction, disabled: !dnaScenarioRun || !dnaScenarioRevisionReady, "aria-disabled": dnaScenarioRun && dnaScenarioRevisionReady ? "false" : "true", className: "rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-[11px] font-black text-fuchsia-900 hover:bg-fuchsia-100 disabled:cursor-not-allowed disabled:opacity-50" }, dnaScenarioComplete ? "Inquiry cycle saved" : "Save comparison and progress"),
+            dnaScenarioRun && h("button", { type: "button", onClick: resetDnaScenarioChallenge, className: "rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-black text-slate-700 hover:bg-slate-100" }, "Start another prediction"),
             dnaScenarioFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaScenarioFeedback)
           ),
-          dnaScenarioRun && h("div", { className: "mt-3 grid gap-2 sm:grid-cols-2", "data-dna-scenario-result": true },
+          dnaScenarioRun && h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3", "data-dna-scenario-result": true },
+            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3", "data-dna-locked-prediction": true },
+              h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Your locked prediction"),
+              h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.label : dnaScenarioCommittedPrediction),
+              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.description : "Saved before the model ran.")
+            ),
             h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Actual effect"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, latestMutationEffect || "Calculating"),
@@ -3932,8 +4111,28 @@ window.StemLab = window.StemLab || {
             h("div", { className: "rounded-lg border border-violet-200 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Evidence checkpoint"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaEvidenceScore >= 3 ? "Explanation complete" : "Explanation pending"),
-              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check adds the second challenge point.")
+              h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check records the evidence point.")
             )
+          ),
+          dnaScenarioRun && h("fieldset", { className: "mt-3 rounded-lg border border-violet-200 bg-white p-3", "data-dna-revision": true },
+            h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Revise from the evidence"),
+            h("p", { className: "text-[10px] leading-relaxed text-slate-600" }, "Choose the honest reflection. None is graded as the correct option; explain what the codon or protein evidence did to your thinking."),
+            h("div", { className: "mt-2 grid gap-2 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the DNA evidence affected your thinking" },
+              [
+                { id: "supported", label: "It strengthened my original explanation" },
+                { id: "revised", label: "It changed my explanation" },
+                { id: "uncertain", label: "I am still uncertain and would test again" }
+              ].map(function(option) {
+                var selected = dnaScenarioRevision === option.id;
+                return h("label", { key: option.id, className: "flex cursor-pointer gap-2 rounded-lg border p-2 text-[10px] font-bold " + (selected ? "border-violet-600 bg-violet-50 text-violet-950" : "border-slate-200 text-slate-700") },
+                  h("input", { type: "radio", name: "dna-scenario-revision", value: option.id, checked: selected, onChange: function() { updMulti({ dnaScenarioRevision: option.id, dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, className: "mt-0.5 h-4 w-4 accent-violet-700" }),
+                  h("span", null, option.label)
+                );
+              })
+            ),
+            h("label", { htmlFor: "dna-scenario-revision-reason", className: "mt-3 block text-[10px] font-black text-violet-900" }, "What evidence strengthened or changed your explanation?"),
+            h("textarea", { id: "dna-scenario-revision-reason", value: dnaScenarioRevisionReason, maxLength: 500, rows: 3, onChange: function(e) { updMulti({ dnaScenarioRevisionReason: e.target.value.slice(0, 500), dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, placeholder: gradeText("I noticed...", "The evidence shows... so now I think...", "The changed codon or protein evidence shows...", "The molecular evidence supports or changes my explanation because..."), className: "mt-1 w-full rounded-lg border border-violet-200 bg-white p-2 text-[11px] text-slate-800" }),
+            h("p", { className: "mt-1 text-[9px] font-bold " + (dnaScenarioRevisionReady ? "text-emerald-700" : "text-slate-500"), role: "status" }, dnaScenarioRevisionReady ? "Reflection ready to save." : "Choose a reflection and add a little evidence before saving.")
           )
         ),        h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
           h("summary", { className: "flex cursor-pointer items-center gap-2 px-3 py-2 text-[11px] font-black text-violet-900" },
@@ -6603,7 +6802,7 @@ window.StemLab = window.StemLab || {
         function logY(v) { return 130 - Math.min(110, (Math.log10(Math.max(1e-12, v)) + 12) / 12 * 110); }
         return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.dna.mutation_inquiry_drift_selection_fixat', '🔬 Mutation Inquiry — Drift, Selection, Fixation')),
-          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.dna.set_per_base_mutation_rate_population_', 'Set per-base mutation rate, population size, generations, and selection coefficient. Predict how many beneficial mutations actually sweep to fixation. No score, no reveal.')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.dna.set_per_base_mutation_rate_population_', 'Set mutation rate, population size, generations, and selection coefficient, then observe how the fixation estimate changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · ~' + expectedFixed.toFixed(2) + ' fixations expected'),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },

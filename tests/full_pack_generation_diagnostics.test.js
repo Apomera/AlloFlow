@@ -35,7 +35,14 @@ const makeDeps = (overrides = {}) => {
     sourceTopic: 'Test topic',
     standardsInput: '',
     standardsContext: null,
-    instructionalContext: { primaryTextPolicy: 'preserve-primary' },
+    // Most resilience cases isolate one requested row. Opt out explicitly so
+    // the suite does not rely on the old, incoherent assumption that
+    // preserve-primary also meant "omit Adapted Text".
+    instructionalContext: {
+      primaryTextPolicy: 'preserve-primary',
+      adaptedTextPolicy: 'omit',
+      adaptedTextPolicySource: 'educator',
+    },
     resourceCount: '5',
     isAutoConfigEnabled: true,
     quizCustomInstructions: '',
@@ -100,7 +107,11 @@ describe('Full Pack failure diagnostics and resilience', () => {
       role: 'supplemental', form: 'adapted',
       replacementAuthorization: { authorized: false, source: 'none' },
     });
-    expect(latestRun.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(latestRun.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary',
+      adaptedTextPolicy: 'include',
+      adaptedTextPolicySource: 'workflow-default',
+    });
     expect(deps.handleGenerate).not.toHaveBeenCalled();
   });
 
@@ -140,15 +151,55 @@ describe('Full Pack failure diagnostics and resilience', () => {
     await GenerationHelpers.handlePlanFullPack(deps);
 
     expect(latestRun.preflight.selected.slice(0, 2).map(item => item.type)).toEqual(['analysis', 'simplified']);
-    expect(latestRun.planPayload.instructionalContext.primaryTextPolicy).toBe('educator-directed');
+    expect(latestRun.planPayload.instructionalContext).toMatchObject({
+      primaryTextPolicy: 'preserve-primary',
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'include',
+    });
     expect(latestRun.planPayload.instructionalContext.standardsContext.instructionalConstraints)
       .toMatchObject({ textAccessExpectation: 'preserve-primary' });
   });
 
-  it('honors an explicit educator choice to preserve the primary without an adapted companion', async () => {
+  it('suppresses Adapted Text only when a sourced standards constraint prohibits it', async () => {
+    let latestRun = null;
+    const deps = makeDeps({
+      instructionalContext: null,
+      standardsContext: {
+        promptText: 'Use the secure assessment stimulus without alteration.',
+        standards: [{ code: 'SECURE-STIMULUS-1', text: 'Use the stimulus without alteration.' }],
+        instructionalConstraints: {
+          textAccessExpectation: 'adaptation-prohibited',
+          basis: 'Official secure-assessment administration rule',
+          sourced: true,
+        },
+      },
+      setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
+      autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [
+        { tool: 'quiz', directive: '' }, { tool: 'simplified', directive: '' },
+      ] })),
+    });
+
+    await GenerationHelpers.handlePlanFullPack(deps);
+
+    expect(latestRun.preflight.selected.map(item => item.type)).toEqual(['quiz']);
+    expect(latestRun.planPayload.instructionalContext).toMatchObject({
+      primaryTextAccess: 'required',
+      adaptedTextPolicy: 'prohibited',
+      adaptedTextPolicySource: 'standard',
+    });
+    expect(latestRun.preflight.skipped.find(item => item.type === 'simplified').reason)
+      .toContain('contraindicated');
+  });
+
+  it('honors an explicit educator choice to omit the adapted companion without changing the primary role', async () => {
     let latestRun = null;
     const deps = makeDeps({
       history: [],
+      instructionalContext: {
+        primaryTextPolicy: 'preserve-primary',
+        adaptedTextPolicy: 'omit',
+        adaptedTextPolicySource: 'educator',
+      },
       setFullPackRun: next => { latestRun = typeof next === 'function' ? next(latestRun) : next; },
       autoConfigureSettings: vi.fn(async () => ({ resourcePlan: [{ tool: 'quiz', directive: '' }, { tool: 'simplified', directive: '' }] })),
     });
@@ -156,7 +207,7 @@ describe('Full Pack failure diagnostics and resilience', () => {
     await GenerationHelpers.handlePlanFullPack(deps);
 
     expect(latestRun.preflight.selected.map(item => item.type)).toEqual(['quiz']);
-    expect(latestRun.preflight.skipped.find(item => item.type === 'simplified').reason).toContain('preserve-primary');
+    expect(latestRun.preflight.skipped.find(item => item.type === 'simplified').reason).toContain('educator choice');
   });
 
   it('preserves the automatic text pair decision through a normalized roster-group context', async () => {

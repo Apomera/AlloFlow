@@ -41,9 +41,13 @@ const glossary = JSON.parse(fs.readFileSync(GLOSSARY, 'utf8'));
 
 const PRESERVED = new Set([
   ...glossary.preserve_verbatim.brands,
+  ...(glossary.preserve_verbatim.reference_names || []),
   ...glossary.preserve_verbatim.clinical_acronyms,
   ...glossary.preserve_verbatim.tech_formats,
 ]);
+const PRESERVED_PHRASES = [...(glossary.preserve_verbatim.technical_terms || [])]
+  .filter((phrase) => typeof phrase === 'string' && phrase.trim())
+  .sort((a, b) => b.length - a.length);
 
 // Per-pack target-script classification. Note: Hmong RPA (Romanized Popular
 // Alphabet) is Latin-script with tone-letters — looks like ASCII to a naive
@@ -77,8 +81,15 @@ const flatten = (obj, prefix = '') => {
   return out;
 };
 
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const tokenizeAscii = (s) => {
-  const matches = s.match(/[A-Za-z]{4,}/g) || [];
+  // Runtime interpolation bodies are code identifiers, not untranslated UI.
+  // Remove them before measuring Latin-language residue.
+  let comparable = String(s).replace(/\$\{[^{}]*\}/g, ' ');
+  for (const phrase of PRESERVED_PHRASES) {
+    comparable = comparable.replace(new RegExp(escapeRegExp(phrase), 'gi'), ' ');
+  }
+  const matches = comparable.match(/[A-Za-z]{4,}/g) || [];
   return matches.filter((w) => !PRESERVED.has(w));
 };
 

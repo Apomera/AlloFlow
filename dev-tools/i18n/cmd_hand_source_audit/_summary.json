@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-08-25T01:24:32.147Z",
+  "sourceCount": 7,
+  "languageCount": 63,
+  "expectedLanguageCount": 63,
+  "sourceRecords": 3717,
+  "sourceStats": {
+    "cmd-delta-20260801": {
+      "files": [
+        "cmd_delta_hand_20260801_part1.cjs",
+        "cmd_delta_hand_20260801_part2.cjs",
+        "cmd_delta_hand_20260801_part3.cjs"
+      ],
+      "languageCount": 63,
+      "records": 882
+    },
+    "cmd-cancelled-20260801": {
+      "files": [
+        "cmd_cancelled_hand_20260801.cjs"
+      ],
+      "languageCount": 63,
+      "records": 63
+    },
+    "cmd-delta-20260802": {
+      "files": [
+        "cmd_delta_hand_20260802.cjs"
+      ],
+      "languageCount": 63,
+      "records": 126
+    },
+    "palette-delta-20260802": {
+      "files": [
+        "palette_delta_hand_20260802.cjs"
+      ],
+      "languageCount": 63,
+      "records": 63
+    },
+    "cmd-delta-20260816": {
+      "files": [
+        "cmd_delta_hand_20260816_part1.cjs",
+        "cmd_delta_hand_20260816_part2.cjs",
+        "cmd_delta_hand_20260816_part3.cjs"
+      ],
+      "languageCount": 63,
+      "records": 1260
+    },
+    "cmd-delta-20260817": {
+      "files": [
+        "cmd_delta_hand_20260817_part1.cjs",
+        "cmd_delta_hand_20260817_part2.cjs",
+        "cmd_delta_hand_20260817_part3.cjs"
+      ],
+      "languageCount": 63,
+      "records": 1134
+    },
+    "cmd-delta-20260817b": {
+      "files": [
+        "cmd_delta_hand_20260817b.cjs"
+      ],
+      "languageCount": 63,
+      "records": 189
+    }
+  },
+  "errors": [],
+  "missingPacks": [],
+  "invalidSource": [],
+  "englishPayload": [],
+  "placeholderMismatch": [],
+  "duplicateConflicts": [],
+  "recoverable": [],
+  "superseded": [],
+  "summary": {
+    "errors": 0,
+    "missingPacks": 0,
+    "invalidSource": 0,
+    "englishPayload": 0,
+    "placeholderMismatch": 0,
+    "duplicateConflicts": 0,
+    "recoverable": 0,
+    "superseded": 0
+  }
+}

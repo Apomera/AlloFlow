@@ -71,15 +71,15 @@ describe('Optics Lab improvement regressions', () => {
     expect(lensOffScale).toContain('Diagram scale');
     const mirrorOffScale = render({ mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10, reflDo: 10.5 });
     expect(mirrorOffScale).toContain('Diagram scale');
-    expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('idealized model uses 50 interfering slits');
-    expect(source).toContain('singleSlitIntensity(a, lambda, theta, I0) * f / (Nslits * Nslits)');
-    expect(source).toContain('Slit width (envelope)');
-    expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('finite single-slit envelope shapes each grating order.');
-    expect(render({ mode: 'diffraction', diffMode: 'grating', diffShowMath: true })).toContain('The finite single-slit envelope controls relative order brightness.');
+    expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('50-slit model uses a physical opening fraction');
+    expect(source).toContain('singleSlitIntensity(aperture.openingM, lambda, theta, 1) * grating');
+    expect(source).toContain("rows.push(['Open fraction'");
+    expect(render({ mode: 'diffraction', diffMode: 'grating' })).toContain('opening envelope controls relative order brightness.');
+    expect(render({ mode: 'diffraction', diffMode: 'grating', diffShowMath: true })).toContain('The physical opening envelope controls relative order brightness.');
   });
 
   it('renders static WebGL scenes on demand and pauses animation when hidden', () => {
-    expect(source.match(/function scheduleFrame\(\)/g)).toHaveLength(3);
+    expect(source.match(/function scheduleFrame\(\)/g)).toHaveLength(5);
     expect(source).toContain("if (typeof document !== 'undefined' && document.hidden) return;");
     expect(source).toContain('push: function (data) { pending = data; scheduleFrame(); }');
     expect(source).toContain('if (S.animate) scheduleFrame();');
@@ -106,10 +106,45 @@ describe('Optics Lab improvement regressions', () => {
     expect(expanded).toContain('virtual, upright image');
 
     const focalPlane = render({
-      mode: 'lenses', lensShow3D: true, lensType: 'converging', lensFocal: 12, lensDo: 12
+      mode: 'lenses', lensShow3D: true, lensShowMath: true,
+      lensType: 'converging', lensFocal: 12, lensDo: 12, lensObjH: 6
     });
     expect(focalPlane).toContain('image at infinity');
     expect(focalPlane).toContain('outgoing cyan rays are parallel');
+    expect(focalPlane).toContain('Parallel / collimated after lens');
+    expect(focalPlane).toContain('1/d_i = 0');
+    expect(focalPlane).toContain('no screen at a finite distance');
+    expect(focalPlane).toContain('aria-label="Object height"');
+    expect(focalPlane).toContain('Outgoing bundle angle');
+
+    const finiteImage = render({
+      mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 7
+    });
+    expect(finiteImage).toContain('7.0 cm object height. Image height');
+  });
+
+  it('adds an opt-in 3D refraction ray bench with TIR-aware geometry', () => {
+    expect(source).toContain('var OpticsRefractionGL = (function ()');
+    expect(source).toContain("el.setAttribute('data-optics-refraction-gl', 'true')");
+    expect(source).toContain('window.__alloOpticsRefractionGL = OpticsRefractionGL');
+    expect(source).toContain('theta1Deg: S ? S.theta1Deg : null');
+    expect(source).toContain('function addArrowHead(THREE, from, to, color, opacity)');
+    expect(source).toContain('S.visibilityHandler = function() { if (!document.hidden) scheduleFrame(); };');
+
+    const collapsed = render({ mode: 'refraction', refrShow3D: false });
+    expect(collapsed).toContain('Ray-space bench (3D');
+    expect(collapsed).not.toContain('Loading 3D ray bench');
+
+    const refracted = render({ mode: 'refraction', refrShow3D: true, refrN1: 1, refrN2: 1.52, refrTheta1: 30 });
+    expect(refracted).toContain('Loading 3D ray bench');
+    expect(refracted).toContain('Gold enters, cyan refracts');
+    expect(refracted).toContain('refracts into index 1.520 at 19.2 degrees');
+    expect(refracted).toContain('data-op-refraction-3d-control="true"');
+    expect(refracted).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
+    expect(refracted).toContain('data-op-refraction-3d-reset="true"');
+
+    const tir = render({ mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 60 });
+    expect(tir).toContain('totally internally reflects into the first medium');
   });
 
   it('keeps long-distance mirror samples inside the range control domain', () => {

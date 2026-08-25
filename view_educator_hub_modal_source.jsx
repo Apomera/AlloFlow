@@ -439,6 +439,7 @@ function EducatorHubModal(props) {
                 <button type="button" data-hub-launch="true" data-help-key="educator_hub_lesson_builder_card" onClick={() => { setShowEducatorHub(false); startLessonFlow(); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
                 <span className="text-3xl mt-1" aria-hidden="true">🪄</span>
                 <div>
+                  <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-indigo-700">{t('educator_hub.blueprint_mode_badge') || 'Blueprint Mode'}</span>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.lesson_builder_title') || 'Help me build a lesson'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.lesson_builder_desc') || "Answer a few questions, then build a differentiated lesson step by step with AlloBot."}</p>
                 </div>

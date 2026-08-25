@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ENGLISH_ADDITIONS, LANGUAGE_CODES, isMainUiKey } = require('./i18n/main_ui_i18n_manifest.cjs');
+const { ENGLISH_ADDITIONS, LANGUAGE_CODES, isMainUiKey, PACK_REQUIRED_KEYS } = require('./i18n/main_ui_i18n_manifest.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -26,11 +26,17 @@ function flatten(value, prefix = '', out = {}) {
   return out;
 }
 
-const placeholders = (value) => [...String(value).matchAll(/\{[^{}]+\}/g)].map((match) => match[0]).sort();
+// Repeated use of one placeholder is valid; compare names as a set.
+const placeholders = (value) => [...new Set(
+  [...String(value).replace(/\\u\{[0-9a-fA-F]+\}/g, '').matchAll(/\{[^{}]+\}/g)].map((match) => match[0])
+)].sort();
 const ui = readJson(path.join(ROOT, 'ui_strings.js'));
 mergeMissing(ui, ENGLISH_ADDITIONS);
 const english = flatten(ui);
-const targetKeys = Object.keys(english).filter(isMainUiKey).sort();
+const targetKeys = [...new Set([
+  ...Object.keys(english).filter(isMainUiKey),
+  ...PACK_REQUIRED_KEYS,
+])].sort();
 const failures = [];
 let identical = 0;
 
@@ -64,4 +70,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`Main UI localization parity OK: ${targetKeys.length} keys x ${Object.keys(LANGUAGE_CODES).length} packs; ${identical} values intentionally or legitimately match English.`);
+console.log(`Main UI/runtime localization parity OK: ${targetKeys.length} keys x ${Object.keys(LANGUAGE_CODES).length} packs; ${identical} values intentionally or legitimately match English.`);

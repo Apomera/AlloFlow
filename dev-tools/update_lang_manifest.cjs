@@ -139,6 +139,19 @@ function countKeys(filepath) {
   } catch (_) { return 0; }
 }
 
+function replaceFile(file, text) {
+  // OneDrive may briefly hold a generated file open. Replacing a complete
+  // same-directory temporary keeps the manifest valid and mirrored even when
+  // the destination cannot be opened directly.
+  const temporary = `${file}.manifest-${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(temporary, text, 'utf8');
+    fs.renameSync(temporary, file);
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
+}
+
 function main() {
   const files = fs.existsSync(LANG_DIR)
     ? fs.readdirSync(LANG_DIR).filter((f) => f.endsWith('.js') && !f.startsWith('.'))
@@ -165,8 +178,8 @@ function main() {
   fs.mkdirSync(LANG_DIR, { recursive: true });
   fs.mkdirSync(DEPLOY_LANG_DIR, { recursive: true });
   const json = JSON.stringify(manifest, null, 2);
-  fs.writeFileSync(path.join(LANG_DIR, 'manifest.json'), json);
-  fs.writeFileSync(path.join(DEPLOY_LANG_DIR, 'manifest.json'), json);
+  replaceFile(path.join(LANG_DIR, 'manifest.json'), json);
+  replaceFile(path.join(DEPLOY_LANG_DIR, 'manifest.json'), json);
 
   console.log('Manifest updated: ' + available.length + ' language pack' + (available.length === 1 ? '' : 's'));
   available.forEach((a) => {

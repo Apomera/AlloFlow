@@ -586,7 +586,7 @@ function UDLGuideModal(props) {
   )))), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${!isAutoFillMode && !hasUsedAutoFill ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse" : `border border-transparent px-1 ${chatStyles.subText}`}` }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.toggle_is_auto_fill_mode"),
+      "aria-label": t("common.toggle_blueprint_mode") || "Toggle Blueprint Mode",
       type: "checkbox",
       checked: isAutoFillMode,
       onChange: handleAutoFillToggle,
@@ -594,7 +594,7 @@ function UDLGuideModal(props) {
       id: "udl-autofill-check",
       "data-help-key": "chat_autofill"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.autofill_label"), !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "udl-autofill-check", className: `flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? "font-bold text-orange-900" : "font-medium"}` }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12, className: theme === "contrast" ? "text-yellow-400" : "text-yellow-500 fill-current" }), t("chat_guide.blueprint_mode_label") || "Blueprint Mode", !isAutoFillMode && !hasUsedAutoFill && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline" }, t("common.recommended")))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.enter_udl_input"),
@@ -602,7 +602,11 @@ function UDLGuideModal(props) {
       type: "text",
       value: udlInput,
       onChange: (e) => setUdlInput(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleSendUDLMessage(),
+      onKeyDown: (e) => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        if (!isChatProcessing && udlInput.trim()) handleSendUDLMessage();
+      },
       placeholder: isShowMeMode ? t("chat_guide.input_placeholder_showme") : t("chat_guide.input_placeholder_default"),
       className: `flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`,
       "data-help-key": "chat_input"

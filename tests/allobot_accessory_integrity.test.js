@@ -36,7 +36,9 @@ const ANTI = read('AlloFlowANTI.txt');
 function mappingKeys() {
   const start = ANTI.indexOf('getBotAccessoryInternal');
   expect(start, 'getBotAccessoryInternal not found in AlloFlowANTI.txt').toBeGreaterThan(-1);
-  const body = ANTI.slice(start, start + 2500);
+  const end = ANTI.indexOf('\n  };', start);
+  expect(end, 'getBotAccessoryInternal end not found in AlloFlowANTI.txt').toBeGreaterThan(start);
+  const body = ANTI.slice(start, end);
   const keys = new Set(['sleep-cap']); // isSleeping override pose
   for (const m of body.matchAll(/return '([a-z][a-z-]+)'/g)) keys.add(m[1]);
   return keys;
@@ -80,6 +82,38 @@ describe('AlloBot accessory integrity', () => {
 
   it('root module and public mirror are byte-identical', () => {
     expect(MOD).toBe(PUB);
+  });
+
+  it('scopes SVG paint servers and internal groups to each bot instance', () => {
+    // SVG url(#...) references are document-global. Static IDs make a second
+    // AlloBot reuse the first instance's mood/theme gradients, which is most
+    // visible in galleries and embedded comparison views.
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('React.useId()');
+      expect(source).toContain('svgPaintPrefix');
+      expect(source).toContain('svgPaintIds');
+      for (const key of ['body', 'rim', 'hologram', 'beam', 'visor', 'groundShadow', 'heldItem', 'accessories']) {
+        expect(source, `missing scoped SVG id for ${key}`).toMatch(new RegExp(`${key}:\\s*`));
+      }
+      expect(source).not.toMatch(/url\(#(?:bodyGradient-|rimLightGradient|hologram-gradient|hologram-beam|visorReflect)/);
+      expect(source).not.toMatch(/id=["'](?:held-item|accessories)["']/);
+      expect(source).toContain('data-allobot-held-item');
+      expect(source).toContain('data-allobot-accessories');
+    }
+  });
+
+  it('keeps a theme-aware silhouette and layered contact shadow at avatar size', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('avatarDepthFilter');
+      expect(source).toContain('data-allobot-depth');
+      expect(source).not.toContain('relative drop-shadow-2xl');
+      expect(source).toContain('data-allobot-ground-shadow');
+      expect(source).toMatch(/data-allobot-shadow-layer["']?\s*(?:=|:)\s*["']ambient["']/);
+      expect(source).toMatch(/data-allobot-shadow-layer["']?\s*(?:=|:)\s*["']contact["']/);
+      expect(source).toContain('svgPaintIds.groundShadow');
+      expect(source).toContain('feGaussianBlur');
+      expect(source).toMatch(/trailFilter\s*=\s*isFlightActive[\s\S]{0,220}?avatarDepthFilter/);
+    }
   });
 
   it('reduce-motion gating is intact (idle CSS, SMIL pause, blink self-gate)', () => {
@@ -131,6 +165,166 @@ describe('AlloBot accessory integrity', () => {
         const block = accessoryBlock(source, key);
         expect(block, `${key} should use the side anchor`).toContain('side-left');
         expect(block, `${key} should enter from the side`).toContain('slide-in-from-left-3');
+      }
+    }
+  });
+
+  it('covers accessibility, planning, and guidance views with meaningful accessories', () => {
+    const expectedMappings = {
+      'word-sounds': 'phoneme-headset',
+      'word-sounds-generator': 'phoneme-headset',
+      'ui-tool-wordsounds': 'phoneme-headset',
+      'udl-advice': 'choice-fan',
+      'alignment-report': 'alignment-target',
+      directions: 'wayfinder-sign',
+      faq: 'question-cards',
+      history: 'historian',
+    };
+    for (const [view, accessory] of Object.entries(expectedMappings)) {
+      const mappingPattern = new RegExp(`case '${view}':[\\s\\S]{0,120}?return '${accessory}';`);
+      expect(ANTI, `${view} should map to ${accessory}`).toMatch(mappingPattern);
+    }
+
+    const placements = {
+      'phoneme-headset': 'head-and-ears',
+      'choice-fan': 'side-left',
+      'alignment-target': 'side-left',
+      'wayfinder-sign': 'side-left',
+      'question-cards': 'side-left',
+    };
+    for (const source of [SRC, MOD]) {
+      for (const [key, placement] of Object.entries(placements)) {
+        const block = accessoryBlock(source, key);
+        expect(block, `${key} should declare its visual anchor`).toContain(placement);
+      }
+    }
+  });
+
+  it('covers hub, dashboard, source, output, and fluency contexts without stale memo state', () => {
+    const expectedMappings = {
+      dashboard: 'progress-orbit',
+      input: 'source-inbox',
+      output: 'resource-folder',
+      'math-fluency-maze': 'maze-scroll',
+    };
+    for (const [view, accessory] of Object.entries(expectedMappings)) {
+      const mappingPattern = new RegExp(`case '${view}':[\\s\\S]{0,120}?return '${accessory}';`);
+      expect(ANTI, `${view} should map to ${accessory}`).toMatch(mappingPattern);
+    }
+    expect(ANTI).toContain("if (isTestPrepHubOpen) return 'test-prep-kit';");
+    expect(ANTI).toContain("activeView === 'output' && generatedContent?.type === 'word-sounds'");
+    expect(ANTI).toContain('[activeView, isInteractiveFlashcards, isReadingLibraryOpen, isTestPrepHubOpen, generatedContent?.type]');
+
+    for (const source of [SRC, MOD]) {
+      for (const key of ['test-prep-kit', 'source-inbox', 'progress-orbit', 'maze-scroll', 'resource-folder']) {
+        expect(accessoryBlock(source, key), `${key} should use the side anchor`).toContain('side-left');
+      }
+    }
+    expect(SRC).toContain("case 'math-fluency-maze': return 'calculator';");
+  });
+
+  it('keeps pure side props inside the viewport and declares every movable anchor', () => {
+    const mapStart = SRC.indexOf('const ALLOBOT_SIDE_ACCESSORY_SIDE');
+    const mapEnd = SRC.indexOf('});', mapStart);
+    expect(mapStart, 'responsive side-accessory map missing').toBeGreaterThan(-1);
+    expect(mapEnd, 'responsive side-accessory map end missing').toBeGreaterThan(mapStart);
+    const entries = [...SRC.slice(mapStart, mapEnd).matchAll(/(?:'([a-z][a-z-]+)'|\b([a-z][a-z-]+)):\s*'(left|right)'/g)]
+      .map((match) => [match[1] || match[2], match[3]]);
+    expect(entries.length).toBeGreaterThanOrEqual(20);
+
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('ALLOBOT_PROP_SAFE_GUTTER');
+      expect(source).toContain('accessoryShiftX');
+      expect(source).toContain('data-accessory-side');
+      expect(source).toMatch(/addEventListener\(['"]resize['"],\s*syncViewportWidth\)/);
+      for (const [key, side] of entries) {
+        expect(accessoryBlock(source, key), `${key} should declare its preferred ${side} anchor`)
+          .toContain(`side-${side}`);
+      }
+    }
+  });
+
+  it('normalizes every movable prop at avatar size with theme-aware depth', () => {
+    const sideMapStart = SRC.indexOf('const ALLOBOT_SIDE_ACCESSORY_SIDE');
+    const sideMapEnd = SRC.indexOf('});', sideMapStart);
+    const sideKeys = [...SRC.slice(sideMapStart, sideMapEnd).matchAll(/(?:'([a-z][a-z-]+)'|\b([a-z][a-z-]+)):\s*'(?:left|right)'/g)]
+      .map((match) => match[1] || match[2]);
+    const scaleMapStart = SRC.indexOf('const ALLOBOT_SIDE_ACCESSORY_SCALE');
+    const scaleMapEnd = SRC.indexOf('});', scaleMapStart);
+    expect(scaleMapStart, 'side-accessory scale map missing').toBeGreaterThan(-1);
+    expect(scaleMapEnd, 'side-accessory scale map end missing').toBeGreaterThan(scaleMapStart);
+    const scaleEntries = [...SRC.slice(scaleMapStart, scaleMapEnd).matchAll(/(?:'([a-z][a-z-]+)'|\b([a-z][a-z-]+)):\s*(1(?:\.\d+)?)/g)]
+      .map((match) => [match[1] || match[2], Number(match[3])]);
+    expect(scaleEntries.map(([key]) => key).sort()).toEqual([...sideKeys].sort());
+    for (const [key, scale] of scaleEntries) {
+      expect(scale, `${key} should stay within the calibrated side-prop scale range`).toBeGreaterThanOrEqual(1);
+      expect(scale, `${key} should stay within the calibrated side-prop scale range`).toBeLessThanOrEqual(1.1);
+    }
+
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('data-accessory-scale');
+      expect(source).toContain('accessoryDepthFilter');
+      expect(source).toContain('ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE');
+      expect(source).toContain('accessoryTranslateX');
+      expect(source).toMatch(/transformBox:\s*["']fill-box["']/);
+      expect(source).toMatch(/transformOrigin:\s*accessoryRenderSide\s*===\s*["']left["']\s*\?\s*["']right center["']\s*:\s*["']left center["']/);
+      expect(source).toMatch(/theme\s*===\s*["']contrast["']/);
+      expect(source).toMatch(/theme\s*===\s*["']dark["']/);
+    }
+  });
+
+  it('keeps high-contrast expressions visible against the black visor', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toMatch(/eye:\s*["']#FFFFFF["']/);
+      expect(source).toMatch(/mouth:\s*["']#FACC15["']/);
+      expect(source).toContain('data-allobot-visor');
+      expect(source).toContain('data-allobot-shell');
+      expect(source).toContain('data-allobot-antenna-outline');
+      expect(source).toContain('data-allobot-antenna-light');
+      expect(source).toContain('data-allobot-hand');
+      expect(source).toMatch(/theme\s*===\s*["']contrast["']\s*\?\s*colors\.screenBg/);
+      expect(source).toMatch(/theme\s*===\s*["']contrast["']\s*\?\s*colors\.glow/);
+      expect(source).toMatch(/strokeWidth(?:=\{|:)\s*theme\s*===\s*["']contrast["']\s*\?\s*["']2\.5["']/);
+    }
+  });
+
+  it('uses a prop-aware gaze, reaching hand, and opposite held-tool silhouette', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('propGazeX');
+      expect(source).toContain('data-allobot-prop-gaze');
+      expect(source).toContain('leftHandX');
+      expect(source).toContain('rightHandX');
+      expect(source).toContain('data-held-item-side');
+      expect(source).toContain('heldItemRenderSide');
+      expect(source).toContain('scale(-1 1)');
+    }
+  });
+
+  it('anchors the face while pupils track props and shares accessory color with the shell', () => {
+    expect(SRC).not.toContain('translate(${eyePosition.x + propGazeX}px');
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('resolvedGazeX');
+      expect(source).toContain('resolvedGazeY');
+      expect(source).toContain('data-allobot-prop-gaze');
+      expect(source).toContain('ALLOBOT_SIDE_ACCESSORY_ACCENT');
+      expect(source).toContain('data-allobot-accessory-reflection');
+      expect(source).toContain('animate-allobot-accessory-arrive-left');
+      expect(source).toContain('animate-allobot-accessory-arrive-right');
+    }
+  });
+
+  it('gives the newest learning props one quiet, reduced-motion-safe visual verb each', () => {
+    const signatures = [
+      'animate-allobot-stopwatch-hand',
+      'animate-allobot-inbox-drop',
+      'animate-allobot-progress-pulse',
+      'animate-allobot-maze-flag',
+      'animate-allobot-folder-page',
+    ];
+    for (const source of [SRC, MOD]) {
+      for (const signature of signatures) {
+        expect(source.match(new RegExp(signature, 'g'))?.length, `${signature} should have CSS and artwork hooks`)
+          .toBeGreaterThanOrEqual(2);
       }
     }
   });

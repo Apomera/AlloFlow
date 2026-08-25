@@ -14,6 +14,45 @@ function alloTeacherStableId(prefix) {
   return prefix + '-' + value;
 }
 
+var ALLO_TEACHER_READING_THEME_OPTIONS = [
+  { id: 'default', label: 'Default' },
+  { id: 'warm', label: 'Warm' },
+  { id: 'sepia', label: 'Sepia' },
+  { id: 'dark', label: 'Dark' },
+  { id: 'highContrast', label: 'Contrast' },
+  { id: 'blue', label: 'Blue' },
+  { id: 'green', label: 'Green' },
+  { id: 'rose', label: 'Rose' },
+  { id: 'dyslexia', label: 'Easy Read' },
+  { id: 'dim', label: 'Dim' }
+];
+var ALLO_TEACHER_READING_THEME_IDS = ALLO_TEACHER_READING_THEME_OPTIONS.map(function(option) { return option.id; });
+
+function alloNormalizeTeacherReadingTheme(value, fallback) {
+  return ALLO_TEACHER_READING_THEME_IDS.indexOf(value) >= 0 ? value : fallback;
+}
+
+function alloNormalizeTeacherReadingFavorites(value) {
+  var seen = {};
+  return (Array.isArray(value) ? value : []).filter(function(themeId) {
+    if (ALLO_TEACHER_READING_THEME_IDS.indexOf(themeId) < 0 || seen[themeId]) return false;
+    seen[themeId] = true;
+    return true;
+  }).slice(0, ALLO_TEACHER_READING_THEME_IDS.length);
+}
+
+function alloNormalizeTeacherLearnerPreference(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  var readingTheme = alloNormalizeTeacherReadingTheme(value.readingTheme, '');
+  var favoriteReadingThemes = alloNormalizeTeacherReadingFavorites(value.favoriteReadingThemes);
+  if (!readingTheme && favoriteReadingThemes.length === 0) return null;
+  var normalized = {};
+  if (readingTheme) normalized.readingTheme = readingTheme;
+  if (favoriteReadingThemes.length) normalized.favoriteReadingThemes = favoriteReadingThemes;
+  if (typeof value.updatedAt === 'string' && value.updatedAt.trim()) normalized.updatedAt = value.updatedAt.trim().slice(0, 48);
+  return normalized;
+}
+
 function alloEnsureTeacherRosterIdentity(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
   var students = value.students && typeof value.students === 'object' && !Array.isArray(value.students)
@@ -24,16 +63,33 @@ function alloEnsureTeacherRosterIdentity(value) {
     ? value.classId.trim() : (legacyClassId || alloTeacherStableId('CLS'));
   var currentIds = value.learnerIds && typeof value.learnerIds === 'object' && !Array.isArray(value.learnerIds)
     ? value.learnerIds : {};
+  var currentPreferences = value.learnerPreferences && typeof value.learnerPreferences === 'object' && !Array.isArray(value.learnerPreferences)
+    ? value.learnerPreferences : {};
   var learnerIds = {};
-  var changed = classId !== value.classId;
+  var learnerPreferences = {};
+  var readingThemeDefault = alloNormalizeTeacherReadingTheme(value.readingThemeDefault, 'default');
+  var changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault;
   Object.keys(students).forEach(function(codename) {
     var existing = typeof currentIds[codename] === 'string' ? currentIds[codename].trim() : '';
-    learnerIds[codename] = existing || alloTeacherStableId('LRN');
+    var learnerId = existing || alloTeacherStableId('LRN');
+    learnerIds[codename] = learnerId;
     if (!existing) changed = true;
+    var preferenceSource = Object.prototype.hasOwnProperty.call(currentPreferences, learnerId)
+      ? currentPreferences[learnerId] : currentPreferences[codename];
+    var preference = alloNormalizeTeacherLearnerPreference(preferenceSource);
+    if (preference) learnerPreferences[learnerId] = preference;
+    if (preferenceSource && JSON.stringify(preferenceSource) !== JSON.stringify(preference)) changed = true;
+    if (preferenceSource && !Object.prototype.hasOwnProperty.call(currentPreferences, learnerId)) changed = true;
   });
   if (Object.keys(currentIds).length !== Object.keys(learnerIds).length) changed = true;
+  if (Object.keys(currentPreferences).length !== Object.keys(learnerPreferences).length) changed = true;
   if (!changed) return value;
-  return Object.assign({}, value, { classId: classId, learnerIds: learnerIds });
+  return Object.assign({}, value, {
+    classId: classId,
+    learnerIds: learnerIds,
+    learnerPreferences: learnerPreferences,
+    readingThemeDefault: readingThemeDefault
+  });
 }
 
 const rosterSessionCsvCell = (value) => {
@@ -198,6 +254,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const [newStudentGroup, setNewStudentGroup] = useState('');
   const [expandedGroup, setExpandedGroup] = useState(null);
+  const [readingPreferencesStudent, setReadingPreferencesStudent] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [showBatchConfig, setShowBatchConfig] = useState(false);
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, 'sentence-frames': false, brainstorm: false, faq: false, outline: false, adventure: false, 'concept-sort': false, image: false, timeline: false });
@@ -240,6 +297,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (!isOpen || typeof setRosterKey !== 'function') return;
     setRosterKey(previous => alloEnsureTeacherRosterIdentity(previous));
   }, [isOpen, setRosterKey]);
+  useEffect(() => {
+    if (readingPreferencesStudent && !rosterKey?.students?.[readingPreferencesStudent] && rosterKey?.students?.[readingPreferencesStudent] !== '') {
+      setReadingPreferencesStudent(null);
+    }
+  }, [readingPreferencesStudent, rosterKey?.students]);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
@@ -336,6 +398,8 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
             groups: asRecord(data.groups),
             students: asRecord(data.students),
             learnerIds: asRecord(data.learnerIds),
+            learnerPreferences: asRecord(data.learnerPreferences),
+            readingThemeDefault: alloNormalizeTeacherReadingTheme(data.readingThemeDefault, 'default'),
             displayNames: asRecord(data.displayNames),
             progressHistory: asRecord(data.progressHistory),
             sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : [],
@@ -495,8 +559,12 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   };
   const handleRemoveStudent = (name) => {
     setRosterKey(prev => {
+      const learnerId = prev.learnerIds?.[name];
       const ns = { ...prev.students }; delete ns[name];
       const ni = { ...(prev.learnerIds || {}) }; delete ni[name];
+      const nr = { ...(prev.learnerPreferences || {}) };
+      if (learnerId) delete nr[learnerId];
+      delete nr[name];
       const nd = { ...(prev.displayNames || {}) }; delete nd[name];
       const np = { ...(prev.progressHistory || {}) }; delete np[name];
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
@@ -524,12 +592,50 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         else delete nextSession.organizerActivity;
         return nextSession;
       });
-      return { ...prev, students: ns, learnerIds: ni, displayNames: nd, progressHistory: np, sessionHistory: nh };
+      return { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
   };
   const handleMoveStudent = (name, toGroup) => {
     setRosterKey(prev => ({ ...prev, students: { ...prev.students, [name]: toGroup } }));
   };
+  const getLearnerReadingPreference = (name) => {
+    const learnerId = rosterKey?.learnerIds?.[name];
+    return alloNormalizeTeacherLearnerPreference(learnerId ? rosterKey?.learnerPreferences?.[learnerId] : null) || {};
+  };
+  const updateLearnerReadingPreference = (name, updater) => {
+    setRosterKey(previous => {
+      const normalizedRoster = alloEnsureTeacherRosterIdentity(previous || { groups: {}, students: {} });
+      const learnerId = normalizedRoster?.learnerIds?.[name];
+      if (!learnerId) return normalizedRoster;
+      const current = alloNormalizeTeacherLearnerPreference(normalizedRoster.learnerPreferences?.[learnerId]) || {};
+      const candidate = typeof updater === 'function' ? updater(current) : updater;
+      const next = alloNormalizeTeacherLearnerPreference({ ...candidate, updatedAt: new Date().toISOString() });
+      const learnerPreferences = { ...(normalizedRoster.learnerPreferences || {}) };
+      if (next) learnerPreferences[learnerId] = next;
+      else delete learnerPreferences[learnerId];
+      return { ...normalizedRoster, learnerPreferences };
+    });
+  };
+  const handleSetLearnerReadingTheme = (name, readingTheme) => {
+    updateLearnerReadingPreference(name, current => {
+      const next = { ...current };
+      if (readingTheme) next.readingTheme = alloNormalizeTeacherReadingTheme(readingTheme, '');
+      else delete next.readingTheme;
+      return next;
+    });
+  };
+  const handleToggleLearnerReadingFavorite = (name, readingTheme) => {
+    updateLearnerReadingPreference(name, current => {
+      const favorites = alloNormalizeTeacherReadingFavorites(current.favoriteReadingThemes);
+      return {
+        ...current,
+        favoriteReadingThemes: favorites.includes(readingTheme)
+          ? favorites.filter(themeId => themeId !== readingTheme)
+          : favorites.concat(readingTheme)
+      };
+    });
+  };
+  const handleResetLearnerReadingPreference = (name) => updateLearnerReadingPreference(name, null);
   const COLORS = ['#4F46E5', '#059669', '#D97706', '#DC2626', '#7C3AED', '#0891B2', '#BE185D', '#65A30D'];
   const GRADE_OPTIONS = ['Pre-K', 'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade', '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade', '11th Grade', '12th Grade'];
   const LANG_OPTIONS = ['English', 'Spanish', 'French', 'Arabic', 'Somali', 'Vietnamese', 'Portuguese', 'Mandarin', 'Korean', 'Tagalog', 'Russian', 'Japanese'];
@@ -541,7 +647,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           aria-label={label}
           className="flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none">
           <option value="">—</option>
-          {options.map(o => <option key={o} value={o}>{o}</option>)}
+          {options.map(o => {
+            const optionValue = typeof o === 'object' ? o.id : o;
+            const optionLabel = typeof o === 'object' ? o.label : o;
+            return <option key={optionValue} value={optionValue}>{optionLabel}</option>;
+          })}
         </select>
       ) : type === 'range' ? (
         <div className="flex-1 flex items-center gap-2">
@@ -634,12 +744,25 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
           <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" aria-label={t('roster.import') || 'Import roster JSON'} />
         </div>
         <div className="flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar">
-          <div className="flex items-center gap-2 mb-2">
-            <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('roster.class_name') || 'Class Name'}:</label>
-            <input type="text" value={rosterKey?.className || ''} onChange={e => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), className: e.target.value }))}
-              placeholder={t('common.placeholder_ms_smith_period_3')}
-              aria-label={t('roster.class_name') || 'Class name'}
-              className="flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+          <div className="grid grid-cols-1 gap-2 mb-2 sm:grid-cols-[1fr_auto]">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider">
+              <span className="shrink-0">{t('roster.class_name') || 'Class Name'}:</span>
+              <input type="text" value={rosterKey?.className || ''} onChange={e => setRosterKey(prev => ({ ...(prev || { groups: {}, students: {} }), className: e.target.value }))}
+                placeholder={t('common.placeholder_ms_smith_period_3')}
+                aria-label={t('roster.class_name') || 'Class name'}
+                className="min-w-0 flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm font-normal normal-case tracking-normal focus:ring-2 focus:ring-indigo-400 focus:outline-none" />
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+              <span className="shrink-0">Reading default:</span>
+              <select
+                value={alloNormalizeTeacherReadingTheme(rosterKey?.readingThemeDefault, 'default')}
+                onChange={event => setRosterKey(previous => ({ ...alloEnsureTeacherRosterIdentity(previous || { groups: {}, students: {} }), readingThemeDefault: alloNormalizeTeacherReadingTheme(event.target.value, 'default') }))}
+                aria-label="Class reading theme default"
+                className="min-h-9 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              >
+                {ALLO_TEACHER_READING_THEME_OPTIONS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+              </select>
+            </label>
           </div>
           <details className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700">
             <summary className="cursor-pointer font-bold text-indigo-800">How does this roster connect to AlloFlow?</summary>
@@ -647,6 +770,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <li>Students join with codenames; optional real names stay in this teacher-side roster.</li>
               <li>Groups provide reusable differentiation settings and can be synced to an active live session.</li>
               <li>Matching codenames are assigned to their roster group automatically when students join.</li>
+              <li>Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions.</li>
               <li>The same codenames help identify imported student submissions.</li>
               <li>This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data.</li>
             </ul>
@@ -690,6 +814,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <ProfileField label={t('roster.dok') || 'DOK Level'} value={group.profile?.dokLevel} field="dokLevel" gId={gId} type="select" options={['1', '2', '3', '4']} />
                       <ProfileField label={t('roster.tts_speed') || 'TTS Speed'} value={group.profile?.ttsSpeed} field="ttsSpeed" gId={gId} type="range" />
                       <ProfileField label={t('roster.karaoke') || 'Karaoke'} value={group.profile?.karaokeMode} field="karaokeMode" gId={gId} type="toggle" />
+                      <ProfileField label="Reading theme" value={group.profile?.readingThemeDefault} field="readingThemeDefault" gId={gId} type="select" options={ALLO_TEACHER_READING_THEME_OPTIONS} />
                       <ProfileField label={t('roster.simplify') || 'Simplify'} value={group.profile?.simplifyLevel} field="simplifyLevel" gId={gId} type="select" options={['basic', 'intermediate', 'advanced']} />
                       <ProfileField label={t('roster.custom') || 'Custom Instr.'} value={group.profile?.leveledTextCustomInstructions} field="leveledTextCustomInstructions" gId={gId} />
                     </div>
@@ -704,6 +829,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                                 {rosterKey.progressHistory[name].length}s
                               </span>
                             )}
+                            <button type="button" onClick={() => setReadingPreferencesStudent(name)} className="w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none" aria-label={'Edit reading preferences for ' + name} title="Reading preferences">
+                              <span aria-hidden="true">★</span>
+                            </button>
                             <button type="button" onClick={() => handleMoveStudent(name, '')} className="w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full" aria-label={'Remove ' + name}>
                               <X size={12} />
                             </button>
@@ -825,6 +953,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <option value="">→</option>
                       {groupIds.map(gId => <option key={gId} value={gId}>{groups[gId].name}</option>)}
                     </select>
+                    <button type="button" onClick={() => setReadingPreferencesStudent(name)} className="w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-amber-100 hover:text-amber-950 transition-colors motion-reduce:transition-none" aria-label={'Edit reading preferences for ' + name} title="Reading preferences">
+                      <span aria-hidden="true">★</span>
+                    </button>
                     <button type="button" onClick={() => handleRemoveStudent(name)} className="hover:text-red-500 transition-colors motion-reduce:transition-none" aria-label={'Remove ' + name}>
                       <X size={12} />
                     </button>
@@ -833,6 +964,47 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               </div>
             </div>
           )}
+          {readingPreferencesStudent && (() => {
+            const preference = getLearnerReadingPreference(readingPreferencesStudent);
+            const favorites = alloNormalizeTeacherReadingFavorites(preference.favoriteReadingThemes);
+            const groupId = students[readingPreferencesStudent];
+            const groupDefault = alloNormalizeTeacherReadingTheme(groups[groupId]?.profile?.readingThemeDefault, '');
+            const fallbackTheme = groupDefault || alloNormalizeTeacherReadingTheme(rosterKey?.readingThemeDefault, 'default');
+            const fallbackLabel = ALLO_TEACHER_READING_THEME_OPTIONS.find(option => option.id === fallbackTheme)?.label || 'Default';
+            return (
+              <section className="rounded-xl border-2 border-violet-200 bg-violet-50/70 p-4" aria-labelledby="roster-reading-preferences-title">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 id="roster-reading-preferences-title" className="text-sm font-black text-violet-950">Reading preferences · {readingPreferencesStudent}</h3>
+                    <p className="mt-1 text-xs text-violet-800">Use neutral preferences only. The learner can privately change these choices at any time.</p>
+                  </div>
+                  <button type="button" onClick={() => setReadingPreferencesStudent(null)} className="min-h-9 min-w-9 inline-flex items-center justify-center rounded-full bg-white text-violet-800 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-500" aria-label="Close reading preferences">
+                    <X size={14} />
+                  </button>
+                </div>
+                <label className="mt-3 block text-xs font-bold text-violet-950">Preferred reading theme
+                  <select value={preference.readingTheme || ''} onChange={event => handleSetLearnerReadingTheme(readingPreferencesStudent, event.target.value)} className="mt-1 min-h-10 w-full rounded-lg border border-violet-300 bg-white px-3 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-violet-500">
+                    <option value="">Use group/class default ({fallbackLabel})</option>
+                    {ALLO_TEACHER_READING_THEME_OPTIONS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+                  </select>
+                </label>
+                <fieldset className="mt-3">
+                  <legend className="text-xs font-bold text-violet-950">Favorite themes</legend>
+                  <p className="mt-0.5 text-[11px] text-violet-800">Favorites appear first in this learner's reading-theme picker.</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {ALLO_TEACHER_READING_THEME_OPTIONS.map(option => {
+                      const selected = favorites.includes(option.id);
+                      return <button type="button" key={option.id} onClick={() => handleToggleLearnerReadingFavorite(readingPreferencesStudent, option.id)} aria-pressed={selected} className={`min-h-9 rounded-full border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-300 bg-white text-violet-900 hover:bg-violet-100'}`}>{selected ? '★ ' : '☆ '}{option.label}</button>;
+                    })}
+                  </div>
+                </fieldset>
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-violet-200 pt-3">
+                  <span className="text-[11px] text-violet-800">Choice priority: learner → saved preference → group → class → device.</span>
+                  <button type="button" onClick={() => handleResetLearnerReadingPreference(readingPreferencesStudent)} className="min-h-9 shrink-0 rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 hover:bg-violet-100">Reset to defaults</button>
+                </div>
+              </section>
+            );
+          })()}
           {Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && (
             <details className="rounded-xl border border-cyan-200 bg-cyan-50/60 p-3">
               <summary className="cursor-pointer font-bold text-sm text-cyan-900">Saved session history ({rosterKey.sessionHistory.length})</summary>

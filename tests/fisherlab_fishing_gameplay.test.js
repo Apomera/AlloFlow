@@ -83,6 +83,47 @@ describe('Fisher Lab fishing setup choices', () => {
       expect(productive.total).toBeGreaterThan(result.total);
     });
   });
+
+  it('builds deterministic regional practice plans from authored habitat evidence', () => {
+    const { getCoreFishingPracticePlan, scoreFishingSetup } = window.__FisherLabCore;
+    const targets = [
+      ['maine', 'mackerel', 'open-water', 'sabiki', 'surface'],
+      ['chesapeake', 'bluefish', 'open-water', 'casting-plug', 'surface'],
+      ['pnw', 'coho', 'open-water', 'casting-plug', 'surface'],
+      ['greatlakes', 'walleye', 'current-seam', 'bottom-jig', 'midwater']
+    ];
+
+    targets.forEach(([region, speciesId, spotId, tackleId, targetDepth]) => {
+      const first = getCoreFishingPracticePlan(region, speciesId);
+      const replay = getCoreFishingPracticePlan(region, speciesId);
+
+      expect(replay).toEqual(first);
+      expect(first).toMatchObject({
+        region,
+        speciesId,
+        spotId,
+        tackleId,
+        targetDepth,
+        score: { total: expect.any(Number), evidence: expect.any(Array) }
+      });
+      expect(first.score).toEqual(scoreFishingSetup({
+        region,
+        speciesId,
+        spotId: first.spotId,
+        tackleId: first.tackleId,
+        targetDepth: first.targetDepth,
+        conditions: first.conditions,
+        presentation: {
+          technique: first.technique,
+          retrieveSpeed: first.retrieveSpeed
+        }
+      }));
+    });
+
+    expect(getCoreFishingPracticePlan('maine', 'chinook')).toBeNull();
+    expect(getCoreFishingPracticePlan('maine', 'lobster')).toBeNull();
+    expect(getCoreFishingPracticePlan('unknown-water', 'cod')).toBeNull();
+  });
 });
 
 describe('Fisher Lab deterministic fishing encounters', () => {

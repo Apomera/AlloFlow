@@ -219,6 +219,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
     { id: 'full', label: 'Full' }
   ];
 
+  var VISUAL_THEMES = [
+    { id: 'system', label: 'System colors', filter: 'none', description: 'Uses the SEL hub theme.' },
+    { id: 'warm', label: 'Warm ember', filter: 'hue-rotate(225deg) saturate(1.15)', description: 'A warmer, amber-tinted guide.' },
+    { id: 'deep', label: 'Deep blue', filter: 'hue-rotate(55deg) saturate(1.1)', description: 'A cooler, night-sky tint.' },
+    { id: 'forest', label: 'Forest green', filter: 'hue-rotate(325deg) saturate(1.1)', description: 'A grounded green tint.' },
+    { id: 'mono', label: 'Monochrome', filter: 'grayscale(1) contrast(1.15)', description: 'Color-free visual emphasis.' }
+  ];
+
   var GUIDANCE_MODES = [
     { id: 'full', label: 'Full cue', description: 'Shows the phase, gentle wording, and count.' },
     { id: 'phase', label: 'Phase only', description: 'Shows only In, Out, Ready, or Paused.' },
@@ -238,9 +246,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       response: null,
       visualMode: 'circle',
       visualMotion: 'gentle',
+      visualTheme: 'system',
       visualExpanded: false,
       pacedBreathing: true,
       soundEnabled: true,
+      phaseSoundEnabled: false,
       showTimer: true,
       guidanceMode: 'full',
       showGuidance: true,
@@ -298,6 +308,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       if (VISUAL_MOTIONS[i].id === id) return VISUAL_MOTIONS[i];
     }
     return VISUAL_MOTIONS[1];
+  }
+
+  function getVisualTheme(id) {
+    for (var i = 0; i < VISUAL_THEMES.length; i += 1) {
+      if (VISUAL_THEMES[i].id === id) return VISUAL_THEMES[i];
+    }
+    return VISUAL_THEMES[0];
   }
 
   function getGuidanceMode(id) {
@@ -465,7 +482,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       d.postSkipped = !!d.postSkipped;
       d.visualMode = getVisual(d.visualMode).id;
       d.visualMotion = getVisualMotion(d.visualMotion).id;
+      d.visualTheme = getVisualTheme(d.visualTheme).id;
       d.visualExpanded = !!d.visualExpanded;
+      d.phaseSoundEnabled = !!d.phaseSoundEnabled;
       d.showTimer = d.showTimer !== false;
       var hasSavedGuidanceMode = GUIDANCE_MODES.some(function(option) {
         return option.id === rawState.guidanceMode;
@@ -524,13 +543,26 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       var visualPreviewState = React.useState('idle');
       var visualPreviewPhase = visualPreviewState[0];
       var setVisualPreviewPhase = visualPreviewState[1];
+      var visualPreviewProgressState = React.useState(0);
+      var visualPreviewProgress = visualPreviewProgressState[0];
+      var setVisualPreviewProgress = visualPreviewProgressState[1];
+      var visualClockState = React.useState(Date.now());
+      var visualClockNow = visualClockState[0];
+      var setVisualClockNow = visualClockState[1];
       var removalState = React.useState(null);
       var removalAction = removalState[0];
       var setRemovalAction = removalState[1];
       var completionRef = React.useRef(false);
       var deadlineRef = React.useRef(null);
+      var pausedRemainingMsRef = React.useRef(selectedProtocol.duration * 1000);
+      var visualFrameRef = React.useRef(null);
+      var visualFrameLastPaintRef = React.useRef(0);
       var visualPreviewTimeoutsRef = React.useRef([]);
+      var visualPreviewIntervalRef = React.useRef(null);
+      var visualPreviewStartedAtRef = React.useRef(0);
+      var lastPhaseSoundRef = React.useRef(null);
       var orbitMotionRef = React.useRef(false);
+      var orbitRotationRef = React.useRef(0);
       var viewHeadingRef = React.useRef(null);
       var historyHeadingRef = React.useRef(null);
       var confirmCancelRef = React.useRef(null);
@@ -543,14 +575,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         setIsRunning(false);
         setRemaining(selectedProtocol.duration);
         deadlineRef.current = null;
+        pausedRemainingMsRef.current = selectedProtocol.duration * 1000;
+        setVisualClockNow(Date.now());
         completionRef.current = false;
         setQuietView(false);
       }, [d.selectedProtocol, d.view]);
 
       React.useEffect(function() {
-        clearVisualPreviewTimers();
+        clearVisualPreviewTimers(true);
         setVisualPreviewPhase('idle');
-        return clearVisualPreviewTimers;
+        return function() { clearVisualPreviewTimers(true); };
       }, [d.view, d.selectedProtocol, d.visualMode, d.visualMotion, d.pacedBreathing, reduceMotion]);
 
       React.useEffect(function() {
@@ -567,7 +601,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (!deadlineRef.current) deadlineRef.current = Date.now() + remaining * 1000;
         function syncRemaining() {
           if (!deadlineRef.current) return;
-          var next = Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
+          var nextMs = Math.max(0, deadlineRef.current - Date.now());
+          pausedRemainingMsRef.current = nextMs;
+          var next = Math.max(0, Math.ceil(nextMs / 1000));
           setRemaining(function(previous) {
             return previous === next ? previous : next;
           });
@@ -576,6 +612,88 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         var intervalId = window.setInterval(syncRemaining, 250);
         return function() { window.clearInterval(intervalId); };
       }, [isRunning, d.view]);
+
+      React.useEffect(function() {
+        var shouldAnimate = isRunning &&
+          d.view === 'practice' &&
+          d.visualMode !== 'none' &&
+          d.visualMotion !== 'still' &&
+          !!(selectedProtocol.cadence && d.pacedBreathing) &&
+          !reduceMotion;
+        if (!shouldAnimate) {
+          if (visualFrameRef.current !== null && typeof window.cancelAnimationFrame === 'function') {
+            window.cancelAnimationFrame(visualFrameRef.current);
+          }
+          visualFrameRef.current = null;
+          visualFrameLastPaintRef.current = 0;
+          return undefined;
+        }
+
+        var stopped = false;
+        var frameInterval = d.visualMotion === 'full' ? 32 : 50;
+        var requestFrame = typeof window.requestAnimationFrame === 'function'
+          ? window.requestAnimationFrame.bind(window)
+          : function(callback) { return window.setTimeout(callback, frameInterval); };
+        var cancelFrame = typeof window.cancelAnimationFrame === 'function'
+          ? window.cancelAnimationFrame.bind(window)
+          : window.clearTimeout.bind(window);
+
+        function cancelScheduledFrame() {
+          if (visualFrameRef.current === null) return;
+          cancelFrame(visualFrameRef.current);
+          visualFrameRef.current = null;
+        }
+
+        function scheduleFrame() {
+          if (stopped || visualFrameRef.current !== null) return;
+          if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+          visualFrameRef.current = requestFrame(paintFrame);
+        }
+
+        function paintFrame() {
+          visualFrameRef.current = null;
+          if (stopped || (typeof document !== 'undefined' && document.visibilityState === 'hidden')) return;
+          var now = Date.now();
+          if (!visualFrameLastPaintRef.current) {
+            visualFrameLastPaintRef.current = now;
+          } else if (now - visualFrameLastPaintRef.current >= frameInterval) {
+            visualFrameLastPaintRef.current = now;
+            setVisualClockNow(now);
+          }
+          scheduleFrame();
+        }
+
+        function handleVisibilityChange() {
+          if (document.visibilityState === 'hidden') {
+            cancelScheduledFrame();
+            return;
+          }
+          visualFrameLastPaintRef.current = 0;
+          setVisualClockNow(Date.now());
+          scheduleFrame();
+        }
+
+        if (typeof document !== 'undefined') document.addEventListener('visibilitychange', handleVisibilityChange);
+        scheduleFrame();
+        return function() {
+          stopped = true;
+          cancelScheduledFrame();
+          if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+      }, [isRunning, d.view, d.visualMode, d.visualMotion, d.pacedBreathing, selectedProtocol.id, reduceMotion]);
+
+      React.useEffect(function() {
+        if (!isRunning || d.view !== 'practice' || !d.phaseSoundEnabled || !d.soundEnabled || !d.pacedBreathing || !selectedProtocol.cadence) {
+          lastPhaseSoundRef.current = null;
+          return undefined;
+        }
+        var breath = breathState(selectedProtocol, remaining);
+        if (lastPhaseSoundRef.current && lastPhaseSoundRef.current !== breath.phase && typeof ctx.beep === 'function') {
+          ctx.beep(breath.phase === 'in' ? 523 : 392, 0.08, 0.025);
+        }
+        lastPhaseSoundRef.current = breath.phase;
+        return undefined;
+      }, [isRunning, d.view, d.phaseSoundEnabled, d.soundEnabled, d.pacedBreathing, selectedProtocol.id, selectedProtocol.duration, remaining]);
 
       React.useEffect(function() {
         if (viewHeadingRef.current && typeof viewHeadingRef.current.focus === 'function') {
@@ -610,6 +728,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (d.view !== 'practice' || remaining !== 0 || completionRef.current) return;
         completionRef.current = true;
         deadlineRef.current = null;
+        pausedRemainingMsRef.current = 0;
         setIsRunning(false);
         if (d.soundEnabled && typeof ctx.beep === 'function') ctx.beep(440, 0.35, 0.06);
         setToolState({
@@ -641,11 +760,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(message);
       }
 
-      function clearVisualPreviewTimers() {
+      function clearVisualPreviewTimers(resetProgress) {
         visualPreviewTimeoutsRef.current.forEach(function(timeoutId) {
           window.clearTimeout(timeoutId);
         });
         visualPreviewTimeoutsRef.current = [];
+        if (visualPreviewIntervalRef.current) {
+          window.clearInterval(visualPreviewIntervalRef.current);
+          visualPreviewIntervalRef.current = null;
+        }
+        if (resetProgress) setVisualPreviewProgress(0);
       }
 
       function visualPreviewUnavailableReason(protocol) {
@@ -659,15 +783,23 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
 
       function startVisualPreview(protocol) {
         if (visualPreviewUnavailableReason(protocol)) return;
-        clearVisualPreviewTimers();
+        clearVisualPreviewTimers(true);
+        var totalMs = (protocol.cadence[0] + protocol.cadence[1]) * 1000;
+        visualPreviewStartedAtRef.current = Date.now();
         setVisualPreviewPhase('in');
+        setVisualPreviewProgress(0);
         announce('Visual preview: breathe in gently.');
+        visualPreviewIntervalRef.current = window.setInterval(function() {
+          var elapsedMs = Math.min(totalMs, Math.max(0, Date.now() - visualPreviewStartedAtRef.current));
+          setVisualPreviewProgress(Math.round((elapsedMs / totalMs) * 100));
+        }, 100);
         var inhaleTimeout = window.setTimeout(function() {
           setVisualPreviewPhase('out');
           announce('Visual preview: breathe out slowly.');
         }, protocol.cadence[0] * 1000);
         var completeTimeout = window.setTimeout(function() {
-          clearVisualPreviewTimers();
+          clearVisualPreviewTimers(false);
+          setVisualPreviewProgress(100);
           setVisualPreviewPhase('idle');
           announce('Visual preview complete. The practice timer has not started.');
         }, (protocol.cadence[0] + protocol.cadence[1]) * 1000);
@@ -675,7 +807,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       }
 
       function stopVisualPreview() {
-        clearVisualPreviewTimers();
+        clearVisualPreviewTimers(true);
         setVisualPreviewPhase('idle');
         announce('Visual preview stopped. The practice timer has not started.');
       }
@@ -684,25 +816,44 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         if (typeof ctx.addToast === 'function') ctx.addToast(message, type || 'info');
       }
 
+      function currentTimerRemainingMs() {
+        if (!deadlineRef.current) return Math.max(0, pausedRemainingMsRef.current);
+        return Math.max(0, deadlineRef.current - Date.now());
+      }
+
       function currentTimerRemaining() {
-        if (!deadlineRef.current) return remaining;
-        return Math.max(0, Math.ceil((deadlineRef.current - Date.now()) / 1000));
+        return Math.max(0, Math.ceil(currentTimerRemainingMs() / 1000));
+      }
+
+      function currentVisualRemaining() {
+        if (isRunning && deadlineRef.current) {
+          return Math.max(0, (deadlineRef.current - visualClockNow) / 1000);
+        }
+        return Math.max(0, pausedRemainingMsRef.current / 1000);
       }
 
       function startPracticeTimer() {
-        var next = remaining > 0 ? remaining : selectedProtocol.duration;
+        var nextMs = pausedRemainingMsRef.current > 0
+          ? pausedRemainingMsRef.current
+          : selectedProtocol.duration * 1000;
+        var next = Math.max(0, Math.ceil(nextMs / 1000));
+        var resuming = nextMs > 0 && nextMs < selectedProtocol.duration * 1000;
         completionRef.current = false;
         setRemaining(next);
-        deadlineRef.current = Date.now() + next * 1000;
+        deadlineRef.current = Date.now() + nextMs;
+        setVisualClockNow(Date.now());
         setIsRunning(true);
         if (d.soundEnabled && typeof ctx.beep === 'function') ctx.beep(392, 0.2, 0.05);
-        announce(remaining < selectedProtocol.duration && remaining > 0 ? 'Practice resumed.' : 'Practice started.');
+        announce(resuming ? 'Practice resumed.' : 'Practice started.');
       }
 
       function pausePracticeTimer() {
-        var next = currentTimerRemaining();
+        var nextMs = currentTimerRemainingMs();
+        var next = Math.max(0, Math.ceil(nextMs / 1000));
+        pausedRemainingMsRef.current = nextMs;
         deadlineRef.current = null;
         setRemaining(next);
+        setVisualClockNow(Date.now());
         setIsRunning(false);
         announce('Practice paused.');
       }
@@ -714,8 +865,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
 
       function restartPracticeTimer() {
         deadlineRef.current = null;
+        pausedRemainingMsRef.current = selectedProtocol.duration * 1000;
         completionRef.current = false;
         setRemaining(selectedProtocol.duration);
+        setVisualClockNow(Date.now());
         setIsRunning(false);
         announce('Practice timer restarted and paused.');
       }
@@ -1219,6 +1372,45 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         );
       }
 
+      function visualThemeControl() {
+        var current = isContrast ? getVisualTheme('system') : getVisualTheme(d.visualTheme);
+        var disabled = isContrast || d.visualMode === 'none';
+        var descriptionId = 'somatic-reset-visual-tone-description';
+        return h('label', { style: { display: 'grid', gap: 4, minWidth: 132, color: colors.text, fontSize: 11, fontWeight: 800 } },
+          h('span', null, 'Visual tone'),
+          h('select', {
+            'data-visual-theme-select': 'true',
+            value: current.id,
+            disabled: disabled,
+            'aria-describedby': descriptionId,
+            onChange: function(event) {
+              var next = getVisualTheme(event.target.value);
+              setToolState({ visualTheme: next.id });
+              announce('Visual tone set to ' + next.label.toLowerCase() + '.');
+            },
+            style: {
+              minHeight: 42,
+              padding: '8px 30px 8px 10px',
+              borderRadius: 10,
+              border: '1px solid ' + colors.border,
+              background: colors.input,
+              color: colors.text,
+              fontSize: 13,
+              cursor: disabled ? 'not-allowed' : 'pointer',
+              opacity: disabled ? 0.62 : 1
+            }
+          }, VISUAL_THEMES.map(function(option) {
+            return h('option', { key: option.id, value: option.id }, option.label);
+          })),
+          h('span', {
+            id: descriptionId,
+            style: { color: colors.muted, fontSize: 10, fontWeight: 650, lineHeight: 1.35 }
+          }, disabled
+            ? (isContrast ? 'High contrast keeps the system palette.' : 'Choose a visual to adjust its tone.')
+            : current.description)
+        );
+      }
+
       function visualPreviewControl(protocol) {
         var unavailable = visualPreviewUnavailableReason(protocol);
         var previewing = visualPreviewPhase !== 'idle';
@@ -1239,6 +1431,29 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               ? { borderColor: colors.accent, color: colors.accent }
               : (unavailable ? { opacity: 0.62, cursor: 'not-allowed' } : {})))
           }, previewing ? 'Stop preview' : 'Preview one breath'),
+          previewing && h('div', {
+            role: 'progressbar',
+            'aria-label': 'Visual preview progress',
+            'aria-valuemin': 0,
+            'aria-valuemax': 100,
+            'aria-valuenow': visualPreviewProgress,
+            'data-visual-preview-progress': 'true',
+            style: {
+              width: 'min(176px, 78vw)',
+              height: 4,
+              overflow: 'hidden',
+              borderRadius: 999,
+              background: isContrast ? '#ffffff' : colors.border,
+              boxShadow: isContrast ? '0 0 0 1px ' + colors.border : 'none'
+            }
+          }, h('div', {
+            style: {
+              width: visualPreviewProgress + '%',
+              height: '100%',
+              background: colors.accent,
+              transition: reduceMotion ? 'none' : 'width 100ms linear'
+            }
+          })),
           unavailable && h('span', {
             id: reasonId,
             style: { color: colors.muted, fontSize: 10, fontWeight: 650, lineHeight: 1.35 }
@@ -1288,6 +1503,19 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           'aria-pressed': d.soundEnabled,
           style: secondaryButton()
         }, d.soundEnabled ? 'Sound cue: on' : 'Sound cue: off');
+      }
+
+      function phaseSoundButton(protocol) {
+        if (!protocol.cadence) return null;
+        return h('button', {
+          type: 'button',
+          onClick: function() {
+            setToolState({ phaseSoundEnabled: !d.phaseSoundEnabled });
+            announce('Phase tones ' + (d.phaseSoundEnabled ? 'off.' : 'on.'));
+          },
+          'aria-pressed': d.phaseSoundEnabled,
+          style: secondaryButton(d.phaseSoundEnabled ? { borderColor: colors.accent, color: colors.accent } : {})
+        }, d.phaseSoundEnabled ? 'Phase tones: on' : 'Phase tones: off');
       }
 
       function timerDisplayButton() {
@@ -1403,12 +1631,14 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             h('div', { style: { marginTop: 12 } }, renderVisual(selectedProtocol, true, visualPreviewPhase)),
             h('div', { style: { marginTop: 10, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 8, flexWrap: 'wrap' } },
               visualMotionControl(),
+              visualThemeControl(),
               visualPreviewControl(selectedProtocol)
             )
           ),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' } },
             breathCountButton(selectedProtocol),
             soundCueButton(),
+            phaseSoundButton(selectedProtocol),
             timerDisplayButton(),
             guidanceDisplayControl(),
             typeof ctx.callTTS === 'function' && h('button', {
@@ -1436,8 +1666,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
 
       function renderVisual(protocol, compact, previewMode) {
         var currentVisual = getVisual(d.visualMode);
-        var breath = breathState(protocol, remaining);
+        var visualTheme = isContrast ? getVisualTheme('system') : getVisualTheme(d.visualTheme);
+        var breath = breathState(protocol, currentVisualRemaining());
         var usesPace = !!(protocol.cadence && d.pacedBreathing);
+        var breathCycleTotal = 0;
+        var breathCycleNumber = 0;
+        if (usesPace) {
+          var breathCycleDuration = Math.max(1, (Number(protocol.cadence[0]) || 1) + (Number(protocol.cadence[1]) || 1));
+          breathCycleTotal = Math.max(1, Math.ceil(protocol.duration / breathCycleDuration));
+          breathCycleNumber = Math.min(breathCycleTotal, Math.floor(breath.absoluteCycleProgress) + 1);
+        }
         var previewing = !!(compact && (previewMode === 'in' || previewMode === 'out'));
         var activeBreathPhase = previewing ? previewMode : breath.phase;
         var activeBreathAmount = previewing ? (previewMode === 'in' ? 1 : 0) : breath.amount;
@@ -1452,7 +1690,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           ? protocol.cadence[previewMode === 'in' ? 0 : 1] * 1000
           : (effectiveMotion === 'full' ? 780 : 1100);
         var visualTransition = motionStrength === 0 ? 'none' : 'all ' + transitionMs + 'ms ease-in-out';
-        var hasStarted = remaining < protocol.duration;
+        var hasStarted = currentVisualRemaining() < protocol.duration;
         var phaseToken = usesPace ? (previewing ? previewMode : (isRunning ? breath.phase : (hasStarted ? 'paused' : 'ready'))) : 'steady';
         var focused = !compact && quietView;
         var expanded = !compact && (d.visualExpanded || focused);
@@ -2300,6 +2538,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           var orbitProgress = orbitCanMove ? activeCycleProgress : 0;
           var orbitDisplayedProgress = previewing ? orbitProgress : orbitProgress % 1;
           var orbitRotation = Math.round(orbitProgress * 3600) / 10;
+          if (orbitMoving) orbitRotationRef.current = orbitRotation;
+          else if (!hasStarted || !orbitCanMove) orbitRotationRef.current = orbitRotation;
+          var orbitMarkerRotation = orbitMoving ? orbitRotation : orbitRotationRef.current;
           var orbitMarkerTransition = previewing || (orbitMoving && orbitMotionRef.current) ? visualTransition : 'none';
           var orbitActiveSegment = orbitMoving ? activeBreathPhase : 'steady';
           var orbitMarkerPhase = orbitMoving ? activeBreathPhase : 'steady';
@@ -2628,7 +2869,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               'data-orbit-marker-shape': orbitMarkerShape,
               'data-orbit-marker-direction': orbitMoving ? 'clockwise' : 'steady',
               style: {
-                transform: 'rotate(' + orbitRotation + 'deg)',
+                transform: 'rotate(' + orbitMarkerRotation + 'deg)',
                 transformOrigin: orbitCenter + 'px ' + orbitCenter + 'px',
                 transition: orbitMarkerTransition
               }
@@ -2710,6 +2951,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             : (railPhase === 'out'
                 ? 'OUT \u00b7 SOFTEN'
                 : (railPhase === 'paused' ? 'PAUSED' : (railPhase === 'ready' ? 'READY' : 'STEADY')));
+          var showCycleProgress = !compact && d.showTimer;
+          var railCycleText = compact
+            ? (previewing ? 'PREVIEW' : '')
+            : (showCycleProgress ? 'CYCLE ' + breathCycleNumber + ' / ' + breathCycleTotal : '');
           var inhaleSeconds = Math.max(1, Number(protocol.cadence[0]) || 1);
           var exhaleSeconds = Math.max(1, Number(protocol.cadence[1]) || 1);
           var cadenceTotalSeconds = inhaleSeconds + exhaleSeconds;
@@ -2736,6 +2981,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               }
             });
           };
+          var breathCycleMarkers = [];
+          if (showCycleProgress) {
+            for (var cycleMarkerIndex = 1; cycleMarkerIndex <= breathCycleTotal; cycleMarkerIndex += 1) {
+              var cycleMarkerState = !hasStarted && !isRunning
+                ? 'upcoming'
+                : (cycleMarkerIndex < breathCycleNumber
+                    ? 'complete'
+                    : (cycleMarkerIndex === breathCycleNumber ? 'current' : 'upcoming'));
+              breathCycleMarkers.push(h('span', {
+                key: cycleMarkerIndex,
+                'data-breath-cycle-marker': String(cycleMarkerIndex),
+                'data-breath-cycle-marker-state': cycleMarkerState,
+                style: {
+                  width: cycleMarkerState === 'current' ? 10 : 7,
+                  height: cycleMarkerState === 'current' ? 10 : 7,
+                  borderRadius: 999,
+                  border: cycleMarkerState === 'upcoming' ? '1px solid ' + colors.muted : '1px solid ' + colors.accent,
+                  background: cycleMarkerState === 'complete' ? colors.accent : colors.panel,
+                  boxShadow: cycleMarkerState === 'current' ? 'inset 0 0 0 2px ' + colors.panel + ', inset 0 0 0 5px ' + colors.accent : 'none',
+                  opacity: cycleMarkerState === 'upcoming' ? 0.55 : 1,
+                  transition: effectiveMotion === 'still' ? 'none' : 'width 220ms ease, height 220ms ease, opacity 220ms ease'
+                }
+              }));
+            }
+          }
           phaseRail = h('div', {
             'aria-hidden': 'true',
             'data-breath-phase-rail': 'true',
@@ -2744,6 +3014,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             'data-breath-phase-label': railLabel,
             'data-breath-phase-cadence': inhaleSeconds + '-' + exhaleSeconds,
             'data-breath-phase-total-seconds': String(cadenceTotalSeconds),
+            'data-breath-cycle-number': compact ? (previewing ? 'preview' : 'steady') : String(breathCycleNumber),
+            'data-breath-cycle-total': compact ? 'preview' : String(breathCycleTotal),
+            'data-breath-cycle-display': compact ? 'preview' : (showCycleProgress ? 'visible' : 'hidden'),
             style: {
               width: frameCss,
               display: 'grid',
@@ -2761,7 +3034,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               h('span', { 'data-breath-phase-label-text': 'out', style: { color: railPhase === 'out' ? colors.accent : colors.muted } }, 'OUT ' + exhaleSeconds + 's')
             ),
             h('div', { style: { display: 'flex', gap: 4, width: '100%' } }, railSegment('in'), railSegment('out')),
-            h('div', { 'data-breath-phase-status': 'true', style: { textAlign: 'center', color: railPhase === 'in' || railPhase === 'out' ? colors.accent : colors.muted, letterSpacing: compact ? 0.85 : 0.9 } }, railLabel + (railPhase === 'in' || railPhase === 'out' ? ' \u00b7 ' + railProgress + '%' : ''))
+            showCycleProgress && h('div', {
+              'data-breath-cycle-map': 'true',
+              style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 10, flexWrap: 'wrap' }
+            }, breathCycleMarkers),
+            h('div', { 'data-breath-phase-status': 'true', style: { textAlign: 'center', color: railPhase === 'in' || railPhase === 'out' ? colors.accent : colors.muted, letterSpacing: compact ? 0.85 : 0.9 } }, railCycleText ? railCycleText + ' \u00b7 ' : '', railLabel + (railPhase === 'in' || railPhase === 'out' ? ' \u00b7 ' + railProgress + '%' : ''))
           );
         }
 
@@ -2777,7 +3054,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
         };
         var visualContainerProps = {
           'data-visual-mode': currentVisual.id,
+          'data-visual-theme': visualTheme.id,
           'data-visual-motion': effectiveMotion,
+          'data-visual-clock': isRunning && usesPace && effectiveMotion !== 'still' ? 'smooth' : 'static',
           'data-visual-phase': phaseToken,
           'data-visual-phase-label': visualPhaseLabel,
           'data-visual-cadence': usesPace ? protocol.cadence.join('-') + '-seconds' : 'natural',
@@ -2810,9 +3089,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
           visualContainerProps['aria-roledescription'] = 'breathing visual guide';
           visualContainerProps['aria-label'] = visualLabel;
         }
+        var visualThemeWrapperStyle = {
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          filter: visualTheme.filter
+        };
         return h(focused ? 'button' : 'div', visualContainerProps,
-          visualBody,
-          phaseRail,
+          h('div', { 'data-visual-theme-wrapper': 'true', style: visualThemeWrapperStyle },
+            visualBody,
+            phaseRail
+          ),
           focused && h('span', {
             'aria-hidden': 'true',
             style: { color: colors.muted, fontSize: 11, fontWeight: 750 }
@@ -2821,8 +3111,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       }
 
       function moveToAfter() {
-        var currentRemaining = currentTimerRemaining();
+        var currentRemainingMs = currentTimerRemainingMs();
+        var currentRemaining = Math.max(0, Math.ceil(currentRemainingMs / 1000));
         var practiced = Math.max(0, selectedProtocol.duration - currentRemaining);
+        pausedRemainingMsRef.current = currentRemainingMs;
         deadlineRef.current = null;
         setRemaining(currentRemaining);
         setIsRunning(false);
@@ -2838,25 +3130,31 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
       }
 
       function renderPractice() {
-        var breath = breathState(selectedProtocol, remaining);
+        var visualRemaining = currentVisualRemaining();
+        var breath = breathState(selectedProtocol, visualRemaining);
         var usesPace = !!(selectedProtocol.cadence && d.pacedBreathing);
         var elapsed = Math.max(0, selectedProtocol.duration - remaining);
+        var visualElapsed = Math.max(0, selectedProtocol.duration - visualRemaining);
+        var hasStarted = currentTimerRemainingMs() < selectedProtocol.duration * 1000;
         var progressPercent = selectedProtocol.duration ? Math.round((elapsed / selectedProtocol.duration) * 100) : 0;
+        var visualProgressPercent = selectedProtocol.duration
+          ? Math.min(100, Math.max(0, (visualElapsed / selectedProtocol.duration) * 100))
+          : 0;
         var fullCue = usesPace
-          ? (isRunning ? breath.label + ' - ' + breath.count : (elapsed > 0 ? 'Paused - resume when ready' : 'Optional breath guide is ready'))
-          : (isRunning ? 'Breathe naturally and move only if comfortable' : (elapsed > 0 ? 'Paused - resume when ready' : 'Start when you are ready'));
+          ? (isRunning ? breath.label + ' - ' + breath.count : (hasStarted ? 'Paused - resume when ready' : 'Optional breath guide is ready'))
+          : (isRunning ? 'Breathe naturally and move only if comfortable' : (hasStarted ? 'Paused - resume when ready' : 'Start when you are ready'));
         var phaseCue = isRunning
           ? (usesPace ? (breath.phase === 'in' ? 'In' : 'Out') : 'Natural breath')
-          : (elapsed > 0 ? 'Paused' : 'Ready');
+          : (hasStarted ? 'Paused' : 'Ready');
         var guidanceVisible = d.guidanceMode !== 'hidden';
         var cue = d.guidanceMode === 'phase' ? phaseCue : fullCue;
         // Announce phase changes without announcing each numeric count. This
         // gives nonvisual users the same optional pacing signal as the visual.
         var phaseAnnouncement = usesPace
-          ? (isRunning ? breath.label : (elapsed > 0 ? 'Practice paused.' : 'Optional breath guide ready.'))
+          ? (isRunning ? breath.label : (hasStarted ? 'Practice paused.' : 'Optional breath guide ready.'))
           : (isRunning ? 'Natural breathing.' : 'Practice ready.');
         var phaseAnnouncementToken = usesPace
-          ? (isRunning ? breath.phase : (elapsed > 0 ? 'paused' : 'ready'))
+          ? (isRunning ? breath.phase : (hasStarted ? 'paused' : 'ready'))
           : 'steady';
         return h('div', {
           'data-quiet-view': quietView ? 'true' : 'false',
@@ -2887,6 +3185,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               'aria-valuenow': elapsed,
               'aria-valuetext': formatTime(remaining) + ' remaining',
               'data-session-progress': progressPercent,
+              'data-session-progress-visual': visualProgressPercent.toFixed(2),
               style: {
                 width: 'min(420px, 88%)',
                 height: 6,
@@ -2898,10 +3197,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               }
             }, h('div', {
               style: {
-                width: progressPercent + '%',
+                width: visualProgressPercent.toFixed(2) + '%',
                 height: '100%',
                 background: colors.accent,
-                transition: reduceMotion ? 'none' : 'width 250ms linear'
+                transition: reduceMotion || !isRunning ? 'none' : 'width 100ms linear'
               }
             })),
             !d.showTimer && h('p', {
@@ -2931,12 +3230,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
               type: 'button',
               onClick: togglePracticeTimer,
               style: primaryButton({ minWidth: 150 })
-            }, isRunning ? 'Pause' : (remaining < selectedProtocol.duration ? 'Resume' : 'Start')),
+            }, isRunning ? 'Pause' : (hasStarted ? 'Resume' : 'Start')),
             h('button', {
               type: 'button',
               onClick: restartPracticeTimer,
-              disabled: !isRunning && remaining === selectedProtocol.duration,
-              style: secondaryButton(!isRunning && remaining === selectedProtocol.duration ? { minWidth: 110, opacity: 0.55, cursor: 'not-allowed' } : { minWidth: 110 })
+              disabled: !isRunning && !hasStarted,
+              style: secondaryButton(!isRunning && !hasStarted ? { minWidth: 110, opacity: 0.55, cursor: 'not-allowed' } : { minWidth: 110 })
             }, 'Restart timer'),
             h('button', { type: 'button', onClick: moveToAfter, style: secondaryButton({ minWidth: 140 }) }, 'End & check in')
           ),
@@ -2945,9 +3244,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
               visualChoiceControl(),
               visualMotionControl(),
+              visualThemeControl(),
               visualSizeButton(),
               breathCountButton(selectedProtocol),
               soundCueButton(),
+              phaseSoundButton(selectedProtocol),
               timerDisplayButton(),
               guidanceDisplayControl()
             )

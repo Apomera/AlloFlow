@@ -8796,8 +8796,8 @@ var d = labToolData.brainAtlas || {};
               if (!showNtInquiry) return null;
               // SVG: bars
               return React.createElement('div', { className: 'brainatlas-nt-inquiry p-3 mb-3', "data-brainatlas-nt-inquiry": "true", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.brainatlas.neurotransmitter_inquiry_predict_the_s', '\uD83D\uDD2C Neurotransmitter Inquiry \u2014 Predict the State')),
-                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.brainatlas.set_five_neurotransmitter_levels_predi', 'Set five neurotransmitter levels. Predict the felt state before reading it. No score, no reveal \u2014 and no clinical interpretation.')),
+                React.createElement('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, t('stem.brainatlas.neurotransmitter_inquiry_predict_the_s', '\uD83D\uDD2C Neurotransmitter Inquiry \u2014 Explore the State')),
+                React.createElement('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, t('stem.brainatlas.set_five_neurotransmitter_levels_predi', 'Set five neurotransmitter levels, then observe how the modeled state changes. The result updates live; record a hypothesis or pattern you notice. This is not a clinical interpretation.')),
                 React.createElement('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, sm.label),
                 React.createElement('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
                 React.createElement('div', { className: 'grid grid-cols-4 gap-1 mb-2' },

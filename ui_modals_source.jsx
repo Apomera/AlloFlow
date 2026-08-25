@@ -1366,15 +1366,27 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
   const { t } = useContext(LanguageContext);
   const roleRef = useRef(null);
   useFocusTrap(roleRef, true);
-  const handleRoleClick = (role) => {
-    const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function'
-      ? window._alloEducatorAccessCodeRequired()
-      : !!APP_CONFIG._cfg_validation_key;
-    if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
-        if (onGateRequired) onGateRequired(role);
-    } else {
-        onSelect(role);
+  const handleRoleClick = (role, event) => {
+    const button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.style.opacity = '0.72';
     }
+    setTimeout(() => {
+      const selectRole = () => {
+        const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function'
+          ? window._alloEducatorAccessCodeRequired()
+          : !!APP_CONFIG._cfg_validation_key;
+        if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
+          if (onGateRequired) onGateRequired(role);
+        } else {
+          onSelect(role);
+        }
+      };
+      if (typeof React.startTransition === 'function') React.startTransition(selectRole);
+      else selectRole();
+    }, 80);
   };
   // The host remembers the last chosen role (executeRoleSelect writes it). Shown
   // as a badge on the matching card — a hint, never an auto-skip, because the
@@ -1468,7 +1480,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
       <p id="role-selection-description" className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
-            onClick={() => handleRoleClick('student')}
+            onClick={(event) => handleRoleClick('student', event)}
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_student"
         >
@@ -1478,7 +1490,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             <span className="font-bold text-slate-700 group-hover:text-teal-700">{t('roles.student')}</span>
         </button>
         <button
-            onClick={() => handleRoleClick('teacher')}
+            onClick={(event) => handleRoleClick('teacher', event)}
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_teacher"
         >
@@ -1489,7 +1501,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             {lastTimeBadge('teacher')}
         </button>
         <button
-            onClick={() => handleRoleClick('parent')}
+            onClick={(event) => handleRoleClick('parent', event)}
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_parent"
         >
@@ -1501,7 +1513,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             {lastTimeBadge('parent')}
         </button>
         <button
-            onClick={() => handleRoleClick('independent')}
+            onClick={(event) => handleRoleClick('independent', event)}
             className="flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none"
             data-help-key="role_independent"
         >

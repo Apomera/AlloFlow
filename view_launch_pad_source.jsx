@@ -22,6 +22,20 @@ function LaunchPadView(props) {
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var runLaunchTransition = function (work, event) {
+    // Keep the pre-rendered workspace concealed for this input frame. The host
+    // effect reveals it when the transition commits.
+    var button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.style.opacity = '0.72';
+    }
+    setTimeout(function () {
+      if (typeof React.startTransition === 'function') React.startTransition(work);
+      else work();
+    }, 40);
+  };
   var launchPadRef = React.useRef(null);
   // Resolve language before the voice setup hooks: model readiness is
   // profile-specific, so changing Spanish -> English must re-check the cache.
@@ -640,13 +654,13 @@ function LaunchPadView(props) {
           <div className="lp-grid lp-mode-grid">
             {/* setGuidedMode(false) is not redundant: a restored workspace can arrive
                 with guided mode already on, and Full Platform is a non-guided choice. */}
-            <button type="button" className="lp-card" data-emphasis="recommended" data-pathway="guided" aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }}>
+            <button type="button" className="lp-card" data-emphasis="recommended" data-pathway="guided" aria-labelledby="launch-pad-guided-title" aria-describedby="launch-pad-guided-badge launch-pad-guided-desc" onClick={(event) => runLaunchTransition(() => { setHasSelectedMode(true); setGuidedMode(true); }, event)}>
               <span id="launch-pad-guided-badge" className="lp-mode-badge"><span className="lp-badge">{copy('launch_pad.badge_recommended', 'Recommended')}</span></span>
               <LaunchPadIcon className="lp-card-icon" name="ListChecks" size={24} />
               <span id="launch-pad-guided-title" className="lp-card-title">{guidedTitle}</span>
               <span id="launch-pad-guided-desc" className="lp-card-desc">{guidedDesc}</span>
             </button>
-            <button type="button" className="lp-card" data-emphasis="standard" data-pathway="full" aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={() => { setHasSelectedMode(true); setGuidedMode(false); }}>
+            <button type="button" className="lp-card" data-emphasis="standard" data-pathway="full" aria-labelledby="launch-pad-full-title" aria-describedby="launch-pad-full-desc" onClick={(event) => runLaunchTransition(() => { setHasSelectedMode(true); setGuidedMode(false); }, event)}>
               <LaunchPadIcon className="lp-card-icon" name="Layout" size={24} />
               <span id="launch-pad-full-title" className="lp-card-title">{fullTitle}</span>
               <span id="launch-pad-full-desc" className="lp-card-desc">{fullDesc}</span>
@@ -660,14 +674,14 @@ function LaunchPadView(props) {
               <p className="lp-section-copy">{copy('launch_pad.direct_desc', 'Jump straight to a focused collection without opening the full workspace first.')}</p>
             </div>
             <div className="lp-direct-grid">
-            <button type="button" className="lp-card" data-pathway="learning" aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-desc" onClick={() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }}>
+            <button type="button" className="lp-card" data-pathway="learning" aria-labelledby="launch-pad-learning-title" aria-describedby="launch-pad-learning-desc" onClick={(event) => runLaunchTransition(() => { setShowLearningHub(true); setIsTeacherMode(false); setShowWizard(false); setHasSelectedRole(true); setHasSelectedMode(true); }, event)}>
               <LaunchPadIcon className="lp-card-icon" name="Backpack" size={22} />
               <span className="lp-direct-copy">
                 <span id="launch-pad-learning-title" className="lp-card-title">{learningToolsTitle}</span>
                 <span id="launch-pad-learning-desc" className="lp-card-desc">{learningToolsDesc}</span>
               </span>
             </button>
-            <button type="button" className="lp-card" data-pathway="educator" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc" onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key)) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }}>
+            <button type="button" className="lp-card" data-pathway="educator" aria-labelledby="launch-pad-educator-title" aria-describedby="launch-pad-educator-desc" onClick={(event) => runLaunchTransition(() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if ((typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key)) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }, event)}>
               <LaunchPadIcon className="lp-card-icon" name="GraduationCap" size={22} />
               <span className="lp-direct-copy">
                 <span id="launch-pad-educator-title" className="lp-card-title">{educatorToolsTitle}</span>

@@ -116,6 +116,64 @@ window.StemLab = window.StemLab || {
     return { label: label, remaining: pool, refilled: refilled };
   }
 
+  // Exact two-draw probability tree for a finite bag sampled without
+  // replacement. The helper works from counts rather than an expanded marble
+  // pool, so even a large restored bag stays O(number of outcome types squared).
+  // Every ordered path is retained, including same-outcome paths whose second
+  // numerator is zero (an important visible "impossible" case).
+  function probabilityWithoutReplacementTree(outcomes) {
+    var prepared = probabilityMarbleOutcomes(outcomes);
+    var total = prepared.reduce(function(sum, outcome) { return sum + outcome.count; }, 0);
+    var secondDenominator = total > 1 ? total - 1 : 0;
+    var valid = total >= 2;
+    var reason = valid ? '' : 'A without-replacement tree needs at least two items in the bag.';
+    var paths = [];
+    var branches = prepared.map(function(first, firstIndex) {
+      var firstProbability = total > 0 ? first.count / total : 0;
+      var branchPaths = prepared.map(function(second, secondIndex) {
+        var conditionalNumerator = Math.max(0, second.count - (firstIndex === secondIndex ? 1 : 0));
+        var conditionalProbability = valid ? conditionalNumerator / secondDenominator : 0;
+        var jointNumerator = first.count * conditionalNumerator;
+        var jointDenominator = valid ? total * secondDenominator : 0;
+        var path = {
+          firstIndex: firstIndex,
+          secondIndex: secondIndex,
+          first: first,
+          second: second,
+          firstNumerator: first.count,
+          firstDenominator: total,
+          firstProbability: firstProbability,
+          conditionalNumerator: conditionalNumerator,
+          conditionalDenominator: secondDenominator,
+          conditionalProbability: conditionalProbability,
+          jointNumerator: jointNumerator,
+          jointDenominator: jointDenominator,
+          jointProbability: jointDenominator > 0 ? jointNumerator / jointDenominator : 0,
+          impossible: jointNumerator === 0
+        };
+        paths.push(path);
+        return path;
+      });
+      return {
+        firstIndex: firstIndex,
+        outcome: first,
+        numerator: first.count,
+        denominator: total,
+        probability: firstProbability,
+        paths: branchPaths
+      };
+    });
+    return {
+      valid: valid,
+      reason: reason,
+      total: total,
+      secondDenominator: secondDenominator,
+      outcomes: prepared,
+      branches: branches,
+      paths: paths
+    };
+  }
+
   function probabilityPrepareCustomOutcomes(outcomes, subMode) {
     var input = Array.isArray(outcomes) ? outcomes : [];
     var prepared = input.map(function(o, i) {
@@ -164,6 +222,38 @@ window.StemLab = window.StemLab || {
     return { outcomes: prepared, total: total, valid: !reason, reason: reason };
   }
 
+  // Wilson score interval for a binomial proportion. Unlike the familiar
+  // p-hat +/- 1.96*SE shortcut, Wilson stays inside [0, 1] and remains useful
+  // for small samples and rare outcomes (exactly the cases students encounter
+  // with d20s and two-dice tail sums). `z` is injectable for teaching/tests;
+  // the default is the two-sided 95% critical value.
+  function probabilityWilsonInterval(successes, trials, z) {
+    var n = Math.floor(Number(trials));
+    var x = Math.round(Number(successes));
+    var critical = Number(z);
+    if (!Number.isFinite(critical) || critical <= 0) critical = 1.959963984540054;
+    if (!Number.isFinite(n) || n <= 0 || !Number.isFinite(x)) {
+      return { valid: false, successes: 0, trials: 0, observed: null, low: 0, high: 1, center: 0.5, halfWidth: 0.5, z: critical };
+    }
+    x = Math.max(0, Math.min(n, x));
+    var observed = x / n;
+    var z2 = critical * critical;
+    var denominator = 1 + z2 / n;
+    var center = (observed + z2 / (2 * n)) / denominator;
+    var halfWidth = critical * Math.sqrt((observed * (1 - observed) / n) + (z2 / (4 * n * n))) / denominator;
+    return {
+      valid: true,
+      successes: x,
+      trials: n,
+      observed: observed,
+      low: Math.max(0, center - halfWidth),
+      high: Math.min(1, center + halfWidth),
+      center: center,
+      halfWidth: halfWidth,
+      z: critical
+    };
+  }
+
   function probabilityResetPatch() {
     return {
       results: [], trials: 0, convergenceHistory: [], lastResult: null,
@@ -176,7 +266,9 @@ window.StemLab = window.StemLab || {
     buildMarblePool: probabilityBuildMarblePool,
     marbleOdds: probabilityMarbleOdds,
     drawMarble: probabilityDrawMarble,
+    withoutReplacementTree: probabilityWithoutReplacementTree,
     prepareCustomOutcomes: probabilityPrepareCustomOutcomes,
+    wilsonInterval: probabilityWilsonInterval,
     resetPatch: probabilityResetPatch
   });
 
@@ -184,6 +276,7 @@ window.StemLab = window.StemLab || {
   var _autoRun = { interval: null };
   var _galtonAnim = { interval: null };
   var _piAnim = { interval: null };
+  var PROBABILITY_CHALLENGE_TOTAL = 6;
 
   // ══ 3D Monte Carlo volume estimator ═════════════════════════════════════
   // Throw random darts into a 1×1×1 box holding a solid; the fraction that land
@@ -1134,6 +1227,16 @@ var d = (labToolData.probability) || {};
             : d.mode === 'pi' ? Math.PI / 4 * 100
             : customOutcomes[0] ? customOutcomes[0].prob * 100 : 50;
 
+          // Sampling-uncertainty lens. Use the sample we can actually inspect,
+          // not a legacy `trials` counter whose result array may be absent. The
+          // tracked outcome deliberately matches the convergence chart above.
+          var samplingTrials = (d.results || []).length;
+          var samplingSuccesses = counts[convTrackedKey] || 0;
+          var samplingInterval = probabilityWilsonInterval(samplingSuccesses, samplingTrials);
+          var samplingExpected = convExpected / 100;
+          var samplingCompatible = samplingInterval.valid && samplingExpected >= samplingInterval.low && samplingExpected <= samplingInterval.high;
+          var samplingIndependent = !(d.mode === 'marbleBag' && d.mbWithoutReplacement);
+
 
 
           // Dice face SVG
@@ -1495,7 +1598,7 @@ var d = (labToolData.probability) || {};
             var stats = [
               { label: t('stem.probability.dashboard_trials', 'Trials'), value: String(d.trials || 0), hint: t('stem.probability.dashboard_trials_hint', 'current run') },
               { label: t('stem.probability.dashboard_modes', 'Modes tried'), value: usedTypes + '/3', hint: t('stem.probability.dashboard_modes_hint', 'quest progress') },
-              { label: t('stem.probability.dashboard_challenges', 'Challenges'), value: completedChallenges + '/5', hint: t('stem.probability.dashboard_challenges_hint', 'claimed') },
+              { label: t('stem.probability.dashboard_challenges', 'Challenges'), value: completedChallenges + '/' + PROBABILITY_CHALLENGE_TOTAL, hint: t('stem.probability.dashboard_challenges_hint', 'claimed') },
               { label: t('stem.probability.dashboard_result', 'Latest'), value: d.lastResult != null ? String(d.lastResult) : '-', hint: t('stem.probability.dashboard_result_hint', 'last result') }
             ];
             var routes = [
@@ -1566,6 +1669,13 @@ var d = (labToolData.probability) || {};
           return React.createElement("div", {
             className: "max-w-3xl mx-auto animate-in fade-in duration-200",
             style: {
+              // This tool can be mounted as a flex child. Without an explicit
+              // width and min-width:0, its max-content width (not the host slot)
+              // won, so a 360px phone panel expanded to ~419px and clipped the
+              // right edge. Own the flex sizing while preserving max-w-3xl.
+              width: '100%',
+              minWidth: 0,
+              boxSizing: 'border-box',
               color: _text,
               background: outerBg,
               borderRadius: outerBg ? 16 : undefined,
@@ -3113,12 +3223,15 @@ var d = (labToolData.probability) || {};
             // ── Two-Event Tree Diagram ──
             d.mode === 'tree' && (function() {
               var _treeMode = d.treeEventMode || 'coin';
-              var _treeModes = [['coin','\uD83E\uDE99 Coin'],['dice','\uD83C\uDFB2 Dice (1-6)'],['sports','\uD83C\uDFC6 Sports'],['custom','\u2699\uFE0F Custom']];
+              var _treeModes = [['coin','\uD83E\uDE99 Coin'],['dice','\uD83C\uDFB2 Dice (1-6)'],['sports','\uD83C\uDFC6 Sports'],['custom','\u2699\uFE0F Custom'],['bagNoReplacement','\uD83C\uDFB1 Bag (no replacement)']];
+              var _treeIsDependent = _treeMode === 'bagNoReplacement';
+              var _dependentTree = _treeIsDependent ? probabilityWithoutReplacementTree(rawCustomOutcomes) : null;
               var _treeOutcomes;
               if (_treeMode === 'coin') { _treeOutcomes = [{label:'H',prob:0.5,color:'#fbbf24'},{label:'T',prob:0.5,color: 'var(--allo-stem-text-soft, #94a3b8)'}]; }
               else if (_treeMode === 'dice') { _treeOutcomes = [1,2,3,4,5,6].map(function(n,i){ return {label:String(n),prob:1/6,color:['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6'][i]}; }); }
               else if (_treeMode === 'sports') { _treeOutcomes = activeSport.outcomes.map(function(o,i){ return {label:o,prob:activeSport.probs[i],color:activeSport.colors[i]}; }); }
-              else { _treeOutcomes = customOutcomes.slice(0, 4).map(function(o){ return {label:o.label,prob:o.prob,color:o.color}; }); }
+              else if (_treeIsDependent) { _treeOutcomes = _dependentTree.outcomes; }
+              else { _treeOutcomes = customOutcomes.map(function(o){ return {label:o.label,prob:o.prob,color:o.color}; }); }
               function _treeTextOn(background) {
                 var match = String(background || '').match(/#([0-9a-f]{6})/i);
                 if (!match) return '#111827';
@@ -3129,47 +3242,128 @@ var d = (labToolData.probability) || {};
                 var luminance = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
                 return luminance > 0.179 ? '#111827' : '#ffffff';
               }
-              var _showFull = _treeOutcomes.length <= 3;
+              function _treePercent(probability) {
+                return (Math.max(0, probability || 0) * 100).toFixed(1) + '%';
+              }
+              var _treeReady = _treeIsDependent ? _dependentTree.valid : (_treeMode !== 'custom' || customModel.valid);
+              var _treeReason = _treeIsDependent ? _dependentTree.reason : (_treeMode === 'custom' ? customModel.reason : '');
               var _pairs = [];
-              _treeOutcomes.forEach(function(a){ _treeOutcomes.forEach(function(b){ _pairs.push({a:a,b:b,joint:a.prob*b.prob}); }); });
-              return React.createElement("div", { className: "mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe') } },
-                React.createElement("p", { className: "text-xs font-bold uppercase tracking-wider mb-3", style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.two_event_compound_probability_tree', '\uD83C\uDF33 Two-Event Compound Probability Tree')),
-                React.createElement("div", { className: "flex flex-wrap gap-1 mb-3" },
-                  _treeModes.map(function(pair){ return React.createElement("button", { key: pair[0], onClick: function(){ upd('treeEventMode', pair[0]); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all", style: { background: _treeMode===pair[0] ? (isDark||isContrast?'#7c3aed':'#6d28d9') : (isDark||isContrast?'rgba(139,92,246,0.1)':'#ede9fe'), color: _treeMode===pair[0] ? '#fff' : (isDark||isContrast?'#c4b5fd':'#6d28d9') } }, pair[1]); })
+              var _treeBranches;
+              if (_treeIsDependent) {
+                _treeBranches = _dependentTree.branches;
+                _pairs = _dependentTree.paths.slice();
+              } else {
+                _treeBranches = _treeOutcomes.map(function(first, firstIndex) {
+                  var branchPaths = _treeOutcomes.map(function(second, secondIndex) {
+                    var jointProbability = first.prob * second.prob;
+                    var path = {
+                      firstIndex: firstIndex, secondIndex: secondIndex,
+                      first: first, second: second,
+                      firstProbability: first.prob,
+                      conditionalProbability: second.prob,
+                      jointProbability: jointProbability,
+                      impossible: jointProbability === 0
+                    };
+                    _pairs.push(path);
+                    return path;
+                  });
+                  return { firstIndex: firstIndex, outcome: first, probability: first.prob, paths: branchPaths };
+                });
+              }
+              var _oneOfEach = null;
+              if (_treeIsDependent && _treeOutcomes.length === 2 && _treeReady) {
+                var _forward = _pairs.find(function(path) { return path.firstIndex === 0 && path.secondIndex === 1; });
+                var _reverse = _pairs.find(function(path) { return path.firstIndex === 1 && path.secondIndex === 0; });
+                if (_forward && _reverse) {
+                  _oneOfEach = {
+                    forward: _forward,
+                    reverse: _reverse,
+                    numerator: _forward.jointNumerator + _reverse.jointNumerator,
+                    denominator: _forward.jointDenominator,
+                    probability: _forward.jointProbability + _reverse.jointProbability
+                  };
+                }
+              }
+              return React.createElement("section", { role: "region", "aria-labelledby": "prob-tree-heading", className: "min-w-0 mb-4 rounded-xl p-4", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe') } },
+                React.createElement("h3", { id: "prob-tree-heading", className: "text-xs font-bold uppercase tracking-wider mb-1", style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, t('stem.probability.two_event_compound_probability_tree', '\uD83C\uDF33 Two-Event Compound Probability Tree')),
+                React.createElement("p", { className: "text-[11px] mb-3", style: { color: isDark||isContrast?'#cbd5e1':'#475569' } }, 'Compare independent events with dependent draws from a finite bag. Every path records first outcome, second outcome, and its ordered joint probability.'),
+                React.createElement("p", { className: "text-[11px] font-bold mb-1", style: { color: isDark||isContrast?'#ddd6fe':'#5b21b6' } }, 'Choose a probability tree model'),
+                React.createElement("div", { role: "group", "aria-label": "Choose a probability tree model", className: "flex flex-wrap gap-1 mb-3" },
+                  _treeModes.map(function(pair){ return React.createElement("button", { type: "button", "aria-pressed": _treeMode===pair[0], key: pair[0], onClick: function(){ upd('treeEventMode', pair[0]); }, className: "px-3 py-1 rounded-lg text-xs font-bold transition-all", style: { background: _treeMode===pair[0] ? (isDark||isContrast?'#7c3aed':'#6d28d9') : (isDark||isContrast?'rgba(139,92,246,0.1)':'#ede9fe'), color: _treeMode===pair[0] ? '#fff' : (isDark||isContrast?'#c4b5fd':'#6d28d9') } }, pair[1]); })
                 ),
                 _treeMode === 'sports' && React.createElement("p", { className: "text-[11px] italic mb-2", style: { color: isDark||isContrast?'#a5b4fc':'#6d28d9' } }, '\uD83C\uDFC6 Using: ' + activeSport.label + ' \u2014 ' + activeSport.desc),
-                React.createElement("div", { className: "overflow-x-auto" },
-                  React.createElement("div", { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' } },
-                    _treeOutcomes.map(function(a) {
-                      return React.createElement("div", { key: a.label, style: { display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center' } },
-                        React.createElement("div", { style: { background: a.color, color: _treeTextOn(a.color), borderRadius: '8px', padding: '6px 10px', fontSize: '11px', fontWeight: 700, textAlign: 'center', minWidth: '60px', boxShadow: '0 2px 6px ' + a.color + '60' } },
-                          a.label + '\n' + (a.prob*100).toFixed(1) + '%'
+                _treeIsDependent && React.createElement("div", { role: "note", className: "mb-3 rounded-lg p-3 text-[11px] leading-relaxed break-words", style: { background: isDark||isContrast?'rgba(14,165,233,0.08)':'#f0f9ff', border: '1px solid ' + (isDark||isContrast?'rgba(56,189,248,0.3)':'#bae6fd'), color: isDark||isContrast?'#bae6fd':'#075985', overflowWrap: 'anywhere' } },
+                  React.createElement("strong", null, 'Without Replacement \u2014 finite bag: '),
+                  _treeOutcomes.map(function(outcome) { return outcome.count + ' ' + outcome.label; }).join(', '),
+                  '. The bag starts full for this two-draw experiment. The first item stays out for draw 2, so the denominator changes from ' + _dependentTree.total + ' to ' + _dependentTree.secondDenominator + '.'
+                ),
+                !_treeReady && React.createElement("div", { role: "alert", className: "mb-3 rounded-lg p-3 text-xs font-bold", style: { background: isDark||isContrast?'rgba(239,68,68,0.1)':'#fef2f2', border: '1px solid ' + (isDark||isContrast?'rgba(248,113,113,0.35)':'#fecaca'), color: isDark||isContrast?'#fecaca':'#991b1b' } }, _treeReason || 'This probability model is not ready.'),
+                _treeReady && React.createElement("div", { "aria-hidden": "true", className: "grid grid-cols-1 gap-3" },
+                  _treeBranches.map(function(branch) {
+                    var first = branch.outcome;
+                    var firstFormula = _treeIsDependent ? branch.numerator + '/' + branch.denominator + ' = ' + _treePercent(branch.probability) : _treePercent(branch.probability);
+                    return React.createElement("div", { key: 'tree-first-' + branch.firstIndex, className: "min-w-0 rounded-xl p-3", style: { background: isDark||isContrast?'rgba(15,23,42,0.52)':'#ffffff', border: '1px solid ' + (first.color || '#7c3aed') } },
+                      React.createElement("div", { className: "flex min-w-0 flex-wrap items-center justify-between gap-2 mb-2" },
+                        React.createElement("span", { className: "min-w-0 max-w-full rounded-lg px-3 py-1.5 text-xs font-black break-words", style: { background: first.color || '#7c3aed', color: _treeTextOn(first.color || '#7c3aed'), overflowWrap: 'anywhere' } }, 'First: ' + first.label),
+                        React.createElement("span", { className: "min-w-0 max-w-full text-[11px] font-bold font-mono break-words", style: { color: isDark||isContrast?'#e2e8f0':'#334155', overflowWrap: 'anywhere' } }, 'P(first ' + first.label + ') = ' + firstFormula)
+                      ),
+                      React.createElement("div", { className: "grid min-w-0 gap-2", style: { gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%, 150px),1fr))' } },
+                        branch.paths.map(function(path) {
+                          var conditionalText = _treeIsDependent
+                            ? path.conditionalNumerator + '/' + path.conditionalDenominator + ' = ' + _treePercent(path.conditionalProbability)
+                            : _treePercent(path.conditionalProbability);
+                          var jointText = _treeIsDependent
+                            ? path.firstNumerator + '/' + path.firstDenominator + ' \u00d7 ' + path.conditionalNumerator + '/' + path.conditionalDenominator + ' = ' + path.jointNumerator + '/' + path.jointDenominator + ' = ' + _treePercent(path.jointProbability)
+                            : _treePercent(path.firstProbability) + ' \u00d7 ' + _treePercent(path.conditionalProbability) + ' = ' + _treePercent(path.jointProbability);
+                          return React.createElement("div", { key: 'tree-path-' + path.firstIndex + '-' + path.secondIndex, className: "min-w-0 rounded-lg p-2 text-[10px]", style: { background: path.impossible ? (isDark||isContrast?'rgba(239,68,68,0.08)':'#fff7f7') : (isDark||isContrast?'rgba(255,255,255,0.05)':'#f8fafc'), border: '1px solid ' + (path.second.color || '#94a3b8'), color: isDark||isContrast?'#e2e8f0':'#1e293b' } },
+                            React.createElement("div", { className: "font-black break-words", style: { overflowWrap: 'anywhere' } }, 'Second: ' + path.second.label),
+                            React.createElement("div", { className: "mt-1 font-mono break-words" }, _treeIsDependent ? 'P(' + path.second.label + '|' + path.first.label + ') = ' + conditionalText : 'P(second ' + path.second.label + ') = ' + conditionalText),
+                            React.createElement("div", { className: "mt-1 font-mono break-words" }, 'P(' + path.first.label + ' \u2192 ' + path.second.label + ') = ' + jointText),
+                            path.impossible && React.createElement("div", { className: "mt-1 font-black", style: { color: isDark||isContrast?'#fca5a5':'#b91c1c' } }, 'Impossible \u00b7 0%')
+                          );
+                        })
+                      )
+                    );
+                  })
+                ),
+                React.createElement("div", { className: "mt-3 p-3 rounded-lg", style: { background: isDark||isContrast?'rgba(255,255,255,0.04)':'rgba(139,92,246,0.04)', border: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ddd6fe') } },
+                  React.createElement("p", { className: "text-[11px] font-bold mb-2", style: { color: isDark||isContrast?'#c4b5fd':'#7c3aed' } }, '\uD83D\uDCCA ' + _pairs.length + ' ordered joint paths'),
+                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#475569' } },
+                    _treeIsDependent
+                      ? '\uD83D\uDCA1 Dependent draws: P(A then B) = P(A) \u00d7 P(B|A). Removing the first item changes the probability on the second branch.'
+                      : t('stem.probability.multiply_the_two_probabilities_to_get_', '\uD83D\uDCA1 Independent events: P(A then B) = P(A) \u00d7 P(B). The second branch does not change after the first outcome.')
+                  ),
+                  _oneOfEach && React.createElement("div", { role: "note", className: "mt-3 rounded-lg p-2 text-[11px] font-bold break-words", style: { background: isDark||isContrast?'rgba(16,185,129,0.08)':'#ecfdf5', border: '1px solid ' + (isDark||isContrast?'rgba(52,211,153,0.3)':'#a7f3d0'), color: isDark||isContrast?'#a7f3d0':'#065f46', overflowWrap: 'anywhere' } },
+                    'One of each can happen in either order, so add both paths: P(' + _treeOutcomes[0].label + ' \u2192 ' + _treeOutcomes[1].label + ') + P(' + _treeOutcomes[1].label + ' \u2192 ' + _treeOutcomes[0].label + ') = ' + _treePercent(_oneOfEach.forward.jointProbability) + ' + ' + _treePercent(_oneOfEach.reverse.jointProbability) + ' = ' + _oneOfEach.numerator + '/' + _oneOfEach.denominator + ' = ' + _treePercent(_oneOfEach.probability) + '.'
+                  ),
+                  _treeReady && React.createElement("details", { className: "mt-3" },
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold", style: { color: isDark||isContrast?'#ddd6fe':'#5b21b6' } }, 'Ordered path data table (' + _pairs.length + ' paths)'),
+                    React.createElement("div", { className: "mt-2 overflow-x-auto", tabIndex: 0, role: "region", "aria-label": "Scrollable ordered probability path table" },
+                      React.createElement("table", { className: "w-full border-collapse text-left text-[10px]", style: { minWidth: '580px', color: isDark||isContrast?'#e2e8f0':'#1e293b' } },
+                        React.createElement("caption", { className: "sr-only" }, _treeIsDependent ? 'All ordered outcomes for two draws without replacement' : 'All ordered outcomes for two independent events'),
+                        React.createElement("thead", null,
+                          React.createElement("tr", null,
+                            ['First outcome', 'P(first)', 'Second outcome', _treeIsDependent ? 'P(second|first)' : 'P(second)', 'Ordered joint probability'].map(function(label) {
+                              return React.createElement("th", { key: label, scope: "col", className: "p-2 font-black", style: { borderBottom: '1px solid ' + _border } }, label);
+                            })
+                          )
                         ),
-                        React.createElement("div", { style: { display: 'flex', gap: '3px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '280px' } },
-                          _treeOutcomes.map(function(b) {
-                            var joint = a.prob * b.prob;
-                            return React.createElement("div", { key: b.label, style: { background: isDark||isContrast?'rgba(255,255,255,0.05)':'#fff', border: '2px solid ' + b.color, borderRadius: '6px', padding: '4px 6px', fontSize: '10px', fontWeight: 700, textAlign: 'center', minWidth: '52px' } },
-                              React.createElement("span", { style: { color: isDark||isContrast?'#e2e8f0':'#1e293b' } }, b.label),
-                              React.createElement("br"),
-                              React.createElement("span", { style: { color: isDark||isContrast?'#e2e8f0':'#1e293b', fontFamily: 'monospace' } }, (joint*100).toFixed(1) + '%')
+                        React.createElement("tbody", null,
+                          _pairs.map(function(path) {
+                            var firstValue = _treeIsDependent ? path.firstNumerator + '/' + path.firstDenominator + ' = ' + _treePercent(path.firstProbability) : _treePercent(path.firstProbability);
+                            var conditionalValue = _treeIsDependent ? path.conditionalNumerator + '/' + path.conditionalDenominator + ' = ' + _treePercent(path.conditionalProbability) : _treePercent(path.conditionalProbability);
+                            var jointValue = _treeIsDependent ? path.jointNumerator + '/' + path.jointDenominator + ' = ' + _treePercent(path.jointProbability) : _treePercent(path.jointProbability);
+                            return React.createElement("tr", { key: 'tree-table-' + path.firstIndex + '-' + path.secondIndex },
+                              React.createElement("th", { scope: "row", className: "p-2 font-bold", style: { borderBottom: '1px solid ' + _border } }, path.first.label),
+                              React.createElement("td", { className: "p-2 font-mono", style: { borderBottom: '1px solid ' + _border } }, firstValue),
+                              React.createElement("td", { className: "p-2 font-bold", style: { borderBottom: '1px solid ' + _border } }, path.second.label),
+                              React.createElement("td", { className: "p-2 font-mono", style: { borderBottom: '1px solid ' + _border } }, conditionalValue),
+                              React.createElement("td", { className: "p-2 font-mono", style: { borderBottom: '1px solid ' + _border } }, 'P(' + path.first.label + ' then ' + path.second.label + ') = ' + jointValue + (path.impossible ? ' (impossible)' : ''))
                             );
                           })
                         )
-                      );
-                    })
-                  )
-                ),
-                React.createElement("div", { className: "mt-3 p-3 rounded-lg", style: { background: isDark||isContrast?'rgba(255,255,255,0.04)':'rgba(139,92,246,0.04)', border: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.15)':'#ddd6fe') } },
-                  React.createElement("p", { className: "text-[11px] font-bold mb-2", style: { color: isDark||isContrast?'#c4b5fd':'#7c3aed' } }, '\uD83D\uDCCA All ' + _pairs.length + ' joint outcomes:'),
-                  React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', gap: '4px' } },
-                    _pairs.sort(function(a,b){ return b.joint-a.joint; }).map(function(p,i) {
-                      return React.createElement("span", { key: i, style: { background: isDark||isContrast?'rgba(139,92,246,0.12)':'rgba(139,92,246,0.06)', border: '1px solid ' + (isDark||isContrast?'rgba(139,92,246,0.2)':'#ddd6fe'), borderRadius: '6px', padding: '2px 6px', fontSize: '10px', fontFamily: 'monospace', color: isDark||isContrast?'#e2e8f0':'#374151' } },
-                        'P(' + p.a.label + '\u2229' + p.b.label + ')=' + (p.joint*100).toFixed(1) + '%'
-                      );
-                    })
-                  ),
-                  React.createElement("p", { className: "text-[11px] mt-2 italic", style: { color: isDark||isContrast?'#94a3b8':'#475569' } },
-                    t('stem.probability.multiply_the_two_probabilities_to_get_', '\uD83D\uDCA1 Multiply the two probabilities to get the joint probability. These events are independent, so P(A\u2229B) = P(A) \u00D7 P(B).')
+                      )
+                    )
                   )
                 )
               );
@@ -3409,6 +3603,80 @@ var d = (labToolData.probability) || {};
 
             ),
 
+            // Sampling uncertainty: turn the convergence trace into an
+            // interpretation task. A Wilson interval is robust for short runs
+            // and rare outcomes, where the common p-hat +/- 1.96*SE shortcut
+            // can produce impossible negative probabilities. With-replacement
+            // is required because this binomial interval assumes independent
+            // trials.
+            ['coin', 'dice', 'dice2', 'spinner', 'sports', 'custom', 'marbleBag', 'pi'].indexOf(d.mode) >= 0 && samplingTrials >= 5 && React.createElement("section", {
+              className: "rounded-xl p-3 mb-3",
+              style: { background: _cardBg, border: '1px solid ' + _border },
+              'aria-labelledby': 'probability-sampling-uncertainty-title'
+            },
+              React.createElement("div", { className: "flex items-start justify-between gap-2 flex-wrap mb-2" },
+                React.createElement("div", null,
+                  React.createElement("p", { id: 'probability-sampling-uncertainty-title', className: "text-[11px] font-bold uppercase tracking-wider", style: { color: _accent } },
+                    t('stem.probability.sampling_uncertainty', '\uD83C\uDFAF Sampling Uncertainty')),
+                  React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: _muted } },
+                    t('stem.probability.sampling_uncertainty_copy', 'How much of the observed difference could be ordinary random variation?'))
+                ),
+                React.createElement("span", { className: "text-[10px] font-bold px-2 py-1 rounded-full", style: { color: isDark || isContrast ? '#ddd6fe' : '#5b21b6', background: isDark || isContrast ? 'rgba(139,92,246,0.18)' : '#ede9fe', border: '1px solid ' + (isDark || isContrast ? 'rgba(196,181,253,0.35)' : '#c4b5fd') } },
+                  t('stem.probability.wilson_95_interval', 'Wilson 95% interval'))
+              ),
+              !samplingIndependent
+                ? React.createElement("div", { role: "note", className: "rounded-lg p-3 text-xs leading-relaxed", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.08)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.3)' : '#fde68a'), color: isDark || isContrast ? '#fde68a' : '#78350f' } },
+                    React.createElement("strong", null, t('stem.probability.interval_paused', 'Interval paused: ')),
+                    t('stem.probability.interval_requires_independent_draws', 'without-replacement pulls are dependent because every pull changes the next probability. Switch replacement on to use a binomial confidence interval; keep it off to study changing conditional odds.'))
+                : (function() {
+                    var trackedLabel = d.mode === 'coin' ? t('stem.probability.heads', 'Heads')
+                      : d.mode === 'dice' ? t('stem.probability.face_one', 'face 1')
+                      : d.mode === 'dice2' ? t('stem.probability.sum_label', 'sum') + ' ' + convTrackedSum
+                      : d.mode === 'pi' ? t('stem.probability.inside_quarter_circle', 'inside the quarter circle')
+                      : String(convTrackedKey);
+                    var observedPct = samplingInterval.observed * 100;
+                    var lowPct = samplingInterval.low * 100;
+                    var highPct = samplingInterval.high * 100;
+                    var expectedPct = samplingExpected * 100;
+                    var meterLabel = trackedLabel + ': observed ' + samplingSuccesses + ' of ' + samplingTrials + ' (' + observedPct.toFixed(1) + ' percent); theoretical ' + expectedPct.toFixed(1) + ' percent; Wilson 95 percent interval ' + lowPct.toFixed(1) + ' to ' + highPct.toFixed(1) + ' percent.';
+                    return React.createElement(React.Fragment, null,
+                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(125px, 1fr))', gap: 8 } },
+                        [
+                          { label: t('stem.probability.tracked_outcome', 'Tracked outcome'), value: trackedLabel, hint: samplingSuccesses + ' of ' + samplingTrials },
+                          { label: t('stem.probability.observed_probability', 'Observed'), value: observedPct.toFixed(1) + '%', hint: t('stem.probability.from_this_run', 'from this run') },
+                          { label: t('stem.probability.theoretical_probability', 'Theoretical'), value: expectedPct.toFixed(1) + '%', hint: t('stem.probability.from_the_model', 'from the model') },
+                          { label: t('stem.probability.plausible_range', '95% interval'), value: lowPct.toFixed(1) + '-' + highPct.toFixed(1) + '%', hint: t('stem.probability.wilson_method', 'Wilson method') }
+                        ].map(function(stat) {
+                          return React.createElement("div", { key: stat.label, className: "rounded-lg p-2", style: { background: isDark || isContrast ? 'rgba(15,23,42,0.62)' : '#f8fafc', border: '1px solid ' + (isDark || isContrast ? 'rgba(148,163,184,0.2)' : '#e2e8f0') } },
+                            React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wide", style: { color: _muted } }, stat.label),
+                            React.createElement("div", { className: "text-sm font-black mt-0.5", style: { color: _text } }, stat.value),
+                            React.createElement("div", { className: "text-[10px] mt-0.5", style: { color: _muted } }, stat.hint)
+                          );
+                        })
+                      ),
+                      React.createElement("div", { role: "img", 'aria-label': meterLabel, className: "mt-3", style: { position: 'relative', height: 36 } },
+                        React.createElement("div", { style: { position: 'absolute', left: 0, right: 0, top: 14, height: 8, borderRadius: 999, background: isDark || isContrast ? 'rgba(148,163,184,0.18)' : '#e2e8f0' } }),
+                        React.createElement("div", { style: { position: 'absolute', left: lowPct + '%', right: (100 - highPct) + '%', top: 11, height: 14, boxSizing: 'border-box', borderRadius: 999, background: samplingCompatible ? 'rgba(16,185,129,0.38)' : 'rgba(245,158,11,0.42)', border: '1px solid ' + (samplingCompatible ? '#10b981' : '#f59e0b') } }),
+                        React.createElement("div", { title: 'Theoretical ' + expectedPct.toFixed(1) + '%', style: { position: 'absolute', left: Math.max(0.5, Math.min(99.5, expectedPct)) + '%', top: 5, bottom: 5, width: 2, transform: 'translateX(-1px)', background: isDark || isContrast ? '#fbbf24' : '#b45309' } }),
+                        React.createElement("div", { title: 'Observed ' + observedPct.toFixed(1) + '%', style: { position: 'absolute', left: Math.max(3, Math.min(97, observedPct)) + '%', top: 9, width: 18, height: 18, transform: 'translateX(-9px)', borderRadius: '50%', background: '#7c3aed', border: '3px solid ' + (isDark || isContrast ? '#ede9fe' : '#ffffff'), boxShadow: '0 1px 5px rgba(30,41,59,0.35)' } })
+                      ),
+                      React.createElement("div", { className: "flex flex-wrap gap-x-4 gap-y-1 text-[10px] mb-2", style: { color: _muted } },
+                        React.createElement("span", null, React.createElement("span", { 'aria-hidden': 'true', style: { display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#7c3aed', marginRight: 4, verticalAlign: '-1px' } }), t('stem.probability.observed_marker', 'Observed marker')),
+                        React.createElement("span", null, React.createElement("span", { 'aria-hidden': 'true', style: { display: 'inline-block', width: 2, height: 11, background: isDark || isContrast ? '#fbbf24' : '#b45309', marginRight: 5, verticalAlign: '-2px' } }), t('stem.probability.theoretical_marker', 'Theoretical marker')),
+                        React.createElement("span", null, React.createElement("span", { 'aria-hidden': 'true', style: { display: 'inline-block', width: 14, height: 8, borderRadius: 4, background: samplingCompatible ? 'rgba(16,185,129,0.5)' : 'rgba(245,158,11,0.55)', marginRight: 4 } }), t('stem.probability.interval_band', '95% interval band'))
+                      ),
+                      React.createElement("div", { role: "note", className: "rounded-lg p-2 text-xs leading-relaxed", style: { background: samplingCompatible ? (isDark || isContrast ? 'rgba(16,185,129,0.08)' : '#ecfdf5') : (isDark || isContrast ? 'rgba(245,158,11,0.08)' : '#fffbeb'), border: '1px solid ' + (samplingCompatible ? (isDark || isContrast ? 'rgba(52,211,153,0.32)' : '#a7f3d0') : (isDark || isContrast ? 'rgba(251,191,36,0.34)' : '#fde68a')), color: samplingCompatible ? (isDark || isContrast ? '#a7f3d0' : '#065f46') : (isDark || isContrast ? '#fde68a' : '#78350f') } },
+                        React.createElement("strong", null, samplingCompatible ? t('stem.probability.compatible_with_model', 'Compatible with the model. ') : t('stem.probability.unusual_for_model', 'Unusual for this model. ')),
+                        samplingCompatible
+                          ? t('stem.probability.expected_inside_interval', 'The theoretical probability falls inside this run\'s 95% interval, so the difference is plausible sampling variation.')
+                          : t('stem.probability.expected_outside_interval', 'The theoretical probability falls outside this run\'s 95% interval. One unusual sample can happen; collect more trials and use the fairness test before concluding the model is biased.')
+                      ),
+                      React.createElement("p", { className: "text-[10px] italic mt-2", style: { color: _muted } },
+                        t('stem.probability.interval_interpretation', 'Interpretation: across many repeated experiments, about 95% of Wilson intervals built this way would cover the true probability.'))
+                    );
+                  })()
+            ),
+
             // Statistical analysis
 
             d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
@@ -3522,10 +3790,14 @@ var d = (labToolData.probability) || {};
                       : d.trials < 500 ? 'At ' + d.trials + ' trials the observed bars are locking onto the expected ones — still the Law of Large Numbers, not yet the Central Limit Theorem. The two get muddled constantly: this is ONE sample settling down, while the Central Limit Theorem describes the bell shape you get from the AVERAGES of many separate samples. Try the Galton Board mode to watch that second one happen.'
 
                         : (function () {
-                            var _mx = 0; for (var _k in counts) { if (counts[_k] > _mx) _mx = counts[_k]; }
-                            var _ph = (d.trials > 0 && _mx > 0) ? (_mx / d.trials) : 0.5;          // observed proportion p\u0302 of the most common outcome
-                            var _moe = 1.96 * Math.sqrt(_ph * (1 - _ph) / d.trials) * 100;          // margin scales with p\u0302(1\u2212p\u0302), NOT a fixed 0.25
-                            return 'With ' + d.trials + '+ trials you can find a 95% confidence interval. For the most common outcome (observed ' + (_ph * 100).toFixed(0) + '%), the true probability is within about \u00B1' + _moe.toFixed(1) + ' percentage points: 95% CI = p\u0302 \u00B1 1.96\u221A(p\u0302(1\u2212p\u0302)/n). The margin shrinks as trials grow and is widest near a 50/50 split \u2014 this is the \u201Cmargin of error\u201D pollsters report.';
+                            if (!samplingIndependent) return 'A standard binomial confidence interval is not valid here: drawing without replacement changes the next-draw probability. Turn replacement on for independent trials, or keep it off and study the conditional-odds panel.';
+                            if (!samplingInterval.valid) return 'Confidence intervals need the outcomes from the run, not only a saved trial counter. Run a fresh sample to build an uncertainty interval.';
+                            var _ciLabel = d.mode === 'coin' ? 'Heads'
+                              : d.mode === 'dice' ? 'face 1'
+                              : d.mode === 'dice2' ? 'sum ' + convTrackedSum
+                              : d.mode === 'pi' ? 'inside the quarter circle'
+                              : String(convTrackedKey);
+                            return 'With ' + samplingTrials + ' trials, the Wilson 95% interval for ' + _ciLabel + ' runs from ' + (samplingInterval.low * 100).toFixed(1) + '% to ' + (samplingInterval.high * 100).toFixed(1) + '%. Wilson\'s method stays between 0% and 100% even for rare outcomes and short runs, and the interval shrinks as more evidence arrives. Across many repeated experiments, about 95% of intervals built this way would cover the true probability.';
                           })()
 
               )

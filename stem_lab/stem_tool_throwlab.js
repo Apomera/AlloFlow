@@ -95,9 +95,15 @@ window.StemLab = window.StemLab || {
       '.throwlab-launch-arc{position:relative;min-height:118px;margin-top:12px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.16),rgba(22,163,74,.18));border:1px solid rgba(125,211,252,.24)}',
       '.throwlab-launch-arc:before{content:"";position:absolute;left:7%;right:7%;bottom:24px;height:2px;background:rgba(226,232,240,.45)}',
       '.throwlab-launch-arc:after{content:"";position:absolute;left:13%;right:18%;bottom:28px;height:58px;border-top:3px solid rgba(251,191,36,.9);border-radius:65% 65% 0 0;filter:drop-shadow(0 0 10px rgba(251,191,36,.35))}',
+      '.throwlab-launch-arc[data-trajectory-shape="direct"]:after{height:18px;left:13%;right:14%;bottom:38px;border-radius:48% 48% 0 0;transform:rotate(-2deg);transform-origin:left center}',
+      '.throwlab-launch-arc[data-trajectory-shape="high"]:after{height:72px;left:13%;right:18%;bottom:28px;border-radius:70% 70% 0 0}',
       '.throwlab-arc-point{position:absolute;z-index:1;display:inline-flex;align-items:center;gap:6px;padding:5px 8px;border-radius:18px;background:rgba(15,23,42,.78);border:1px solid rgba(226,232,240,.18);color:#e0f2fe;font-size:11px;font-weight:800}',
-      '.throwlab-plan-list{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}',
-      '.throwlab-plan-chip{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:10px;background:rgba(15,23,42,.52);border:1px solid rgba(148,163,184,.20);color:#dbeafe;font-size:11px;line-height:1.35}',
+      '.throwlab-learning-loop{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 14px}',
+      '.throwlab-loop-step{display:flex;align-items:center;gap:7px;min-height:48px;padding:7px 9px;border-radius:10px;background:rgba(15,23,42,.72);border:1px solid rgba(148,163,184,.24);color:#cbd5e1;font-size:11px;line-height:1.25}',
+      '.throwlab-loop-step strong{display:block;color:#fef3c7;font-size:11px}',
+      '.throwlab-loop-number{display:inline-flex;align-items:center;justify-content:center;flex:0 0 24px;width:24px;height:24px;border-radius:50%;background:rgba(251,191,36,.17);border:1px solid rgba(251,191,36,.45);color:#fde68a;font-weight:900}',
+      '.throwlab-call-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}',
+      '.throwlab-next-rep{margin-top:10px;padding:10px;border-radius:10px;background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(16,185,129,.08));border:1px solid rgba(125,211,252,.42)}',
       '.throwlab-preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}',
       '.throwlab-result-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}',
       '.throwlab-sim-shell{position:relative;border-radius:16px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.98),#08111f);border:1px solid rgba(251,191,36,.32);box-shadow:0 18px 40px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.08)}',
@@ -109,8 +115,8 @@ window.StemLab = window.StemLab || {
       '#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-canvas],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-canvas]{grid-column:1;max-height:52vh;object-fit:contain}',
       '#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:2;grid-row:2/span 6;margin-top:0!important;max-height:calc(100vh - 150px);overflow:auto;position:sticky;top:8px}',
       '@media(max-width:1100px){#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-zone],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-zone]{grid-template-columns:1fr}#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:1;grid-row:auto;position:static;max-height:none}}',
-      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}}',
-      '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}.throwlab-mode-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}.throwlab-mode-tab{flex:0 0 auto}}',
+      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}.throwlab-learning-loop{grid-template-columns:1fr 1fr}}',
+      '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid,.throwlab-call-grid,.throwlab-learning-loop{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}.throwlab-mode-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}.throwlab-mode-tab{flex:0 0 auto}}',
       '@media(forced-colors:active){[data-throwlab-root] button:focus-visible,[data-throwlab-root] summary:focus-visible,[data-throwlab-root] input:focus-visible,[data-throwlab-root] textarea:focus-visible,.throwlab-compendium-scroll:focus-visible{outline:3px solid Highlight!important}}'
     ].join('');
     document.head.appendChild(st);
@@ -310,14 +316,17 @@ window.StemLab = window.StemLab || {
     rows.push({ label: 'Sport attempts', value: totalThrows });
     rows.push({ label: 'All-sport attempts', value: d.throwCount || 0 });
     rows.push({ label: 'Hot streak', value: s.hotStreak || 0 });
+    if (d.predictionStats && d.predictionStats.attempts) {
+      rows.push({ label: 'Predictions matched', value: d.predictionStats.matches + ' / ' + d.predictionStats.attempts });
+    }
     if (d.mode === 'pitching') {
       rows.push({ label: 'Strikes', value: d.strikeCount || 0 });
       rows.push({ label: 'Strike rate', value: pct(d.strikeCount || 0, totalThrows) });
       rows.push({ label: 'Pitch types thrown', value: Object.keys(d.pitchTypesUsed || {}).length });
       rows.push({ label: 'Pitch types struck', value: Object.keys(s.strikeTypes || {}).length });
     } else if (d.mode === 'freethrow') {
-      rows.push({ label: 'Makes', value: d.shotMakeCount || 0 });
-      rows.push({ label: 'Make rate', value: pct(d.shotMakeCount || 0, totalThrows) });
+      rows.push({ label: 'Successful reps', value: d.shotMakeCount || 0 });
+      rows.push({ label: 'Success rate', value: pct(d.shotMakeCount || 0, totalThrows) });
       rows.push({ label: 'Different swish heights', value: s.swishHeights || 0 });
       rows.push({ label: 'Bounce pass completed', value: s.completedBouncePass ? '✓' : '—' });
     } else if (d.mode === 'freekick') {
@@ -1255,7 +1264,8 @@ window.StemLab = window.StemLab || {
       targetZ: 18.44, // 60 ft 6 in
       releaseStrideDefault: 1.5,
       releaseHeightRange: [1.4, 2.4],
-      speedRange: [50, 105]
+      speedRange: [50, 105], verticalAimRange: [-8, 4],
+      spinRange: [0, 3500], spinStep: 50, spinAxisRange: [0, 360]
     },
     freethrow: {
       label: 'Free Throw', icon: '🏀', ball: 'basketball', presets: SHOT_TYPES,
@@ -1263,7 +1273,8 @@ window.StemLab = window.StemLab || {
       rimY: 3.05, rimZ: 4.34, rimRadius: 0.23,
       releaseStrideDefault: 0.0,
       releaseHeightRange: [1.8, 3.0],
-      speedRange: [10, 28]
+      speedRange: [8, 35], verticalAimRange: [-20, 70],
+      spinRange: [0, 600], spinStep: 10, spinAxisRange: [0, 360]
     },
     freekick: {
       label: 'Free Kick', icon: '⚽', ball: 'soccer', presets: KICK_TYPES,
@@ -1274,7 +1285,8 @@ window.StemLab = window.StemLab || {
       wallZ: 9.15, wallHalfWidth: 1.0, wallHeight: 1.7,
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.11, 0.11], // ball sits on ground; not user-adjustable
-      speedRange: [25, 90]
+      speedRange: [25, 90], verticalAimRange: [-2, 45],
+      spinRange: [0, 1200], spinStep: 25, spinAxisRange: [0, 360]
     },
     fieldgoal: {
       label: 'Field Goal', icon: '🏈', ball: 'football', presets: GOAL_TYPES,
@@ -1286,7 +1298,8 @@ window.StemLab = window.StemLab || {
       crossbarHeight: 3.05,    // 10 ft
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.0, 0.0],
-      speedRange: [30, 95]
+      speedRange: [30, 95], verticalAimRange: [20, 60],
+      spinRange: [0, 2000], spinStep: 50, spinAxisRange: [0, 360]
     },
     bowling: {
       label: "Bowler's Crease", icon: '🏏', ball: 'cricket', presets: CRICKET_DELIVERIES,
@@ -1302,7 +1315,8 @@ window.StemLab = window.StemLab || {
       wideHalfWidth: 0.46,
       releaseStrideDefault: 1.2,
       releaseHeightRange: [1.8, 2.6],
-      speedRange: [40, 100]
+      speedRange: [40, 100], verticalAimRange: [-8, 12],
+      spinRange: [0, 3000], spinStep: 50, spinAxisRange: [-180, 180]
     },
     golf: {
       label: 'Golf Tee Shot', icon: '⛳', ball: 'golf', presets: GOLF_TYPES,
@@ -1315,7 +1329,8 @@ window.StemLab = window.StemLab || {
       fairwayHalfYd: 15,
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.0, 0.05], // ball on ground, driver allows tiny tee
-      speedRange: [50, 180]
+      speedRange: [50, 180], verticalAimRange: [5, 60],
+      spinRange: [0, 12000], spinStep: 100, spinAxisRange: [0, 360]
     },
     volleyball: {
       label: "Server's Line", icon: '🏐', ball: 'volleyball', presets: VOLLEYBALL_TYPES,
@@ -1328,7 +1343,8 @@ window.StemLab = window.StemLab || {
       courtHalfWidth: 4.5,      // ±4.5 m from centerline = 9m wide
       releaseStrideDefault: 0.0,
       releaseHeightRange: [0.5, 3.2], // underhand low, jump-serve high
-      speedRange: [25, 80]
+      speedRange: [25, 80], verticalAimRange: [-2, 35],
+      spinRange: [0, 2000], spinStep: 25, spinAxisRange: [0, 360]
     }
   };
 
@@ -1739,6 +1755,12 @@ window.StemLab = window.StemLab || {
             // effect against a held-constant baseline.
             referenceResult: null,
             referenceLabel: '',        // "92 mph 4-Seam" etc.
+            referenceList: [],
+            // "Call your shot" turns each launch into a prediction/evidence
+            // cycle. The selection is copied into the immutable trial snapshot
+            // and then cleared so every new rep asks for fresh reasoning.
+            predictionKey: null,
+            predictionStats: { attempts: 0, matches: 0 },
             // Wind — defaults to calm. Outdoor modes (freekick, fieldgoal)
             // show the controls in the UI; indoor modes hide them. 0° =
             // headwind (against the throw), 90° = crosswind right, 180° =
@@ -1778,7 +1800,16 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { throwlab: THROWLAB_DEFAULTS });
         });
       }
-      var d = (labToolData && labToolData.throwlab) || THROWLAB_DEFAULTS;
+      var storedThrowLab = labToolData && labToolData.throwlab;
+      // Merge new defaults at read time so saved sessions from earlier
+      // versions gain prediction, replay, and per-mode fields without a
+      // destructive migration or an undefined-value render crash.
+      var d = storedThrowLab
+        ? Object.assign({}, THROWLAB_DEFAULTS, storedThrowLab, {
+            drillStats: Object.assign({}, THROWLAB_DEFAULTS.drillStats, storedThrowLab.drillStats || {}),
+            predictionStats: Object.assign({}, THROWLAB_DEFAULTS.predictionStats, storedThrowLab.predictionStats || {})
+          })
+        : THROWLAB_DEFAULTS;
       var upd = function(key, val) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev.throwlab); next[key] = val;
@@ -2558,7 +2589,7 @@ window.StemLab = window.StemLab || {
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
             mode: newMode, lastResult: null, replayActive: false, replayT: 0,
-            referenceList: [], referenceResult: null, referenceLabel: ''
+            referenceList: [], referenceResult: null, referenceLabel: '', predictionKey: null
           });
           return Object.assign({}, prev, { throwlab: next });
         });
@@ -2603,6 +2634,9 @@ window.StemLab = window.StemLab || {
       function buildTrialSnapshot(data, location) {
         var shotKind = trialShotKind(data);
         var preset = findPresetForTrial({ mode: data.mode, shotKind: shotKind });
+        var predictionOption = getPredictionOptions(data.mode, shotKind).find(function(option) {
+          return option.key === data.predictionKey;
+        });
         return {
           mode: data.mode, shotKind: shotKind,
           presetLabel: preset ? preset.label : shotKind,
@@ -2612,7 +2646,9 @@ window.StemLab = window.StemLab || {
           throwerHand: data.throwerHand,
           gravityId: data.gravityId, windMph: data.windMph, windDirDeg: data.windDirDeg,
           targetDistanceYd: data.mode === 'fieldgoal' ? data.fgDistanceYd : data.mode === 'golf' && preset ? preset.carryYd : null,
-          location: location
+          location: location,
+          predictionKey: predictionOption ? predictionOption.key : null,
+          predictionLabel: predictionOption ? predictionOption.label : null
         };
       }
 
@@ -2649,6 +2685,216 @@ window.StemLab = window.StemLab || {
         var remaining = changed.length > 3 ? ' and ' + (changed.length - 3) + ' more' : '';
         return { level: 'multiple', label: 'Multiple variables changed', changed: changed, summary: 'Changed ' + changed.length + ' variables: ' + visibleChanges + remaining + '. Change one variable next for clearer evidence.' };
       }
+
+      // Three plain-language outcome buckets keep prediction quick while still
+      // using authentic vocabulary for every sport. A prediction is optional:
+      // it earns a confirmation or surprise message, never a penalty.
+      function getPredictionOptions(mode, shotKind) {
+        var shotPreset = mode === 'freethrow'
+          ? SHOT_TYPES.find(function(preset) { return preset.id === shotKind; })
+          : null;
+        if (mode === 'pitching') return [
+          { key: 'target', label: 'Strike', detail: 'Inside the zone' },
+          { key: 'close', label: 'Borderline', detail: 'On the edge' },
+          { key: 'off', label: 'Outside', detail: 'Ball or wild pitch' }
+        ];
+        if (mode === 'freethrow' && shotPreset && shotPreset.kind === 'pass') return [
+          { key: 'target', label: 'Complete', detail: 'Caught cleanly' },
+          { key: 'close', label: 'Reachable', detail: 'High or low' },
+          { key: 'off', label: 'Off target', detail: 'Short, wide, or wrong bounce' }
+        ];
+        if (mode === 'freethrow') return [
+          { key: 'target', label: 'Make', detail: 'Swish or score' },
+          { key: 'close', label: 'Close', detail: 'Rim or backboard' },
+          { key: 'off', label: 'Miss', detail: 'Off target' }
+        ];
+        if (mode === 'freekick') return [
+          { key: 'target', label: 'Goal', detail: 'Inside the goal' },
+          { key: 'close', label: 'Post', detail: 'Within inches' },
+          { key: 'off', label: 'No goal', detail: 'Blocked, high, wide, or short' }
+        ];
+        if (mode === 'fieldgoal') return [
+          { key: 'target', label: 'Good', detail: 'Through the uprights' },
+          { key: 'close', label: 'Close', detail: 'Doink or barely wide' },
+          { key: 'off', label: 'No good', detail: 'Short or wide' }
+        ];
+        if (mode === 'bowling') return [
+          { key: 'target', label: 'Wicket', detail: 'Hit the stumps' },
+          { key: 'close', label: 'Dot ball', detail: 'Playable line' },
+          { key: 'off', label: 'Miss', detail: 'Wide, high, or short' }
+        ];
+        if (mode === 'golf') return [
+          { key: 'target', label: 'Green', detail: 'Pin-high target' },
+          { key: 'close', label: 'Fairway', detail: 'Safe landing' },
+          { key: 'off', label: 'Off target', detail: 'Short, long, rough, or woods' }
+        ];
+        return [
+          { key: 'target', label: 'Ace', detail: 'Deep corner' },
+          { key: 'close', label: 'In court', detail: 'Playable serve' },
+          { key: 'off', label: 'Service error', detail: 'Net, short, long, or out' }
+        ];
+      }
+
+      function predictionBucket(mode, location, shotKind) {
+        var shotPreset = mode === 'freethrow'
+          ? SHOT_TYPES.find(function(preset) { return preset.id === shotKind; })
+          : null;
+        if (mode === 'pitching') return location === 'strike' ? 'target' : location === 'borderline' ? 'close' : 'off';
+        if (mode === 'freethrow' && shotPreset && shotPreset.kind === 'pass') {
+          return location === 'caught' ? 'target' : (location === 'highpass' || location === 'lowpass') ? 'close' : 'off';
+        }
+        if (mode === 'freethrow') return (location === 'swish' || location === 'made') ? 'target' : (location === 'rim' || location === 'backboard') ? 'close' : 'off';
+        if (mode === 'freekick') return location === 'goal' ? 'target' : location === 'post' ? 'close' : 'off';
+        if (mode === 'fieldgoal') return location === 'good' ? 'target' : (location === 'doink' || location === 'wideclose') ? 'close' : 'off';
+        if (mode === 'bowling') return (location === 'wicket' || location === 'shaved') ? 'target' : location === 'dot' ? 'close' : 'off';
+        if (mode === 'golf') return location === 'green' ? 'target' : location === 'fairway' ? 'close' : 'off';
+        return location === 'ace' ? 'target' : location === 'in' ? 'close' : 'off';
+      }
+
+      function predictionFeedback(result) {
+        var trial = result && result.trial;
+        if (!trial || !trial.predictionKey) return null;
+        var options = getPredictionOptions(trial.mode, trial.shotKind);
+        var actualKey = predictionBucket(trial.mode, result.location, trial.shotKind);
+        var actual = options.find(function(option) { return option.key === actualKey; });
+        var matched = actualKey === trial.predictionKey;
+        return {
+          matched: matched,
+          title: matched ? 'Prediction confirmed' : 'Evidence changed the story',
+          summary: matched
+            ? 'You called ' + trial.predictionLabel + ', and the result matched. Now change one variable and predict again.'
+            : 'You called ' + trial.predictionLabel + '; the evidence landed in ' + (actual ? actual.label : cleanOutcomeText(result)) + '. Surprises are useful data—use the next rep to test why.'
+        };
+      }
+
+      function clampToStep(value, min, max, step) {
+        var bounded = Math.max(min, Math.min(max, Number(value)));
+        var snapped = Math.round(bounded / step) * step;
+        return Number(snapped.toFixed(step < 1 ? 2 : 0));
+      }
+
+      function verticalRangeForMode(mode) {
+        return (MODES[mode] && MODES[mode].verticalAimRange) || [-8, 70];
+      }
+
+      function buildNextRepRecommendation(result) {
+        var trial = result && result.trial;
+        if (!trial) return null;
+        var cfg = MODES[trial.mode] || MODES.pitching;
+        var loc = result.location;
+        var samples = result.samples || [];
+        var finalSample = samples[samples.length - 1] || { x: 0 };
+        var finalX = result.outcome && typeof result.outcome.plateX === 'number' ? result.outcome.plateX : (finalSample.x || 0);
+        function rec(stateKey, value, label, reason) {
+          return { stateKey: stateKey, value: value, label: label, reason: reason };
+        }
+        function speed(delta, label, reason) {
+          var next = clampToStep((Number(trial.speedMph) || 0) + delta, cfg.speedRange[0], cfg.speedRange[1], 1);
+          return rec('speedMph', next, label + ' to ' + next + ' mph', reason);
+        }
+        function vertical(delta, label, reason) {
+          var range = verticalRangeForMode(trial.mode);
+          var next = clampToStep((Number(trial.angleV) || 0) + delta, range[0], range[1], 0.5);
+          return rec('aimDegV', next, label + ' to ' + next.toFixed(1) + '°', reason);
+        }
+        function horizontal(amount, reason) {
+          var direction = finalX >= 0 ? -1 : 1;
+          var next = clampToStep((Number(trial.angleH) || 0) + direction * amount, -5, 5, 0.1);
+          return rec('aimDegH', next, 'Aim ' + Math.abs(next - (Number(trial.angleH) || 0)).toFixed(1) + '° back toward center', reason);
+        }
+        function spin(delta, reason) {
+          var range = cfg.spinRange || [0, 3500];
+          var step = cfg.spinStep || 50;
+          var current = Number(trial.spinRpm) || 0;
+          var signedDelta = current + delta > range[1] ? -Math.abs(delta) : delta;
+          var next = clampToStep(current + signedDelta, range[0], range[1], step);
+          return rec('spinRpm', next, (next >= current ? 'Increase' : 'Reduce') + ' spin to ' + next + ' rpm', reason);
+        }
+        if (trial.mode === 'pitching') {
+          if (loc === 'strike') return spin(200, 'Keep every other setting fixed to isolate how spin changes break.');
+          if (result.outcome && result.outcome.plateY > STRIKE_ZONE.yMax) return vertical(-0.5, 'Lower vertical aim', 'The pitch crossed above the zone. A small angle change creates a clean fair test.');
+          if (result.outcome && result.outcome.plateY < STRIKE_ZONE.yMin) return vertical(0.5, 'Raise vertical aim', 'The pitch crossed below the zone. Test a slightly higher line.');
+          if (Math.abs(finalX) > STRIKE_ZONE.xMax) return horizontal(0.3, 'The pitch missed laterally. Keep speed and spin fixed while you correct its line.');
+          return vertical(0.5, 'Raise vertical aim', 'The pitch did not reach the zone cleanly. Test one small angle change.');
+        }
+        if (trial.mode === 'freethrow') {
+          var shotPreset = findPresetForTrial(trial);
+          if (shotPreset && shotPreset.kind === 'pass') {
+            if (loc === 'highpass') return vertical(-2, 'Lower the pass angle', 'The pass arrived high; change only its vertical aim.');
+            if (loc === 'lowpass' || loc === 'short') return speed(1, 'Add speed', 'Test whether one more mph brings the pass into the catch window.');
+            if (loc === 'wide') return horizontal(0.4, 'Keep height and speed fixed while correcting the pass line.');
+            return speed(1, 'Add speed', 'A completed pass is a strong baseline for a one-variable speed test.');
+          }
+          if (loc === 'air' || loc === 'miss') return speed(1, 'Add speed', 'The shot needs more range; hold its angle and spin constant.');
+          if (loc === 'backboard') return speed(-1, 'Soften the shot', 'Reduce only speed to test whether the ball reaches the rim instead of the glass.');
+          if (loc === 'rim') return vertical(1, 'Raise the arc', 'A slightly steeper entry angle may open the effective rim target.');
+          return spin(20, 'Use the make as a baseline and test how a little more backspin changes the finish.');
+        }
+        if (trial.mode === 'freekick') {
+          if (loc === 'blocked') return vertical(2, 'Raise the launch angle', 'The wall blocked the path; hold speed and spin fixed while testing clearance.');
+          if (loc === 'over') return vertical(-2, 'Lower the launch angle', 'The ball cleared the bar, so isolate a smaller launch angle.');
+          if (loc === 'wide') return horizontal(0.5, 'Correct the line while keeping curl and power unchanged.');
+          if (loc === 'short') return speed(3, 'Add speed', 'Test whether extra speed reaches the goal without changing the arc.');
+          return spin(100, 'Use this near-target result to isolate how sidespin changes curl.');
+        }
+        if (trial.mode === 'fieldgoal') {
+          if (loc === 'short' || loc === 'shortbar') return speed(3, 'Add power', 'Keep the launch angle fixed and test whether speed clears the bar.');
+          if (loc === 'wide' || loc === 'wideclose') return horizontal(0.4, 'Correct the line without changing power or launch angle.');
+          return vertical(1, 'Raise the launch angle', 'Use this kick as a baseline for a one-degree trajectory test.');
+        }
+        if (trial.mode === 'bowling') {
+          if (loc === 'overhead') return vertical(-1, 'Lower the release angle', 'The delivery passed above the bails; test one degree lower.');
+          if (loc === 'wide') return horizontal(0.3, 'Tighten the line while keeping pace and spin fixed.');
+          if (loc === 'short') return speed(2, 'Add pace', 'Test whether a small speed increase carries the same line farther.');
+          return spin(100, 'Use the current line as a baseline and isolate a small spin change.');
+        }
+        if (trial.mode === 'golf') {
+          if (loc === 'short') return speed(4, 'Add club speed', 'Hold launch and spin fixed while testing four more mph.');
+          if (loc === 'long') return speed(-4, 'Take off speed', 'Hold the flight shape fixed while testing less carry.');
+          if (loc === 'rough' || loc === 'woods') return horizontal(0.4, 'Correct the start line without changing carry variables.');
+          return spin(500, 'Use this safe landing as a baseline and isolate how backspin changes carry.');
+        }
+        if (loc === 'net') return vertical(2, 'Raise the launch angle', 'The serve hit the net; change only the angle to test clearance.');
+        if (loc === 'short') return speed(2, 'Add speed', 'Hold aim and spin fixed while testing more range.');
+        if (loc === 'long') return speed(-3, 'Reduce speed', 'The serve crossed safely but carried too far.');
+        if (loc === 'out') return horizontal(0.4, 'Correct the line while preserving its depth and spin.');
+        return spin(50, 'Use this in-court serve as a baseline and isolate a small topspin change.');
+      }
+
+      function applyNextRepRecommendation(recommendation, result) {
+        var trial = result && result.trial;
+        if (!recommendation || !trial || trial.mode !== d.mode) return;
+        var patch = {
+          speedMph: trial.speedMph, releaseHeight: trial.releaseHeight,
+          aimDegV: trial.angleV, aimDegH: trial.angleH,
+          spinRpm: trial.spinRpm, spinAxisDeg: trial.spinAxisDeg,
+          throwerHand: trial.throwerHand, gravityId: trial.gravityId,
+          windMph: trial.windMph, windDirDeg: trial.windDirDeg,
+          replayActive: false, replayT: 1, predictionKey: null
+        };
+        if (trial.mode === 'pitching') patch.pitchType = trial.shotKind;
+        else if (trial.mode === 'freethrow') patch.shotType = trial.shotKind;
+        else if (trial.mode === 'freekick') patch.kickType = trial.shotKind;
+        else if (trial.mode === 'fieldgoal') { patch.goalType = trial.shotKind; patch.fgDistanceYd = trial.targetDistanceYd; }
+        else if (trial.mode === 'bowling') patch.bowlType = trial.shotKind;
+        else if (trial.mode === 'golf') patch.golfClub = trial.shotKind;
+        else patch.serveType = trial.shotKind;
+        patch[recommendation.stateKey] = recommendation.value;
+        setReplayPaused(false);
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, patch) });
+        });
+        tlAnnounce('Next rep loaded as a fair test. ' + recommendation.label + '. Make a new prediction, then launch.');
+      }
+
+      function focusLaunchControls() {
+        var launchZone = document.getElementById('throwlab-launch-controls');
+        if (!launchZone) return;
+        if (typeof launchZone.scrollIntoView === 'function') launchZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (typeof launchZone.focus === 'function') launchZone.focus({ preventScroll: true });
+        tlAnnounce('Launch controls. Call the outcome, review the fair-test check, then launch.');
+      }
+
       function throwPitch() {
         setReplayPaused(false);
         var modeMeta = MODES[d.mode] || MODES.pitching;
@@ -2791,6 +3037,12 @@ window.StemLab = window.StemLab || {
         var currentTrial = buildTrialSnapshot(d, loc);
         currentTrial.launchedAt = Date.now();
         result.trial = currentTrial;
+        var currentPredictionFeedback = predictionFeedback(result);
+        var newPredictionStats = Object.assign({ attempts: 0, matches: 0 }, d.predictionStats || {});
+        if (currentPredictionFeedback) {
+          newPredictionStats.attempts += 1;
+          if (currentPredictionFeedback.matched) newPredictionStats.matches += 1;
+        }
         var previousTrial = findPreviousTrial(d.recentThrows, d.mode);
         result.fairTest = buildFairTestFeedback(previousTrial, currentTrial, modeMeta.label);
         var newRecent = (d.recentThrows || []).slice(-4);
@@ -2963,6 +3215,8 @@ window.StemLab = window.StemLab || {
             pitchTypesUsed: newTypesUsed,
             pitchLocker: newPitchLocker,
             recentThrows: newRecent,
+            predictionKey: null,
+            predictionStats: newPredictionStats,
             drillStats: stats,
             drillTaskIdx: newDrillTaskIdx,
             // Throwing again invalidates the current coaching reply.
@@ -3028,6 +3282,9 @@ window.StemLab = window.StemLab || {
             if (awardXP) awardXP('throwlab', 15, 'Daily Challenge');
             if (celebrate) celebrate();
           }, 600);
+        }
+        if (currentPredictionFeedback && currentPredictionFeedback.matched && addToast) {
+          scheduleTl(function() { addToast('🔬 Prediction matched the evidence'); }, 950);
         }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         scheduleTl(function() {
@@ -4870,8 +5127,20 @@ window.StemLab = window.StemLab || {
              : __alloT('stem.throwlab.shoot_action', 'SHOOT');
       }
 
+      function readyPrompt() {
+        if (isPitching) return 'Choose a pitch, call Strike / Borderline / Outside, then launch.';
+        if (isFreeThrow) return 'Choose a shot or pass, call the outcome, then launch.';
+        if (isFreeKick) return 'Choose a kick, predict Goal / Post / No goal, then strike.';
+        if (isFieldGoal) return 'Choose a distance, predict Good / Close / No good, then kick.';
+        if (isBowling) return 'Choose a delivery, predict Wicket / Dot ball / Miss, then bowl.';
+        if (isGolf) return 'Choose a club, predict Green / Fairway / Off target, then tee off.';
+        return 'Choose a serve, predict Ace / In court / Service error, then serve.';
+      }
+
       function renderThrowRunFocus() {
-        var throws = d.throwCount || 0;
+        // Success rate is sport-specific. Using the all-sports throw total here
+        // made a learner's pitching rate collapse after trying basketball.
+        var throws = (d.modeThrowCounts && d.modeThrowCounts[d.mode]) || 0;
         var made = isPitching ? (d.strikeCount || 0)
                  : isFreeKick ? (d.goalCount || 0)
                  : isFieldGoal ? (d.fgMakeCount || 0)
@@ -4885,7 +5154,7 @@ window.StemLab = window.StemLab || {
                       : isBowling ? __alloT('stem.throwlab.wickets', 'Wickets')
                       : isGolf ? __alloT('stem.throwlab.greens', 'Greens')
                       : isVolleyball ? __alloT('stem.throwlab.aces', 'Aces')
-                      : __alloT('stem.throwlab.makes', 'Makes');
+                      : __alloT('stem.throwlab.successful_basketball_reps', 'Successful reps');
         var successPct = throws ? Math.round((made / throws) * 100) : 0;
         var gp = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); }) || GRAVITY_PRESETS[0];
         var windText = (d.windMph || 0)
@@ -4894,11 +5163,15 @@ window.StemLab = window.StemLab || {
         var outcomeText = lr
           ? outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '')
           : __alloT('stem.throwlab.ready_to_launch', 'Ready to launch');
+        var nextRep = lr ? buildNextRepRecommendation(lr) : null;
         var guideText = lr
-          ? (explainResult(lr) || activePreset.teach || __alloT('stem.throwlab.tune_one_variable_and_try_again', 'Tune one variable and try again.'))
+          ? (nextRep
+              ? __alloT('stem.throwlab.next_rep_prefix', 'Next rep:') + ' ' + nextRep.label + '. ' + nextRep.reason
+              : (explainResult(lr) || activePreset.teach || __alloT('stem.throwlab.tune_one_variable_and_try_again', 'Tune one variable and try again.')))
           : __alloT('stem.throwlab.choose_a_setup_launch_then_compare_the', 'Choose a setup, launch, then compare the arc as you tune one variable.');
         if (guideText && guideText.length > 150) guideText = guideText.slice(0, 147) + '...';
-        var progressWidth = throws ? Math.max(8, successPct) : 10;
+        var progressWidth = throws ? Math.max(8, successPct) : 0;
+        var trajectoryShape = d.aimDegV < 5 ? 'direct' : d.aimDegV > 40 ? 'high' : 'arc';
         var metricBg = 'rgba(15,23,42,0.58)';
         var targetText = isPitching ? __alloT('stem.throwlab.zone_target', 'Strike zone')
           : isFreeKick ? __alloT('stem.throwlab.goal_target', 'Goal mouth')
@@ -4907,22 +5180,6 @@ window.StemLab = window.StemLab || {
           : isGolf ? __alloT('stem.throwlab.green_target', 'Green')
           : isVolleyball ? __alloT('stem.throwlab.deep_corner_target', 'Deep court')
           : __alloT('stem.throwlab.hoop_target', 'Hoop');
-        var leverText = isPitching ? __alloT('stem.throwlab.lever_spin_axis', 'Spin axis changes break')
-          : isFreeKick ? __alloT('stem.throwlab.lever_spin_curl', 'Spin creates curl')
-          : isFieldGoal ? __alloT('stem.throwlab.lever_angle_power', 'Angle plus power clears height')
-          : isBowling ? __alloT('stem.throwlab.lever_length_line', 'Line and bounce length decide wickets')
-          : isGolf ? __alloT('stem.throwlab.lever_loft_backspin', 'Loft and backspin hold carry')
-          : isVolleyball ? __alloT('stem.throwlab.lever_speed_topspin', 'Speed plus topspin controls dive')
-          : __alloT('stem.throwlab.lever_arc_touch', 'Arc and touch decide the shot');
-        function planChip(icon, label, detail) {
-          return h('div', { className: 'throwlab-plan-chip' },
-            h('span', { 'aria-hidden': 'true', style: { fontSize: 15, lineHeight: 1 } }, icon),
-            h('span', null,
-              h('strong', { style: { display: 'block', color: '#fef3c7', fontSize: 11 } }, label),
-              h('span', { style: { color: '#cbd5e1' } }, detail)
-            )
-          );
-        }
         function metric(label, value, detail, color) {
           return h('div', {
             style: {
@@ -4973,7 +5230,8 @@ window.StemLab = window.StemLab || {
             h('div', {
               className: 'throwlab-launch-arc',
               role: 'img',
-              'aria-label': __alloT('stem.throwlab.training_field_arc_summary', 'Training field arc summary')
+              'data-trajectory-shape': trajectoryShape,
+              'aria-label': 'Setup summary, not a predicted trajectory. Release ' + d.releaseHeight.toFixed(2) + ' meters, vertical angle ' + d.aimDegV.toFixed(1) + ' degrees, spin ' + d.spinRpm + ' rpm, target ' + targetText + '.'
             },
               h('span', { className: 'throwlab-arc-point', style: { left: '7%', bottom: 12 } },
                 __alloT('stem.throwlab.release', 'Release'), ' ', d.releaseHeight.toFixed(2), ' m'),
@@ -4988,7 +5246,8 @@ window.StemLab = window.StemLab || {
               'aria-valuemin': 0,
               'aria-valuemax': 100,
               style: { marginTop: 12, height: 9, borderRadius: 20, overflow: 'hidden', background: 'rgba(15,23,42,0.72)' },
-              'aria-label': __alloT('stem.throwlab.session_success_progress', 'Session success progress')
+              'aria-label': modeMeta.label + ' success rate: ' + successPct + ' percent from ' + throws + ' attempts',
+              'data-throwlab-mode-attempts': String(throws)
             },
               h('div', {
                 style: {
@@ -5006,13 +5265,9 @@ window.StemLab = window.StemLab || {
               metric(__alloT('stem.throwlab.success_rate', 'Success rate'), successPct + '%', madeLabel + ' / ' + __alloT('stem.throwlab.throws', 'throws'), successPct >= 50 ? '#22c55e' : '#38bdf8'),
               metric(__alloT('stem.throwlab.gravity', 'Gravity'), gp.label, windText, '#a78bfa')
             ),
-            h('div', { className: 'throwlab-plan-list', 'aria-label': __alloT('stem.throwlab.current_launch_plan', 'Current launch plan') },
-              planChip('1', __alloT('stem.throwlab.pick_the_rep', 'Pick the rep'), activePreset.label || modeMeta.label),
-              planChip('2', __alloT('stem.throwlab.watch_the_arc', 'Watch the arc'), leverText),
-              planChip('3', __alloT('stem.throwlab.change_one_variable', 'Change one variable'), __alloT('stem.throwlab.compare_the_next_throw', 'Compare the next throw'))
-            ),
             h('button', {
-              onClick: throwPitch,
+              onClick: focusLaunchControls,
+              'aria-controls': 'throwlab-launch-controls',
               'data-tl-focusable': 'true',
               style: {
                 marginTop: 10,
@@ -5027,7 +5282,7 @@ window.StemLab = window.StemLab || {
                 fontWeight: 900,
                 boxShadow: '0 12px 24px rgba(245,158,11,0.22)'
               }
-            }, throwActionLabel())
+            }, throws ? __alloT('stem.throwlab.set_up_next_rep', 'SET UP NEXT REP') : __alloT('stem.throwlab.set_up_first_rep', 'SET UP FIRST REP'))
           )
         );
       }
@@ -5141,7 +5396,23 @@ window.StemLab = window.StemLab || {
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text, #f1f5f9)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer' }
           }, __alloT('stem.throwlab.back', '← Back')),
           h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
-          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.throwlab.same_arm_different_ball_different_game', 'Same arm, different ball, different game.'))
+          h('span', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } }, __alloT('stem.throwlab.evidence_loop_tagline', 'Build evidence one throw at a time.'))
+        ),
+        h('section', {
+          className: 'throwlab-learning-loop',
+          'aria-label': __alloT('stem.throwlab.how_the_lab_works', 'How Throw Lab works')
+        },
+          [
+            ['1', __alloT('stem.throwlab.loop_choose', 'Choose'), __alloT('stem.throwlab.loop_choose_detail', 'Pick a sport and setup')],
+            ['2', __alloT('stem.throwlab.loop_predict', 'Predict'), __alloT('stem.throwlab.loop_predict_detail', 'Call the outcome')],
+            ['3', __alloT('stem.throwlab.loop_launch', 'Launch'), __alloT('stem.throwlab.loop_launch_detail', 'Watch the evidence')],
+            ['4', __alloT('stem.throwlab.loop_compare', 'Compare'), __alloT('stem.throwlab.loop_compare_detail', 'Change one variable')]
+          ].map(function(step) {
+            return h('div', { key: step[0], className: 'throwlab-loop-step' },
+              h('span', { className: 'throwlab-loop-number', 'aria-hidden': 'true' }, step[0]),
+              h('span', null, h('strong', null, step[1]), step[2])
+            );
+          })
         ),
         // ── Pitch Locker compact summary (only shown in pitching mode) ──
         // Sticky band under the header showing how many pitch types you have
@@ -5231,13 +5502,13 @@ window.StemLab = window.StemLab || {
         // ── Mode-accent hero band (sport-flavored, dark-themed) ──
         (function() {
           var MODE_META = {
-            pitching:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '⚾', title: __alloT('stem.throwlab.pitcher_s_mound_60_ft_6_in_to_home_pla', "Pitcher's Mound \u2014 60 ft 6 in to home plate"),     hint: __alloT('stem.throwlab.6_grips_6_trajectories_fastball_straig', '6 grips, 6 trajectories. Fastball straight; curve drops via topspin; slider breaks late; splitter dies; sinker bores in; changeup deceives. Magnus force IS real \u2014 spin axis decides everything.') },
-            freethrow:  { accent: '#f97316', soft: 'rgba(249,115,22,0.14)', icon: '🏀', title: __alloT('stem.throwlab.free_throw_15_ft_from_line_to_hoop', 'Free Throw \u2014 15 ft from line to hoop'),          hint: __alloT('stem.throwlab.same_line_same_23cm_rim_very_different', 'Same line, same 23cm rim, very different shooters. Shaq career 52%, Steph Curry 91%. Soft arc, backspin, knees-into-shot \u2014 muscle memory you build one shot at a time.') },
-            freekick:   { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',  icon: '⚽', title: __alloT('stem.throwlab.free_kick_22m_a_4_defender_wall', 'Free Kick \u2014 22m + a 4-defender wall'),          hint: __alloT('stem.throwlab.beckham_knuckle_roberto_carlos_banana_', 'Beckham knuckle, Roberto Carlos banana, Messi top-bin. Magnus = the curl. Hit the seam off-center, side-spin bends it around the wall, into the corner the keeper can\u2019t reach.') },
-            fieldgoal:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '🏈', title: __alloT('stem.throwlab.field_goal_18_5_ft_wide_10_ft_up', 'Field Goal \u2014 18.5 ft wide, 10 ft up'),          hint: __alloT('stem.throwlab.justin_tucker_has_hit_66_yds_from_30_y', 'Justin Tucker has hit 66+ yds. From 30 yd a pro hits ~95%; from 50+ it drops fast. Wind and the snap matter as much as leg power. Loneliest position on the field.') },
-            bowling:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '🏏', title: __alloT('stem.throwlab.bowler_s_crease_22_yd_to_the_stumps', "Bowler's Crease \u2014 22 yd to the stumps"),       hint: __alloT('stem.throwlab.yorker_at_the_toes_bouncer_at_the_ches', 'Yorker at the toes, bouncer at the chest, off-cutter that nips, googly that turns the wrong way. Fast bowlers hit 95+ mph and the ball BOUNCES \u2014 Test cricket\u2019s purest weapon.') },
-            golf:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '⛳', title: __alloT('stem.throwlab.golf_tee_shot_driver_to_wedge', 'Golf Tee Shot \u2014 driver to wedge'),                  hint: __alloT('stem.throwlab.driver_carries_250_yd_sand_wedge_85_ba', 'Driver carries 250+ yd; sand wedge 85. Backspin keeps the ball aloft (lift); topspin runs out fast. ~6 sec in the air. Smash factor 1.50 = the ceiling. Find the fairway.') },
-            volleyball: { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '🏐', title: __alloT('stem.throwlab.server_s_line_over_a_2_43m_net_in_9_9m', "Server's Line \u2014 over a 2.43m net, in 9\u00d79m"),   hint: __alloT('stem.throwlab.jump_serve_70_mph_float_serve_has_no_s', 'Jump-serve > 70 mph. Float serve has NO spin \u2014 the wake destabilizes mid-flight, divers and dips unpredictably. Top-spin jump serve = the receiving line\u2019s nightmare.') }
+            pitching:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '⚾', title: __alloT('stem.throwlab.pitcher_s_mound_60_ft_6_in_to_home_pla', "Pitcher's Mound \u2014 60 ft 6 in to home plate"),     hint: __alloT('stem.throwlab.pitching_learning_goal', 'Goal: cross the strike zone. Speed changes reaction time; spin rate and spin axis shape late break. Start with a preset, then change one control.') },
+            freethrow:  { accent: '#f97316', soft: 'rgba(249,115,22,0.14)', icon: '🏀', title: __alloT('stem.throwlab.free_throw_15_ft_from_line_to_hoop', 'Basketball \u2014 shots and passes'),          hint: __alloT('stem.throwlab.basketball_learning_goal', 'Goal: reach the rim or teammate with control. Launch angle shapes the arc; speed sets range; backspin changes the finish.') },
+            freekick:   { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',  icon: '⚽', title: __alloT('stem.throwlab.free_kick_22m_a_4_defender_wall', 'Free Kick \u2014 22 m plus a defender wall'),          hint: __alloT('stem.throwlab.freekick_learning_goal', 'Goal: clear the wall and find the goal. Vertical angle creates clearance; horizontal aim sets the line; sidespin creates curl.') },
+            fieldgoal:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '🏈', title: __alloT('stem.throwlab.field_goal_18_5_ft_wide_10_ft_up', 'Field Goal \u2014 18.5 ft wide, 10 ft up'),          hint: __alloT('stem.throwlab.fieldgoal_learning_goal', 'Goal: clear the crossbar between the uprights. Test how launch angle, speed, distance, and wind trade height for range.') },
+            bowling:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '🏏', title: __alloT('stem.throwlab.bowler_s_crease_22_yd_to_the_stumps', "Bowler's Crease \u2014 22 yd to the stumps"),       hint: __alloT('stem.throwlab.bowling_learning_goal', 'Goal: hit the stumps after the bounce. Release angle controls length; horizontal aim controls line; spin changes movement.') },
+            golf:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '⛳', title: __alloT('stem.throwlab.golf_tee_shot_driver_to_wedge', 'Golf Flight \u2014 driver to wedge'),                  hint: __alloT('stem.throwlab.golf_learning_goal', 'Goal: match carry to the target. Club speed sets range while loft and backspin trade forward motion for lift and stopping power.') },
+            volleyball: { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '🏐', title: __alloT('stem.throwlab.server_s_line_over_a_2_43m_net_in_9_9m', "Server's Line \u2014 over a 2.43 m net, into a 9 × 9 m court"),   hint: __alloT('stem.throwlab.volleyball_learning_goal', 'Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.') }
           };
           var meta = MODE_META[d.mode] || MODE_META.pitching;
           return h('div', {
@@ -5259,6 +5530,31 @@ window.StemLab = window.StemLab || {
           );
         })(),
         renderThrowRunFocus(),
+
+        // Optional depth stays available without interrupting the core
+        // Choose -> Predict -> Launch -> Compare path.
+        h('details', {
+          className: 'throwlab-explore-drawer',
+          'data-throwlab-explore-drawer': 'true',
+          style: {
+            marginBottom: 14, borderRadius: 12, overflow: 'hidden',
+            border: '1px solid rgba(148,163,184,0.30)',
+            background: 'rgba(15,23,42,0.72)'
+          }
+        },
+          h('summary', {
+            'data-tl-focusable': 'true',
+            style: {
+              padding: '11px 13px', cursor: 'pointer', color: '#e2e8f0',
+              fontSize: 12, fontWeight: 800
+            }
+          },
+            __alloT('stem.throwlab.lab_extensions', 'Extend the lab'),
+            h('span', {
+              style: { display: 'block', marginTop: 3, color: '#94a3b8', fontSize: 10, fontWeight: 500, lineHeight: 1.35 }
+            }, __alloT('stem.throwlab.lab_extensions_detail', 'Optional scenarios, gravity, skill levels, drills, rewards, and session stats.'))
+          ),
+          h('div', { style: { padding: '1px 12px 12px' } },
 
         // ── Scenarios ──
         // One-click teaching demos. Each pill snaps mode + preset +
@@ -5687,7 +5983,9 @@ window.StemLab = window.StemLab || {
                   task.tip ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
                     h('span', { style: { color: '#fbbf24' } }, '💡 '), task.tip) : null)
           );
-        })(),
+        })()
+          )
+        ),
 
         // Two-column layout
         h('div', {
@@ -5911,12 +6209,13 @@ window.StemLab = window.StemLab || {
             // its label when entered.
             h('section', {
               'aria-labelledby': 'tl-result-heading',
+              role: 'region',
               style: { marginTop: 10, padding: 12, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10 }
             },
               h('h3', {
                 id: 'tl-result-heading',
                 style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
-              }, lr ? 'Last throw' : 'Ready to throw'),
+              }, lr ? '4 · Evidence from last throw' : '4 · Launch to collect evidence'),
               lr && resultControlsChanged && h('div', {
                 'data-throwlab-result-stale': 'true',
                 role: 'note',
@@ -5967,6 +6266,24 @@ window.StemLab = window.StemLab || {
                   // the active preset's static teach blurb if there's no result.
                   h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } },
                     explainResult(lr) || resultPreset.teach),
+                  (function() {
+                    var feedback = predictionFeedback(lr);
+                    if (!feedback) return null;
+                    return h('div', {
+                      'data-throwlab-prediction-result': feedback.matched ? 'matched' : 'surprised',
+                      role: 'status',
+                      style: {
+                        marginTop: 10, padding: '9px 10px', borderRadius: 8,
+                        background: feedback.matched ? 'rgba(16,185,129,0.12)' : 'rgba(124,58,237,0.12)',
+                        border: '1px solid ' + (feedback.matched ? 'rgba(52,211,153,0.55)' : 'rgba(196,181,253,0.52)'),
+                        color: '#e2e8f0', fontSize: 11, lineHeight: 1.45
+                      }
+                    },
+                      h('strong', { style: { display: 'block', marginBottom: 2, color: feedback.matched ? '#6ee7b7' : '#c4b5fd' } },
+                        (feedback.matched ? '✓ ' : '↗ ') + feedback.title),
+                      feedback.summary
+                    );
+                  })(),
                   lr.fairTest && h('div', {
                     'data-throwlab-fair-test': lr.fairTest.level,
                     role: 'status',
@@ -5981,15 +6298,31 @@ window.StemLab = window.StemLab || {
                     h('strong', { style: { color: lr.fairTest.level === 'fair' ? '#6ee7b7' : lr.fairTest.level === 'multiple' ? '#fde68a' : '#bae6fd' } }, lr.fairTest.label + ':'),
                     h('span', { style: { flex: '1 1 230px' } }, lr.fairTest.summary)
                   ),
+                  (function() {
+                    var recommendation = buildNextRepRecommendation(lr);
+                    if (!recommendation) return null;
+                    return h('div', { className: 'throwlab-next-rep', 'data-throwlab-next-rep': recommendation.stateKey },
+                      h('div', { style: { color: '#7dd3fc', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.5 } },
+                        __alloT('stem.throwlab.next_rep', 'Next rep')),
+                      h('div', { style: { marginTop: 2, color: '#f8fafc', fontSize: 12, fontWeight: 800 } }, recommendation.label),
+                      h('p', { style: { margin: '4px 0 8px', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, recommendation.reason),
+                      h('button', {
+                        type: 'button',
+                        onClick: function() { applyNextRepRecommendation(recommendation, lr); },
+                        'data-tl-focusable': 'true',
+                        'aria-label': 'Load the suggested one-variable next rep: ' + recommendation.label,
+                        style: {
+                          width: '100%', padding: '9px 10px', borderRadius: 8, cursor: 'pointer',
+                          border: '1px solid #38bdf8', background: 'rgba(14,165,233,0.18)', color: '#e0f2fe',
+                          fontSize: 11, fontWeight: 900
+                        }
+                      }, __alloT('stem.throwlab.load_one_change_rep', 'Load one-change next rep')),
+                      h('div', { style: { marginTop: 5, color: '#94a3b8', fontSize: 9, lineHeight: 1.35 } },
+                        __alloT('stem.throwlab.next_rep_keeps_baseline', 'This restores the launched setup, changes only the named control, and keeps the result visible for comparison.'))
+                    );
+                  })()
                 )
-              ) : h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 16 } },
-                isPitching
-                  ? 'Pick a pitch type, set your release, and click THROW to see the path.'
-                  : isFreeKick
-                    ? 'Pick a kick style and click STRIKE — watch the ball curl around the wall.'
-                    : isFieldGoal
-                      ? 'Pick a distance, set your launch angle and power, and click KICK — clear the bar and split the uprights.'
-                      : 'Pick a shot, set your release angle, and click SHOOT to see the arc.')
+              ) : h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 16 } }, readyPrompt())
             ),
             // "Show physics" + "Show formulas" toggles + keyboard shortcuts hint.
             // Bumped to slate-300 (#cbd5e1) for AA contrast on dark panel.
@@ -6051,7 +6384,7 @@ window.StemLab = window.StemLab || {
               h('h3', {
                 id: 'tl-preset-picker-heading',
                 style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
-              }, isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
+              }, '1 · Choose ' + (isPitching ? 'a pitch' : isFreeKick ? 'a kick style' : isFieldGoal ? 'a distance' : isBowling ? 'a delivery' : isGolf ? 'a club' : isVolleyball ? 'a serve' : 'a shot or pass')),
               h('div', { className: 'throwlab-preset-grid' },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
@@ -6193,19 +6526,18 @@ window.StemLab = window.StemLab || {
               h('h3', {
                 id: 'tl-release-controls-heading',
                 style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
-              }, __alloT('stem.throwlab.release_controls', 'Release controls')),
+              }, __alloT('stem.throwlab.tune_release_controls', '2 · Tune the release')),
               slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
               // Tier 2+: release height + angles. Tier 1 hides them so the
               // student can focus on the speed-distance relationship alone.
-              (d.scaffoldTier || 3) >= 2 ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
-              (d.scaffoldTier || 3) >= 2 ? slider('Vertical aim', d.aimDegV.toFixed(1),
-                isPitching ? -8 : isFreeKick ? -2 : isFieldGoal ? 20 : isBowling ? -8 : isGolf ? 5 : isVolleyball ? -2 : 30,
-                isPitching ? 4 : isFreeKick ? 45 : isFieldGoal ? 60 : isBowling ? 12 : isGolf ? 60 : isVolleyball ? 35 : 70,
+              (d.scaffoldTier || 3) >= 2 && modeMeta.releaseHeightRange[0] !== modeMeta.releaseHeightRange[1] ? slider('Release height', d.releaseHeight.toFixed(2), modeMeta.releaseHeightRange[0], modeMeta.releaseHeightRange[1], 0.05, function(v) { upd('releaseHeight', v); }, ' m') : null,
+              (d.scaffoldTier || 3) >= 2 ? slider(isPitching ? 'Vertical aim' : 'Launch angle', d.aimDegV.toFixed(1),
+                modeMeta.verticalAimRange[0], modeMeta.verticalAimRange[1],
                 0.5, function(v) { upd('aimDegV', v); }, '°') : null,
-              (d.scaffoldTier || 3) >= 2 ? slider('Horizontal aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
+              (d.scaffoldTier || 3) >= 2 ? slider('Left/right aim', d.aimDegH.toFixed(1), -5, 5, 0.1, function(v) { upd('aimDegH', v); }, '°') : null,
               // Tier 3: spin (the full physics surface).
-              (d.scaffoldTier || 3) >= 3 ? slider('Spin rate', d.spinRpm, 0, 3500, 50, function(v) { upd('spinRpm', v); }, ' rpm') : null,
-              (d.scaffoldTier || 3) >= 3 ? slider('Spin axis', d.spinAxisDeg, 0, 360, 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
+              (d.scaffoldTier || 3) >= 3 ? slider('Spin rate', d.spinRpm, modeMeta.spinRange[0], modeMeta.spinRange[1], modeMeta.spinStep, function(v) { upd('spinRpm', v); }, ' rpm') : null,
+              (d.scaffoldTier || 3) >= 3 ? slider('Spin axis', d.spinAxisDeg, modeMeta.spinAxisRange[0], modeMeta.spinAxisRange[1], 5, function(v) { upd('spinAxisDeg', v); }, '°') : null
             ),
             // ── Wind (outdoor modes only, Tier 2+) ──
             // Free kick + field goal + bowling + golf happen outdoors so
@@ -6320,6 +6652,63 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[10px] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
               );
             })(),
+            h('section', {
+              id: 'throwlab-launch-controls',
+              tabIndex: -1,
+              'aria-labelledby': 'throwlab-launch-controls-heading',
+              style: {
+                marginBottom: 12, padding: 12, borderRadius: 12,
+                background: 'linear-gradient(145deg,rgba(30,41,59,0.96),rgba(15,23,42,0.98))',
+                border: '1px solid rgba(251,191,36,0.42)',
+                boxShadow: '0 10px 24px rgba(2,6,23,0.22)'
+              }
+            },
+            h('h3', {
+              id: 'throwlab-launch-controls-heading',
+              style: { margin: '0 0 9px', color: '#fde68a', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 }
+            }, __alloT('stem.throwlab.call_and_launch', '3 · Call it and launch')),
+            (function() {
+              var options = getPredictionOptions(d.mode, trialShotKind(d));
+              var predictionStats = Object.assign({ attempts: 0, matches: 0 }, d.predictionStats || {});
+              return h('fieldset', {
+                'data-throwlab-prediction': 'true',
+                style: { margin: '0 0 9px', padding: 9, borderRadius: 9, border: '1px solid rgba(167,139,250,0.42)', background: 'rgba(124,58,237,0.08)' }
+              },
+                h('legend', { style: { padding: '0 5px', color: '#ddd6fe', fontSize: 11, fontWeight: 900 } },
+                  __alloT('stem.throwlab.call_your_shot', 'Call your shot'),
+                  h('span', { style: { color: '#94a3b8', fontWeight: 600 } }, ' · optional')
+                ),
+                h('p', { style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 10, lineHeight: 1.4 } },
+                  __alloT('stem.throwlab.prediction_no_penalty', 'Predict before you launch. There is no penalty for being surprised—surprises create the next question.')),
+                h('div', { className: 'throwlab-call-grid' },
+                  options.map(function(option) {
+                    var selected = d.predictionKey === option.key;
+                    return h('button', {
+                      key: option.key,
+                      type: 'button',
+                      'aria-pressed': selected,
+                      'data-tl-focusable': 'true',
+                      onClick: function() {
+                        var nextKey = selected ? null : option.key;
+                        upd('predictionKey', nextKey);
+                        tlAnnounce(nextKey ? 'Prediction: ' + option.label + '. Launch when ready.' : 'Prediction cleared.');
+                      },
+                      style: {
+                        padding: '8px 7px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                        border: selected ? '2px solid #c4b5fd' : '1px solid #475569',
+                        background: selected ? 'rgba(124,58,237,0.28)' : 'rgba(15,23,42,0.62)',
+                        color: '#f8fafc'
+                      }
+                    },
+                      h('strong', { style: { display: 'block', fontSize: 11 } }, option.label),
+                      h('span', { style: { display: 'block', marginTop: 2, color: '#cbd5e1', fontSize: 9, lineHeight: 1.25 } }, option.detail)
+                    );
+                  })
+                ),
+                predictionStats.attempts ? h('div', { style: { marginTop: 6, color: '#c4b5fd', fontSize: 10 } },
+                  'Prediction record: ' + predictionStats.matches + ' matched · ' + predictionStats.attempts + ' called') : null
+              );
+            })(),
             h('div', {
               'data-throwlab-next-trial-check': nextTrialCheck.level,
               'aria-label': 'Next trial check. ' + nextTrialCheck.label + '. ' + nextTrialCheck.summary,
@@ -6372,7 +6761,7 @@ window.StemLab = window.StemLab || {
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, d.replayActive ? 'Replay in progress...' : launchActionLabel()),
+            }, d.replayActive ? 'Replay in progress...' : launchActionLabel())),
             // Replay analysis controls: a native timeline plus equivalent buttons.
             d.lastResult ? h('section', { 'data-throwlab-replay-analysis': 'true', 'aria-labelledby': 'throwlab-replay-heading', style: { marginTop: 8, padding: 9, borderRadius: 10, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(15,23,42,0.5)' } },
               h('h4', { id: 'throwlab-replay-heading', style: { margin: '0 0 7px', color: '#bbf7d0', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Replay analysis'),

@@ -326,6 +326,26 @@
       "portfolioCategories": [
         "k12-college-readiness"
       ]
+    },
+    {
+      "id": "ap-physics-1-foundation-pilot",
+      "sourcePath": "test_prep/ap_physics_1_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
+    },
+    {
+      "id": "ap-calculus-ab-foundation-pilot",
+      "sourcePath": "test_prep/ap_calculus_ab_foundation_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
     }
   ]
 }

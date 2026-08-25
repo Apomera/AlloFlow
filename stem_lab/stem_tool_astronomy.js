@@ -1671,7 +1671,7 @@
             currentDate: null
           }});
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, __alloT('stem.astronomy.initializing_night_sky_lab', '🔭 Initializing Night Sky Lab...'));
+        return h('div', { style: { padding: 24, color: '#475569', backgroundColor: '#ffffff', textAlign: 'center' } }, __alloT('stem.astronomy.initializing_night_sky_lab', '🔭 Initializing Night Sky Lab...'));
       }
       var d = labToolData.astronomy;
       var observingList = Array.isArray(d.observingList) ? d.observingList.reduce(function(validIds, rawId) {

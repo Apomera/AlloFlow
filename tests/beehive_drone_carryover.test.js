@@ -3,26 +3,31 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 beforeEach(() => { resetStemLab(); loadTool('stem_lab/stem_tool_beehive.js', 'beehive'); });
 
-describe('Queen-to-Drone causal carryover', () => {
-  it('makes a Queen victory change the Drone preflight story', () => {
+describe('Colony-to-Drone causal carryover', () => {
+  it('uses a well-provisioned colony to set launch reserve without changing route physics', () => {
     const html = renderTool('beehive', {
-      beehive: { viewMode: 'drone', queen: { result: 'victory' } },
+      beehive: { viewMode: 'drone', colonyHealth: 90, varroaLevel: 5, honey: 100, queen: { result: 'victory' } },
     });
 
     expect(html).toContain('data-drone-carryover-brief="true"');
-    expect(html).toContain('Strategy evidence carried forward');
-    expect(html).toContain('Victory route');
-    expect(html).toContain('Queen signal ~12% closer');
-    expect(html).toContain('One fewer predator bird');
+    expect(html).toContain('Colony condition carried forward');
+    expect(html).toContain('Well-fed launch condition');
+    expect(html).toContain('DCA geometry unchanged');
+    expect(html).toContain('Standard flight window');
+    expect(html).toContain('Scenario hazards unchanged');
   });
 
-  it('names an unresolved command outcome instead of hiding the missing handoff', () => {
+  it('shows colony stress as a fuel-reserve constraint instead of inventing a route penalty', () => {
     const html = renderTool('beehive', {
-      beehive: { viewMode: 'drone', queen: {} },
+      beehive: { viewMode: 'drone', colonyHealth: 35, varroaLevel: 45, honey: 2, queen: { result: 'defeat' } },
     });
 
-    expect(html).toContain('Unresolved strategy route');
-    expect(html).toContain('Finish a Queen RTS match');
-    expect(html).toContain('Inherited Queen RTS route modifiers');
+    expect(html).toContain('Stressed launch condition');
+    expect(html).toContain('DCA geometry unchanged');
+    expect(html).toContain('Standard flight window');
+    expect(html).toContain('Scenario hazards unchanged');
+    expect(html).toContain('there is no feeding at flowers');
+    expect(html).not.toContain('Victory route');
+    expect(html).not.toContain('Recovery route');
   });
 });

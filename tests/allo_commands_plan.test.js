@@ -621,6 +621,15 @@ describe('AlloBot hands-free agent button', () => {
       expect(app, path).toContain('voice.isHandsFreeSupported({ callGeminiAudio })');
     }
   });
+  it('every host exposes a distinct keyboard-accessible stop-audio control', () => {
+    for (const path of ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']) {
+      const app = readFileSync(path, 'utf-8');
+      expect(app, path).toContain('data-help-key="voice_skip_audio"');
+      expect(app, path).toContain('aria-keyshortcuts="Space"');
+      expect(app, path).toContain("window.__alloVoiceLoop.stopSpeaking('button-skip')");
+      expect(app, path).toContain("t('common.audio_stop') || 'Stop audio'");
+    }
+  });
   it('the button is accessible, guarded, and present in source AND built module', () => {
     for (const path of ['view_misc_modals_source.jsx', 'view_misc_modals_module.js', 'desktop/web-app/public/view_misc_modals_module.js']) {
       const code = readFileSync(path, 'utf-8');
@@ -695,7 +704,7 @@ describe('AlloBot hands-free agent button', () => {
     expect(resume).toContain('src2.connect(whisperState.proc)');
     // A failed resume stays honestly paused instead of pretending to listen.
     expect(resume).toContain('paused = true; // stay honestly paused');
-    expect(src).toMatch(/pause,\s*resume,\s*isPaused:/);
+    expect(src).toMatch(/pause,\s*resume,\s*stopSpeaking:[\s\S]{0,100}?isPaused:/);
   });
 
   it('nothing keeps listening while paused, on either engine', () => {

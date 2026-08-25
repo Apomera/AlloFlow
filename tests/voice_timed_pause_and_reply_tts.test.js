@@ -318,6 +318,37 @@ describe('voice reply speech preferences and fallback', () => {
     }
   });
 
+  it('skipping a long reply cancels every remaining speech chunk', async () => {
+    vi.useFakeTimers();
+    const fake = installVoiceFakes({ autoEndBrowser: false });
+    const longReply = Array.from({ length: 10 }, (_, index) =>
+      `Part ${index + 1} contains enough lesson-planning detail to require a separate spoken chunk for this response.`
+    ).join(' ');
+    try {
+      const { loop, rec } = startLoop(fake, { converse: vi.fn(async () => longReply) });
+      rec.start.mockClear();
+      rec.onresult(finalEvent('read the complete lesson plan'));
+      await flush();
+
+      expect(fake.utterances).toHaveLength(1);
+      const firstChunk = fake.utterances[0];
+      expect(loop.stopSpeaking('button-skip')).toBe(true);
+      expect(loop.getState().speaking).toBe(false);
+      expect(rec.start, 'the microphone resumes after the whole reply is cancelled').toHaveBeenCalled();
+
+      // Late browser events and watchdogs from the interrupted chunk must not
+      // advance into chunk two.
+      firstChunk.onend();
+      await vi.advanceTimersByTimeAsync(60000);
+      await flush();
+      expect(fake.utterances).toHaveLength(1);
+      loop.stop();
+    } finally {
+      vi.clearAllTimers();
+      fake.restore();
+    }
+  });
+
   it('does not claim to be speaking when reply volume is zero', () => {
     vi.useFakeTimers();
     const statuses = [];

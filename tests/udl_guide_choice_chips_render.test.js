@@ -157,6 +157,31 @@ describe('UDLGuideModal choice chips', () => {
   });
 });
 
+describe('UDLGuideModal composer processing gate', () => {
+  const pressEnter = (input) => {
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    act(() => { input.dispatchEvent(event); });
+    return event;
+  };
+
+  it('submits a non-empty message with Enter when idle', () => {
+    const props = makeProps({ udlInput: 'full pack', isChatProcessing: false });
+    const el = mount(props);
+    const event = pressEnter(el.querySelector('[data-help-key="chat_input"]'));
+    expect(event.defaultPrevented).toBe(true);
+    expect(props.handleSendUDLMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not let Enter bypass the disabled Send button while processing', () => {
+    const props = makeProps({ udlInput: 'full pack', isChatProcessing: true });
+    const el = mount(props);
+    const event = pressEnter(el.querySelector('[data-help-key="chat_input"]'));
+    expect(event.defaultPrevented).toBe(true);
+    expect(props.handleSendUDLMessage).not.toHaveBeenCalled();
+    expect(el.querySelector('[data-help-key="chat_send"]').disabled).toBe(true);
+  });
+});
+
 // Executing a blueprint no longer closes the panel, so "get out of the way"
 // has to be possible WITHOUT unmounting — closing would discard the thread the
 // plan came out of.

@@ -51,6 +51,20 @@ describe('framework registry (client)', () => {
     expect(src).toMatch(/aeSetActiveFramework\(config\);/);
   });
 
+  it('stamps new and legacy records from the active workspace framework', () => {
+    expect(src).toContain('frameworkVersion: next.config.frameworkVersion || AE_ACTIVE_FW.versionTag');
+    expect(src.match(/frameworkVersion: aeString\(raw\.frameworkVersion, 80, config\.frameworkVersion\)/g).length).toBeGreaterThanOrEqual(3);
+    expect(src).toContain('frameworkVersion: teacher.frameworkVersion || next.config.frameworkVersion || AE_ACTIVE_FW.versionTag');
+    expect(src).toContain("frameworkVersion: AE_FRAMEWORKS.maine_pepg.versionTag, frameworkProfile: 'maine_pepg'");
+  });
+
+  it('stamps new and unstamped formal observations with the current workspace framework', () => {
+    const normalizer = src.slice(src.indexOf('const observations ='), src.indexOf('const statuses ='));
+    expect(normalizer).toMatch(/frameworkVersion: aeString\(raw\.frameworkVersion, 80, config\.frameworkVersion\)/);
+    expect(normalizer).not.toMatch(/frameworkVersion: aeString\(raw\.frameworkVersion, 80, AE_FRAMEWORK\)/);
+    expect(src).toMatch(/frameworkVersion: next\.config\.frameworkVersion \|\| AE_ACTIVE_FW\.versionTag/);
+  });
+
   it('PA-specific copy is gated: PDE/PEERS/Act 13 strings never render on the Maine branch', () => {
     // every remaining PDE/PEERS/Act 13 mention sits inside a pa_act13 conditional
     // or the PA half of a ternary; the Maine halves use PEPG language instead

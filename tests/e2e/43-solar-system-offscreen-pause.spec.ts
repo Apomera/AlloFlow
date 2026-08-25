@@ -65,6 +65,26 @@ const harness = new GlHarness({
       w.scrollTop = y;
       return w.scrollTop;
     };
+    window.__scrollIntoWrap = function (selector) {
+      var c = document.querySelector(selector || 'canvas.solar3d-canvas');
+      var w = document.getElementById('wrap');
+      if (!c || !w) return null;
+      var r = c.getBoundingClientRect(), wr = w.getBoundingClientRect();
+      var elementTop = w.scrollTop + r.top - wr.top;
+      w.scrollTop = Math.max(0, elementTop - Math.max(0, (w.clientHeight - r.height) / 2));
+      return w.scrollTop;
+    };
+    window.__scrollAwayFrom = function (selector) {
+      var c = document.querySelector(selector || 'canvas.solar3d-canvas');
+      var w = document.getElementById('wrap');
+      if (!c || !w) return null;
+      var r = c.getBoundingClientRect(), wr = w.getBoundingClientRect();
+      var elementTop = w.scrollTop + r.top - wr.top;
+      var below = elementTop + r.height + 32;
+      var maxScroll = Math.max(0, w.scrollHeight - w.clientHeight);
+      w.scrollTop = below <= maxScroll ? below : Math.max(0, elementTop - w.clientHeight - 32);
+      return w.scrollTop;
+    };
     window.__offScreen = function (selector) {
       var c = document.querySelector(selector || 'canvas.solar3d-canvas');
       var w = document.getElementById('wrap');
@@ -90,6 +110,7 @@ test.describe.configure({ timeout: 200_000 });
 test('the orrery pauses off-screen and resumes when scrolled back', async ({ page }) => {
   await harness.mount(page, { solarSystem: SEED });
   const scrollHeight = await page.evaluate(() => (window as any).__makeScrollable(700));
+  await page.evaluate(() => (window as any).__scrollIntoWrap('canvas.solar3d-canvas'));
   await page.waitForTimeout(1200);
 
   expect(await page.evaluate(() => (window as any).__patched),
@@ -107,7 +128,7 @@ test('the orrery pauses off-screen and resumes when scrolled back', async ({ pag
   const inView = await sample();
   expect(inView, 'the orrery never rendered while in view — nothing was measured').toBeGreaterThan(30);
 
-  await page.evaluate(() => (window as any).__scrollWrap(4000));
+  await page.evaluate(() => (window as any).__scrollAwayFrom('canvas.solar3d-canvas'));
   await page.waitForTimeout(1000);
   expect(await page.evaluate(() => (window as any).__offScreen()),
     'the scroll did not actually move the canvas out of view').toBe(true);
@@ -119,7 +140,7 @@ test('the orrery pauses off-screen and resumes when scrolled back', async ({ pag
     + 'never for an off-screen element — it needs the IntersectionObserver guard.')
     .toBeLessThanOrEqual(2);
 
-  await page.evaluate(() => (window as any).__scrollWrap(0));
+  await page.evaluate(() => (window as any).__scrollIntoWrap('canvas.solar3d-canvas'));
   await page.waitForTimeout(1000);
   const back = await sample();
   expect(back,
@@ -146,16 +167,16 @@ test('the rover scene pauses off-screen and resumes when scrolled back', async (
     return page.evaluate(() => (window as any).__droneRenders);
   };
 
-  // The drone canvas mounts BELOW the fold, so scrollTop 0 is already off-screen and a
-  // baseline taken there would compare two off-screen states and prove nothing.
-  await page.evaluate(() => (window as any).__scrollWrap(1100));
+  // The drone canvas mounts below the fold, so target the element itself instead of a
+  // pixel offset that drifts whenever existing content above it changes height.
+  await page.evaluate(() => (window as any).__scrollIntoWrap('canvas[data-drone-canvas]'));
   await page.waitForTimeout(1200);
   expect(await droneOff(), 'the rover canvas was not brought into view for the baseline').toBe(false);
 
   const inView = await sample();
   expect(inView, 'the rover never rendered while in view — nothing was measured').toBeGreaterThan(20);
 
-  await page.evaluate(() => (window as any).__scrollWrap(6000));
+  await page.evaluate(() => (window as any).__scrollAwayFrom('canvas[data-drone-canvas]'));
   await page.waitForTimeout(1200);
   expect(await droneOff(), 'the scroll did not move the rover canvas out of view').toBe(true);
 
@@ -164,7 +185,7 @@ test('the rover scene pauses off-screen and resumes when scrolled back', async (
     `the rover kept rendering while scrolled out of view: ${away} frames in 2.5s `
     + `(${inView} while visible)`).toBeLessThanOrEqual(2);
 
-  await page.evaluate(() => (window as any).__scrollWrap(1100));
+  await page.evaluate(() => (window as any).__scrollIntoWrap('canvas[data-drone-canvas]'));
   await page.waitForTimeout(1200);
   const back = await sample();
   expect(back, 'the rover did not resume after scrolling back').toBeGreaterThan(20);

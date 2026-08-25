@@ -32,7 +32,8 @@ const NEW_IDS = ['use_gemini_canvas', 'open_brainstorm_modes', 'open_discussion_
   'open_jigsaw_builder', 'jump_to_lesson_plan', 'open_block_suggestions'];
 
 const commandBlock = (id) => {
-  const at = commands.indexOf(`{ id: '${id}'`);
+  let at = commands.indexOf(`{ id: '${id}'`);
+  if (at < 0) at = commands.indexOf(`{ id: "${id}"`);
   expect(at, `command ${id} is registered`).toBeGreaterThan(-1);
   return commands.slice(at, commands.indexOf('\n', at));
 };
@@ -109,10 +110,10 @@ describe('the capability chain: Leadership Hub door (2026-08-17 leadership pass)
     expect(body).toContain('window.__alloLazyAdminHub');
     expect(body).toContain('setIsAdminHubOpen(true)');
   });
-  it('the hub it opens really lists the nine tools and the guide link', () => {
+  it('the hub it opens really lists the ten tools and the guide link', () => {
     const hub = read('admin_hub_source.jsx');
     const ids = (hub.match(/^\s*id: '([a-zA-Z]+)'/gm) || []).length;
-    expect(ids).toBe(9);
+    expect(ids).toBe(10);
     expect(hub).toContain('data-help-key="adminhub_guide_link"');
     expect(hub).toContain('guide/for-school-leaders.html');
     // built module + mirror carry both
@@ -146,5 +147,45 @@ describe('the capability chain: canvas doorway and block suggestions', () => {
     const at = exportPreview.indexOf('data-help-key="doc_builder_block_suggestions"');
     expect(at).toBeGreaterThan(-1);
     expect(exportPreview.slice(at - 200, at)).toContain('<details open');
+  });
+});
+
+describe('AlloBot doors added by the 2026-08-25 voice audit', () => {
+  it('routes Research Suite separately from Assessment Center', () => {
+    const analytics = commandBlock('open_class_analytics');
+    const research = commandBlock('open_research_suite');
+    expect(analytics).toContain('educator hub assessment center');
+    expect(analytics).not.toContain("'research suite'");
+    expect(research).toContain("opensPanel: 'researchSuite'");
+    expect(research).toContain('c.setShowClassAnalytics(false)');
+    expect(research).toContain('c.setIsResearchSuiteOpen(true)');
+  });
+
+  it('gives Return to Start its real safe-navigation handler', () => {
+    const command = commandBlock('return_to_start');
+    expect(command).toContain("aliases: ['return to start'");
+    expect(command).toContain('c.returnToStart()');
+    expect(anti).toContain('returnToStart: handleReturnToStart');
+  });
+
+  it('maps Stop audio and glossary audio review to real host capabilities', () => {
+    expect(commandBlock('stop_reading')).toContain("'skip audio'");
+    expect(commandBlock('toggle_content_editing')).toContain('glossary audio review');
+    expect(anti).toContain("alloBotRef.current.stopSpeaking('stop-reading-command')");
+    expect(anti).toContain("if (kind === 'glossary') { handleToggleIsEditingGlossary(); return 'glossary'; }");
+  });
+
+  it('keeps all host sources and the built command mirror wired', () => {
+    const hosts = ['AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'desktop/web-app/src/AlloFlowANTI.txt']
+      .map(read);
+    for (const host of hosts) {
+      expect(host).toContain('setShowClassAnalytics, setIsResearchSuiteOpen');
+      expect(host).toContain('researchSuiteOpen: isResearchSuiteOpen');
+      expect(host).toContain('returnToStart: handleReturnToStart');
+      expect(host).toContain('Research Suite is open with study design');
+    }
+    expect(commandsModule).toContain('open_research_suite');
+    expect(commandsModule).toContain('return_to_start');
+    expect(commandsMirror).toBe(commandsModule);
   });
 });

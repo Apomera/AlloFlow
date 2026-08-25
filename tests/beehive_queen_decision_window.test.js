@@ -80,6 +80,6 @@ describe('Beehive Queen mode - decision window feedback', () => {
 
     await act(async () => { recommended.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.pheromones.alarm).toBe(50);
-    expect(latest.beehive.queen.lastImpact.title).toBe('Alarm Signal');
+    expect(latest.beehive.queen.lastImpact.title).toBe('Worker Alarm Response');
   });
 });

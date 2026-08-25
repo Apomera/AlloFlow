@@ -1944,7 +1944,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             ];
             return h('div', { style: { padding: '14px', margin: '0 24px 12px', borderRadius: '12px', background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
               h('h4', { style: { margin: '0 0 4px', fontSize: '13px', fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: '1px' } }, t('stem.atctower.ops_control_inquiry_widget', '🎚️ Ops Control — Inquiry Widget')),
-              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, t('stem.atctower.move_five_operational_sliders_predict_', 'Move five operational sliders. Predict how each interacts before launching a session. No score, no reveal — you mark your own understanding.')),
+              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, t('stem.atctower.move_five_operational_sliders_predict_', 'Move the five operational controls and observe how the modeled load changes before launching a session. The result updates live; record a hypothesis or pattern you notice.')),
               h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '16px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Predicted load: ' + sm.label),
               h('p', { style: { margin: '0 0 10px', fontSize: '10px', opacity: 0.8 } }, sm.desc),
               h('div', { style: { display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', marginBottom: '10px' } },

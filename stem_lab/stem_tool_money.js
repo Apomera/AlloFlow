@@ -4358,7 +4358,7 @@ window.StemLab = window.StemLab || {
                 }
                 return React.createElement("div", Object.assign(moneyPanelProps("p-3 rounded-xl"), { style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }),
                   React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, __alloT('stem.money.compound_interest_inquiry_2', '🔬 Compound Interest Inquiry')),
-                  React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, __alloT('stem.money.set_starting_balance_rate_time_horizon', 'Set starting balance, rate, time horizon, and monthly contribution. Predict the growth ratio before reading it. No score, no reveal.')),
+                  React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, __alloT('stem.money.set_starting_balance_rate_time_horizon', 'Set starting balance, rate, time horizon, and monthly contribution, then observe how the growth ratio changes. The result updates live; record a hypothesis or pattern you notice.')),
                   React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label + ' · FV $' + fv.toFixed(0) + ' (' + growthRatio.toFixed(2) + 'x contributions)'),
                   React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },

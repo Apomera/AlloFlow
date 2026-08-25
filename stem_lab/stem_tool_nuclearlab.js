@@ -660,6 +660,41 @@
       what: 'The international threshold for urgent protective action. Note it sits at the same 100 mSv as the lowest dose with a clearly measurable cancer link, from section 11.' }
   ];
 
+  // ── Evidence challenge. The lab is deliberately full of qualified claims:
+  //    model versus measurement, point source versus real geometry, and
+  //    "not detected" versus "zero". A learner can read every number here and
+  //    still miss that distinction, so the final activity asks for an evidence
+  //    verdict rather than another calculation. The third verdict is essential:
+  //    uncertainty is a scientific result, not a wrong answer waiting to be
+  //    forced into true or false.
+  var EVIDENCE_VERDICTS = [
+    { id: 'supported', label: 'Supported by this evidence', short: 'Supported' },
+    { id: 'contradicted', label: 'Contradicted by this evidence', short: 'Contradicted' },
+    { id: 'uncertain', label: 'Not settled by this evidence', short: 'Not enough evidence' }
+  ];
+  var EVIDENCE_CLAIMS = [
+    { id: 'reactor-bomb', section: 'enrichment', verdict: 'contradicted',
+      claim: 'If every control rod is withdrawn, a power reactor can detonate like a nuclear weapon.',
+      evidence: 'Power-reactor fuel is only about 3–5% uranium-235 and depends on moderated neutrons. It cannot sustain the fast, compact chain reaction a weapon requires. A badly controlled reactor can overheat or drive steam and chemical explosions, but those are different mechanisms.',
+      takeaway: 'The strongest verdict names the mechanism, not just the outcome.' },
+    { id: 'inverse-square', section: 'protect', verdict: 'supported',
+      claim: 'For an ideal point gamma source in open air, doubling the distance cuts the dose rate to one quarter.',
+      evidence: 'The same radiation is spread over four times the area when distance doubles, so the point-source model gives 1/d². A nearby extended source, walls, and scattered radiation can depart from that clean rule.',
+      takeaway: 'A model can support a claim when its assumptions travel with it.' },
+    { id: 'low-dose-zero', section: 'lowdose', verdict: 'uncertain',
+      claim: 'Because studies cannot resolve a cancer effect below about 100 mSv, the risk below that dose must be zero.',
+      evidence: 'Ordinary cancer is common, so a small added risk is statistically hard to separate from noise. The available evidence cannot distinguish a true zero from an effect too small for existing cohorts to measure.',
+      takeaway: 'No detected effect is not the same statement as no effect.' },
+    { id: 'neutron-layers', section: 'shielding', verdict: 'supported',
+      claim: 'A layered fast-neutron shield can outperform lead alone because slowing and capturing neutrons are separate jobs.',
+      evidence: 'Hydrogen-rich material removes energy efficiently through repeated collisions; a capture layer can then absorb the slowed neutrons. Dense lead can scatter fast neutrons, but by itself it is poor at finishing the long trip to thermal energy.',
+      takeaway: 'The evidence supports the claim by separating two physical steps.' },
+    { id: 'short-count', section: 'detect', verdict: 'uncertain',
+      claim: 'One short Geiger count slightly above background proves that a weak radioactive source is present.',
+      evidence: 'Both background and source counts fluctuate randomly. One small excess may be an ordinary fluctuation; repeated or longer counts, a matched background, and an uncertainty estimate are needed before the source can be distinguished.',
+      takeaway: 'A measurement without uncertainty cannot carry the word “proves.”' }
+  ];
+
   // ── Readable ink. The accent colours below are chosen to sit on a DARK
   //    card, and most of them do that well. Put the same hex on the light
   //    theme's near-white card and it collapses: a static audit of every
@@ -909,7 +944,7 @@
   window.StemLab.registerTool('nuclearLab', {
     icon: '☢️',
     label: 'Nuclear & Radiation Lab',
-    desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.',
+    desc: 'Half-life and decay you can run, what actually stops alpha, beta and gamma, how fission and fusion work, radiation doses on a scale you can read, a simulated Geiger counter that shows why one short count lies, an evidence challenge for testing nuclear claims, why the same accident gets two death tolls a hundredfold apart, the three accidents in honest numbers, what to do with the waste, and where small modular reactors really stand.',
     color: 'violet',
     category: 'science',
     aliases: ['nuclear', 'radiation', 'radioactive', 'radioactivity', 'half-life', 'halflife', 'isotope', 'isotopes',
@@ -979,7 +1014,9 @@
       { id: 'nk_reactors', label: 'Compare three reactor designs', icon: '🏭',
         check: function (d) { return !!(d && (d.reactorsSeen || []).length >= 3); } },
       { id: 'nk_waste', label: 'Work through the waste question', icon: '🗄️',
-        check: function (d) { return !!(d && (d.wasteSeen || []).length >= 3); } }
+        check: function (d) { return !!(d && (d.wasteSeen || []).length >= 3); } },
+      { id: 'nk_evidence', label: 'Master all five evidence verdicts', icon: '🔎',
+        check: function (d) { return !!(d && (d.evidenceMastered || []).length >= EVIDENCE_CLAIMS.length); } }
     ],
 
     render: function (ctx) {
@@ -1033,6 +1070,27 @@
         patch[key] = list.concat([value]);
         upd(patch);
       }
+
+      // ── 21. evidence challenge ──
+      // Persist choices per claim so learners can move around without losing
+      // their reasoning. "Mastered" means the evidence has been checked with
+      // feedback; it is progress, not a timed score or a one-shot judgement.
+      var evidenceIndex = nkClamp(
+        typeof d.evidenceIndex === 'number' ? Math.floor(d.evidenceIndex) : 0,
+        0, EVIDENCE_CLAIMS.length - 1);
+      var evidenceClaim = EVIDENCE_CLAIMS[evidenceIndex];
+      var evidenceChoices = d.evidenceChoices && typeof d.evidenceChoices === 'object' ? d.evidenceChoices : {};
+      var evidenceCheckedMap = d.evidenceChecked && typeof d.evidenceChecked === 'object' ? d.evidenceChecked : {};
+      var evidenceChoice = evidenceChoices[evidenceClaim.id] || '';
+      var evidenceIsChecked = !!evidenceCheckedMap[evidenceClaim.id];
+      var evidenceCorrect = evidenceIsChecked && evidenceChoice === evidenceClaim.verdict;
+      var evidenceMastered = Array.isArray(d.evidenceMastered)
+        ? d.evidenceMastered.filter(function (id, i, all) {
+            return all.indexOf(id) === i && EVIDENCE_CLAIMS.some(function (claim) { return claim.id === id; });
+          })
+        : [];
+      var evidenceVerdict = EVIDENCE_VERDICTS.filter(function (v) { return v.id === evidenceClaim.verdict; })[0];
+      var evidenceComplete = evidenceMastered.length === EVIDENCE_CLAIMS.length;
 
       // ── 1. decay ──
       var isoId = d.isoId || 'c14';
@@ -2297,7 +2355,9 @@
           // and the section they asked for was unreachable without tabbing
           // through everything above it. -1 keeps it out of the tab order.
           tabIndex: -1,
-          style: Object.assign({}, node.props.style, { scrollMarginTop: '188px', outline: 'none' })
+          // Keep a visible focus ring. Programmatic focus is still focus, and
+          // removing its outline made a successful keyboard jump look broken.
+          style: Object.assign({}, node.props.style, { scrollMarginTop: '188px' })
         });
       };
       // A real <h4>, not a styled <p>. Seventeen sections had exactly one
@@ -2427,7 +2487,7 @@
       };
 
       // ── topic index ──
-      // Fifteen sections is a long scroll to hunt through. Order here MUST match DOM
+      // Twenty-one sections is a long scroll to hunt through. Order here MUST match DOM
       // order — the numbers in the headings are read off this list.
       var NK_GROUPS = [
         { id: 'all', label: 'All' },
@@ -2456,10 +2516,11 @@
         { id: 'reactors', grp: 'reactors', icon: '🏭', label: 'Reactor designs & SMRs', kw: 'pwr bwr candu rbmk smr molten salt fusion small modular status' },
         { id: 'waste', grp: 'society', icon: '🗄️', label: 'The waste question', kw: 'spent fuel repository onkalo storage geological million years disposal' },
         { id: 'compare', grp: 'society', icon: '⚖️', label: 'Compared with alternatives', kw: 'deaths per twh coal gas solar wind carbon co2 lifecycle safest' },
-        { id: 'operate', grp: 'reactors', icon: '🎛️', label: 'Operate a reactor', kw: 'simulator control rods scram xenon blackout scenario 3d core hands on' }
+        { id: 'operate', grp: 'reactors', icon: '🎛️', label: 'Operate a reactor', kw: 'simulator control rods scram xenon blackout scenario 3d core hands on' },
+        { id: 'evidence', grp: 'society', icon: '🔎', label: 'Evidence challenge', kw: 'claim evidence supported contradicted uncertainty critical thinking misconception check mastery' }
       ];
       // ── Question-led routes through the tool ─────────────────────────────
-      // Nineteen sections and eleven thousand pixels, ordered by physics: start
+      // Twenty-one sections and a very long page, ordered by physics: start
       // at half-life, end at a reactor simulator. That order is right for
       // someone reading it through and wrong for almost everyone who arrives,
       // because people do not turn up wanting "section 8" — they turn up
@@ -2467,25 +2528,26 @@
       // nuclear power is safe, and the sections that answer those questions are
       // scattered across the document by design.
       //
-      // These are the same nineteen sections in five reading orders. Nothing is
-      // hidden and nothing is duplicated: a route is a filter over the index,
-      // so a student can take one, ignore them all, or search as before.
+      // These are focused reading orders across the same topic set. Nothing is
+      // duplicated: a route is a filter over the index, so a student can take
+      // one, ignore them all, or search as before. Every route closes with the
+      // same evidence challenge so reading ends in an active judgement.
       var NK_PATHS = [
         { id: 'safe', q: 'Is nuclear power safe?', icon: '⚖️',
           why: 'Start with the comparison, then the three accidents that shape how people feel about it, then why their death tolls are quoted so differently, then the two problems that are genuinely unsolved.',
-          steps: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors'] },
+          steps: ['compare', 'accidents', 'lowdose', 'shelter', 'waste', 'reactors', 'evidence'] },
         { id: 'me', q: 'Does this dose matter to me?', icon: '🧍',
           why: 'What a sievert actually is, what happens once something is inside you, your own yearly total, where it all sits on a scale, and what a small number on that scale does and does not mean.',
-          steps: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose'] },
+          steps: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose', 'evidence'] },
         { id: 'safety', q: 'How would I protect myself?', icon: '🛡️',
           why: 'What stops each kind of radiation, the three levers you can actually pull, and the one emergency decision that is genuinely a judgement call.',
-          steps: ['shielding', 'protect', 'shelter'] },
+          steps: ['shielding', 'protect', 'shelter', 'evidence'] },
         { id: 'works', q: 'How does any of it work?', icon: '⚛️',
           why: 'The one rule that never changes, the curve behind both fission and fusion, the chain reaction, and then run one yourself.',
-          steps: ['halflife', 'binding', 'criticality', 'enrichment', 'operate'] },
+          steps: ['halflife', 'binding', 'criticality', 'enrichment', 'operate', 'evidence'] },
         { id: 'know', q: 'How do we know all this?', icon: '🔬',
           why: 'Every number in this tool came from an instrument. This is what those instruments are and what they can and cannot tell you.',
-          steps: ['detect', 'dating', 'chain'] }
+          steps: ['detect', 'dating', 'chain', 'evidence'] }
       ];
       // Open on a laptop, where it costs a fifth of the screen and the routes
       // are the new way in. Closed on a phone, where the expanded bar measured
@@ -2497,6 +2559,10 @@
       var nkGroup = d.nkGroup || 'all';
       var nkPathId = d.nkPath || null;
       var nkPath = nkPathId ? NK_PATHS.filter(function (p) { return p.id === nkPathId; })[0] : null;
+      var nkLargeText = !!d.nkLargeText;
+      var nkSystemReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia
+        && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      var nkReduceMotion = typeof d.nkReduceMotion === 'boolean' ? d.nkReduceMotion : nkSystemReducedMotion;
       function nkMatches(s) {
         if (nkGroup !== 'all' && s.grp !== nkGroup) return false;
         if (!nkQuery) return true;
@@ -2512,9 +2578,7 @@
       function nkGoTo(s) {
         var target = typeof document !== 'undefined' && document.getElementById('nksec-' + s.id);
         if (target) {
-          var rm = !!(typeof window !== 'undefined' && window.matchMedia
-            && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-          try { target.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' }); }
+          try { target.scrollIntoView({ behavior: nkReduceMotion ? 'auto' : 'smooth', block: 'start' }); }
           catch (e) { target.scrollIntoView(); }
           // Then take focus with it, so Tab continues from the section the
           // reader asked for. preventScroll keeps focus() from fighting the
@@ -2529,6 +2593,20 @@
         if (d.nkOpen !== false) upd({ nkOpen: false });
         if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
       }
+      function nkReviewTopic(id) {
+        var section = NK_SECTIONS.filter(function (s) { return s.id === id; })[0];
+        if (!section) return;
+        var target = typeof document !== 'undefined' && document.getElementById('nksec-' + id);
+        if (target) {
+          nkGoTo(section);
+          return;
+        }
+        // The requested evidence lives outside the current progressive route.
+        // Leave the route, then let the existing post-commit focus handoff land
+        // on the newly mounted section.
+        nkPendingTargetRef.current = section;
+        upd({ nkPath: null, nkQuery: '', nkGroup: 'all', nkOpen: false });
+      }
       // A route's first section is absent until React commits the route change.
       // Moving focus in the click handler races that commit and leaves keyboard
       // focus on a route button that is about to disappear with the folded
@@ -2541,12 +2619,12 @@
         nkGoTo(pending);
       }, [nkPathId]);
       // ── Scroll-spy ───────────────────────────────────────────────────────
-      // Nineteen sections and eleven thousand pixels. Once the index folds
+      // Twenty-one sections and a very long page. Once the index folds
       // there is nothing telling a reader where in the document they are, and
       // "where am I" is the question a long page has to keep answering.
       //
       // Written imperatively on purpose. Routing this through React state would
-      // re-render all nineteen sections on every boundary crossed — measured at
+      // re-render all twenty-one sections on every boundary crossed — measured at
       // ~100 ms on a throttled CPU — so scrolling would hitch repeatedly just to
       // move a highlight. The observer writes to the two buttons that change and
       // touches nothing else.
@@ -2648,6 +2726,17 @@
         );
       }
 
+      var nkDisplayToggle = function (on, label, aria, onClick) {
+        return h('button', {
+          key: label, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+          'aria-label': aria, onClick: onClick,
+          className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-bold',
+          style: on
+            ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
+            : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
+        }, label);
+      };
+
       // Every section stays open, so the index is pure navigation — nothing here
       // marks a topic as engaged. The quest hooks still measure real interaction.
       var nkIndex = h('nav', {
@@ -2697,7 +2786,17 @@
           }),
           h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
             nkPath ? 'route: ' + nkVisible.length + ' steps'
-              : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length))
+              : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)),
+          h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
+            nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
+              upd({ nkLargeText: !nkLargeText });
+              if (typeof announceToSR === 'function') announceToSR('Larger text ' + (!nkLargeText ? 'on.' : 'off.'));
+            }),
+            nkDisplayToggle(nkReduceMotion, nkReduceMotion ? 'Motion: low' : 'Motion: standard', 'Reduce non-essential motion throughout the nuclear lab', function () {
+              upd({ nkReduceMotion: !nkReduceMotion });
+              if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkReduceMotion ? 'on.' : 'off.'));
+            })
+          )
         ),
         // Collapsible body. The header row above stays put so the index is
         // always one tap away; everything below folds once it has been used.
@@ -2758,7 +2857,7 @@
                     // The scroll-spy below marks the section currently in view
                     // by writing to this element directly. It deliberately does
                     // not go through React: a state change here would re-render
-                    // all nineteen sections every time a boundary is crossed,
+                    // all twenty-one sections every time a boundary is crossed,
                     // which measured ~100 ms on a throttled CPU — a hitch on
                     // every scroll, to move a highlight.
                     'data-nk-jump': s.id,
@@ -2783,8 +2882,23 @@
       // 225 text elements measured below AA in dark. With an opaque root, all
       // inner layers composite over the dark they were designed for. Light mode
       // is unchanged (undefined = the host's white card, as before).
-      return h('div', { 'data-nuclear-lab': 'true', className: 'nk-readable max-w-5xl mx-auto animate-in fade-in duration-200', style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined } },
+      return h('div', {
+        'data-nuclear-lab': 'true',
+        'data-nk-large-text': nkLargeText ? 'true' : 'false',
+        'data-nk-reduce-motion': nkReduceMotion ? 'true' : 'false',
+        className: 'nk-readable relative max-w-5xl mx-auto animate-in fade-in duration-200',
+        style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined, '--nk-focus': isDark ? '#fbbf24' : '#6d28d9' }
+      },
         h('style', null,
+          '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
+          '.nk-readable [data-nk-sec]:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
+          '.nk-readable .nk-skip-link{position:absolute;left:-9999px;top:.5rem;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
+          '.nk-readable .nk-skip-link:focus{left:.5rem}' +
+          '.nk-readable[data-nk-large-text="true"] .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
+          '.nk-readable[data-nk-large-text="true"] .text-\\[10px\\]{font-size:.8rem!important;line-height:1.2rem!important}' +
+          '.nk-readable[data-nk-reduce-motion="true"]{animation:none!important}' +
+          '.nk-readable[data-nk-reduce-motion="true"] *,.nk-readable[data-nk-reduce-motion="true"] *::before,.nk-readable[data-nk-reduce-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
+          '@media (prefers-reduced-motion:reduce){.nk-readable{animation:none!important}.nk-readable *,.nk-readable *::before,.nk-readable *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
           '@media (max-width:640px){' +
           '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
           '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}' +
@@ -2795,6 +2909,11 @@
           '.nk-readable .nk-slider output{grid-column:2;grid-row:1;width:auto!important;min-width:0}' +
           '.nk-readable .nk-route-progress{flex-basis:100%;order:2}' +
           '}'),
+
+        nkVisible.length ? h('button', {
+          type: 'button', className: 'nk-skip-link',
+          onClick: function () { nkGoTo(nkVisible[0]); }
+        }, 'Skip topic controls and start reading') : null,
 
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #1a0f2e 0%, #2e1065 46%, #0b1a2e 100%)', borderColor: 'rgba(167,139,250,0.4)' } },
           h('div', { className: 'flex flex-wrap items-center gap-3' },
@@ -4125,6 +4244,175 @@
 
           h('p', { className: 'text-[10px] mt-2 leading-relaxed', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'One-group point kinetics with the prompt-jump approximation: β = 0.0065, Λ = 10⁻⁴ s, λ = 0.0767 /s. Decay heat uses the Wigner-Way approximation. Temperature, void and xenon feedbacks are order-of-magnitude realistic for teaching, not a licensing model.')
+        ),
+
+        // ── evidence challenge ──
+        sec('evidence', '#22d3ee',
+          heading(ink('#22d3ee'), '🔎 21. Evidence challenge: what does the evidence earn?'),
+          h('p', { id: 'nk-evidence-intro', className: 'text-[11px] mb-2 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+            'Classify each claim using only the evidence given. There is no timer and no penalty for revising an answer. “Not settled” is a full scientific verdict when the evidence cannot distinguish the possibilities.'),
+
+          h('div', { className: 'flex flex-wrap items-center gap-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(8,47,73,0.3)' : 'rgba(236,254,255,0.9)' } },
+            h('span', { className: 'text-[11px] font-black', style: { color: ink('#22d3ee') } }, 'Evidence mastery'),
+            h('progress', {
+              value: evidenceMastered.length, max: EVIDENCE_CLAIMS.length,
+              'aria-label': evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' evidence claims mastered',
+              className: 'flex-1 min-w-[8rem] h-3', style: { accentColor: '#0891b2' }
+            }),
+            h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+              evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' mastered')
+          ),
+
+          evidenceComplete ? h('aside', {
+            role: 'note', 'aria-label': 'Evidence challenge complete',
+            className: 'mt-2 rounded-lg border p-2.5',
+            style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
+          },
+            h('p', { className: 'text-[11px] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
+            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
+              'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number below to compare the reasoning again.')
+          ) : null,
+
+          h('nav', { 'aria-label': 'Evidence challenge claims', className: 'mt-2' },
+            h('ol', { className: 'flex flex-wrap gap-1.5' },
+              EVIDENCE_CLAIMS.map(function (claim, i) {
+                var current = i === evidenceIndex;
+                var mastered = evidenceMastered.indexOf(claim.id) !== -1;
+                return h('li', { key: claim.id },
+                  h('button', {
+                    type: 'button',
+                    'aria-current': current ? 'step' : undefined,
+                    'aria-label': 'Claim ' + (i + 1) + ' of ' + EVIDENCE_CLAIMS.length + (mastered ? ', mastered' : ', not yet mastered'),
+                    onClick: function () {
+                      upd({ evidenceIndex: i });
+                      if (typeof announceToSR === 'function') announceToSR('Claim ' + (i + 1) + ' of ' + EVIDENCE_CLAIMS.length + '.');
+                    },
+                    className: 'min-h-11 min-w-11 px-3 py-2 rounded-lg text-[11px] font-black',
+                    style: current
+                      ? { background: '#22d3ee', color: '#0b1020', border: '1px solid #22d3ee' }
+                      : { background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(255,255,255,0.95)', color: mastered ? ink('#34d399') : (isDark ? '#e2e8f0' : '#334155'), border: '1px solid ' + (mastered ? '#34d399' : (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)')) }
+                  }, h('span', { 'aria-hidden': 'true' }, mastered ? '✓ ' + (i + 1) : String(i + 1))));
+              })
+            )
+          ),
+
+          h('fieldset', {
+            'aria-describedby': 'nk-evidence-intro nk-evidence-feedback',
+            className: 'mt-2 rounded-xl border p-3',
+            style: { borderColor: 'rgba(34,211,238,0.45)', background: isDark ? 'rgba(15,23,42,0.62)' : 'rgba(255,255,255,0.96)' }
+          },
+            h('legend', { className: 'px-1 text-xs font-black', style: { color: ink('#22d3ee') } },
+              'Claim ' + (evidenceIndex + 1) + ' of ' + EVIDENCE_CLAIMS.length),
+            h('p', { className: 'text-sm font-black leading-relaxed', style: { color: isDark ? '#fff' : '#1e293b' } },
+              '“' + evidenceClaim.claim + '”'),
+            h('p', { className: 'text-[10px] mt-1 mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
+              'Which verdict is justified by the evidence in this lab?'),
+
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
+              EVIDENCE_VERDICTS.map(function (verdict) {
+                var selected = evidenceChoice === verdict.id;
+                return h('label', {
+                  key: verdict.id,
+                  className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-bold cursor-pointer',
+                  style: selected
+                    ? { background: isDark ? 'rgba(34,211,238,0.2)' : 'rgba(207,250,254,0.95)', color: isDark ? '#cffafe' : '#164e63', borderColor: '#22d3ee' }
+                    : { background: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(248,250,252,0.96)', color: isDark ? '#e2e8f0' : '#334155', borderColor: isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.25)' }
+                },
+                  h('input', {
+                    type: 'radio', name: 'nk-evidence-verdict', value: verdict.id,
+                    'aria-label': verdict.label,
+                    checked: selected,
+                    onChange: function () {
+                      var choices = Object.assign({}, evidenceChoices);
+                      var checked = Object.assign({}, evidenceCheckedMap);
+                      choices[evidenceClaim.id] = verdict.id;
+                      checked[evidenceClaim.id] = false;
+                      upd({ evidenceChoices: choices, evidenceChecked: checked });
+                    },
+                    style: { width: '1.15rem', height: '1.15rem', accentColor: '#0891b2', flexShrink: 0 }
+                  }),
+                  h('span', null, verdict.label));
+              })
+            ),
+
+            evidenceIsChecked
+              ? h(React.Fragment, null,
+                  h('div', {
+                    id: 'nk-evidence-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                    className: 'mt-3 rounded-lg border p-2.5',
+                    style: {
+                      borderColor: evidenceCorrect ? 'rgba(52,211,153,0.65)' : 'rgba(251,191,36,0.7)',
+                      background: isDark ? (evidenceCorrect ? 'rgba(6,78,59,0.28)' : 'rgba(120,53,15,0.28)') : (evidenceCorrect ? 'rgba(236,253,245,0.96)' : 'rgba(255,251,235,0.98)')
+                    }
+                  },
+                    h('p', { className: 'text-[11px] font-black', style: { color: ink(evidenceCorrect ? '#059669' : '#f59e0b') } },
+                      evidenceCorrect ? '✓ Evidence match' : '↺ Take another look'),
+                    h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: isDark ? '#f8fafc' : '#1e293b' } },
+                      'Best verdict: ' + evidenceVerdict.label + '.'),
+                    h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } }, evidenceClaim.evidence),
+                    h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#22d3ee') } }, evidenceClaim.takeaway)
+                  ),
+                  h('button', {
+                    type: 'button', onClick: function () { nkReviewTopic(evidenceClaim.section); },
+                    'aria-label': 'Review the lab topic that supports claim ' + (evidenceIndex + 1),
+                    className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-[11px] font-bold',
+                    style: { background: isDark ? 'rgba(148,163,184,0.12)' : '#fff', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
+                  }, 'Review the supporting topic')
+                )
+              : h('p', {
+                  id: 'nk-evidence-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                  className: 'text-[10px] mt-2', style: { color: isDark ? '#94a3b8' : '#475569' }
+                }, evidenceChoice ? 'Choice selected. Check the evidence when you are ready.' : 'Choose a verdict to continue.'),
+
+            h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+              h('button', {
+                type: 'button', disabled: !evidenceChoice || evidenceIsChecked,
+                'aria-describedby': 'nk-evidence-feedback',
+                onClick: function () {
+                  var correct = evidenceChoice === evidenceClaim.verdict;
+                  var checked = Object.assign({}, evidenceCheckedMap);
+                  checked[evidenceClaim.id] = true;
+                  var mastered = evidenceMastered;
+                  var firstMastery = correct && mastered.indexOf(evidenceClaim.id) === -1;
+                  if (firstMastery) mastered = mastered.concat([evidenceClaim.id]);
+                  var firstCompletion = firstMastery && mastered.length === EVIDENCE_CLAIMS.length && !d.evidenceAwarded;
+                  upd({ evidenceChecked: checked, evidenceMastered: mastered, evidenceAwarded: d.evidenceAwarded || firstCompletion });
+                  if (typeof announceToSR === 'function') {
+                    announceToSR(correct ? 'Evidence match. ' + evidenceClaim.takeaway : 'Take another look. Best verdict: ' + evidenceVerdict.label + '.');
+                  }
+                  if (firstCompletion && !d.evidenceAwarded) {
+                    if (typeof celebrate === 'function') celebrate();
+                    if (typeof awardXP === 'function') awardXP('nuclear_evidence', 15, 'Mastered the evidence challenge');
+                  }
+                },
+                className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+                style: { background: '#0e7490', color: '#fff', border: '1px solid #0e7490', opacity: (!evidenceChoice || evidenceIsChecked) ? 0.55 : 1 }
+              }, evidenceIsChecked ? 'Evidence checked' : 'Check the evidence'),
+              evidenceIsChecked ? h('button', {
+                type: 'button',
+                onClick: function () {
+                  var next = evidenceIndex + 1;
+                  if (next >= EVIDENCE_CLAIMS.length) {
+                    next = EVIDENCE_CLAIMS.findIndex(function (claim) { return evidenceMastered.indexOf(claim.id) === -1; });
+                    if (next < 0) next = 0;
+                  }
+                  upd({ evidenceIndex: next });
+                  if (typeof announceToSR === 'function') announceToSR('Claim ' + (next + 1) + ' of ' + EVIDENCE_CLAIMS.length + '.');
+                },
+                className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+                style: { background: '#065f46', color: '#fff', border: '1px solid #065f46' }
+              }, evidenceIndex < EVIDENCE_CLAIMS.length - 1 ? 'Next claim →' : (evidenceComplete ? 'Review claim 1' : 'Review an unfinished claim')) : null,
+              h('button', {
+                type: 'button',
+                onClick: function () {
+                  upd({ evidenceIndex: 0, evidenceChoices: {}, evidenceChecked: {}, evidenceMastered: [] });
+                  if (typeof announceToSR === 'function') announceToSR('Evidence challenge reset.');
+                },
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                style: { background: 'transparent', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
+              }, 'Start over')
+            )
+          )
         ),
 
         // ── bridges ──

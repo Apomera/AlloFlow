@@ -13,11 +13,12 @@ describe('Full Pack educator plan editor host wiring', () => {
     expect(host).toContain("_applyFullPackPlanEdit('editFullPackPlanResourceDirective', resourceKey, directive, groupId)");
     expect(host).toContain("_applyFullPackPlanEdit('moveFullPackPlanResource', resourceKey, toIndex, groupId)");
     expect(host).toContain("_applyFullPackPlanEdit('setFullPackPlanPrimaryTextPolicy', policy, groupId)");
+    expect(host).toContain("_applyFullPackPlanEdit('setFullPackPlanAdaptedTextPolicy', policy, groupId)");
   });
 
   it('renders keyboard-native, section-scoped controls for the full reviewed plan', () => {
     for (const testId of [
-      'full-pack-primary-policy',
+      'full-pack-adapted-policy',
       'full-pack-add-resource-select',
       'full-pack-add-resource',
       'full-pack-resource-type',
@@ -44,12 +45,14 @@ describe('Full Pack educator plan editor host wiring', () => {
 
   it('states the supplemental/non-replacement policy without implying an IEP decision', () => {
     expect(host).toContain('data-testid="full-pack-text-access-summary"');
-    expect(host).toContain('The primary/source text remains available to anchor this pack.');
+    expect(host).toContain('The source text remains available as the primary reference for this pack.');
+    expect(host).toContain('The source text is the required primary text for standards alignment and assessment evidence.');
     expect(host).toContain('Number(section?.preflight?.sourceTextChars || 0) > 0');
     expect(host).toContain("Boolean(String(section?.preflight?.sourceFingerprint || '').trim())");
     expect(host).toContain('No primary-text replacement or IEP modification is inferred.');
-    expect(strings).toContain('"policy_preserve_primary": "Preserve primary (recommended)"');
-    expect(strings).toContain('"policy_educator_directed": "Include supplemental Adapted Text"');
+    expect(strings).toContain('"policy_include_adapted": "Include supplemental Adapted Text (recommended)"');
+    expect(strings).toContain('"policy_omit_adapted": "Omit Adapted Text"');
+    expect(strings).toContain('"policy_adapted_prohibited": "Adaptation prohibited by sourced standard"');
     expect(strings).not.toContain('copy directly into official paperwork');
   });
 

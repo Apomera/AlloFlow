@@ -18,6 +18,19 @@ function validatedToolNames(tools, label) {
   return names.slice().sort();
 }
 
+function assertSourceParity(manifest) {
+  const sourceManifest = require('./build_mcpb.cjs').buildManifest();
+  if (manifest.version !== sourceManifest.version) {
+    throw new Error('Artifact version ' + manifest.version + ' does not match current source version ' + sourceManifest.version);
+  }
+  const artifactNames = validatedToolNames(manifest.tools, 'Artifact manifest');
+  const sourceNames = validatedToolNames(sourceManifest.tools, 'Current source manifest');
+  if (JSON.stringify(artifactNames) !== JSON.stringify(sourceNames)) {
+    throw new Error('Artifact tool registry does not match the current source manifest');
+  }
+  return { version: sourceManifest.version, tools: sourceNames };
+}
+
 function extractArchive(bundle, destination) {
   // (2026-08-16) Windows repair — BOTH prior rungs were broken here and had never worked:
   //   - tar.exe is bsdtar, which parses "C:\..." as a REMOTE host:path ("tar: Cannot connect
@@ -89,6 +102,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     const manifest = JSON.parse(fs.readFileSync(path.join(extraction, 'manifest.json'), 'utf8'));
     if (manifest.manifest_version !== '0.4') throw new Error('Unexpected manifest version: ' + manifest.manifest_version);
     const manifestNames = validatedToolNames(manifest.tools, 'Artifact manifest');
+    if (options.assertSourceParity !== false) assertSourceParity(manifest);
     const entry = path.join(extraction, manifest.server.entry_point);
     if (!fs.existsSync(entry)) throw new Error('Artifact server entry point is missing: ' + manifest.server.entry_point);
     const env = {
@@ -106,6 +120,9 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
       protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'mcpb-artifact-verifier', version: '1' },
     });
     if (initialized.serverInfo.name !== 'alloflow-remediation') throw new Error('Extracted artifact started the wrong MCP server');
+    if (initialized.serverInfo.version !== manifest.version) {
+      throw new Error('Extracted server version ' + initialized.serverInfo.version + ' does not match artifact manifest version ' + manifest.version);
+    }
     if (!initialized.capabilities || !initialized.capabilities.extensions || !initialized.capabilities.extensions['io.modelcontextprotocol/skills']) throw new Error('Extracted artifact did not advertise its bundled skill');
     if (!initialized.capabilities.prompts || initialized.capabilities.prompts.listChanged !== false) throw new Error('Extracted artifact did not advertise its stable prompt registry');
     const skillUri = 'skill://alloflow-remediation/alloflow-pdf-remediation/SKILL.md';
@@ -132,6 +149,7 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
     if (options.requirePlaywright && !capabilities.playwrightAvailable) throw new Error('Distribution artifact does not contain a resolvable Playwright runtime');
     return {
       bundle,
+      version: manifest.version,
       bytes: fs.statSync(bundle).size,
       tools: servedNames.length,
       skills: skillList.skills.length,
@@ -156,10 +174,11 @@ async function verifyArtifact(bundlePath = DEFAULT_BUNDLE, options = {}) {
 async function main() {
   const args = process.argv.slice(2);
   const requirePlaywright = args.includes('--require-playwright');
-  const bundle = args.find((arg) => arg !== '--require-playwright') || DEFAULT_BUNDLE;
-  const result = await verifyArtifact(bundle, { requirePlaywright });
-  process.stdout.write('MCPB ARTIFACT: PASS (' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + result.bytes + ' bytes)\n');
+  const allowSourceDrift = args.includes('--allow-source-drift');
+  const bundle = args.find((arg) => arg !== '--require-playwright' && arg !== '--allow-source-drift') || DEFAULT_BUNDLE;
+  const result = await verifyArtifact(bundle, { requirePlaywright, assertSourceParity: !allowSourceDrift });
+  process.stdout.write('MCPB ARTIFACT: PASS (v' + result.version + ', ' + result.tools + ' tools, ' + result.skills + ' skill, ' + result.prompts + ' prompt, ' + result.vendorFiles + ' hashed vendor files, ' + result.bytes + ' bytes)\n');
 }
 
-module.exports = { extractArchive, verifyArtifact, validatedToolNames, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
+module.exports = { extractArchive, verifyArtifact, validatedToolNames, assertSourceParity, DEFAULT_BUNDLE, DEFAULT_RPC_TIMEOUT_MS };
 if (require.main === module) main().catch((error) => { console.error('[verify-mcpb] ERROR: ' + error.stack); process.exitCode = 1; });

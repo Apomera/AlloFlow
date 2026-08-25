@@ -158,15 +158,15 @@ const WC_QUIZ_BASE = {
 };
 
 const SHOTS = [
-  // BE THE WATER, the flagship piloted mode. The sim runs itself from the
-  // moment the canvas mounts, so a plain mount already shows liquid water in
-  // the sunlit patch; the later labels drive the parcel to a form by injecting
-  // a pilot snapshot, because reaching a cloud by flying takes ~20 s of held
-  // thrust and a shot cannot hold a key.
-  ['40-pilot-start-light', { wcMode: 'pilot' }, false],
-  ['41-pilot-start-dark', { wcMode: 'pilot' }, true],
-  ['42-pilot-mountain-light', { wcMode: 'pilot', pilot: { scenario: 'mountainWinter' } }, false],
-  ['43-pilot-desert-light', { wcMode: 'pilot', pilot: { scenario: 'desertBasin' } }, false],
+  // BE THE WATER, the flagship piloted mode. A plain mount captures the guided
+  // launch; active-scene shots opt past it with onboardingComplete so the
+  // WebGL world, HUD, and scenario-specific biomes remain visible to review.
+  ['40-pilot-launch-light', { wcMode: 'pilot' }, false],
+  ['40b-pilot-start-light', { wcMode: 'pilot', pilot: { onboardingComplete: true } }, false],
+  ['40c-pilot-water-view-light', { wcMode: 'pilot', pilot: { onboardingComplete: true, cameraMode: 'water' } }, false],
+  ['41-pilot-start-dark', { wcMode: 'pilot', pilot: { onboardingComplete: true } }, true],
+  ['42-pilot-mountain-light', { wcMode: 'pilot', pilot: { scenario: 'mountainWinter', onboardingComplete: true } }, false],
+  ['43-pilot-desert-light', { wcMode: 'pilot', pilot: { scenario: 'desertBasin', onboardingComplete: true } }, false],
   ['01-explorer-light', {}, false],
   ['02-explorer-dark', {}, true],
   ['03-explorer-night-light', { climSolar: 0.2, climateAdjusted: true }, false],
@@ -282,8 +282,40 @@ const MOBILE_SHOTS = [
   }
 
   for (const [label, state, dark] of SHOTS.filter((s) => !ONLY || s[0].indexOf(ONLY) !== -1)) {
+    const isPilotShot = label.indexOf('pilot') !== -1;
     await pg.evaluate(({ s, d }) => window.__mount(s, d), { s: state, d: dark });
     await pg.waitForTimeout(label.startsWith('01') ? WAIT : 3500);
+    if (isPilotShot) {
+      const pilotDom = await pg.evaluate(() => {
+        const launch = document.querySelector('.wc-pilot-launch');
+        const stage = document.querySelector('.wc-pilot-stage');
+        const camera = document.querySelector('.wc-pilot-camera-switch');
+        const pad = document.querySelector('.wc-pilot-pad');
+        const leftHud = document.querySelector('.wc-pilot-hud-left');
+        const rightHud = document.querySelector('.wc-pilot-hud-right');
+        // Reading text and bounds forces pending style/layout work before capture.
+        const stageRect = stage && stage.getBoundingClientRect();
+        if (launch) {
+          const text = launch.innerText || '';
+          return { kind: 'launch', ok: !!stageRect && stageRect.width > 0 && stageRect.height > 0
+            && text.indexOf('Begin - see your parcel') !== -1
+            && text.indexOf('Begin - look through water') !== -1 };
+        }
+        const cameraText = camera ? camera.innerText || '' : '';
+        const padText = pad ? pad.innerText || '' : '';
+        return { kind: 'active', ok: !!stageRect && stageRect.width > 0 && stageRect.height > 0
+          && !!leftHud && !!rightHud
+          && cameraText.indexOf('Follow view') !== -1
+          && cameraText.indexOf('Water view') !== -1
+          && cameraText.indexOf('Help') !== -1
+          && padText.indexOf('Pause') !== -1
+          && padText.indexOf('Reset') !== -1
+          && padText.indexOf('Sound') !== -1 };
+      });
+      if (!pilotDom.ok) throw new Error('Pilot DOM incomplete before capture (' + pilotDom.kind + ')');
+      await pg.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      console.log('   pilot DOM: complete (' + pilotDom.kind + ')');
+    }
     const file = path.join(OUT, label + '.png');
     // fullPage for the sweep-style shots: the explorer stacks ~15 panels below
     // the canvas that a viewport shot never reaches.
@@ -308,6 +340,11 @@ const MOBILE_SHOTS = [
     }
     // Quiz/focus panels live below the fold, so the viewport shot misses them;
     // element screenshots auto-scroll.
+    // A pilot shot contains a continuously-rendered RAF WebGL canvas. Chromium
+    // with SwiftShader can drop arbitrary overlay glyphs when an element crop is
+    // taken immediately after the page capture, even though the first image and
+    // the live UI are complete. Keep pilot verification to one capture per mount;
+    // the page image already includes the full stage and its surrounding controls.
     const shell = label.indexOf('quiz') !== -1
       ? await pg.$('[aria-label="Water Cycle quiz"]')
       : label.indexOf('myth') !== -1
@@ -316,8 +353,8 @@ const MOBILE_SHOTS = [
         ? await pg.$('.wc-hydro-quest')
       : label.indexOf('focus') !== -1
         ? await pg.$('.wc-stage-focus')
-      : label.indexOf('pilot') !== -1
-        ? await pg.$('.wc-pilot-stage')
+      : isPilotShot
+        ? null
         : await pg.$('canvas.wc-journey-3d') || await pg.$('.wc-canvas-shell') || await pg.$('.wc-precip-chamber');
     if (shell) await shell.screenshot({ path: path.join(OUT, label + '-canvas.png') });
     // The lightning flash is random (~0.3%/frame) and lasts only a few frames,

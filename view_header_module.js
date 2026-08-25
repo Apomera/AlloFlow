@@ -130,6 +130,8 @@ function HeaderBar(props) {
     theme,
     colorOverlay,
     readingTheme,
+    readingThemeFavorites = [],
+    readingThemePreferenceScope,
     focusMode,
     disableAnimations,
     baseFontSize,
@@ -137,6 +139,7 @@ function HeaderBar(props) {
     letterSpacing,
     selectedFont,
     setReadingTheme,
+    toggleReadingThemeFavorite,
     setBaseFontSize,
     setLineHeight,
     setLetterSpacing,
@@ -279,15 +282,25 @@ function HeaderBar(props) {
       return true;
     }
   });
-  const toggleHeaderCollapsed = React.useCallback(() => {
-    setHeaderCollapsed((previous) => {
-      const next = !previous;
-      try {
-        localStorage.setItem("allo_header_collapsed", String(next));
-      } catch (_) {
-      }
-      return next;
-    });
+  const toggleHeaderCollapsed = React.useCallback((event) => {
+    const button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      button.style.opacity = "0.72";
+    }
+    setTimeout(() => {
+      const toggle = () => setHeaderCollapsed((previous) => {
+        const next = !previous;
+        try {
+          localStorage.setItem("allo_header_collapsed", String(next));
+        } catch (_) {
+        }
+        return next;
+      });
+      if (typeof React.startTransition === "function") React.startTransition(toggle);
+      else toggle();
+    }, 40);
   }, []);
   const [voiceInputEngine, setVoiceInputEngine] = React.useState(() => {
     try {
@@ -498,7 +511,10 @@ function HeaderBar(props) {
   };
   const selectedReadingThemeKey = readingThemeLabelKeys[readingTheme] || readingThemeLabelKeys.default;
   const selectedReadingThemeLabel = t("header." + selectedReadingThemeKey) || readingThemeFallbackLabels[readingTheme] || readingThemeFallbackLabels.default;
-  const readingThemeOrder = ["default", "warm", "sepia", "dark", "highContrast", "blue", "green", "rose", "dyslexia", "dim"];
+  const readingThemeBaseOrder = ["default", "warm", "sepia", "dark", "highContrast", "blue", "green", "rose", "dyslexia", "dim"];
+  const normalizedReadingThemeFavorites = readingThemeFavorites.filter((id, index, list) => readingThemeBaseOrder.includes(id) && list.indexOf(id) === index);
+  const readingThemeOrder = normalizedReadingThemeFavorites.concat(readingThemeBaseOrder.filter((id) => !normalizedReadingThemeFavorites.includes(id)));
+  const selectedReadingThemeIsFavorite = normalizedReadingThemeFavorites.includes(readingTheme);
   const handleReadingThemeKeyDown = (event, currentTheme) => {
     const key = event.key;
     if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Home", "End"].includes(key)) return;
@@ -807,7 +823,9 @@ function HeaderBar(props) {
       { id: "rose", label: t("header.reading_theme_rose") || "Rose", bg: "#f9c8d8", fg: "#561530", border: "#a7476b", focus: "#174ea6", emoji: "\u{1F338}" },
       { id: "dyslexia", label: t("header.reading_theme_easy_read") || "Easy Read", bg: "#f4ebbe", fg: "#3f3b31", border: "#8d7621", focus: "#174ea6", emoji: "\u{1F524}" },
       { id: "dim", label: t("header.reading_theme_dim") || "Dim", bg: "#adb3bd", fg: "#000000", border: "#46505d", focus: "#1d4ed8", emoji: "\u{1F32B}\uFE0F" }
-    ].map(function(th) {
+    ].sort(function(a, b) {
+      return readingThemeOrder.indexOf(a.id) - readingThemeOrder.indexOf(b.id);
+    }).map(function(th) {
       var isActive = readingTheme === th.id;
       return /* @__PURE__ */ React.createElement(
         "button",
@@ -835,7 +853,16 @@ function HeaderBar(props) {
         /* @__PURE__ */ React.createElement("span", { className: "text-sm leading-none" }, th.emoji),
         /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold leading-none" }, th.label)
       );
-    }))))))
+    })), typeof toggleReadingThemeFavorite === "function" && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => toggleReadingThemeFavorite(readingTheme),
+        "aria-pressed": selectedReadingThemeIsFavorite,
+        className: `min-h-9 rounded-lg border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selectedReadingThemeIsFavorite ? theme === "contrast" ? "border-yellow-400 bg-yellow-400 text-black" : theme === "dark" ? "border-amber-400 bg-amber-950 text-amber-100" : "border-amber-500 bg-amber-100 text-amber-950" : _skin.field + " hover:border-amber-500"}`
+      },
+      selectedReadingThemeIsFavorite ? "\u2605 Favorite" : "\u2606 Favorite this theme"
+    ), /* @__PURE__ */ React.createElement("span", { "aria-live": "polite", className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, readingThemePreferenceScope ? `Saved for ${readingThemePreferenceScope} when this live class syncs.` : normalizedReadingThemeFavorites.length ? `${normalizedReadingThemeFavorites.length} favorite${normalizedReadingThemeFavorites.length === 1 ? "" : "s"} saved on this device.` : "Favorites appear first in this picker."))))))
   )), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
     "button",
     {

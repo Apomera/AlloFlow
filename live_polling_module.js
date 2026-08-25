@@ -559,7 +559,8 @@
       rating: 'Rating poll', multiple_choice: 'Multiple choice', free_response: 'Free response', free_text: 'Free response',
       word_cloud: 'Word cloud', feedback_response: 'Feedback response', quiz: 'Live quiz',
       concept_pictionary: 'Concept Pictionary', pictionary: 'Concept Pictionary', sketch_response: 'Sketch response', session_qa: 'Live Q&A',
-      concept_quest: 'Concept Quest', adventure: 'Adventure mode'
+      concept_quest: 'Concept Quest', adventure: 'Adventure mode', word_sounds: 'Word Sounds practice',
+      visual_organizer: 'Visual organizer', escape_room: 'Escape room', resource: 'Assigned resource'
     };
     return labels[key] || (key ? key.replace(/_/g, ' ') : 'No live activity');
   };
@@ -579,6 +580,31 @@
     }
     const numeric = Number(value);
     return Number.isFinite(numeric) ? Math.max(0, numeric) : 0;
+  };
+  const LIVE_ACTIVITY_PROGRESS_STATUSES = ['waiting', 'loading', 'ready', 'working', 'opened', 'attempted', 'submitted', 'revised', 'complete', 'failed', 'paused'];
+  const normalizeLiveActivityProgressReceipt = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const keys = Object.keys(value);
+    const allowed = { version: true, activityId: true, kind: true, status: true, completed: true, total: true, at: true };
+    if (keys.length !== 7 || keys.some(function (key) { return !allowed[key]; })) return null;
+    const version = value.version;
+    const activityId = String(value.activityId || '').trim().slice(0, 160);
+    const kind = String(value.kind || '').trim().toLowerCase().slice(0, 40);
+    const status = LIVE_ACTIVITY_PROGRESS_STATUSES.indexOf(value.status) >= 0 ? value.status : '';
+    const total = value.total;
+    const completed = value.completed;
+    const at = value.at;
+    if (version !== 1 || !/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(activityId)
+        || !/^[a-z][a-z0-9_]{0,39}$/.test(kind) || !status
+        || typeof total !== 'number' || !Number.isInteger(total) || total < 0 || total > 100000
+        || typeof completed !== 'number' || !Number.isInteger(completed) || completed < 0 || completed > total
+        || typeof at !== 'number' || !Number.isFinite(at) || at <= 0) return null;
+    return { version: 1, activityId: activityId, kind: kind, status: status, completed: completed, total: total, at: at };
+  };
+  const liveActivityProgressDisplayStatus = (status) => {
+    if (status === 'loading' || status === 'attempted') return 'working';
+    if (status === 'paused') return 'waiting';
+    return LIVE_ACTIVITY_PROGRESS_STATUSES.indexOf(status) >= 0 ? status : 'waiting';
   };
   const classifyLiveStudentSignal = (config) => {
     const source = config && typeof config === 'object' ? config : {};
@@ -643,9 +669,16 @@
       const directConnected = !!guest.uid;
       const lastSeenAt = normalizeLiveActivityTimestamp(rosterEntry.lastSeen);
       const viewingAt = normalizeLiveActivityTimestamp(rosterEntry.viewingAt);
-      const practiceProgressAt = normalizeLiveActivityTimestamp(rosterEntry.wsProgress && rosterEntry.wsProgress.at);
-      const progressCorrect = Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.correct) || 0);
-      const progressTotal = Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.total) || 0);
+      const activityProgress = normalizeLiveActivityProgressReceipt(rosterEntry.activityProgress);
+      const activityProgressAt = normalizeLiveActivityTimestamp(activityProgress && activityProgress.at);
+      const legacyPracticeProgressAt = normalizeLiveActivityTimestamp(rosterEntry.wsProgress && rosterEntry.wsProgress.at);
+      const practiceProgressAt = Math.max(activityProgressAt, legacyPracticeProgressAt);
+      const progressCorrect = activityProgress
+        ? activityProgress.completed
+        : Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.correct) || 0);
+      const progressTotal = activityProgress
+        ? activityProgress.total
+        : Math.max(0, Number(rosterEntry.wsProgress && rosterEntry.wsProgress.total) || 0);
       let activity = 'No live activity';
       let status = directConnected ? 'ready' : 'offline';
       let updatedAt = 0;
@@ -713,27 +746,55 @@
           activity = liveActivityKindLabel(activeSnapshot.kind || activeSnapshot.family);
           status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
           updatedAt = Number(activeSnapshot.updatedAt) || 0;
+          if (activityProgress && activityProgress.activityId === String(activeSnapshot.activityId)
+              && activityProgressAt >= normalizeLiveActivityTimestamp(activeSnapshot.startedAt)) {
+            status = liveActivityProgressDisplayStatus(activityProgress.status);
+            progressDetail = activityProgress.total ? activityProgress.completed + '/' + activityProgress.total : '';
+            updatedAt = Math.max(updatedAt, activityProgressAt);
+          }
           if (status !== 'waiting') studentSignalAt = updatedAt;
         } else if (targetId) {
+          const progressMatchesAssignment = !!(activityProgress && (
+            (targetAt > 0 && activityProgressAt >= targetAt)
+            || activityProgress.activityId === targetId
+          ));
           activity = normalizeBoundedText(resource && (resource.title || resource.label), 96)
+            || (progressMatchesAssignment ? liveActivityKindLabel(activityProgress.kind) : '')
             || (resource ? liveActivityKindLabel(resource.type) : 'Assigned resource')
             || 'Assigned resource';
           status = deliveryStatus === 'failed' ? 'failed'
             : deliveryStatus === 'loading' ? 'working'
-              : rosterEntry.wsProgress && rosterEntry.wsProgress.done ? 'complete'
+              : progressMatchesAssignment ? liveActivityProgressDisplayStatus(activityProgress.status)
+                : rosterEntry.wsProgress && rosterEntry.wsProgress.done ? 'complete'
                 : opened ? 'opened' : 'waiting';
-          if (rosterEntry.wsProgress && Number(rosterEntry.wsProgress.total) > 0) {
+          if (progressMatchesAssignment && activityProgress.total > 0) {
+            progressDetail = activityProgress.completed + '/' + activityProgress.total;
+          } else if (rosterEntry.wsProgress && Number(rosterEntry.wsProgress.total) > 0) {
             progressDetail = Math.max(0, Number(rosterEntry.wsProgress.correct) || 0) + '/' + Math.max(0, Number(rosterEntry.wsProgress.total) || 0);
           }
-          updatedAt = Number(rosterEntry.viewingAt || rosterEntry.resourceAt || group.resourceAt) || 0;
+          updatedAt = Math.max(Number(rosterEntry.viewingAt || rosterEntry.resourceAt || group.resourceAt) || 0, progressMatchesAssignment ? activityProgressAt : 0);
+          if (progressMatchesAssignment) studentSignalAt = activityProgressAt;
         } else {
           const snapshot = snapshots.find(snapshotForUid);
-          if (!snapshot) return finalizeRow();
-          const candidateStatus = snapshot.participantStatus && snapshot.participantStatus[uid];
-          activity = liveActivityKindLabel(snapshot.kind || snapshot.family);
-          status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
-          updatedAt = Number(snapshot.updatedAt) || 0;
-          if (status !== 'waiting') studentSignalAt = updatedAt;
+          if (snapshot) {
+            const candidateStatus = snapshot.participantStatus && snapshot.participantStatus[uid];
+            activity = liveActivityKindLabel(snapshot.kind || snapshot.family);
+            status = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'].indexOf(candidateStatus) >= 0 ? candidateStatus : 'waiting';
+            updatedAt = Number(snapshot.updatedAt) || 0;
+            if (activityProgress && activityProgress.activityId === String(snapshot.activityId)
+                && activityProgressAt >= normalizeLiveActivityTimestamp(snapshot.startedAt)) {
+              status = liveActivityProgressDisplayStatus(activityProgress.status);
+              progressDetail = activityProgress.total ? activityProgress.completed + '/' + activityProgress.total : '';
+              updatedAt = Math.max(updatedAt, activityProgressAt);
+            }
+            if (status !== 'waiting') studentSignalAt = updatedAt;
+          } else if (activityProgress) {
+            activity = liveActivityKindLabel(activityProgress.kind);
+            status = liveActivityProgressDisplayStatus(activityProgress.status);
+            progressDetail = activityProgress.total ? activityProgress.completed + '/' + activityProgress.total : '';
+            updatedAt = activityProgressAt;
+            studentSignalAt = activityProgressAt;
+          } else return finalizeRow();
         }
       }
       return finalizeRow();
@@ -816,12 +877,13 @@
       timeline: timeline.slice(0, 8),
     };
   };
-  const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'help', 'in-progress', 'finished', 'attention', 'offline'];
+  const LIVE_STUDENT_ACTIVITY_FILTERS = ['all', 'help', 'in-progress', 'finished', 'attention', 'active', 'recent', 'quiet', 'offline', 'unknown'];
   const LIVE_STUDENT_ACTIVITY_SORTS = ['attention', 'name'];
   const liveStudentActivityMatchesFilter = (row, filter) => {
     const selected = LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(filter) >= 0 ? filter : 'all';
     if (selected === 'all') return true;
     if (selected === 'help') return row.supportStatus === 'help';
+    if (selected === 'active' || selected === 'recent' || selected === 'quiet' || selected === 'unknown') return row.signalStatus === selected;
     if (selected === 'offline') return liveStudentRowIsOffline(row);
     if (selected === 'in-progress') return ['working', 'opened', 'ready'].indexOf(row.status) >= 0;
     if (selected === 'finished') return ['submitted', 'revised', 'complete'].indexOf(row.status) >= 0;
@@ -858,6 +920,104 @@
       }
       return String(a.name || '').localeCompare(String(b.name || ''));
     });
+  };
+  const LIVE_COMMAND_CENTER_RECOVERY_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+  const liveCommandCenterRecoveryStorageKey = (sessionCode) => {
+    const code = encodeURIComponent(String(sessionCode || '').trim().slice(0, 80));
+    return code ? 'allo:live-command-center:v1:' + code : '';
+  };
+  const normalizeLiveActivitySnapshotForRecovery = (value) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const activityId = String(value.activityId || '').trim().slice(0, 160);
+    const family = String(value.family || '').trim().toLowerCase().slice(0, 40);
+    const kind = String(value.kind || '').trim().toLowerCase().slice(0, 40);
+    const phase = ['collecting', 'paused', 'review', 'revealed', 'closed'].indexOf(value.phase) >= 0 ? value.phase : 'closed';
+    if (!/^[A-Za-z0-9][A-Za-z0-9:_-]{0,159}$/.test(activityId)
+        || (family && !/^[a-z][a-z0-9_]{0,39}$/.test(family))
+        || (kind && !/^[a-z][a-z0-9_]{0,39}$/.test(kind))) return null;
+    const audienceUids = Array.from(new Set((Array.isArray(value.audienceUids) ? value.audienceUids : [])
+      .map(function (uid) { return String(uid || '').trim().slice(0, 128); })
+      .filter(function (uid) { return /^[A-Za-z0-9:_-]{1,128}$/.test(uid); }))).slice(0, 250);
+    const participantSource = value.participantStatus && typeof value.participantStatus === 'object' && !Array.isArray(value.participantStatus) ? value.participantStatus : {};
+    const participantStatus = {};
+    const statusValues = ['waiting', 'working', 'submitted', 'revised', 'complete', 'withdrawn'];
+    Object.keys(participantSource).slice(0, 250).forEach(function (uid) {
+      const safeUid = String(uid || '').trim().slice(0, 128);
+      const status = participantSource[uid];
+      if (/^[A-Za-z0-9:_-]{1,128}$/.test(safeUid) && statusValues.indexOf(status) >= 0) participantStatus[safeUid] = status;
+    });
+    const countSource = value.counts && typeof value.counts === 'object' && !Array.isArray(value.counts) ? value.counts : {};
+    const counts = {};
+    Object.keys(countSource).slice(0, 20).forEach(function (key) {
+      const safeKey = String(key || '').trim().slice(0, 40);
+      const amount = Number(countSource[key]);
+      if (/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(safeKey) && Number.isFinite(amount) && amount >= 0) counts[safeKey] = Math.min(100000, Math.round(amount));
+    });
+    return {
+      activityId: activityId,
+      family: family,
+      kind: kind,
+      phase: phase,
+      audienceUids: audienceUids,
+      participantStatus: participantStatus,
+      counts: counts,
+      startedAt: normalizeLiveActivityTimestamp(value.startedAt),
+      updatedAt: normalizeLiveActivityTimestamp(value.updatedAt),
+      endedAt: normalizeLiveActivityTimestamp(value.endedAt),
+    };
+  };
+  const mergeLiveActivitySnapshots = function () {
+    const byId = {};
+    Array.prototype.slice.call(arguments).forEach(function (items) {
+      (Array.isArray(items) ? items : []).forEach(function (item) {
+        const normalized = normalizeLiveActivitySnapshotForRecovery(item);
+        if (!normalized) return;
+        const prior = byId[normalized.activityId];
+        if (!prior || normalized.updatedAt >= prior.updatedAt) byId[normalized.activityId] = normalized;
+      });
+    });
+    return Object.values(byId).sort(function (a, b) { return (a.updatedAt || a.startedAt) - (b.updatedAt || b.startedAt); }).slice(-60);
+  };
+  const normalizeLiveCommandCenterRecovery = (value, now) => {
+    const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    const current = normalizeLiveActivityTimestamp(now) || Date.now();
+    const savedAt = normalizeLiveActivityTimestamp(source.savedAt);
+    if (savedAt && current - savedAt > LIVE_COMMAND_CENTER_RECOVERY_MAX_AGE_MS) return { savedAt: 0, activitySnapshots: [], ui: {} };
+    const uiSource = source.ui && typeof source.ui === 'object' && !Array.isArray(source.ui) ? source.ui : {};
+    return {
+      savedAt: savedAt,
+      activitySnapshots: mergeLiveActivitySnapshots(source.activitySnapshots),
+      ui: {
+        studentActivityFilter: LIVE_STUDENT_ACTIVITY_FILTERS.indexOf(uiSource.studentActivityFilter) >= 0 ? uiSource.studentActivityFilter : 'all',
+        studentActivitySort: LIVE_STUDENT_ACTIVITY_SORTS.indexOf(uiSource.studentActivitySort) >= 0 ? uiSource.studentActivitySort : 'attention',
+        studentActivityExpanded: uiSource.studentActivityExpanded !== false,
+        // Poll transport state is intentionally not persisted. Always reopen
+        // the composer after a remount so a stale collapsed panel cannot leave
+        // the teacher with neither an active round nor creation controls.
+        composerExpanded: true,
+        wrapUpExpanded: uiSource.wrapUpExpanded === true,
+      },
+    };
+  };
+  const readLiveCommandCenterRecovery = (sessionCode, storage, now) => {
+    const key = liveCommandCenterRecoveryStorageKey(sessionCode);
+    if (!key) return normalizeLiveCommandCenterRecovery(null, now);
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      const raw = target && target.getItem(key);
+      return normalizeLiveCommandCenterRecovery(raw ? JSON.parse(raw) : null, now);
+    } catch (err) { return normalizeLiveCommandCenterRecovery(null, now); }
+  };
+  const writeLiveCommandCenterRecovery = (sessionCode, value, storage, now) => {
+    const key = liveCommandCenterRecoveryStorageKey(sessionCode);
+    if (!key) return false;
+    try {
+      const target = storage || ((typeof window !== 'undefined' && window.sessionStorage) ? window.sessionStorage : null);
+      if (!target) return false;
+      const normalized = normalizeLiveCommandCenterRecovery(Object.assign({}, value, { savedAt: normalizeLiveActivityTimestamp(now) || Date.now() }), now);
+      target.setItem(key, JSON.stringify(normalized));
+      return true;
+    } catch (err) { return false; }
   };
   const LIVE_TEACHER_ACTION_REASONS = ['help', 'failed', 'offline', 'withdrawn', 'waiting'];
   const normalizeLiveTeacherActionState = (value, now) => {
@@ -3245,7 +3405,7 @@
     const resources = Array.isArray(props.resources) ? props.resources : [];
     const roster = props.roster && typeof props.roster === 'object' ? props.roster : {};
     const sessionGroups = props.sessionGroups && typeof props.sessionGroups === 'object' ? props.sessionGroups : {};
-    const activitySnapshots = Array.isArray(props.activitySnapshots) ? props.activitySnapshots : [];
+    const providedActivitySnapshots = Array.isArray(props.activitySnapshots) ? props.activitySnapshots : [];
     const onSendToStudent = typeof props.onSendToStudent === 'function' ? props.onSendToStudent : null;
     const onSendToGroup = typeof props.onSendToGroup === 'function' ? props.onSendToGroup : null;
     const onSendToStudents = typeof props.onSendToStudents === 'function' ? props.onSendToStudents : null;
@@ -3289,6 +3449,11 @@
     const alloSheetInitialRef = R.useRef(null);
     const studentActivityDialogRef = R.useRef(null);
     const studentActivityCloseRef = R.useRef(null);
+    const initialCommandCenterRecoveryRef = R.useRef(null);
+    if (!initialCommandCenterRecoveryRef.current) {
+      initialCommandCenterRecoveryRef.current = readLiveCommandCenterRecovery(sessionCode);
+    }
+    const initialCommandCenterRecovery = initialCommandCenterRecoveryRef.current;
     const [pendingGroupName, setPendingGroupName] = R.useState(null);
     const [pendingEndAction, setPendingEndAction] = R.useState(null);
     const [guests, setGuests] = R.useState([]);
@@ -3326,12 +3491,15 @@
     }, [props.sessionGroups]);
     const [newGroupName, setNewGroupName] = R.useState('');
     const [showRoutingPanel, setShowRoutingPanel] = R.useState(false);
-    const [studentActivityFilter, setStudentActivityFilter] = R.useState('all');
-    const [studentActivitySort, setStudentActivitySort] = R.useState('attention');
+    const [studentActivityFilter, setStudentActivityFilter] = R.useState(initialCommandCenterRecovery.ui.studentActivityFilter || 'all');
+    const [studentActivitySort, setStudentActivitySort] = R.useState(initialCommandCenterRecovery.ui.studentActivitySort || 'attention');
     const [studentActivityQuery, setStudentActivityQuery] = R.useState('');
-    const [studentActivityExpanded, setStudentActivityExpanded] = R.useState(true);
+    const [studentActivityExpanded, setStudentActivityExpanded] = R.useState(initialCommandCenterRecovery.ui.studentActivityExpanded !== false);
     const [studentActivityVisibleLimit, setStudentActivityVisibleLimit] = R.useState(50);
     const [selectedStudentActivityUid, setSelectedStudentActivityUid] = R.useState(null);
+    const [selectedStudentActivityUids, setSelectedStudentActivityUids] = R.useState([]);
+    const [bulkStudentActionBusy, setBulkStudentActionBusy] = R.useState('');
+    const [bulkStudentActionNotice, setBulkStudentActionNotice] = R.useState({ kind: '', text: '' });
     const [composerExpanded, setComposerExpanded] = R.useState(true);
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
     // duplicate routing on re-submission and to compute aggregates.
@@ -3369,7 +3537,8 @@
     const [actionQueueBusyUid, setActionQueueBusyUid] = R.useState('');
     const [actionQueueNotice, setActionQueueNotice] = R.useState({ kind: '', text: '' });
     const [healthNow, setHealthNow] = R.useState(function () { return Date.now(); });
-    const [wrapUpExpanded, setWrapUpExpanded] = R.useState(false);
+    const [wrapUpExpanded, setWrapUpExpanded] = R.useState(initialCommandCenterRecovery.ui.wrapUpExpanded === true);
+    const [recoveredActivitySnapshots, setRecoveredActivitySnapshots] = R.useState(initialCommandCenterRecovery.activitySnapshots || []);
     const [sessionQaState, setSessionQaState] = R.useState(function () {
       return createSessionQaState({ enabled: sessionQaOptIn });
     });
@@ -3383,6 +3552,8 @@
     const transportSessionRef = R.useRef(sessionCode);
     const panelWasOpenRef = R.useRef(isOpen);
     const panelSessionRef = R.useRef(sessionCode);
+    const commandCenterPersistenceSessionRef = R.useRef(sessionCode);
+    const activitySnapshots = mergeLiveActivitySnapshots(recoveredActivitySnapshots, providedActivitySnapshots);
     R.useEffect(function () {
       if (!isOpen || typeof setInterval !== 'function') return undefined;
       setHealthNow(Date.now());
@@ -3405,8 +3576,9 @@
       routingByPollRef.current = {};
       setGuests([]); setActivePoll(null); setActiveParticipantUids([]);
       setResponses({}); setRoutingByPoll({}); setCheckInsByUid({});
-      setStudentActivityFilter('all'); setStudentActivitySort('attention'); setStudentActivityQuery('');
-      setStudentActivityExpanded(true); setStudentActivityVisibleLimit(50); setComposerExpanded(true);
+      setStudentActivityQuery(''); setStudentActivityVisibleLimit(50);
+      setSelectedStudentActivityUid(null); setSelectedStudentActivityUids([]);
+      setBulkStudentActionBusy(''); setBulkStudentActionNotice({ kind: '', text: '' });
       setWordCloudModerationByPoll({}); setWordCloudAliasesByPoll({}); setWordCloudRenameDrafts({});
       setWordCloudModerationFilter('all'); setWordCloudModerationQuery(''); setWordCloudVisibleLimit(60);
       setWordCloudClusterSuggestions([]); setWordCloudClusterBusy(false); setWordCloudClusterNotice(''); setFreeTextModerationByPoll({});
@@ -3414,7 +3586,14 @@
       setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
       setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
       setReviewedActionKeys(readLiveTeacherActionState(sessionCode)); setActionQueueBusyUid(''); setActionQueueNotice({ kind: '', text: '' });
+      if (!hostTransportActive) setComposerExpanded(true);
       if (sessionChanged) {
+        const restoredCommandCenter = readLiveCommandCenterRecovery(sessionCode);
+        setRecoveredActivitySnapshots(restoredCommandCenter.activitySnapshots);
+        setStudentActivityFilter(restoredCommandCenter.ui.studentActivityFilter || 'all');
+        setStudentActivitySort(restoredCommandCenter.ui.studentActivitySort || 'attention');
+        setStudentActivityExpanded(restoredCommandCenter.ui.studentActivityExpanded !== false);
+        setComposerExpanded(true);
         setCreatedGroups([]);
         setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
         setSessionQaSortMode('latest');
@@ -3422,9 +3601,25 @@
         setPendingEndAction(null);
         setAlloSheetReviewOpen(false);
         setAlloSheetFeedback({ kind: '', text: '' });
-        setWrapUpExpanded(false);
+        setWrapUpExpanded(restoredCommandCenter.ui.wrapUpExpanded === true);
       }
     }, [hostTransportActive, sessionCode]);
+    R.useEffect(function () {
+      if (commandCenterPersistenceSessionRef.current !== sessionCode) {
+        commandCenterPersistenceSessionRef.current = sessionCode;
+        return;
+      }
+      writeLiveCommandCenterRecovery(sessionCode, {
+        activitySnapshots: activitySnapshots,
+        ui: {
+          studentActivityFilter: studentActivityFilter,
+          studentActivitySort: studentActivitySort,
+          studentActivityExpanded: studentActivityExpanded,
+          composerExpanded: composerExpanded,
+          wrapUpExpanded: wrapUpExpanded,
+        },
+      });
+    }, [sessionCode, providedActivitySnapshots, recoveredActivitySnapshots, studentActivityFilter, studentActivitySort, studentActivityExpanded, composerExpanded, wrapUpExpanded]);
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
     R.useEffect(function () { routingByPollRef.current = routingByPoll; }, [routingByPoll]);
     R.useEffect(function () {
@@ -4172,6 +4367,11 @@
       query: studentActivityQuery,
       groups: sessionGroups,
     });
+    const selectedStudentActivityUidSet = new Set(selectedStudentActivityUids.map(String));
+    const selectedStudentActivityRows = studentActivityRows.filter(function (row) { return selectedStudentActivityUidSet.has(String(row.uid)); });
+    const visibleStudentActivityUidSet = new Set(visibleStudentActivityRows.map(function (row) { return String(row.uid); }));
+    const allVisibleStudentActivityRowsSelected = visibleStudentActivityRows.length > 0
+      && visibleStudentActivityRows.every(function (row) { return selectedStudentActivityUidSet.has(String(row.uid)); });
     const selectedStudentActivityRow = selectedStudentActivityUid === null ? null : studentActivityRows.find(function (row) { return String(row.uid) === String(selectedStudentActivityUid); }) || null;
     const selectedStudentActivityDetail = buildLiveStudentActivityDetail(selectedStudentActivityRow, {
       groups: sessionGroups,
@@ -4216,6 +4416,66 @@
       setCheckInsByUid(function (prev) {
         return Object.assign({}, prev, { [row.uid]: Object.assign({}, packet, { status: 'sent' }) });
       });
+    };
+    const toggleStudentActivitySelection = function (uid) {
+      const safeUid = String(uid || '');
+      if (!safeUid) return;
+      setSelectedStudentActivityUids(function (current) {
+        const next = new Set(current.map(String));
+        if (next.has(safeUid)) next.delete(safeUid);
+        else next.add(safeUid);
+        return Array.from(next).slice(0, 250);
+      });
+    };
+    const toggleVisibleStudentActivitySelection = function () {
+      setSelectedStudentActivityUids(function (current) {
+        const next = new Set(current.map(String));
+        if (allVisibleStudentActivityRowsSelected) visibleStudentActivityUidSet.forEach(function (uid) { next.delete(uid); });
+        else visibleStudentActivityUidSet.forEach(function (uid) { next.add(uid); });
+        return Array.from(next).slice(0, 250);
+      });
+    };
+    const sendCheckInToSelectedStudents = function () {
+      let sent = 0;
+      selectedStudentActivityRows.forEach(function (row) {
+        const canCheckIn = row.directConnected === true
+          && (!activePoll || (activeParticipantUidSet.has(String(row.uid)) && ['submitted', 'revised', 'complete'].indexOf(row.status) < 0));
+        if (!canCheckIn) return;
+        sendTeacherCheckIn(row);
+        sent += 1;
+      });
+      setBulkStudentActionNotice({
+        kind: sent ? 'success' : 'error',
+        text: sent
+          ? tr('Private check-in sent to') + ' ' + sent + ' ' + tr(sent === 1 ? 'student.' : 'students.')
+          : tr('None of the selected students can receive a direct check-in right now.'),
+      });
+    };
+    const sendResourceToSelectedStudents = async function () {
+      const uids = selectedStudentActivityRows.map(function (row) { return String(row.uid); }).filter(Boolean);
+      if (!uids.length || !followUpResourceId || bulkStudentActionBusy) return;
+      setBulkStudentActionBusy('resource');
+      setBulkStudentActionNotice({ kind: '', text: '' });
+      try {
+        let result;
+        if (onSendToStudents) result = await Promise.resolve(onSendToStudents(uids, followUpResourceId));
+        else if (onSendToStudent) result = await Promise.all(uids.map(function (uid) { return Promise.resolve(onSendToStudent(uid, followUpResourceId)); }));
+        else throw new Error('delivery unavailable');
+        if (result && result.pendingConfirmation) {
+          setBulkStudentActionNotice({ kind: 'info', text: tr('Complete the resource confirmation, then return to the selected students.') });
+        } else {
+          const sent = result && Number.isFinite(Number(result.sent)) ? Math.max(0, Number(result.sent)) : uids.length;
+          const failed = result && Number.isFinite(Number(result.failed)) ? Math.max(0, Number(result.failed)) : 0;
+          setBulkStudentActionNotice({
+            kind: failed ? 'error' : 'success',
+            text: tr('Resource assigned to') + ' ' + sent + ' ' + tr(sent === 1 ? 'student.' : 'students.') + (failed ? ' ' + failed + ' ' + tr('failed.') : ''),
+          });
+        }
+      } catch (err) {
+        setBulkStudentActionNotice({ kind: 'error', text: tr('The resource could not be assigned to the selected students. Try again.') });
+      } finally {
+        setBulkStudentActionBusy('');
+      }
     };
     const updateTeacherActionState = function (item, status, snoozedUntil) {
       if (!item || !item.key) return;
@@ -4705,6 +4965,7 @@
           ref: hostDialogRef,
           tabIndex: -1,
           role: 'dialog',
+          'data-live-command-center': '',
           'aria-modal': 'true',
           'aria-labelledby': 'live-polling-host-title',
           'aria-describedby': 'live-polling-host-description',
@@ -4749,7 +5010,9 @@
           ),
           onOpenDiagnostics ? ce('button', { type: 'button', onClick: onOpenDiagnostics, style: { minHeight: 40, padding: '0.35rem 0.6rem', border: '1px solid #64748b', borderRadius: 6, background: 'white', color: '#334155', fontSize: '0.68rem', fontWeight: 850, cursor: 'pointer' } }, tr('Open diagnostics')) : null
         ),
-        ce('section', { 'aria-labelledby': 'live-student-activity-title', 'data-live-workspace-section': 'students', tabIndex: -1, style: { scrollMarginTop: 76, marginBottom: '0.85rem', padding: '0.75rem', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff' } },
+        ce('style', null, '.live-command-center-body{display:grid;grid-template-columns:minmax(0,1fr);gap:.85rem;align-items:start}.live-command-center-workspace{min-width:0}.live-command-center-students{min-width:0}@media (min-width:1120px){.live-command-center-body{grid-template-columns:minmax(430px,.9fr) minmax(560px,1.25fr)}.live-command-center-students{position:sticky;top:68px;max-height:calc(100dvh - 92px);overflow:auto;overscroll-behavior:contain}.live-command-center-workspace>[data-live-workspace-section]:first-child{margin-top:0}}@media (max-width:640px){[data-live-command-center]{padding:.8rem!important;border-radius:0!important;width:100vw!important;height:100dvh!important;max-height:100dvh!important}[data-live-host-toolbar]{margin:-.8rem -.8rem .7rem!important;padding:.7rem .8rem!important;border-radius:0!important}}'),
+        ce('div', { className: 'live-command-center-body' },
+        ce('section', { className: 'live-command-center-students', 'aria-labelledby': 'live-student-activity-title', 'data-live-workspace-section': 'students', tabIndex: -1, style: { scrollMarginTop: 76, marginBottom: 0, padding: '0.75rem', border: '1px solid #bfdbfe', borderRadius: 10, background: '#eff6ff' } },
           ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap' } },
             ce('div', null,
               ce('h3', { id: 'live-student-activity-title', style: { margin: 0, color: '#1e3a8a', fontSize: '0.95rem' } }, tr('Student activity status')),
@@ -4783,7 +5046,15 @@
                 { id: 'offline', label: tr('Likely offline'), color: '#991b1b', background: '#fef2f2', border: '#fecaca' },
                 { id: 'unknown', label: tr('No signal yet'), color: '#475569', background: '#f8fafc', border: '#cbd5e1' },
               ].map(function (metric) {
-                return ce('div', { key: metric.id, style: { padding: '0.45rem 0.55rem', border: '1px solid ' + metric.border, borderRadius: 7, background: metric.background } },
+                const selected = studentActivityFilter === metric.id;
+                return ce('button', {
+                  key: metric.id,
+                  type: 'button',
+                  onClick: function () { setStudentActivityExpanded(true); setStudentActivityFilter(metric.id); setStudentActivityQuery(''); },
+                  'aria-pressed': selected,
+                  'aria-label': metric.label + ': ' + (studentEngagementSummary[metric.id] || 0) + '. ' + tr('Filter student activity'),
+                  style: { minHeight: 54, padding: '0.45rem 0.55rem', border: (selected ? '2px' : '1px') + ' solid ' + (selected ? metric.color : metric.border), borderRadius: 7, background: metric.background, textAlign: 'left', cursor: 'pointer', boxShadow: selected ? '0 0 0 2px white inset' : 'none' }
+                },
                   ce('strong', { style: { display: 'block', color: metric.color, fontSize: '1rem', lineHeight: 1, fontVariantNumeric: 'tabular-nums' } }, studentEngagementSummary[metric.id] || 0),
                   ce('span', { style: { display: 'block', marginTop: 3, color: metric.color, fontSize: '0.65rem', fontWeight: 800 } }, metric.label)
                 );
@@ -4891,9 +5162,28 @@
               )
             )
           ) : null,
+          studentActivityRows.length ? ce('section', { 'aria-label': tr('Bulk student support actions'), style: { marginTop: 8, padding: '0.55rem', border: '1px solid #bfdbfe', borderRadius: 8, background: 'white' } },
+            ce('div', { style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' } },
+              ce('button', { type: 'button', onClick: toggleVisibleStudentActivitySelection, disabled: visibleStudentActivityRows.length === 0, style: { minHeight: 40, padding: '0.32rem 0.55rem', border: '1px solid #2563eb', borderRadius: 6, background: allVisibleStudentActivityRowsSelected ? '#dbeafe' : 'white', color: '#1d4ed8', fontWeight: 850, fontSize: '0.68rem', cursor: visibleStudentActivityRows.length ? 'pointer' : 'default' } }, allVisibleStudentActivityRowsSelected ? tr('Clear visible selection') : tr('Select visible students') + ' (' + visibleStudentActivityRows.length + ')'),
+              selectedStudentActivityRows.length ? ce('button', { type: 'button', onClick: function () { setSelectedStudentActivityUids([]); }, style: { minHeight: 40, padding: '0.32rem 0.55rem', border: '1px solid #94a3b8', borderRadius: 6, background: 'white', color: '#475569', fontWeight: 850, fontSize: '0.68rem', cursor: 'pointer' } }, tr('Clear all')) : null,
+              ce('strong', { role: 'status', 'aria-live': 'polite', style: { marginRight: 'auto', color: '#1e3a8a', fontSize: '0.7rem' } }, selectedStudentActivityRows.length + ' ' + tr('selected')),
+              ce('button', { type: 'button', onClick: sendCheckInToSelectedStudents, disabled: selectedStudentActivityRows.length === 0, style: { minHeight: 40, padding: '0.32rem 0.55rem', border: '1px solid #7c3aed', borderRadius: 6, background: 'white', color: selectedStudentActivityRows.length ? '#6d28d9' : '#94a3b8', fontWeight: 850, fontSize: '0.68rem', cursor: selectedStudentActivityRows.length ? 'pointer' : 'default' } }, tr('Check in with selected'))
+            ),
+            selectedStudentActivityRows.length && resources.length && (onSendToStudents || onSendToStudent) ? ce('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) auto', gap: 6, alignItems: 'end', marginTop: 6 } },
+              ce('label', { style: { color: '#334155', fontSize: '0.67rem', fontWeight: 850 } }, tr('Resource for selected students'),
+                ce('select', { value: followUpResourceId, onChange: function (event) { setFollowUpResourceId(event.target.value); }, 'aria-label': tr('Choose a resource for selected students'), style: { display: 'block', width: '100%', minHeight: 40, marginTop: 3, padding: '0.35rem 0.5rem', border: '1px solid #93c5fd', borderRadius: 6, background: 'white', color: '#1e293b' } },
+                  ce('option', { value: '' }, tr('Choose a resource')),
+                  resources.slice(0, 250).map(function (resource) { return ce('option', { key: resource.id, value: resource.id }, resource.title || resource.label || resource.id); })
+                )
+              ),
+              ce('button', { type: 'button', onClick: sendResourceToSelectedStudents, disabled: !followUpResourceId || !!bulkStudentActionBusy, style: { minHeight: 40, padding: '0.35rem 0.6rem', border: '1px solid #2563eb', borderRadius: 6, background: '#eff6ff', color: followUpResourceId && !bulkStudentActionBusy ? '#1d4ed8' : '#94a3b8', fontWeight: 850, fontSize: '0.68rem', cursor: followUpResourceId && !bulkStudentActionBusy ? 'pointer' : 'default' } }, bulkStudentActionBusy ? tr('Sending...') : tr('Assign resource'))
+            ) : null,
+            bulkStudentActionNotice.text ? ce('p', { role: bulkStudentActionNotice.kind === 'error' ? 'alert' : 'status', 'aria-live': 'polite', style: { margin: '0.4rem 0 0', color: bulkStudentActionNotice.kind === 'error' ? '#b91c1c' : bulkStudentActionNotice.kind === 'info' ? '#1d4ed8' : '#166534', fontSize: '0.68rem', fontWeight: 800 } }, bulkStudentActionNotice.text) : null
+          ) : null,
           visibleStudentActivityRows.length ? ce('div', { role: 'region', 'aria-label': tr('Scrollable live student activity table'), tabIndex: 0, style: { marginTop: 8, maxHeight: 'min(42dvh, 520px)', overflow: 'auto', border: '1px solid #dbeafe', borderRadius: 8, background: 'white' } },
-            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 1040, borderCollapse: 'collapse', fontSize: '0.75rem' } },
+            ce('table', { 'aria-label': tr('Live student activity status'), style: { width: '100%', minWidth: 1100, borderCollapse: 'collapse', fontSize: '0.75rem' } },
               ce('thead', null, ce('tr', { style: { position: 'sticky', top: 0, zIndex: 1, background: '#f8fafc', color: '#334155', textAlign: 'left' } },
+                ce('th', { scope: 'col', style: { width: 44, padding: '0.45rem', borderBottom: '1px solid #e2e8f0', textAlign: 'center' } }, tr('Select')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Student')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Connection')),
                 ce('th', { scope: 'col', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #e2e8f0' } }, tr('Activity signal')),
@@ -4928,6 +5218,7 @@
                         : tr('No presence signal');
                 const connectionColor = hasDirectConnection || row.presenceStatus === 'active' ? '#166534' : row.presenceStatus === 'recent' ? '#92400e' : '#64748b';
                 return ce('tr', { key: row.uid },
+                  ce('td', { style: { padding: '0.35rem', borderBottom: '1px solid #f1f5f9', textAlign: 'center' } }, ce('input', { type: 'checkbox', checked: selectedStudentActivityUidSet.has(String(row.uid)), onChange: function () { toggleStudentActivitySelection(row.uid); }, 'aria-label': tr('Select') + ' ' + row.name + ' ' + tr('for bulk support actions'), style: { width: 18, height: 18, cursor: 'pointer' } })),
                   ce('th', { scope: 'row', style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: '#0f172a', textAlign: 'left' } }, row.name, group ? ce('span', { style: { display: 'block', color: '#64748b', fontSize: '0.65rem', fontWeight: 600 } }, group.name || row.groupId) : null),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9', color: connectionColor, fontWeight: 750 } }, connectionLabel),
                   ce('td', { style: { padding: '0.45rem 0.55rem', borderBottom: '1px solid #f1f5f9' } },
@@ -4968,6 +5259,7 @@
           ) : ce('p', { style: { margin: '0.6rem 0 0', color: '#64748b', fontSize: '0.75rem' } }, studentActivityRows.length ? tr('No students match this activity filter.') : tr('Students will appear here when they join the session.'))
           )
         ),
+        ce('div', { className: 'live-command-center-workspace' },
         sessionQaOptIn ? ce('div', { 'data-live-workspace-section': 'questions', tabIndex: -1, style: { scrollMarginTop: 76 } }, ce(SessionQaHostPanel, {
           state: sessionQaState,
           sortMode: sessionQaSortMode,
@@ -5540,6 +5832,8 @@
             })
           )
         ) : null
+        )
+        )
       )
     ),
 
@@ -6137,12 +6431,19 @@
       helpActivityIdRef.current = next ? activityId : '';
       setSubmitNotice(next ? tr('Your teacher can now see that you requested help.') : tr('Your help request was cancelled.'));
     };
+    const renderStudentPrivacyNotice = function () {
+      return ce('details', { style: { marginTop: 7, padding: '0.5rem 0.6rem', border: '1px solid #cbd5e1', borderRadius: 7, background: '#f8fafc', color: '#334155' } },
+        ce('summary', { style: { minHeight: 32, display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', color: '#334155', fontSize: '0.7rem', fontWeight: 900 } }, ce('span', { 'aria-hidden': 'true' }, '🛡'), tr('What my teacher can see')),
+        ce('p', { style: { margin: '0.35rem 0 0', fontSize: '0.67rem', lineHeight: 1.45 } }, tr('Your teacher can see your session name or codename, connection, assigned activity, content-free progress counts, and help signals. Submitted poll responses are visible for review. Your screen, other tabs, and unsent drafts are not shared.'))
+      );
+    };
     const renderLiveSupportTray = function () {
       const qaAvailable = !!(sessionQaOptIn && sessionQaState && sessionQaState.enabled);
       const connectionLabel = connectionState === 'connected' ? tr('Connected') : connectionState === 'failed' ? tr('Direct connection unavailable') : connectionState === 'reconnecting' ? tr('Reconnecting') : tr('Connecting');
       if (!supportTrayExpanded) return ce('aside', { 'aria-label': tr('Live session support'), style: { position: 'fixed', right: 'max(0.75rem, env(safe-area-inset-right))', bottom: 'max(0.75rem, env(safe-area-inset-bottom))', zIndex: 9998, width: 'min(420px, calc(100vw - 1.5rem))', boxSizing: 'border-box', display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', padding: '0.5rem', border: '1px solid #c4b5fd', borderRadius: 999, background: 'rgba(255,255,255,0.98)', boxShadow: '0 10px 28px rgba(15,23,42,0.22)' } },
         ce('span', { role: 'status', 'aria-label': connectionLabel, title: guestTransportLabel + ' - ' + connectionLabel, style: { width: 10, height: 10, flex: '0 0 10px', borderRadius: 999, background: connectionState === 'connected' ? '#16a34a' : connectionState === 'failed' ? '#dc2626' : '#f59e0b' } }),
         ce('strong', { style: { color: '#312e81', fontSize: '0.72rem' } }, activePoll ? (activePoll.submissionsLocked ? tr('Teacher reviewing') : submitted ? tr('Response sent') : tr('Activity ready')) : tr('Live session')),
+        ce('span', { title: tr('Your teacher sees activity and progress signals, not your screen.'), style: { color: '#475569', fontSize: '0.61rem', fontWeight: 800 } }, tr('Activity visible · screen private')),
         helpRequested ? ce('span', { style: { padding: '0.15rem 0.35rem', borderRadius: 999, background: '#fee2e2', color: '#991b1b', fontSize: '0.61rem', fontWeight: 900 } }, tr('Help requested')) : null,
         activePoll ? ce('button', { type: 'button', onClick: function () { setPollMinimized(false); }, style: { minHeight: 40, marginLeft: 'auto', padding: '0.3rem 0.55rem', border: '1px solid #2563eb', borderRadius: 999, background: 'white', color: '#1d4ed8', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, tr('Open activity')) : null,
         ce('button', { type: 'button', onClick: function () { setSupportTrayExpanded(true); }, 'aria-expanded': false, style: { minWidth: 40, minHeight: 40, marginLeft: activePoll ? 0 : 'auto', border: '1px solid #7c3aed', borderRadius: 999, background: '#f5f3ff', color: '#6d28d9', fontWeight: 900, fontSize: '0.66rem', cursor: 'pointer' } }, teacherCheckInForCurrentSupport ? tr('Check in') : tr('Support'))
@@ -6169,6 +6470,7 @@
             ce('button', { type: 'button', onClick: function () { answerTeacherCheckIn('help'); }, disabled: connectionState !== 'connected', style: { minHeight: 44, padding: '0.35rem', border: '1px solid #dc2626', borderRadius: 6, background: 'white', color: '#b91c1c', fontWeight: 850 } }, tr('I need help'))
           ) : ce('button', { type: 'button', onClick: function () { setTeacherCheckIn(null); }, style: { minHeight: 44, width: '100%', marginTop: 6, border: '1px solid #7c3aed', borderRadius: 6, background: 'white', color: '#6d28d9', fontWeight: 850, cursor: 'pointer' } }, tr('Dismiss check-in'))
         ) : null,
+        renderStudentPrivacyNotice(),
         ce('div', { style: { display: 'grid', gridTemplateColumns: qaAvailable ? '1fr 1fr' : '1fr', gap: 5, marginTop: 7 } },
           ce('button', { type: 'button', onClick: toggleHelpRequest, disabled: connectionState !== 'connected', 'aria-pressed': helpRequested, style: { minHeight: 44, padding: '0.4rem', border: '1px solid ' + (helpRequested ? '#dc2626' : '#7c3aed'), borderRadius: 6, background: helpRequested ? '#fef2f2' : 'white', color: connectionState === 'connected' ? (helpRequested ? '#b91c1c' : '#6d28d9') : '#94a3b8', fontWeight: 900, cursor: connectionState === 'connected' ? 'pointer' : 'default' } }, helpRequested ? tr('Cancel help request') : tr('Request help')),
           qaAvailable ? ce('button', { type: 'button', onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); }, style: { minHeight: 44, padding: '0.4rem', border: '1px solid #38bdf8', borderRadius: 6, background: 'white', color: '#075985', fontWeight: 900, cursor: 'pointer' } }, tr('Ask / Q&A')) : null
@@ -6267,6 +6569,7 @@
           ce('span', { 'aria-hidden': 'true' }, connectionState === 'connected' ? '●' : connectionState === 'failed' ? '!' : '↻'),
           connectionState === 'connected' ? tr('Connected - response ready to send') : connectionState === 'failed' ? tr('Direct connection unavailable - download fallback ready') : connectionState === 'reconnecting' ? tr('Reconnecting - your draft stays here') : tr('Connecting - your draft stays here')
         ),
+        renderStudentPrivacyNotice(),
         activePoll.submissionsLocked ? ce('div', { role: 'status', 'aria-live': 'polite', style: { margin: '0 0 0.75rem', padding: '0.6rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fffbeb', color: '#78350f', fontSize: '0.74rem', fontWeight: 800, lineHeight: 1.4 } }, tr('The teacher paused new submissions while reviewing. Your draft stays in this browser, and you can submit if collecting resumes.')) : null,
         teacherCheckInForCurrentSupport ? ce('section', { role: 'status', 'aria-live': 'assertive', 'aria-label': tr('Private teacher check-in'), style: { margin: '0 0 0.8rem', padding: '0.7rem', border: '2px solid #7c3aed', borderRadius: 9, background: '#f5f3ff', color: '#4c1d95' } },
           ce('strong', { style: { display: 'block', fontSize: '0.78rem' } }, tr('Your teacher is checking in privately.')),
@@ -6418,6 +6721,8 @@
     stableWordCloudColor: stableWordCloudColor,
     stableWordCloudSize: stableWordCloudSize,
     normalizeLiveActivityTimestamp: normalizeLiveActivityTimestamp,
+    normalizeLiveActivityProgressReceipt: normalizeLiveActivityProgressReceipt,
+    LIVE_ACTIVITY_PROGRESS_STATUSES: LIVE_ACTIVITY_PROGRESS_STATUSES,
     classifyLiveStudentSignal: classifyLiveStudentSignal,
     buildLiveStudentActivityRows: buildLiveStudentActivityRows,
     buildLiveStudentActivityDetail: buildLiveStudentActivityDetail,
@@ -6428,6 +6733,13 @@
     LIVE_STUDENT_SIGNAL_RECENT_MS: LIVE_STUDENT_SIGNAL_RECENT_MS,
     LIVE_STUDENT_ACTIVITY_FILTERS: LIVE_STUDENT_ACTIVITY_FILTERS,
     LIVE_STUDENT_ACTIVITY_SORTS: LIVE_STUDENT_ACTIVITY_SORTS,
+    normalizeLiveActivitySnapshotForRecovery: normalizeLiveActivitySnapshotForRecovery,
+    mergeLiveActivitySnapshots: mergeLiveActivitySnapshots,
+    liveCommandCenterRecoveryStorageKey: liveCommandCenterRecoveryStorageKey,
+    normalizeLiveCommandCenterRecovery: normalizeLiveCommandCenterRecovery,
+    readLiveCommandCenterRecovery: readLiveCommandCenterRecovery,
+    writeLiveCommandCenterRecovery: writeLiveCommandCenterRecovery,
+    LIVE_COMMAND_CENTER_RECOVERY_MAX_AGE_MS: LIVE_COMMAND_CENTER_RECOVERY_MAX_AGE_MS,
     buildLiveTeacherActionQueue: buildLiveTeacherActionQueue,
     LIVE_TEACHER_ACTION_REASONS: LIVE_TEACHER_ACTION_REASONS,
     normalizeLiveTeacherActionState: normalizeLiveTeacherActionState,
@@ -6490,7 +6802,7 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.16.0',
+      version: '1.17.0',
       description: 'FERPA-by-design peer-to-peer live polling with a near-fullscreen teacher Command Center, provider-aware presence and engagement signals, scalable progress, privacy-safe per-student activity views, private claim/snooze/resolve follow-ups, incomplete-student actions, a content-free wrap-up, poll and Q&A draft recovery, and staged Word Cloud collection/review/reveal with teacher-approved AI grouping. Uses provider-neutral session APIs for Firebase and Google Class Mailbox parity.',
     },
   };

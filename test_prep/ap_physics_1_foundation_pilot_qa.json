@@ -1,0 +1,267 @@
+{
+  "reportId": "ap-physics-1-foundation-qa",
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-23T00:00:00.000Z",
+  "packId": "ap-physics-1-foundation-pilot",
+  "version": "0.19.0-internal-preview",
+  "status": "pass",
+  "automatedAssessment": "pass",
+  "structuralFindings": [],
+  "editorialAdvisories": [
+    {
+      "check": "independent-human-review",
+      "asset": "pack",
+      "recordId": "",
+      "message": "Before release, obtain AP Physics 1 subject-expert, laboratory-boundary, rights, accessibility, production, field-testing, psychometric, and current-CED review.",
+      "requiresHumanJudgment": true
+    }
+  ],
+  "signals": [
+    {
+      "id": "asset-identity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Pack/library identity, version, internal-preview state, and cross-links are consistent."
+    },
+    {
+      "id": "blueprint-and-unit-coverage",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The eight AP Physics 1 units, public weight ranges, five big ideas, and three science practices are declared."
+    },
+    {
+      "id": "one-best-answer",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every pilot item and chapter check has four distinct choices and one valid key."
+    },
+    {
+      "id": "substantive-feedback",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item has an overall rationale and option-specific feedback of meaningful length."
+    },
+    {
+      "id": "learning-alignment",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every item resolves to a topic, chapter, lesson route, and science-practice metadata."
+    },
+    {
+      "id": "library-inventory",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Native chapters, sections, checks, cards, memory aids, and rich prototypes match their declared counts."
+    },
+    {
+      "id": "library-content-structure",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The native library has navigable, text-first chapter structures, data moments, retrieval, and transfer blocks."
+    },
+    {
+      "id": "response-and-visual-scaffolds",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Original constructed-response workshops and optional visual scaffolds are complete, linked, accessible, and clearly non-official."
+    },
+    {
+      "id": "misconception-remediation-playbooks",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Each misconception family has a structured, accessible remediation loop linked to the affected study routes and practice assets."
+    },
+    {
+      "id": "study-session-plans",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Unit, cumulative, and timed-practice sessions have coherent timing, linked assets, completion criteria, and accessibility controls."
+    },
+    {
+      "id": "mastery-checkpoints",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "All topic objectives have a learner-evidence checkpoint with staged mastery states and deterministic next actions."
+    },
+    {
+      "id": "adaptive-review-queues",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every topic checkpoint has a deterministic five-lane queue with three ordered next actions per lane."
+    },
+    {
+      "id": "spaced-review-plans",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Every topic has a four-stage local spaced-review cadence with interval, target, session, and accessibility metadata."
+    },
+    {
+      "id": "practice-forms",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Alternate internal practice forms are deterministic, coverage-linked, accessible, and clearly non-official."
+    },
+    {
+      "id": "source-and-provenance",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Public blueprint/factual references and independent-original provenance declarations are complete."
+    },
+    {
+      "id": "rights-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Restricted content, copied-question, and release flags remain closed pending independent review."
+    },
+    {
+      "id": "accessibility-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Text, linear-reading-order, hands-free, and independent accessibility gates are declared."
+    },
+    {
+      "id": "expert-review-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "AP Physics 1 subject-expert and laboratory review remains pending and release-blocking."
+    },
+    {
+      "id": "psychometric-boundary",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "The pilot remains uncalibrated, unreleased, non-predictive, and non-official."
+    },
+    {
+      "id": "prompt-originality",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "No exact or conservative high-similarity duplicate prompt pair exists in the pilot."
+    },
+    {
+      "id": "deployment-parity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "Source and deployment mirrors are byte-identical after the manifest build."
+    }
+  ],
+  "metrics": {
+    "itemCount": 500,
+    "unitCount": 8,
+    "unitCounts": {
+      "kinematics": 61,
+      "force-and-translational-dynamics": 87,
+      "work-energy-and-power": 87,
+      "linear-momentum": 61,
+      "torque-and-rotational-dynamics": 61,
+      "energy-and-momentum-of-rotating-systems": 47,
+      "oscillations": 47,
+      "fluids": 49
+    },
+    "topicCount": 39,
+    "topicCounts": {
+      "1.1": 9,
+      "1.2": 11,
+      "1.3": 11,
+      "1.4": 17,
+      "1.5": 13,
+      "2.1": 11,
+      "2.2": 15,
+      "2.3": 14,
+      "2.4": 10,
+      "2.5": 10,
+      "2.6": 15,
+      "2.7": 12,
+      "3.1": 19,
+      "3.2": 18,
+      "3.3": 16,
+      "3.4": 19,
+      "3.5": 15,
+      "4.1": 11,
+      "4.2": 12,
+      "4.3": 12,
+      "4.4": 13,
+      "4.5": 13,
+      "5.1": 9,
+      "5.2": 15,
+      "5.3": 11,
+      "5.4": 15,
+      "5.5": 11,
+      "6.1": 13,
+      "6.2": 11,
+      "6.3": 11,
+      "6.4": 12,
+      "7.1": 10,
+      "7.2": 13,
+      "7.3": 11,
+      "7.4": 13,
+      "8.1": 7,
+      "8.2": 14,
+      "8.3": 13,
+      "8.4": 15
+    },
+    "practiceCounts": {
+      "SP1": 169,
+      "SP2": 166,
+      "SP3": 165
+    },
+    "answerCounts": {
+      "A": 125,
+      "B": 125,
+      "C": 125,
+      "D": 125
+    },
+    "chapterCount": 8,
+    "sectionCount": 24,
+    "knowledgeCheckCount": 24,
+    "flashcardCount": 24,
+    "memoryAidCount": 24,
+    "diagnosticRouteCount": 39,
+    "diagnosticSetCount": 117,
+    "unitReviewRouteCount": 8,
+    "unitMixedPracticeSetCount": 8,
+    "reviewLadderCount": 5,
+    "reviewLadderItemCount": 500,
+    "misconceptionFamilyCount": 9,
+    "misconceptionOccurrenceCount": 1500,
+    "misconceptionRemediationPlaybookCount": 9,
+    "studySessionPlanCount": 15,
+    "masteryCheckpointCount": 39,
+    "adaptiveReviewQueueCount": 39,
+    "spacedReviewPlanCount": 39,
+    "practiceFormCount": 4,
+    "constructedResponseWorkshopCount": 8,
+    "diagramPlacementCount": 8,
+    "richLessonPrototypeCount": 8,
+    "nearDuplicatePairCount": 0
+  },
+  "inputs": {
+    "packSha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5",
+    "learningLibrarySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
+    "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
+    "factualCrossCheckUrl": "https://openstax.org/details/books/college-physics-2e"
+  },
+  "deploymentParity": [
+    {
+      "asset": "pack",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5",
+      "deploySha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5"
+    },
+    {
+      "asset": "learning-library",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
+      "deploySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5"
+    }
+  ],
+  "releaseBlockers": [
+    "Independent AP Physics 1 subject-expert and laboratory-boundary review",
+    "Independent accessibility and production validation",
+    "Rights review and current-CED/policy reverification",
+    "Field testing and psychometric calibration",
+    "No official score, readiness, college-credit, laboratory-competency, or safety inference is supported"
+  ]
+}

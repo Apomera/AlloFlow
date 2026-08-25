@@ -99,9 +99,9 @@
     if (document.head) document.head.appendChild(_opStyle);
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // CSS INJECTIONS — focus rings, motion-reduce, ARIA live region
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   (function injectCss() {
     if (document.getElementById('stem-optics-css')) return;
     var st = document.createElement('style');
@@ -134,6 +134,154 @@
       '.opticslab-status-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0;color:#94a3b8;margin:0 0 4px;}',
       '.opticslab-status-value{font-size:15px;font-weight:900;color:#f8fafc;margin:0;}',
       '.opticslab-library-toggle{margin-top:8px;width:100%;border-radius:8px;border:1px solid rgba(125,211,252,.32);background:rgba(14,165,233,.10);color:#bae6fd;padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
+      '.opticslab-focus-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}',
+      '.opticslab-home-button{border-radius:8px;border:1px solid var(--allo-stem-border,#475569);background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);padding:8px 10px;font-size:11px;font-weight:900;cursor:pointer;}',
+      '.opticslab-focus-panel--compact{padding:12px 14px;}',
+      '.opticslab-focus-panel--compact .opticslab-focus-grid{grid-template-columns:minmax(0,1fr) auto;align-items:center;}',
+      '.opticslab-focus-panel--compact .opticslab-focus-title{font-size:18px;}',
+      '.opticslab-focus-panel--compact .opticslab-focus-copy{margin:4px 0 0;}',
+      '.opticslab-focus-panel--compact .opticslab-route-grid,.opticslab-focus-panel--compact .opticslab-status-grid{display:none;}',
+      '.opticslab-focus-panel--compact .opticslab-library-toggle{width:auto;margin:0;white-space:nowrap;}',
+      '.opticslab-tab-strip{display:flex;gap:6px;margin:0 0 16px;padding:2px 2px 8px;overflow-x:auto;overflow-y:hidden;flex-wrap:nowrap;scrollbar-width:thin;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;}',
+      '.opticslab-tab-strip>[role="tab"]{flex:0 0 auto;scroll-snap-align:center;}',
+      '.opticslab-library-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-3px 0 10px;padding:8px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:color-mix(in srgb,var(--allo-stem-canvas,#0f172a) 86%,transparent);}',
+      '.opticslab-library-search{flex:1 1 190px;min-width:0;box-sizing:border-box;border:1px solid var(--allo-stem-border,#475569);border-radius:8px;background:var(--allo-stem-deeper,#0b1220);color:var(--allo-stem-text,#e2e8f0);padding:7px 9px;font-size:11px;}',
+      '.opticslab-library-groups{display:flex;gap:5px;flex-wrap:wrap;}',
+      '.opticslab-library-group{border:1px solid var(--allo-stem-border,#475569);border-radius:999px;background:transparent;color:var(--allo-stem-text-soft,#94a3b8);padding:5px 8px;font-size:10px;font-weight:850;cursor:pointer;}',
+      '.opticslab-library-group[aria-pressed="true"]{border-color:#38bdf8;background:rgba(56,189,248,.15);color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-topic-hero{position:relative;overflow:hidden;}',
+      '.opticslab-topic-hero:after{content:"";position:absolute;right:-34px;top:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,var(--op-topic-glow,rgba(56,189,248,.18)),transparent 68%);pointer-events:none;}',
+      '.opticslab-flow{margin:0 0 12px;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}',
+      '.opticslab-flow-step{width:100%;min-height:58px;display:flex;align-items:center;gap:9px;text-align:left;border-radius:9px;border:1px solid var(--allo-stem-border,#475569);background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);padding:8px 10px;cursor:pointer;}',
+      '.opticslab-flow-step[data-complete="true"]{border-color:rgba(34,197,94,.46);background:rgba(34,197,94,.09);}',
+      '.opticslab-flow-number{width:25px;height:25px;display:grid;place-items:center;flex:0 0 25px;border-radius:50%;background:var(--op-topic-accent,#0ea5e9);color:#fff;font-size:11px;font-weight:900;box-shadow:0 0 0 3px rgba(255,255,255,.06);}',
+      '.opticslab-flow-title{display:block;font-size:11px;font-weight:900;color:var(--allo-stem-text,#f8fafc);}',
+      '.opticslab-flow-status{display:block;margin-top:2px;font-size:9px;color:var(--allo-stem-text-soft,#94a3b8);}',
+      '.opticslab-next-action{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 12px;padding:9px 10px;border:1px solid color-mix(in srgb,var(--op-topic-accent,#38bdf8) 48%,var(--allo-stem-border,#334155));border-radius:9px;background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 9%,var(--allo-stem-canvas,#0f172a));}',
+      '.opticslab-next-action-copy{flex:1 1 230px;min-width:0;font-size:11px;line-height:1.45;color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-next-action-copy strong{display:block;margin-bottom:1px;color:var(--op-topic-accent,#7dd3fc);font-size:10px;text-transform:uppercase;letter-spacing:.05em;}',
+      '.opticslab-next-action-button{flex:0 0 auto;border:1px solid var(--op-topic-accent,#38bdf8);border-radius:7px;background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 20%,transparent);color:var(--allo-stem-text,#f8fafc);padding:6px 10px;font-size:10px;font-weight:900;cursor:pointer;}',
+      '.opticslab-preset-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 12px;padding:7px 9px;border-block:1px solid var(--allo-stem-border,#334155);}',
+      '.opticslab-preset-label{font-size:10px;font-weight:900;color:var(--allo-stem-text-soft,#94a3b8);margin-right:2px;}',
+      '.opticslab-preset-button{border:1px solid var(--allo-stem-border,#475569);border-radius:999px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);padding:5px 9px;font-size:10px;font-weight:800;cursor:pointer;}',
+      '.opticslab-reset-button{margin-left:auto;border:0;background:transparent;color:var(--op-amber-text,#fbbf24);padding:5px 7px;font-size:10px;font-weight:900;cursor:pointer;}',
+      '.opticslab-guided-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;margin-bottom:12px;}',
+      '.opticslab-topic-card{position:relative;overflow:hidden;box-shadow:0 12px 28px rgba(2,8,23,.14);}',
+      '.opticslab-results-panel{margin-top:12px;padding:11px 12px;border:1px solid var(--allo-stem-border,#334155);border-radius:10px;background:var(--allo-stem-canvas,#0f172a);}',
+      '.opticslab-compare-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px;}',
+      '.opticslab-compare-cell{padding:8px 9px;border-radius:8px;background:rgba(56,189,248,.07);min-width:0;}',
+      '.opticslab-compare-label{display:block;font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--allo-stem-text-soft,#94a3b8);margin-bottom:3px;}',
+      '.opticslab-compare-copy{font-size:11px;line-height:1.45;color:var(--allo-stem-text,#e2e8f0);overflow-wrap:anywhere;}',
+      '.opticslab-journal{margin-top:11px;padding-top:11px;border-top:1px solid var(--allo-stem-border,#334155);}',
+      '.opticslab-journal-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px;}',
+      '.opticslab-journal-title{flex:1 1 190px;font-size:11px;font-weight:900;color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-journal-count{font-size:9px;font-weight:900;color:var(--allo-stem-text-soft,#94a3b8);}',
+      '.opticslab-journal-actions{display:flex;gap:6px;flex-wrap:wrap;}',
+      '.opticslab-journal-button{border:1px solid var(--allo-stem-border,#475569);border-radius:7px;background:var(--allo-stem-deeper,#0b1220);color:var(--allo-stem-text,#e2e8f0);padding:5px 8px;font-size:10px;font-weight:850;cursor:pointer;}',
+      '.opticslab-journal-button--capture{border-color:rgba(34,197,94,.55);background:rgba(34,197,94,.13);color:var(--op-green-text,#86efac);}',
+      '.opticslab-trial-compare{margin:7px 0;padding:7px 9px;border-radius:8px;background:rgba(34,197,94,.07);color:var(--allo-stem-text,#cbd5e1);font-size:10px;line-height:1.45;}',
+      '.opticslab-trial-plot{margin:8px 0 0;padding:8px;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;background:var(--allo-stem-deeper,#0b1220);}',
+      '.opticslab-trial-plot figcaption{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px;font-size:10px;font-weight:900;color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-trial-plot svg{display:block;width:100%;height:auto;max-height:205px;overflow:visible;}',
+      '.opticslab-trial-list{display:grid;gap:6px;margin-top:8px;}',
+      '.opticslab-trial-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;background:rgba(148,163,184,.07);min-width:0;}',
+      '.opticslab-trial-copy{flex:1 1 auto;min-width:0;}',
+      '.opticslab-trial-summary{display:block;color:var(--allo-stem-text,#e2e8f0);font-size:10px;line-height:1.4;overflow-wrap:anywhere;}',
+      '.opticslab-trial-time{display:block;margin-top:1px;color:var(--allo-stem-text-soft,#94a3b8);font-size:9px;}',
+      '.opticslab-rubric-list{display:grid;gap:5px;margin:8px 0;}',
+      '.opticslab-rubric-item{display:flex;align-items:flex-start;gap:7px;padding:6px 7px;border-radius:7px;background:rgba(148,163,184,.07);font-size:10px;line-height:1.4;color:var(--allo-stem-text,#cbd5e1);}',
+      '.opticslab-rubric-item[data-pass="true"]{background:rgba(34,197,94,.08);}',
+      '.opticslab-rubric-mark{flex:0 0 16px;width:16px;height:16px;display:grid;place-items:center;border-radius:50%;font-size:9px;font-weight:900;background:rgba(239,68,68,.18);color:#fca5a5;}',
+      '.opticslab-rubric-item[data-pass="true"] .opticslab-rubric-mark{background:rgba(34,197,94,.18);color:#86efac;}',
+      '.opticslab-app-header{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}',
+      '.opticslab-topic-page{display:flex;flex-direction:column;min-width:0;}',
+      '.opticslab-progress-strip{display:grid;grid-template-columns:minmax(0,1fr) minmax(230px,.72fr);gap:8px;align-items:stretch;margin-bottom:9px;}',
+      '.opticslab-progress-strip .opticslab-flow{margin:0;}',
+      '.opticslab-progress-strip .opticslab-flow-step{min-height:42px;padding:6px 8px;}',
+      '.opticslab-progress-strip .opticslab-next-action{margin:0;padding:7px 9px;}',
+      '.opticslab-progress-strip .opticslab-next-action-copy{font-size:10px;line-height:1.35;}',
+      '.opticslab-prelab-drawer,.opticslab-learning-drawer{margin:0 0 10px;border:1px solid var(--allo-stem-border,#334155);border-radius:9px;background:color-mix(in srgb,var(--allo-stem-canvas,#0f172a) 82%,transparent);overflow:hidden;}',
+      '.opticslab-prelab-drawer>summary,.opticslab-learning-drawer>summary{display:flex;align-items:center;gap:8px;min-height:38px;padding:7px 10px;cursor:pointer;color:var(--allo-stem-text,#e2e8f0);font-size:11px;font-weight:850;list-style:none;}',
+      '.opticslab-prelab-drawer>summary::-webkit-details-marker,.opticslab-learning-drawer>summary::-webkit-details-marker{display:none;}',
+      '.opticslab-prelab-drawer>summary:before,.opticslab-learning-drawer>summary:before{content:"+";display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:rgba(56,189,248,.12);color:var(--op-accent-text,#7dd3fc);font-size:14px;}',
+      '.opticslab-prelab-drawer[open]>summary:before,.opticslab-learning-drawer[open]>summary:before{content:"\\2212";}',
+      '.opticslab-drawer-body{padding:0 10px 10px;}',
+      '.opticslab-focus-toggle{margin-left:auto;border:1px solid var(--op-topic-accent,#38bdf8);border-radius:7px;background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 14%,transparent);color:var(--allo-stem-text,#f8fafc);padding:6px 10px;font-size:10px;font-weight:850;cursor:pointer;}',
+      '.opticslab-focus-mode{max-width:1380px!important;padding-top:12px!important;}',
+      '.opticslab-focus-mode>.opticslab-app-header,.opticslab-focus-mode>.opticslab-focus-panel,.opticslab-focus-mode>.opticslab-library-nav,.opticslab-focus-mode>.opticslab-tab-strip{display:none!important;}',
+      '.opticslab-focus-mode .opticslab-topic-grid{grid-template-columns:minmax(0,1.45fr) minmax(300px,.72fr);}',
+      '.opticslab-focus-mode .opticslab-topic-hero{position:sticky;top:0;z-index:8;box-shadow:0 8px 20px rgba(2,8,23,.2);}',
+      '.opticslab-formula-link{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 8px;padding:6px 8px;border-radius:8px;background:rgba(2,6,23,.24);color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;line-height:1.4;}',
+      '.opticslab-formula-link code{font-size:12px;color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-formula-token{display:inline-block;padding:1px 3px;border-radius:4px;transition:background .16s ease,color .16s ease,transform .16s ease;}',
+      '.opticslab-formula-token[data-active="true"]{background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 24%,transparent);color:var(--allo-stem-text,#fff);transform:translateY(-1px);}',
+      '.opticslab-variable-hint{flex:1 1 190px;min-width:0;}',
+      '.opticslab-causal-chain{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1px;margin:0 0 9px;background:var(--allo-stem-border,#334155);border-block:1px solid var(--allo-stem-border,#334155);}',
+      '.opticslab-causal-step{display:grid;align-content:start;gap:3px;min-width:0;padding:7px 9px;background:var(--allo-stem-canvas,#0f172a);}',
+      '.opticslab-causal-step span{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--allo-stem-text-soft,#94a3b8);}',
+      '.opticslab-causal-step strong{font-size:10px;line-height:1.42;color:var(--allo-stem-text,#e2e8f0);overflow-wrap:anywhere;}',
+      '.opticslab-causal-step--change span{color:var(--op-amber-text,#fbbf24);}',
+      '.opticslab-causal-step--law span{color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-causal-step--result span{color:var(--op-green-text,#86efac);}',
+      '.opticslab-causal-action{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 9px;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;}',
+      '.opticslab-baseline-button{border:1px solid var(--op-topic-accent,#38bdf8);border-radius:7px;background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 12%,transparent);color:var(--allo-stem-text,#e2e8f0);padding:5px 8px;font-size:10px;font-weight:850;cursor:pointer;}',
+      '.opticslab-mission{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 9px;padding:7px 9px;border-left:3px solid var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 7%,transparent);font-size:10px;color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-mission[data-complete="true"]{border-left-color:#22c55e;background:rgba(34,197,94,.08);}',
+      '.opticslab-mission-copy{flex:1 1 220px;line-height:1.4;}',
+      '.opticslab-mission-copy strong{color:var(--op-topic-accent,#7dd3fc);}',
+      '.opticslab-mission[data-complete="true"] .opticslab-mission-copy strong{color:var(--op-green-text,#86efac);}',
+      '.opticslab-mission-button{border:1px solid var(--allo-stem-border,#475569);border-radius:7px;background:transparent;color:var(--allo-stem-text,#e2e8f0);padding:5px 8px;font-size:10px;font-weight:800;cursor:pointer;}',
+      '.opticslab-semantic-key{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 0;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;}',
+      '.opticslab-semantic-key span{display:inline-flex;align-items:center;gap:4px;}',
+      '.opticslab-semantic-swatch{width:18px;height:3px;border-radius:2px;background:currentColor;}',
+      '.opticslab-semantic-swatch--incident{color:#fbbf24}.opticslab-semantic-swatch--output{color:#22d3ee}.opticslab-semantic-swatch--reflected{color:#ef4444}.opticslab-semantic-swatch--virtual{color:#f0abfc;background:repeating-linear-gradient(90deg,currentColor 0 4px,transparent 4px 7px);}',
+      '.opticslab-visual-stage{position:relative;min-width:0;}',
+      '.opticslab-core-svg{display:block;width:100%;height:auto;max-width:100%!important;min-width:0;touch-action:none;}',
+      '.opticslab-core-svg text{font-size:11px;}',
+      '.opticslab-core-svg [data-op-direct-handle]{cursor:grab;touch-action:none;}',
+      '.opticslab-core-svg [data-op-direct-handle]:active{cursor:grabbing;}',
+      '.opticslab-core-svg [data-op-direct-handle]:focus-visible{stroke:#fff;stroke-width:3px;filter:drop-shadow(0 0 4px rgba(255,255,255,.75));}',
+      '.opticslab-screen-probe-readout{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:5px 0 0;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;line-height:1.4;}',
+      '.opticslab-screen-probe-readout strong{color:var(--allo-stem-text,#e2e8f0);}',
+      '.opticslab-screen-probe-readout output{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--op-accent-text,#7dd3fc);font-variant-numeric:tabular-nums;}',
+      '.opticslab-screen-probe-class{color:var(--op-green-text,#86efac);font-weight:850;}',
+      '.opticslab-screen-detector:focus-visible .opticslab-screen-detector-ring{stroke:#fff;stroke-width:3px;filter:drop-shadow(0 0 4px rgba(255,255,255,.8));}',
+      '.opticslab-detector-targets{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:6px 0 0;}',
+      '.opticslab-detector-targets>span{color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;font-weight:850;margin-right:2px;}',
+      '.opticslab-detector-targets button{border:1px solid var(--allo-stem-border,#475569);border-radius:999px;background:transparent;color:var(--allo-stem-text,#e2e8f0);padding:4px 8px;font-size:10px;font-weight:800;cursor:pointer;font-variant-numeric:tabular-nums;}',
+      '.opticslab-detector-targets button[aria-pressed="true"]{border-color:var(--op-topic-accent,#38bdf8);background:color-mix(in srgb,var(--op-topic-accent,#38bdf8) 14%,transparent);color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-intensity-profile{margin:8px 0 0;max-width:460px;min-width:0;}',
+      '.opticslab-intensity-profile figcaption{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;margin:0 0 2px;color:var(--allo-stem-text,#e2e8f0);font-size:11px;font-weight:850;}',
+      '.opticslab-intensity-profile figcaption span{color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;font-weight:600;}',
+      '.opticslab-intensity-profile svg{display:block;width:100%;height:auto;overflow:visible;}',
+      '.opticslab-ghost-layer{pointer-events:none;opacity:.52;}',
+      '.opticslab-ghost-layer text{fill:var(--allo-stem-text-soft,#94a3b8);font-size:11px;}',
+      '.opticslab-compare-now{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:6px 0 0;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;line-height:1.4;}',
+      '.opticslab-compare-now strong{color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-3d-toolbar{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 6px;}',
+      '.opticslab-3d-toolbar-label{margin-right:2px;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;font-weight:850;}',
+      '.opticslab-3d-toolbar button{border:1px solid var(--allo-stem-border,#475569);border-radius:7px;background:transparent;color:var(--allo-stem-text,#e2e8f0);padding:4px 7px;font-size:10px;font-weight:800;cursor:pointer;}',
+      '.opticslab-3d-toolbar button[aria-pressed="true"]{border-color:#38bdf8;background:rgba(56,189,248,.14);color:var(--op-accent-text,#7dd3fc);}',
+      '.opticslab-wavefield{margin:8px 0 0;padding:8px;border-top:1px solid var(--allo-stem-border,#334155);}',
+      '.opticslab-wavefield-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:6px;}',
+      '.opticslab-wavefield-title{flex:1 1 180px;color:var(--op-accent-text,#7dd3fc);font-size:11px;font-weight:900;}',
+      '.opticslab-wavefield-probe{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 7px;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px;}',
+      '.opticslab-wavefield-probe span{min-width:112px;}',
+      '.opticslab-wavefield-probe input{flex:1 1 180px;min-width:120px;accent-color:#fbbf24;}',
+      '.opticslab-wavefield svg{display:block;width:100%;height:auto;max-width:520px;background:radial-gradient(circle at 72% 35%,rgba(14,165,233,.09),transparent 48%),var(--allo-stem-deeper,#07111f);border-radius:8px;}',
+      '@keyframes opticslab-wavefield-flow{to{stroke-dashoffset:-36;}}',
+      '.opticslab-wavefield-flow{animation:opticslab-wavefield-flow 1.8s linear infinite;}',
+      '.opticslab-motion-paused .opticslab-photon,.opticslab-motion-paused .opticslab-wavefront,.opticslab-motion-paused .opticslab-efield-vec,.opticslab-motion-paused .opticslab-slit-wave,.opticslab-motion-paused .opticslab-wavefield-flow{animation-play-state:paused!important;}',
+      '.opticslab-trial-plot-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:9px;margin-top:8px;}',
+      '.opticslab-trial-plot{margin:0;padding:7px;min-width:0;}',
+      '.opticslab-trial-plot svg{max-height:none;}',
+      '.opticslab-trial-point{cursor:pointer;}',
+      '.opticslab-trial-point:focus{outline:none;stroke:#fff;stroke-width:3px;}',
+      '.opticslab-trial-categorical{display:grid;gap:4px;margin:5px 0 0;padding:0;list-style:none;font-size:10px;color:var(--allo-stem-text-soft,#94a3b8);}',
+      '.opticslab-trial-categorical button{width:100%;text-align:left;border:1px dashed var(--allo-stem-border,#475569);border-radius:6px;background:transparent;color:inherit;padding:5px 7px;cursor:pointer;}',
+      '.opticslab-history-toggle{justify-self:start;margin-top:6px;}',
+      '.opticslab-topic-shortcut,.opticslab-sample-card{transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+      '.opticslab-topic-shortcut:hover,.opticslab-sample-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(2,8,23,.22);border-color:rgba(125,211,252,.7)!important;}',
       // The original inline accent palette targets the dark canvas. These
       // narrowly-scoped light-theme translations preserve each hue while
       // meeting text contrast on the variable-backed light surfaces.
@@ -142,12 +290,30 @@
       ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#fbbf24"]{color:#92400e!important;}',
       ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#a5b4fc"]{color:#4338ca!important;}',
       ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#d8b4fe"]{color:#6b21a8!important;}',
-      '@media (max-width:760px){.opticslab-focus-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#cbd5e1"]{color:#334155!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#94a3b8"]{color:#475569!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#e2e8f0"],:is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#f8fafc"],:is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#fef3c7"]{color:#0f172a!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#c4b5fd"]{color:#5b21b6!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [style*="color:#fca5a5"]{color:#b91c1c!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-core-svg [stroke="#fbbf24"]{stroke:#92400e!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-core-svg [fill="#fbbf24"]{fill:#92400e!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-core-svg [stroke="#22d3ee"]{stroke:#0369a1!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-core-svg [fill="#22d3ee"]{fill:#0369a1!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-next-action-copy strong,:is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-mission-copy strong{color:var(--op-topic-ink,#334155)!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-mission[data-complete="true"] .opticslab-mission-copy strong{color:#166534!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-variable-hint{color:#334155!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [data-op-fresnel-value="reflected"]{color:#b91c1c!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell [data-op-fresnel-value="transmitted"]{color:#0e7490!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-dark-inquiry .opticslab-dark-control{color:#cbd5e1!important;border-color:#64748b!important;}',
+      ':is(.theme-default,.theme-light) .opticslab-tool-shell .opticslab-dark-inquiry button[style*="background:#0a0a1a"]{border-color:#64748b!important;}',
+      '@media (max-width:760px){.opticslab-focus-grid,.opticslab-focus-panel--compact .opticslab-focus-grid,.opticslab-focus-mode .opticslab-topic-grid{grid-template-columns:1fr;}.opticslab-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.opticslab-focus-panel--compact .opticslab-focus-actions{margin-top:8px;}.opticslab-focus-panel--compact .opticslab-library-toggle{flex:1 1 auto;}.opticslab-guided-grid{grid-template-columns:1fr;}.opticslab-progress-strip{grid-template-columns:1fr;}}',
+      '@media (max-width:520px){.opticslab-tool-shell{padding:12px!important}.opticslab-flow{gap:4px}.opticslab-flow-step{min-height:44px;align-items:center;flex-direction:row;gap:5px;padding:5px}.opticslab-flow-number{width:22px;height:22px;flex-basis:22px}.opticslab-flow-status{display:none}.opticslab-reset-button{margin-left:0}.opticslab-compare-grid{grid-template-columns:1fr}.opticslab-next-action-button{width:auto}.opticslab-journal-actions{width:100%}.opticslab-journal-button{flex:1 1 auto;min-height:36px}.opticslab-trial-row{align-items:flex-start;flex-wrap:wrap}.opticslab-trial-row .opticslab-journal-button{margin-left:24px}.opticslab-topic-hero{padding:9px 10px!important}.opticslab-topic-hero h3{font-size:16px!important}.opticslab-focus-toggle{margin-left:0}.opticslab-3d-toolbar button{min-height:36px}.opticslab-preset-button{min-height:36px}.opticslab-core-svg text{font-size:12px}.opticslab-semantic-key{gap:7px}.opticslab-focus-mode .opticslab-topic-hero{position:static}}',
       '@media (max-width:760px){.opticslab-topic-grid{grid-template-columns:1fr;}.opticslab-topic-grid > *{min-width:0;}}',
       '@media (max-width:760px){.opticslab-quantum-grid,.opticslab-control-grid{grid-template-columns:minmax(0,1fr)!important;}.opticslab-quantum-grid > *,.opticslab-control-grid > *{min-width:0;}.opticslab-control-grid label{min-width:0;flex-wrap:wrap;}.opticslab-control-grid input[type="range"]{min-width:0;width:100%;flex:1 1 120px;}}',
       '.opticslab-tool-shell button,.opticslab-tool-shell summary{min-block-size:24px;min-inline-size:24px;}',
       '@media(forced-colors:active){.opticslab-tool-shell button,.opticslab-tool-shell input,.opticslab-tool-shell select,.opticslab-tool-shell summary{background:Canvas!important;color:CanvasText!important;border:1px solid ButtonText!important;box-shadow:none!important}.opticslab-tool-shell [role=tab][aria-selected=true]{outline:2px solid Highlight!important}.opticslab-tool-shell [data-op-focusable]:focus-visible{outline:3px solid Highlight!important}}',
-      'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }'
+      'input[type="range"][data-op-focusable], input[type="checkbox"][data-op-focusable] { accent-color: #38bdf8; }',
+      '@media (prefers-reduced-motion:reduce){.opticslab-topic-shortcut,.opticslab-sample-card{transition:none}.opticslab-topic-shortcut:hover,.opticslab-sample-card:hover{transform:none}}'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -172,7 +338,7 @@
     } catch (e) {}
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function opTabKeyDown(e, activate) {
     var key = e.key;
     if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End') return;
@@ -188,7 +354,7 @@
     activate(tabs[next].getAttribute('data-op-tab-value'));
   }
   // GENERAL HELPERS
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var DEG = Math.PI / 180;
   function degToRad(d) { return d * DEG; }
   function radToDeg(r) { return r / DEG; }
@@ -218,9 +384,9 @@
     return 'rgb(' + chan(R) + ',' + chan(G) + ',' + chan(B) + ')';
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // OPTICAL PHYSICS — pure functions (no DOM)
-  // ──────────────────────────────────────────────────────────────────
+  // ---
 
   // Mirror / thin-lens equation: 1/f = 1/d_o + 1/d_i  →  d_i = (f * d_o) / (d_o - f)
   // Sign convention (used throughout this tool):
@@ -260,6 +426,38 @@
   function criticalAngle(n1, n2) {
     if (n1 <= n2) return null;
     return Math.asin(n2 / n1);
+  }
+
+  // Fresnel power split for unpolarized light at a lossless dielectric
+  // boundary. The two linear polarizations reflect by different amounts, so
+  // the unpolarized result is their average. Energy conservation then gives
+  // T = 1 - R (there is no absorption in this model).
+  function fresnelUnpolarized(theta1Rad, n1, n2) {
+    var refracted = snell(theta1Rad, n1, n2);
+    if (refracted.error) return { error: refracted.error };
+    if (refracted.tir) {
+      return { reflectance: 1, transmittance: 0, reflectanceS: 1, reflectanceP: 1, tir: true };
+    }
+    var cos1 = Math.abs(Math.cos(theta1Rad));
+    var cos2 = Math.abs(Math.cos(refracted.theta2));
+    var sDen = n1 * cos1 + n2 * cos2;
+    var pDen = n2 * cos1 + n1 * cos2;
+    if (Math.abs(sDen) < 1e-12 || Math.abs(pDen) < 1e-12) {
+      return { error: 'Could not resolve the interface power split.' };
+    }
+    var rs = (n1 * cos1 - n2 * cos2) / sDen;
+    var rp = (n2 * cos1 - n1 * cos2) / pDen;
+    var reflectanceS = clamp(rs * rs, 0, 1);
+    var reflectanceP = clamp(rp * rp, 0, 1);
+    var reflectance = clamp((reflectanceS + reflectanceP) / 2, 0, 1);
+    return {
+      reflectance: reflectance,
+      transmittance: clamp(1 - reflectance, 0, 1),
+      reflectanceS: reflectanceS,
+      reflectanceP: reflectanceP,
+      theta2: refracted.theta2,
+      tir: false
+    };
   }
 
   // Double-slit: position of mᵗʰ bright fringe on screen (small-angle): y = m λ L / d
@@ -302,24 +500,657 @@
     { label: 'Diamond', n: 2.417 }
   ];
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // SVG SCALE HELPER (port of _scaleLinear from statslab)
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _scale(domainMin, domainMax, rangeMin, rangeMax) {
     var span = domainMax - domainMin || 1;
     return function(v) { return rangeMin + ((v - domainMin) / span) * (rangeMax - rangeMin); };
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // Stable visual grammar shared by every core bench. Color is always paired
+  // with a label or line style, so the meaning survives grayscale and
+  // color-vision differences.
+  var OP_RAY = {
+    incident: '#fbbf24',
+    output: '#22d3ee',
+    reflected: '#ef4444',
+    virtual: '#f0abfc',
+    previous: '#94a3b8'
+  };
+  var opticsDirectDrag = { current: null };
+  function _opticsSvgPoint(event, W, H) {
+    var node = event.currentTarget && (event.currentTarget.ownerSVGElement || event.currentTarget);
+    var rect = node && node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+    if (!rect || !rect.width || !rect.height) return null;
+    return {
+      x: (event.clientX - rect.left) * W / rect.width,
+      y: (event.clientY - rect.top) * H / rect.height
+    };
+  }
+  function _opticsDiagramWidth(state) {
+    var viewport = +(state && state.opViewportWidth);
+    if (!viewport && typeof window !== 'undefined') viewport = window.innerWidth || 1024;
+    return viewport <= 520 ? 360 : 460;
+  }
+  function _sameOpticsSetup(tab, a, b) {
+    var keys = OPTICS_TOPIC_CONTROL_KEYS[tab] || [];
+    return keys.every(function(key) {
+      var av = a && a[key], bv = b && b[key];
+      return av === bv || (_isNum(av) && _isNum(bv) && Math.abs(av - bv) < 1e-9);
+    });
+  }
+  function _opticsGhostSetup(tab, state) {
+    var current = _captureOpticsTopicState(tab, state);
+    var byTopic = state && state.opTrialRuns;
+    var trials = byTopic && Array.isArray(byTopic[tab]) ? byTopic[tab] : [];
+    for (var i = trials.length - 1; i >= 0; i--) {
+      if (trials[i] && trials[i].setup && !_sameOpticsSetup(tab, trials[i].setup, current)) return trials[i].setup;
+    }
+    var snapshots = state && state.opTopicSnapshots;
+    var before = snapshots && snapshots[tab] && snapshots[tab].before;
+    return before && !_sameOpticsSetup(tab, before, current) ? before : null;
+  }
+  function _renderOpticsSemanticKey(h) {
+    return h('div', { className: 'opticslab-semantic-key', 'aria-label': 'Ray color and line-style key' },
+      h('span', null, h('i', { className: 'opticslab-semantic-swatch opticslab-semantic-swatch--incident', 'aria-hidden': 'true' }), 'source / incident'),
+      h('span', null, h('i', { className: 'opticslab-semantic-swatch opticslab-semantic-swatch--output', 'aria-hidden': 'true' }), 'transmitted / output'),
+      h('span', null, h('i', { className: 'opticslab-semantic-swatch opticslab-semantic-swatch--reflected', 'aria-hidden': 'true' }), 'reflected / image'),
+      h('span', null, h('i', { className: 'opticslab-semantic-swatch opticslab-semantic-swatch--virtual', 'aria-hidden': 'true' }), 'virtual / previous')
+    );
+  }
+  function _renderOpticsDetectorTargets(config, h) {
+    var targets = (config.targets || []).filter(function(target) { return target && _isNum(target.value); });
+    if (!targets.length) return null;
+    var tolerance = _isNum(config.tolerance) ? config.tolerance : .1;
+    return h('div', {
+      className: 'opticslab-detector-targets', role: 'group',
+      'aria-label': config.label || 'Quick detector measurements',
+      'data-op-detector-targets': config.tab
+    },
+      h('span', null, 'Quick measure'),
+      targets.map(function(target) {
+        var selected = Math.abs(config.value - target.value) <= tolerance;
+        return h('button', {
+          key: target.id, type: 'button', 'data-op-focusable': 'true',
+          'data-op-detector-target': target.id,
+          'aria-pressed': selected ? 'true' : 'false',
+          'aria-label': target.ariaLabel || target.label,
+          onClick: function() { config.onSelect(target.value); }
+        }, target.label);
+      })
+    );
+  }
+  function _renderOpticsIntensityProfile(config, h) {
+    var values = Array.isArray(config.values) ? config.values : [];
+    if (values.length < 2) return null;
+    var W = config.width || 460, H = 112;
+    var pad = { l: 44, r: 12, t: 15, b: 31 };
+    var halfRangeMm = Math.max(.001, Math.abs(+config.halfRangeMm || 1));
+    var xMin = -halfRangeMm, xMax = halfRangeMm;
+    var plotW = W - pad.l - pad.r, plotH = H - pad.t - pad.b;
+    function sx(mm) { return pad.l + (mm - xMin) / (xMax - xMin) * plotW; }
+    function sy(intensity) { return pad.t + (1 - clamp(intensity, 0, 1)) * plotH; }
+    var points = values.map(function(value, index) {
+      var mm = xMin + (xMax - xMin) * index / (values.length - 1);
+      return sx(mm).toFixed(1) + ',' + sy(value).toFixed(1);
+    });
+    var baselineY = sy(0);
+    var areaPath = 'M ' + sx(xMin).toFixed(1) + ' ' + baselineY.toFixed(1)
+      + ' L ' + points.join(' L ') + ' L ' + sx(xMax).toFixed(1) + ' ' + baselineY.toFixed(1) + ' Z';
+    var detectorMm = clamp(+config.detectorMm || 0, xMin, xMax);
+    var detectorIntensity = clamp(+config.detectorIntensity || 0, 0, 1);
+    var detectorX = sx(detectorMm), detectorY = sy(detectorIntensity);
+    var detectorDigits = config.detectorDigits == null ? 1 : config.detectorDigits;
+    var detectorLabel = (detectorMm > 0 ? '+' : '') + detectorMm.toFixed(detectorDigits) + ' mm';
+    var detectorAnchor = detectorX > W - 108 ? 'end' : 'start';
+    var detectorLabelX = detectorAnchor === 'end' ? detectorX - 6 : detectorX + 6;
+    var detectorLabelY = detectorY < pad.t + 15 ? detectorY + 14 : detectorY - 6;
+    function tickLabel(value) {
+      if (Math.abs(value) < 1e-9) return '0';
+      return (value > 0 ? '+' : '−') + Math.abs(value).toFixed(config.axisDigits || 0);
+    }
+    var summary = 'Normalized ' + config.tab + ' screen intensity from minus ' + halfRangeMm.toFixed(config.axisDigits || 0)
+      + ' to plus ' + halfRangeMm.toFixed(config.axisDigits || 0) + ' millimeters. The detector at ' + detectorLabel
+      + ' measures ' + (detectorIntensity * 100).toFixed(1) + ' percent relative intensity.';
+    return h('figure', { className: 'opticslab-intensity-profile', 'data-op-intensity-profile': config.tab },
+      h('figcaption', null, 'Screen intensity profile', h('span', null, 'normalized I / I₀')),
+      h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': summary },
+        h('title', null, summary),
+        h('desc', null, 'The wavelength-colored curve shows relative intensity across the physical screen. A white guide and point mark the linked detector reading.'),
+        h('rect', {
+          x: pad.l, y: pad.t, width: plotW, height: plotH, fill: 'var(--allo-stem-deeper,#07111f)',
+          stroke: 'var(--allo-stem-border,#475569)', strokeWidth: 1, 'data-op-intensity-profile-frame': 'true'
+        }),
+        h('line', { x1: pad.l, y1: sy(.5), x2: W - pad.r, y2: sy(.5), stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1, opacity: .5 }),
+        h('line', { x1: sx(0), y1: pad.t, x2: sx(0), y2: baselineY, stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1, opacity: .55 }),
+        h('path', { d: areaPath, fill: config.color, opacity: .12, stroke: 'none' }),
+        h('polyline', {
+          points: points.join(' '), fill: 'none', stroke: config.color, strokeWidth: 1.8,
+          strokeLinejoin: 'round', strokeLinecap: 'round', 'data-op-intensity-profile-line': config.tab
+        }),
+        [-halfRangeMm, 0, halfRangeMm].map(function(tick) {
+          return h('g', { key: 'x-' + tick, 'aria-hidden': 'true' },
+            h('line', { x1: sx(tick), y1: baselineY, x2: sx(tick), y2: baselineY + 4, stroke: 'var(--allo-stem-text-soft,#94a3b8)', strokeWidth: 1 }),
+            h('text', {
+              x: sx(tick), y: baselineY + 14, fill: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 11,
+              textAnchor: tick === -halfRangeMm ? 'start' : (tick === halfRangeMm ? 'end' : 'middle')
+            }, tickLabel(tick))
+          );
+        }),
+        [0, .5, 1].map(function(tick) {
+          return h('text', {
+            key: 'y-' + tick, x: pad.l - 6, y: sy(tick) + 4, fill: 'var(--allo-stem-text-soft,#94a3b8)',
+            fontSize: 11, textAnchor: 'end', 'aria-hidden': 'true'
+          }, tick.toFixed(tick === 0 ? 0 : 1));
+        }),
+        h('line', {
+          x1: detectorX, y1: pad.t, x2: detectorX, y2: baselineY,
+          stroke: 'var(--allo-stem-text,#f8fafc)', strokeWidth: 1, strokeDasharray: '3 2', opacity: .8
+        }),
+        h('circle', {
+          cx: detectorX, cy: detectorY, r: 4.5, fill: 'var(--allo-stem-canvas,#020617)',
+          stroke: 'var(--allo-stem-text,#f8fafc)', strokeWidth: 1.7,
+          'data-op-intensity-profile-detector': config.tab,
+          'data-op-detector-mm': detectorMm.toFixed(3),
+          'data-op-detector-intensity': detectorIntensity.toFixed(4)
+        }),
+        h('text', {
+          x: detectorLabelX, y: detectorLabelY, fill: 'var(--allo-stem-text,#f8fafc)', fontSize: 11,
+          textAnchor: detectorAnchor, stroke: 'var(--allo-stem-deeper,#07111f)', strokeWidth: 2.5, paintOrder: 'stroke'
+        }, detectorLabel + ' / ' + (detectorIntensity * 100).toFixed(1) + '%'),
+        h('text', {
+          className: 'axis-title', 'data-axis': 'x', x: pad.l + plotW / 2, y: H - 2,
+          fill: 'var(--allo-stem-text,#e2e8f0)', fontSize: 11, textAnchor: 'middle'
+        }, 'screen position y (mm)'),
+        h('text', {
+          className: 'axis-title', 'data-axis': 'y', x: 11, y: pad.t + plotH / 2,
+          transform: 'rotate(-90 11 ' + (pad.t + plotH / 2) + ')',
+          fill: 'var(--allo-stem-text,#e2e8f0)', fontSize: 11, textAnchor: 'middle'
+        }, 'I / I₀')
+      )
+    );
+  }
+  function _renderOptics3DToolbar(config, h) {
+    var camera = config.camera || 'oblique';
+    return h('div', { className: 'opticslab-3d-toolbar', role: 'toolbar', 'aria-label': config.label || '3D scene controls' },
+      h('span', { className: 'opticslab-3d-toolbar-label' }, 'View'),
+      ['side', 'oblique', 'normal'].map(function(view) {
+        return h('button', {
+          key: view, type: 'button', 'data-op-focusable': 'true',
+          'aria-pressed': camera === view ? 'true' : 'false',
+          onClick: function() { config.onCamera(view); }
+        }, view.charAt(0).toUpperCase() + view.slice(1));
+      }),
+      h('button', {
+        type: 'button', 'data-op-focusable': 'true', onClick: config.onReset,
+        'data-op-refraction-3d-reset': config.id === 'refraction' ? 'true' : undefined
+      }, 'Reset'),
+      config.onMotion && h('button', {
+        type: 'button', 'data-op-focusable': 'true',
+        'aria-pressed': config.motion ? 'true' : 'false',
+        onClick: function() { config.onMotion(!config.motion); }
+      }, config.motion ? 'Pause motion' : 'Play motion')
+    );
+  }
+
+  // Demand-rendered 3D mirror bench. The bright circular aperture is the
+  // thin-mirror plane used by the equation; the shallow silver surface makes
+  // plane, concave, and convex geometry spatially legible without pretending
+  // that the schematic depth is to scale. Physical reflected rays always stay
+  // on the incident side. Only dashed construction lines extend behind a
+  // mirror to locate a virtual image.
+  var OpticsMirrorGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '';
+    var notify = null, restoreAttempts = 0;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    function disposeMaterial(material) {
+      if (!material) return;
+      if (Array.isArray(material)) material.forEach(disposeMaterial);
+      else if (material.dispose) material.dispose();
+    }
+
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var child = group.children[i];
+        if (child.geometry) child.geometry.dispose();
+        disposeMaterial(child.material);
+        group.remove(child);
+      }
+    }
+
+    function addLine(THREE, points, color, opacity, dashed) {
+      var geometry = new THREE.BufferGeometry().setFromPoints(points);
+      var material = dashed
+        ? new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: 0.22, gapSize: 0.15 })
+        : new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity });
+      var line = new THREE.Line(geometry, material);
+      if (dashed && line.computeLineDistances) line.computeLineDistances();
+      line.frustumCulled = false;
+      S.model.add(line);
+      return line;
+    }
+
+    function addMarker(THREE, x, color, dashed) {
+      var marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.13, 12, 8),
+        new THREE.MeshBasicMaterial({ color: color, transparent: !!dashed, opacity: dashed ? 0.62 : 1 })
+      );
+      marker.position.set(x, 0, 0);
+      S.model.add(marker);
+      var tick = 0.33;
+      addLine(THREE, [new THREE.Vector3(x, -tick, 0), new THREE.Vector3(x, tick, 0)], color, dashed ? 0.55 : 0.85, dashed);
+    }
+
+    function addArrow(THREE, x, height, color, opacity, dashed) {
+      var base = new THREE.Vector3(x, 0, 0);
+      var tip = new THREE.Vector3(x, height, 0);
+      addLine(THREE, [base, tip], color, opacity, dashed);
+      var cone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.16, 0.42, 16),
+        new THREE.MeshBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity })
+      );
+      cone.position.set(x, height + (height >= 0 ? 0.18 : -0.18), 0);
+      if (height < 0) cone.rotation.z = Math.PI;
+      S.model.add(cone);
+    }
+
+    function pointAtX(THREE, start, toward, xTarget) {
+      var dx = toward.x - start.x;
+      if (Math.abs(dx) < 1e-6) return start.clone();
+      var t = (xTarget - start.x) / dx;
+      return new THREE.Vector3(
+        xTarget,
+        start.y + (toward.y - start.y) * t,
+        start.z + (toward.z - start.z) * t
+      );
+    }
+
+    function pointAtBenchEdge(THREE, start, toward, xTarget) {
+      var end = pointAtX(THREE, start, toward, xTarget);
+      var delta = end.clone().sub(start);
+      var fraction = 1;
+      function crop(component, limit) {
+        var endValue = end[component];
+        var deltaValue = delta[component];
+        if (Math.abs(endValue) <= limit || Math.abs(deltaValue) < 1e-8) return;
+        var candidate = ((endValue < 0 ? -limit : limit) - start[component]) / deltaValue;
+        if (candidate > 0) fraction = Math.min(fraction, candidate);
+      }
+      crop('y', 4.35);
+      crop('z', 3.0);
+      return start.clone().addScaledVector(delta, fraction);
+    }
+
+    function addMirrorSurface(THREE, type) {
+      var rings = 14, segments = 48, aperture = 2.38;
+      var depth = type === 'plane' ? 0 : (type === 'concave' ? 0.48 : -0.48);
+      var positions = [], indices = [];
+      for (var ringIndex = 0; ringIndex <= rings; ringIndex++) {
+        var radius = aperture * ringIndex / rings;
+        var x = depth * Math.pow(radius / aperture, 2);
+        for (var segmentIndex = 0; segmentIndex <= segments; segmentIndex++) {
+          var theta = segmentIndex / segments * Math.PI * 2;
+          positions.push(x, radius * Math.cos(theta), radius * Math.sin(theta));
+        }
+      }
+      for (var ring = 0; ring < rings; ring++) {
+        for (var segment = 0; segment < segments; segment++) {
+          var a = ring * (segments + 1) + segment;
+          var b = a + segments + 1;
+          indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      var geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      var surface = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({
+        color: type === 'plane' ? 0xc7d2fe : 0xa5b4fc,
+        transparent: true, opacity: type === 'plane' ? 0.34 : 0.28,
+        shininess: 110, side: THREE.DoubleSide, depthWrite: false
+      }));
+      S.model.add(surface);
+
+      // Contour rings reveal curvature, while the central aperture ring keeps
+      // every ideal ray intersection visibly anchored at x = 0.
+      [0.8, 1.55, aperture].forEach(function (radius) {
+        var contour = [];
+        var contourX = depth * Math.pow(radius / aperture, 2);
+        for (var k = 0; k <= segments; k++) {
+          var angle = k / segments * Math.PI * 2;
+          contour.push(new THREE.Vector3(contourX, radius * Math.cos(angle), radius * Math.sin(angle)));
+        }
+        addLine(THREE, contour, 0xc7d2fe, radius === aperture ? 0.72 : 0.34, false);
+      });
+      var apertureRing = [];
+      for (var p = 0; p <= segments; p++) {
+        var apertureAngle = p / segments * Math.PI * 2;
+        apertureRing.push(new THREE.Vector3(0, 1.74 * Math.cos(apertureAngle), 1.74 * Math.sin(apertureAngle)));
+      }
+      addLine(THREE, apertureRing, 0xe0e7ff, 0.90, false);
+    }
+
+    function applyModel(model) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+      S.rayCount = 0;
+      S.virtualExtensionCount = 0;
+      S.realRaysContinuePastFocus = false;
+      S.physicalRaysStayIncidentSide = true;
+      S.virtualExtensionsBehindMirror = true;
+
+      var finiteImage = typeof model.imageDistance === 'number' && isFinite(model.imageDistance)
+        && typeof model.imageHeight === 'number' && isFinite(model.imageHeight);
+      var cappedImageDistance = finiteImage ? Math.min(Math.abs(model.imageDistance), 80) : 0;
+      var screenDistance = clamp(+model.screenDistance || 15, 2, 42);
+      var extentCm = Math.max(model.objectDistance, model.focalAbs * 2, cappedImageDistance, screenDistance, 20);
+      var unit = 8 / Math.max(1, extentCm);
+      var leftEdge = -9, rightEdge = 9;
+      var objectPoint = new THREE.Vector3(-model.objectDistance * unit, model.objectHeight * unit, 0);
+      // Mirror convention: d_i > 0 is in front (x < 0); d_i < 0 is behind (x > 0).
+      var imagePoint = finiteImage
+        ? new THREE.Vector3(-model.imageDistance * unit, model.imageHeight * unit, 0)
+        : null;
+      var imageVisible = !!(imagePoint && Math.abs(imagePoint.x) <= 8.7 && Math.abs(imagePoint.y) <= 4.15);
+
+      addLine(THREE, [new THREE.Vector3(leftEdge, 0, 0), new THREE.Vector3(rightEdge, 0, 0)], 0x64748b, 0.76, true);
+      addMirrorSurface(THREE, model.type);
+
+      // A translucent sampling plane makes the reflected bundle measurable
+      // without pretending that an opaque screen can sit in the shared
+      // incident/reflected ray space. Its spot is the exact circular aperture
+      // cross-section at d_s: |1 - d_s / d_i| times the mirror aperture.
+      var screenWorld = -screenDistance * unit;
+      var screenMaterial = new THREE.MeshBasicMaterial({
+        color: model.screenFocused ? 0x22c55e : 0xe2e8f0,
+        transparent: true, opacity: model.screenFocused ? 0.20 : 0.10,
+        side: THREE.DoubleSide, depthWrite: false
+      });
+      var screenPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.9, 4.9), screenMaterial);
+      screenPlane.rotation.y = Math.PI / 2;
+      screenPlane.position.x = screenWorld;
+      S.model.add(screenPlane);
+      var screenCorners = [
+        new THREE.Vector3(screenWorld, -2.45, -2.45),
+        new THREE.Vector3(screenWorld, 2.45, -2.45),
+        new THREE.Vector3(screenWorld, 2.45, 2.45),
+        new THREE.Vector3(screenWorld, -2.45, 2.45),
+        new THREE.Vector3(screenWorld, -2.45, -2.45)
+      ];
+      addLine(THREE, screenCorners, model.screenFocused ? 0x86efac : 0xe2e8f0,
+        model.screenFocused ? 0.92 : 0.52, false);
+      var spotRadius = clamp(1.72 * Math.abs(model.screenBundleRatio), 0.09, 1.9);
+      var screenSpot = new THREE.Mesh(new THREE.CircleGeometry(spotRadius, 40), new THREE.MeshBasicMaterial({
+        color: model.screenFocused ? 0x86efac : 0x22d3ee,
+        transparent: true, opacity: model.screenFocused ? 0.88 : 0.34,
+        side: THREE.DoubleSide, depthWrite: false
+      }));
+      screenSpot.rotation.y = Math.PI / 2;
+      screenSpot.position.set(screenWorld - 0.012,
+        clamp((+model.screenCenterY || 0) * unit, -2.15, 2.15), 0);
+      S.model.add(screenSpot);
+
+      if (model.type !== 'plane') {
+        var markerSign = model.type === 'concave' ? -1 : 1;
+        var focalX = markerSign * model.focalAbs * unit;
+        var centerX = markerSign * model.focalAbs * 2 * unit;
+        if (Math.abs(focalX) <= 8.7) addMarker(THREE, focalX, 0xfbbf24, markerSign > 0);
+        if (Math.abs(centerX) <= 8.7) addMarker(THREE, centerX, 0x94a3b8, markerSign > 0);
+      } else if (imagePoint) {
+        // Equal-distance axis segments make plane-mirror symmetry visible in depth.
+        addLine(THREE, [new THREE.Vector3(objectPoint.x, -0.28, 0), new THREE.Vector3(0, -0.28, 0)], 0xfbbf24, 0.45, true);
+        addLine(THREE, [new THREE.Vector3(0, -0.28, 0), new THREE.Vector3(imagePoint.x, -0.28, 0)], 0xfca5a5, 0.45, true);
+      }
+
+      addArrow(THREE, objectPoint.x, objectPoint.y, 0xfbbf24, 1, false);
+      if (imageVisible) {
+        addArrow(THREE, imagePoint.x, imagePoint.y,
+          model.imageDistance > 0 ? 0xef4444 : 0xfca5a5,
+          model.imageDistance > 0 ? 1 : 0.72,
+          model.imageDistance < 0);
+      }
+
+      var aperturePoints = [new THREE.Vector3(0, 0, 0)];
+      for (var rayIndex = 0; rayIndex < 8; rayIndex++) {
+        var rayTheta = rayIndex / 8 * Math.PI * 2;
+        aperturePoints.push(new THREE.Vector3(0, Math.cos(rayTheta) * 1.74, Math.sin(rayTheta) * 1.74));
+      }
+      aperturePoints.forEach(function (hit) {
+        addLine(THREE, [objectPoint, hit], 0xfbbf24, 0.48, false);
+        if (model.atInfinity) {
+          var parallelToward = hit.clone().add(new THREE.Vector3(-1, -model.objectHeight / model.focalAbs, 0));
+          var infinityEnd = pointAtBenchEdge(THREE, hit, parallelToward, leftEdge);
+          addLine(THREE, [hit, infinityEnd], 0x22d3ee, 0.84, false);
+          if (infinityEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
+          S.rayCount++;
+          return;
+        }
+        if (!imagePoint) return;
+        if (model.imageDistance > 0) {
+          // Real reflected light passes through the image and continues; it
+          // never terminates at the focus marker.
+          var realEnd = pointAtBenchEdge(THREE, hit, imagePoint, leftEdge);
+          addLine(THREE, [hit, realEnd], 0x22d3ee, 0.84, false);
+          if (realEnd.x < imagePoint.x - 1e-6) S.realRaysContinuePastFocus = true;
+          if (realEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
+        } else {
+          // Extrapolating away from the behind-mirror image gives the physical
+          // reflected ray. The dashed segment toward it is construction only.
+          var reflectedEnd = pointAtBenchEdge(THREE, hit, imagePoint, leftEdge);
+          var virtualEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
+          addLine(THREE, [hit, reflectedEnd], 0x22d3ee, 0.84, false);
+          addLine(THREE, [hit, virtualEnd], 0xfca5a5, 0.52, true);
+          if (reflectedEnd.x > 1e-6) S.physicalRaysStayIncidentSide = false;
+          if (virtualEnd.x < -1e-6) S.virtualExtensionsBehindMirror = false;
+          S.virtualExtensionCount++;
+        }
+        S.rayCount++;
+      });
+
+      S.imageVisible = imageVisible;
+      S.imageType = model.atInfinity ? 'infinity' : (model.imageDistance > 0 ? 'real' : 'virtual');
+      S.imageSide = model.atInfinity ? 'at-infinity' : (model.imageDistance > 0 ? 'incident' : 'behind');
+      S.mirrorType = model.type;
+      S.imageDistance = model.imageDistance;
+      S.screenDistance = screenDistance;
+      S.screenBundleRatio = model.screenBundleRatio;
+      S.screenFocused = !!model.screenFocused;
+      S.screenCapturable = !!model.screenCapturable;
+      S.target.set(0, 0, 0);
+      S.half.set(9.5, 4.8, 3.2);
+    }
+
+    function scheduleFrame() {
+      if (!S || S.raf || S.contextLost) return;
+      S.raf = requestAnimationFrame(frame);
+    }
+
+    function frame() {
+      if (!S) return;
+      S.raf = 0;
+      if (S.contextLost || !S.renderer) return;
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      var el = S.renderer.domElement;
+      var width = el.clientWidth || 1, height = el.clientHeight || 1;
+      if (width !== S.lastW || height !== S.lastH) {
+        S.lastW = width; S.lastH = height;
+        S.renderer.setSize(width, height, false);
+        S.camera.aspect = width / Math.max(1, height);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var direction = new S.THREE.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      var up0 = new S.THREE.Vector3(0, 1, 0);
+      var right = new S.THREE.Vector3().crossVectors(up0, direction);
+      if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+      right.normalize();
+      var upv = new S.THREE.Vector3().crossVectors(direction, right).normalize();
+      var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+      var tanH = tanV * Math.max(0.2, S.camera.aspect);
+      var fit = 1;
+      for (var sx = -1; sx <= 1; sx += 2) {
+        for (var sy = -1; sy <= 1; sy += 2) {
+          for (var sz = -1; sz <= 1; sz += 2) {
+            var corner = new S.THREE.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+            var along = corner.dot(direction);
+            fit = Math.max(fit, Math.abs(corner.dot(right)) / tanH + along, Math.abs(corner.dot(upv)) / tanV + along);
+          }
+        }
+      }
+      var distance = fit * 1.04 / Math.max(0.45, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(direction, distance);
+      S.camera.near = Math.max(0.05, distance * 0.01);
+      S.camera.far = distance * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) {}
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var width = host.clientWidth || 460, height = host.clientHeight || 280;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x08111f, 1);
+      var canvas = renderer.domElement;
+      canvas.style.display = 'block';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.borderRadius = '8px';
+      canvas.style.touchAction = 'pan-y';
+      canvas.setAttribute('data-optics-mirror-gl', 'true');
+      canvas.setAttribute('aria-hidden', 'true');
+      host.appendChild(canvas);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 2000);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.94));
+      var keyLight = new THREE.DirectionalLight(0xdbeafe, 1.22);
+      keyLight.position.set(-5, 7, 8);
+      scene.add(keyLight);
+      var model = new THREE.Group();
+      scene.add(model);
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        rotY: 34, rotX: 18, zoom: 1, target: new THREE.Vector3(),
+        half: new THREE.Vector3(9.5, 4.8, 3.2), contextLost: false,
+        lastW: width, lastH: height, raf: 0, rayCount: 0, virtualExtensionCount: 0,
+        imageVisible: false, imageType: null, imageSide: null, mirrorType: null,
+        imageDistance: null, physicalRaysStayIncidentSide: true,
+        virtualExtensionsBehindMirror: true, realRaysContinuePastFocus: false,
+        screenDistance: null, screenBundleRatio: null, screenFocused: false,
+        screenCapturable: false
+      };
+
+      canvas.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault(); S.contextLost = true; setStatus('failed');
+      });
+      canvas.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready'); scheduleFrame();
+      });
+      var visibilityHandler = function () {
+        if (typeof document === 'undefined' || !document.hidden) scheduleFrame();
+      };
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('visibilitychange', visibilityHandler);
+      }
+      S.visibilityHandler = visibilityHandler;
+      if (typeof ResizeObserver === 'function') {
+        S.resizeObserver = new ResizeObserver(function () { scheduleFrame(); });
+        S.resizeObserver.observe(host);
+      }
+      sig = '';
+      scheduleFrame();
+      return true;
+    }
+
+    return {
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D mirror bench unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      push: function (data) { pending = data; scheduleFrame(); },
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: function () {
+        return {
+          state: status, rayCount: S ? S.rayCount : 0,
+          virtualExtensionCount: S ? S.virtualExtensionCount : 0,
+          imageVisible: !!(S && S.imageVisible), imageType: S ? S.imageType : null,
+          imageSide: S ? S.imageSide : null, mirrorType: S ? S.mirrorType : null,
+          imageDistance: S ? S.imageDistance : null,
+          screenDistance: S ? S.screenDistance : null,
+          screenBundleRatio: S ? S.screenBundleRatio : null,
+          screenFocused: !!(S && S.screenFocused),
+          screenCapturable: !!(S && S.screenCapturable),
+          physicalRaysStayIncidentSide: !!(S && S.physicalRaysStayIncidentSide),
+          virtualExtensionsBehindMirror: !!(S && S.virtualExtensionsBehindMirror),
+          realRaysContinuePastFocus: !!(S && S.realRaysContinuePastFocus),
+          contextLost: !!(S && S.contextLost)
+        };
+      },
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          if (S.visibilityHandler && typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', S.visibilityHandler);
+          }
+          if (S.resizeObserver) { try { S.resizeObserver.disconnect(); } catch (e) {} }
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  function opticsMirrorGlRef(nodeOrNull) { OpticsMirrorGL.attach(nodeOrNull); }
+  var opticsMirrorDrag = { current: null };
+  if (typeof window !== 'undefined') window.__alloOpticsMirrorGL = OpticsMirrorGL;
+
+  // ---
   // REFLECTION SIM — plane / concave / convex mirror with ray tracing
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderReflectionSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
-    // Virtual coordinate space: x in cm from -50 to +20; mirror sits at x = 0.
-    var cmMin = -50, cmMax = 20;
-    var sx = _scale(cmMin, cmMax, pad.l, W - pad.r);
-    var sy = _scale(-15, 15, H - pad.b, pad.t);  // y in cm, flipped
     var mt = state.reflMirrorType || 'concave';  // 'plane' | 'concave' | 'convex'
     var f = mt === 'plane' ? Infinity : (mt === 'concave' ? Math.abs(state.reflFocal || 10) : -Math.abs(state.reflFocal || 10));
     var d_o = state.reflDo || 25;
@@ -335,16 +1166,298 @@
     var _mirrorVT = (d_i == null) ? 'image at infinity'
       : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
     var hImg = (m == null) ? null : m * hObj;
+    var screenMin = 2, screenMax = 42;
+    var screenCm = clamp(state.reflScreenCm != null ? +state.reflScreenCm : 15, screenMin, screenMax);
+    var screenCapturable = d_i != null && d_i > 0;
+    var screenFocusOnBench = screenCapturable && d_i >= screenMin && d_i <= screenMax;
+    var screenBundleRatio = d_i != null && isFinite(d_i) ? Math.abs(1 - screenCm / d_i) : 1;
+    var screenBundlePct = (screenBundleRatio * 100).toFixed(1);
+    var screenCenterY = -hObj * screenCm / d_o;
+    var screenFocused = screenFocusOnBench && screenBundleRatio <= 0.005;
+    var screenDelta = screenCapturable ? screenCm - d_i : null;
+    var screenState = d_i == null ? 'infinity'
+      : (!screenCapturable ? 'virtual' : (!screenFocusOnBench ? 'out-of-range' : (screenFocused ? 'sharp' : 'blurred')));
+    var screenStatus;
+    if (d_i == null) {
+      screenStatus = 'No finite screen focus: the reflected bundle is parallel and remains '
+        + screenBundlePct + '% of the mirror aperture width at this sampling plane.';
+    } else if (!screenCapturable) {
+      screenStatus = 'No screen focus: this is a virtual image behind the mirror. The physical reflected bundle is '
+        + screenBundlePct + '% of the mirror aperture width at this sampling plane.';
+    } else if (!screenFocusOnBench) {
+      screenStatus = 'The real image plane is ' + d_i.toFixed(1)
+        + ' cm in front of the mirror, outside the 2-42 cm screen range. At '
+        + screenCm.toFixed(1) + ' cm the bundle spans ' + screenBundlePct + '% of the mirror aperture width.';
+    } else if (screenFocused) {
+      screenStatus = 'Sharp focus: the sampling screen and real image plane coincide at '
+        + screenCm.toFixed(1) + ' cm in front of the mirror.';
+    } else {
+      screenStatus = 'Blurred screen: it is ' + Math.abs(screenDelta).toFixed(1) + ' cm '
+        + (screenDelta < 0 ? 'before' : 'beyond') + ' the real image plane, so the reflected bundle spans '
+        + screenBundlePct + '% of the mirror aperture width.';
+    }
+    var screenShortStatus = screenFocused ? 'sharp focus' : screenBundlePct + '% aperture';
     // Object x (negative → in front of mirror)
     var objX = -d_o;
     var imgX = (d_i == null) ? null : -d_i;  // d_i > 0 → real (same side as object, in front)
-    // Drag handler for object distance
-    function onObjDrag(e) {
-      var rect = e.currentTarget.getBoundingClientRect();
-      var pxX = e.clientX - rect.left;
-      var newCm = (pxX - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
-      var newDo = clamp(-newCm, 1, 50);
+    // Keep the object visible for imported/sample setups beyond the usual
+    // slider range. Plane mirrors also need a symmetric behind-mirror region:
+    // their virtual image is exactly as far behind the mirror as the object is
+    // in front, and the previous fixed +20 cm edge hid the default 25 cm image.
+    var cmMin = -Math.max(50, Math.ceil((d_o + 5) / 5) * 5);
+    var cmMax = mt === 'plane' ? Math.max(20, Math.ceil((d_o + 5) / 5) * 5) : 20;
+    var sx = _scale(cmMin, cmMax, pad.l, W - pad.r);
+    var sy = _scale(-15, 15, H - pad.b, pad.t);  // y in cm, flipped
+    var planeAngleDeg = radToDeg(Math.atan2(Math.abs(hObj), d_o));
+    var mirrorPathSummary = mt === 'plane'
+      ? 'Law of reflection: incident angle equals reflected angle, both ' + planeAngleDeg.toFixed(1)
+        + ' degrees. The dashed extensions meet ' + d_o.toFixed(1) + ' cm behind the mirror.'
+      : (d_i == null
+        ? 'The object is at the focal point, so the reflected rays leave parallel and the image is at infinity.'
+        : (d_i > 0
+          ? 'Physical reflected rays converge ' + d_i.toFixed(1) + ' cm in front of the mirror to make a real image.'
+          : 'Physical reflected rays stay in front of the mirror; dashed backward extensions meet '
+            + Math.abs(d_i).toFixed(1) + ' cm behind it to locate the virtual image.'));
+    var showMirror3D = !!state.reflShow3D;
+    var mirrorGlLive = showMirror3D && OpticsMirrorGL.status() === 'ready';
+    var mirrorFocalAbs = mt === 'plane' ? 0 : Math.abs(f);
+    if (showMirror3D) {
+      OpticsMirrorGL.onStatusChange(function () { upd('reflGlTick', ((state.reflGlTick || 0) + 1)); });
+      OpticsMirrorGL.push({
+        sig: [mt, mirrorFocalAbs.toFixed(3), d_o.toFixed(3), hObj.toFixed(3),
+          d_i == null ? 'infinity' : d_i.toFixed(3), m == null ? 'none' : m.toFixed(4),
+          screenCm.toFixed(3), screenBundleRatio.toFixed(6)].join('|'),
+        type: mt, focalAbs: mirrorFocalAbs, objectDistance: d_o, objectHeight: hObj,
+        imageDistance: d_i, imageHeight: hImg, atInfinity: d_i == null,
+        screenDistance: screenCm, screenBundleRatio: screenBundleRatio,
+        screenCenterY: screenCenterY, screenFocused: screenFocused,
+        screenCapturable: screenCapturable,
+        rotY: state.reflGlRot ? state.reflGlRot.rotY : 34,
+        rotX: state.reflGlRot ? state.reflGlRot.rotX : 18,
+        zoom: state.reflGlZoom || 1
+      });
+    }
+    var mirrorImageType = d_i == null ? 'infinity' : (d_i > 0 ? 'real' : 'virtual');
+    var mirrorImageSide = d_i == null ? 'at-infinity' : (d_i > 0 ? 'incident' : 'behind');
+    var mirrorOutcomeShort = d_i == null
+      ? 'image at infinity · parallel reflected bundle'
+      : (d_i > 0
+        ? 'real · incident side · ' + (m < 0 ? 'inverted' : 'upright')
+        : 'virtual · behind mirror · ' + (m < 0 ? 'inverted' : 'upright'));
+    var mirrorLandmarks = mt === 'plane'
+      ? 'Equal spacing: object ' + d_o.toFixed(1) + ' cm in front and image ' + d_o.toFixed(1) + ' cm behind.'
+      : ('F = ' + mirrorFocalAbs.toFixed(1) + ' cm and C = ' + (2 * mirrorFocalAbs).toFixed(1)
+        + ' cm ' + (mt === 'concave' ? 'in front of' : 'behind') + ' the mirror.');
+    var mirrorGlAlt = 'Three-dimensional ' + mt + ' mirror ray-space bench. The object point is '
+      + d_o.toFixed(1) + ' centimeters in front of the mirror. ';
+    if (d_i == null) {
+      mirrorGlAlt += 'The object is at the focal plane, so the cyan physical reflected rays leave parallel and the image is at infinity. ';
+    } else if (d_i > 0) {
+      mirrorGlAlt += 'The cyan physical reflected rays converge ' + d_i.toFixed(1)
+        + ' centimeters in front of the mirror, cross at a real ' + (m < 0 ? 'inverted' : 'upright')
+        + ' image, and continue. ';
+    } else {
+      mirrorGlAlt += 'The cyan physical reflected rays remain in front and diverge. Their dashed pink backward extensions meet '
+        + Math.abs(d_i).toFixed(1) + ' centimeters behind the mirror at a virtual '
+        + (m < 0 ? 'inverted' : 'upright') + ' image. ';
+    }
+    mirrorGlAlt += mirrorLandmarks + ' The translucent sample screen is ' + screenCm.toFixed(1)
+      + ' centimeters in front of the mirror. ' + screenStatus;
+    var mirrorCamera = state.reflGlCamera || 'oblique';
+    function setMirrorCamera(view) {
+      var preset = view === 'side' ? { rotY: 0, rotX: 0 }
+        : (view === 'normal' ? { rotY: -90, rotX: 0 } : { rotY: 34, rotX: 18 });
+      upd({ reflGlCamera: view, reflGlRot: preset, reflGlZoom: 1 });
+    }
+    var mirror3dPanel = h('div', { style: { marginBottom: 10, maxWidth: 460 } },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: showMirror3D ? 6 : 0 } },
+        h('label', {
+          style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 }
+        },
+          h('input', {
+            type: 'checkbox', checked: showMirror3D,
+            onChange: function (e) { upd('reflShow3D', e.target.checked); },
+            'data-op-focusable': 'true', 'data-op-mirror-show-3d': 'true',
+            'aria-label': 'Show the interactive three-dimensional mirror ray-space bench'
+          }),
+          '3D ray-space bench'
+        ),
+        showMirror3D && h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10 } }, 'Camera presets and keyboard controls below')
+      ),
+      showMirror3D && h('div', null,
+        _renderOptics3DToolbar({
+          id: 'mirror', label: 'Mirror 3D controls', camera: mirrorCamera,
+          onCamera: setMirrorCamera,
+          onReset: function () { setMirrorCamera('oblique'); }
+        }, h),
+        h('div', {
+          style: {
+            position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
+            background: 'var(--allo-stem-deeper, #08111f)', border: '1px solid var(--allo-stem-border, #334155)'
+          }
+        },
+          h('div', {
+            ref: opticsMirrorGlRef, role: 'img', tabIndex: 0,
+            'data-a11y-static': 'true', 'data-op-mirror-3d-host': 'true',
+            'aria-label': mirrorGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset.',
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
+            style: { position: 'absolute', inset: 0, outlineOffset: -3 },
+            onPointerDown: function (ev) {
+              opticsMirrorDrag.current = {
+                x: ev.clientX, y: ev.clientY,
+                rotY: state.reflGlRot ? state.reflGlRot.rotY : 34,
+                rotX: state.reflGlRot ? state.reflGlRot.rotX : 18
+              };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+            },
+            onPointerMove: function (ev) {
+              var drag = opticsMirrorDrag.current;
+              if (!drag) return;
+              upd({ reflGlCamera: 'custom', reflGlRot: {
+                rotY: drag.rotY + (ev.clientX - drag.x) * 0.5,
+                rotX: Math.max(-80, Math.min(80, drag.rotX + (ev.clientY - drag.y) * 0.35))
+              } });
+            },
+            onPointerUp: function () { opticsMirrorDrag.current = null; },
+            onPointerCancel: function () { opticsMirrorDrag.current = null; },
+            onWheel: function (ev) {
+              ev.preventDefault();
+              upd({ reflGlCamera: 'custom', reflGlZoom: Math.max(0.5, Math.min(3, (state.reflGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
+            },
+            onKeyDown: function (ev) {
+              var rotation = state.reflGlRot || { rotY: 34, rotX: 18 };
+              var nextRotation = { rotY: rotation.rotY, rotX: rotation.rotX };
+              if (ev.key === 'ArrowLeft') nextRotation.rotY -= 6;
+              else if (ev.key === 'ArrowRight') nextRotation.rotY += 6;
+              else if (ev.key === 'ArrowUp') nextRotation.rotX = Math.max(-80, nextRotation.rotX - 6);
+              else if (ev.key === 'ArrowDown') nextRotation.rotX = Math.min(80, nextRotation.rotX + 6);
+              else if (ev.key === '+' || ev.key === '=') {
+                ev.preventDefault(); ev.stopPropagation();
+                upd({ reflGlCamera: 'custom', reflGlZoom: Math.min(3, (state.reflGlZoom || 1) * 1.12) });
+                return;
+              } else if (ev.key === '-' || ev.key === '_') {
+                ev.preventDefault(); ev.stopPropagation();
+                upd({ reflGlCamera: 'custom', reflGlZoom: Math.max(0.5, (state.reflGlZoom || 1) * 0.89) });
+                return;
+              } else if (ev.key === '0') {
+                ev.preventDefault(); ev.stopPropagation(); setMirrorCamera('oblique'); return;
+              } else return;
+              ev.preventDefault(); ev.stopPropagation();
+              upd({ reflGlCamera: 'custom', reflGlRot: nextRotation });
+            }
+          }),
+          mirrorGlLive && h('div', {
+            role: 'status', 'aria-live': 'polite',
+            'data-op-mirror-3d-outcome': mirrorImageType,
+            'data-image-side': mirrorImageSide, 'data-mirror-type': mt,
+            style: {
+              position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
+              color: '#e2e8f0', background: 'rgba(8,17,31,.80)', padding: '4px 7px',
+              borderRadius: 7, fontSize: 9, lineHeight: 1.45
+            }
+          },
+            h('div', null, mt.charAt(0).toUpperCase() + mt.slice(1) + ' mirror'),
+            h('div', { style: { color: d_i > 0 ? '#86efac' : '#fda4af', fontWeight: 700 } }, mirrorOutcomeShort),
+            h('div', {
+              'data-op-mirror-3d-screen': 'true',
+              'data-screen-focused': screenFocused ? 'true' : 'false'
+            }, 'sample screen ' + screenCm.toFixed(1) + ' cm - ' + screenShortStatus),
+            h('div', null, 'd_i = ' + (d_i == null ? '∞' : d_i.toFixed(1) + ' cm')
+              + (m == null ? '' : ' · m = ' + m.toFixed(2)))
+          ),
+          !mirrorGlLive ? h('div', {
+            role: 'status', 'aria-live': 'polite',
+            style: {
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: 12, pointerEvents: 'none',
+              color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11
+            }
+          }, OpticsMirrorGL.status() === 'failed'
+              ? '3D mirror bench unavailable on this device; the accessible description and 2D ray diagram remain available.'
+              : 'Loading 3D mirror bench...') : null,
+          mirrorGlLive ? h('div', {
+            'aria-hidden': 'true',
+            style: {
+              position: 'absolute', left: 8, bottom: 6, pointerEvents: 'none', fontSize: 10,
+              color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(8,17,31,.76)',
+              padding: '2px 7px', borderRadius: 999
+            }
+          }, 'Drag / arrows: orbit · Scroll / +/-: zoom · 0: reset') : null
+        ),
+        h('p', {
+          style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
+        },
+          'Yellow rays travel from one object point to the bright circular thin-mirror aperture; cyan rays are physical reflected light. ',
+          d_i < 0 ? 'Dashed pink lines are backward extensions behind the mirror, not physical rays. ' : '',
+          mirrorLandmarks + ' The translucent sample plane shows the reflected-bundle cross-section without blocking the overlapping ray space. Surface depth and aperture are schematic.'
+        )
+      )
+    );
+    var ghost = _opticsGhostSetup('reflection', state);
+    var ghostMt = ghost && (ghost.reflMirrorType || mt);
+    var ghostF = !ghost ? null : (ghostMt === 'plane' ? Infinity : (ghostMt === 'concave' ? Math.abs(ghost.reflFocal || 10) : -Math.abs(ghost.reflFocal || 10)));
+    var ghostDo = ghost ? +(ghost.reflDo || 25) : null;
+    var ghostH = ghost ? +(ghost.reflObjH || hObj) : null;
+    var ghostLens = ghost ? thinLens(ghostDo, ghostF === Infinity ? 1e9 : ghostF) : null;
+    var ghostDi = ghost ? (ghostF === Infinity ? -ghostDo : (ghostLens.error ? null : ghostLens.d_i)) : null;
+    var ghostM = ghost ? (ghostF === Infinity ? 1 : (ghostLens.error ? null : ghostLens.m)) : null;
+    // Convert pointer coordinates back into SVG units so dragging stays exact
+    // when the diagram is responsively scaled.
+    function setObjectFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newCm = (point.x - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
+      var newDo = clamp(-newCm, 1, reflDoSliderMax);
       upd('reflDo', Math.round(newDo * 10) / 10);
+    }
+    function startObjectDrag(e) {
+      opticsDirectDrag.current = { kind: 'reflection', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setObjectFromPointer(e);
+    }
+    function moveObjectDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'reflection') return;
+      setObjectFromPointer(e);
+    }
+    function endObjectDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'reflection') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyObjectDrag(e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      var step = e.shiftKey ? 0.1 : 0.5;
+      upd('reflDo', Math.round(clamp(d_o + (e.key === 'ArrowLeft' ? step : -step), 1, reflDoSliderMax) * 10) / 10);
+    }
+    function setMirrorScreenFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newCm = (point.x - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
+      upd('reflScreenCm', Math.round(clamp(-newCm, screenMin, screenMax) * 10) / 10);
+    }
+    function startMirrorScreenDrag(e) {
+      opticsDirectDrag.current = { kind: 'mirror-screen', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setMirrorScreenFromPointer(e);
+    }
+    function moveMirrorScreenDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'mirror-screen') return;
+      setMirrorScreenFromPointer(e);
+    }
+    function endMirrorScreenDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'mirror-screen') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyMirrorScreenDrag(e) {
+      var next = null;
+      var step = e.shiftKey ? 0.1 : 0.5;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = screenCm + step;
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = screenCm - step;
+      else if (e.key === 'Home') next = screenMin;
+      else if (e.key === 'End') next = screenMax;
+      if (next == null) return;
+      e.preventDefault();
+      upd('reflScreenCm', Math.round(clamp(next, screenMin, screenMax) * 10) / 10);
     }
     // Build the SVG
     return h('div', null,
@@ -352,6 +1465,7 @@
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Mirror:',
           h('select', {
             value: mt,
+            'data-op-variable': 'reflMirrorType',
             onChange: function(e) { upd('reflMirrorType', e.target.value); },
             'data-op-focusable': 'true', 'aria-label': 'Mirror type',
             style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
@@ -366,6 +1480,7 @@
           h('input', {
             type: 'range', min: 5, max: 30, step: 0.5,
             value: state.reflFocal || 10,
+            'data-op-variable': 'reflFocal',
             onChange: function(e) { upd('reflFocal', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Focal length',
             'aria-valuetext': (state.reflFocal || 10).toFixed(1) + ' cm focal length. ' + _mirrorVT,
@@ -378,6 +1493,7 @@
           h('input', {
             type: 'range', min: 1, max: reflDoSliderMax, step: 0.5,
             value: d_o,
+            'data-op-variable': 'reflDo',
             onChange: function(e) { upd('reflDo', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Object distance',
             'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _mirrorVT,
@@ -386,17 +1502,45 @@
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
         )
       ),
+      h('div', {
+        'data-op-mirror-screen-controls': 'true',
+        style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', maxWidth: 460, marginBottom: 10 }
+      },
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, flex: '1 1 250px', minWidth: 0, color: 'var(--allo-stem-text,#cbd5e1)', fontSize: 11 } },
+          'Sample screen d_s:',
+          h('input', {
+            id: 'op-mirror-screen-range',
+            type: 'range', min: screenMin, max: screenMax, step: 0.5, value: screenCm,
+            'data-op-variable': 'reflScreenCm', 'data-op-focusable': 'true',
+            'aria-label': 'Mirror sampling screen position',
+            'aria-valuetext': screenCm.toFixed(1) + ' centimeters in front of the mirror. ' + screenStatus,
+            onChange: function(e) { upd('reflScreenCm', parseFloat(e.target.value)); },
+            style: { flex: '1 1 130px', minWidth: 110 }
+          }),
+          h('output', {
+            htmlFor: 'op-mirror-screen-range',
+            style: { minWidth: 48, textAlign: 'right', color: 'var(--op-accent-text,#7dd3fc)', fontFamily: 'monospace', fontWeight: 700 }
+          }, screenCm.toFixed(1) + ' cm')
+        ),
+        screenFocusOnBench && h('button', {
+          type: 'button', className: 'opticslab-preset-button', 'data-op-focusable': 'true',
+          'data-op-place-mirror-screen-at-image': 'true',
+          onClick: function() { upd('reflScreenCm', d_i); },
+          'aria-label': 'Place the mirror sampling screen at the real image plane, ' + d_i.toFixed(1) + ' centimeters'
+        }, screenFocused ? 'At image plane' : 'Place at image')
+      ),
+      mirror3dPanel,
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
-        'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '.',
-        onClick: onObjDrag,
-        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        className: 'opticslab-core-svg',
+        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        'aria-label': 'Mirror ray diagram. ' + mt + ' mirror' + (mt !== 'plane' ? ', f = ' + (f).toFixed(1) + ' cm' : '') + ', object at ' + d_o.toFixed(1) + ' cm. ' + _mirrorVT + '. ' + mirrorPathSummary + ' Sampling screen at ' + screenCm.toFixed(1) + ' cm. ' + screenStatus,
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         // Background grid
         (function() {
           var g = [];
-          for (var gx = -50; gx <= 20; gx += 5) {
+          for (var gx = Math.ceil(cmMin / 5) * 5; gx <= cmMax; gx += 5) {
             g.push(h('line', { key: 'gx' + gx, x1: sx(gx), y1: pad.t, x2: sx(gx), y2: H - pad.b, stroke: '#1e293b', strokeWidth: 1 }));
           }
           for (var gy = -15; gy <= 15; gy += 3) {
@@ -406,6 +1550,18 @@
         })(),
         // Optical axis
         h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+        ghost && h('g', { className: 'opticslab-ghost-layer', 'aria-hidden': 'true' },
+          h('line', { x1: sx(-ghostDo), y1: sy(0), x2: sx(-ghostDo), y2: sy(ghostH), stroke: OP_RAY.previous, strokeWidth: 2, strokeDasharray: '5 4' }),
+          ghostDi != null && _isNum(ghostM) && h('line', {
+            x1: sx(-ghostDi), y1: sy(0), x2: sx(-ghostDi), y2: sy(ghostM * ghostH),
+            stroke: OP_RAY.virtual, strokeWidth: 2, strokeDasharray: '5 4'
+          }),
+          ghostDi != null && _isNum(ghostM) && h('polyline', {
+            points: [sx(-ghostDo) + ',' + sy(ghostH), sx(0) + ',' + sy(ghostH), sx(-ghostDi) + ',' + sy(ghostM * ghostH)].join(' '),
+            fill: 'none', stroke: OP_RAY.previous, strokeWidth: 1.4, strokeDasharray: '4 4'
+          }),
+          h('text', { x: pad.l + 5, y: pad.t + 13 }, 'previous setup')
+        ),
         // Focal points (for curved mirrors)
         f !== Infinity && h('circle', { cx: sx(-f), cy: sy(0), r: 3, fill: '#fbbf24', stroke: 'var(--allo-stem-deeper, #0b1220)', strokeWidth: 1 }),
         f !== Infinity && h('text', { x: sx(-f), y: sy(0) - 6, fill: '#fbbf24', fontSize: 9, textAnchor: 'middle' }, 'F'),
@@ -414,24 +1570,31 @@
         // Mirror at x = 0 (rendered as a vertical line with a curve indication for non-plane)
         (function() {
           if (mt === 'plane') {
-            return h('line', { key: 'mir', x1: sx(0), y1: sy(-12), x2: sx(0), y2: sy(12), stroke: '#a5b4fc', strokeWidth: 3 });
+            return h('line', { key: 'mir', 'data-op-mirror-surface': 'true', x1: sx(0), y1: sy(-12), x2: sx(0), y2: sy(12), stroke: '#a5b4fc', strokeWidth: 3 });
           }
           // Curved: bow toward (concave) or away (convex) from the object
           var curvePath = mt === 'concave'
             ? 'M ' + sx(0) + ' ' + sy(-12) + ' Q ' + sx(2) + ' ' + sy(0) + ' ' + sx(0) + ' ' + sy(12)
             : 'M ' + sx(0) + ' ' + sy(-12) + ' Q ' + sx(-2) + ' ' + sy(0) + ' ' + sx(0) + ' ' + sy(12);
-          return h('path', { key: 'mir', d: curvePath, fill: 'none', stroke: '#a5b4fc', strokeWidth: 3 });
+          return h('path', { key: 'mir', 'data-op-mirror-surface': 'true', d: curvePath, fill: 'none', stroke: '#a5b4fc', strokeWidth: 3 });
         })(),
-        // Object arrow (yellow, upward from axis)
-        h('line', {
-          x1: sx(objX), y1: sy(0), x2: sx(objX), y2: sy(hObj),
-          stroke: '#fbbf24', strokeWidth: 3
-        }),
-        h('polygon', {
-          points: [sx(objX) - 4, sy(hObj) + 4, sx(objX) + 4, sy(hObj) + 4, sx(objX), sy(hObj) - 2].join(' '),
-          fill: '#fbbf24'
-        }),
-        h('text', { x: sx(objX), y: sy(hObj) - 6, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object'),
+        // Object arrow is a slider-like handle: drag it or use Left/Right.
+        h('g', {
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'object-distance',
+          'data-op-variable': 'reflDo',
+          'aria-label': 'Object distance', 'aria-valuemin': 1, 'aria-valuemax': reflDoSliderMax, 'aria-valuenow': d_o,
+          'aria-valuetext': d_o.toFixed(1) + ' centimeters. ' + _mirrorVT,
+          onPointerDown: startObjectDrag, onPointerMove: moveObjectDrag,
+          onPointerUp: endObjectDrag, onPointerCancel: endObjectDrag, onKeyDown: keyObjectDrag
+        },
+          h('rect', { x: sx(objX) - 14, y: sy(hObj) - 15, width: 28, height: sy(0) - sy(hObj) + 30, fill: 'transparent' }),
+          h('line', { x1: sx(objX), y1: sy(0), x2: sx(objX), y2: sy(hObj), stroke: OP_RAY.incident, strokeWidth: 3 }),
+          h('polygon', {
+            points: [sx(objX) - 4, sy(hObj) + 4, sx(objX) + 4, sy(hObj) + 4, sx(objX), sy(hObj) - 2].join(' '),
+            fill: OP_RAY.incident
+          }),
+          h('text', { x: sx(objX), y: sy(hObj) - 6, fill: OP_RAY.incident, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object')
+        ),
         // Three principal rays for curved mirrors (or single law-of-reflection for plane)
         (function() {
           // Helper to push a photon dot along a path (CSS Motion Path)
@@ -451,15 +1614,94 @@
             });
           }
           if (mt === 'plane') {
-            // Plane mirror: incidence + reflection ray
-            var planePath = 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(0) + ' L ' + sx(-objX) + ' ' + sy(hObj);
-            return [
-              h('line', { key: 'r1', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(0), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '0' }),
-              h('line', { key: 'r2', x1: sx(0), y1: sy(0), x2: sx(-objX), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.7 }),
-              // Virtual image (behind mirror, dotted)
-              h('line', { key: 'rv', x1: sx(objX), y1: sy(hObj), x2: sx(-objX), y2: sy(hObj), stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.5 }),
-              makePhoton('pp1', planePath, '#10b981', 0)
-            ];
+            // Physical rays remain in the incident (left) medium. Only their
+            // dashed backward extensions continue behind the mirror, where they
+            // meet at the upright virtual image.
+            var planeChildren = [];
+            var planeImageX = d_o;
+            var planeImageY = hObj;
+            var planeHits = [0, clamp(hObj * 0.55, -9, 9)];
+            planeHits.forEach(function(hitY, rayIndex) {
+              var reflectedEndY = 2 * hitY - hObj;
+              var planePath = 'M ' + sx(objX) + ' ' + sy(hObj)
+                + ' L ' + sx(0) + ' ' + sy(hitY)
+                + ' L ' + sx(objX) + ' ' + sy(reflectedEndY);
+              planeChildren.push(h('line', {
+                key: 'plane-in-' + rayIndex, 'data-op-mirror-ray': 'incident', 'data-op-ray-index': rayIndex,
+                x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hitY),
+                stroke: OP_RAY.incident, strokeWidth: 1.5
+              }));
+              planeChildren.push(h('line', {
+                key: 'plane-out-' + rayIndex, 'data-op-mirror-ray': 'reflected', 'data-op-ray-index': rayIndex,
+                'data-op-mirror-ray-side': 'incident-medium',
+                x1: sx(0), y1: sy(hitY), x2: sx(objX), y2: sy(reflectedEndY),
+                stroke: OP_RAY.reflected, strokeWidth: 1.8
+              }));
+              planeChildren.push(h('line', {
+                key: 'plane-virtual-' + rayIndex, 'data-op-mirror-ray': 'virtual-extension', 'data-op-ray-index': rayIndex,
+                'data-op-mirror-ray-side': 'behind-mirror',
+                x1: sx(0), y1: sy(hitY), x2: sx(planeImageX), y2: sy(planeImageY),
+                stroke: OP_RAY.virtual, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.78
+              }));
+              planeChildren.push(makePhoton('plane-photon-' + rayIndex, planePath, OP_RAY.reflected, -rayIndex * 0.75));
+            });
+
+            // Perpendicular normal and equal-angle arcs for the first ray.
+            var mirrorPx = sx(0), mirrorPy = sy(0), arcR = 25;
+            var sourceDx = sx(objX) - mirrorPx, sourceDy = sy(hObj) - mirrorPy;
+            var reflectedDx = sx(objX) - mirrorPx, reflectedDy = sy(-hObj) - mirrorPy;
+            var sourceLen = Math.sqrt(sourceDx * sourceDx + sourceDy * sourceDy) || 1;
+            var reflectedLen = Math.sqrt(reflectedDx * reflectedDx + reflectedDy * reflectedDy) || 1;
+            var normalArcX = mirrorPx - arcR;
+            var incidentArcX = mirrorPx + arcR * sourceDx / sourceLen;
+            var incidentArcY = mirrorPy + arcR * sourceDy / sourceLen;
+            var reflectedArcX = mirrorPx + arcR * reflectedDx / reflectedLen;
+            var reflectedArcY = mirrorPy + arcR * reflectedDy / reflectedLen;
+            planeChildren.push(h('line', {
+              key: 'plane-normal', 'data-op-mirror-normal': 'true',
+              x1: mirrorPx - 44, y1: mirrorPy, x2: mirrorPx + 36, y2: mirrorPy,
+              stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 3'
+            }));
+            planeChildren.push(h('text', {
+              key: 'plane-normal-label', x: mirrorPx + 7, y: mirrorPy - 5,
+              fill: '#94a3b8', fontSize: 9
+            }, 'normal'));
+            planeChildren.push(h('path', {
+              key: 'plane-angle-in', 'data-op-mirror-angle': 'incident',
+              d: 'M ' + normalArcX + ' ' + mirrorPy + ' A ' + arcR + ' ' + arcR + ' 0 0 1 '
+                + incidentArcX.toFixed(1) + ' ' + incidentArcY.toFixed(1),
+              fill: 'none', stroke: OP_RAY.incident, strokeWidth: 1.2
+            }));
+            planeChildren.push(h('path', {
+              key: 'plane-angle-out', 'data-op-mirror-angle': 'reflected',
+              d: 'M ' + normalArcX + ' ' + mirrorPy + ' A ' + arcR + ' ' + arcR + ' 0 0 0 '
+                + reflectedArcX.toFixed(1) + ' ' + reflectedArcY.toFixed(1),
+              fill: 'none', stroke: OP_RAY.reflected, strokeWidth: 1.2
+            }));
+            planeChildren.push(h('text', {
+              key: 'plane-theta-in', x: mirrorPx - arcR - 10, y: mirrorPy - 9,
+              fill: OP_RAY.incident, fontSize: 9, textAnchor: 'middle', fontWeight: 700
+            }, 'θᵢ'));
+            planeChildren.push(h('text', {
+              key: 'plane-theta-out', x: mirrorPx - arcR - 10, y: mirrorPy + 15,
+              fill: OP_RAY.reflected, fontSize: 9, textAnchor: 'middle', fontWeight: 700
+            }, 'θᵣ'));
+
+            planeChildren.push(h('line', {
+              key: 'plane-image', 'data-op-mirror-image': 'virtual',
+              x1: sx(planeImageX), y1: sy(0), x2: sx(planeImageX), y2: sy(planeImageY),
+              stroke: OP_RAY.virtual, strokeWidth: 3, strokeDasharray: '4 3', opacity: 0.82
+            }));
+            planeChildren.push(h('polygon', {
+              key: 'plane-image-arrow',
+              points: [sx(planeImageX) - 4, sy(planeImageY) + 4, sx(planeImageX) + 4, sy(planeImageY) + 4, sx(planeImageX), sy(planeImageY) - 2].join(' '),
+              fill: OP_RAY.virtual, opacity: 0.82
+            }));
+            planeChildren.push(h('text', {
+              key: 'plane-image-label', x: sx(planeImageX), y: sy(planeImageY) - 7,
+              fill: OP_RAY.virtual, fontSize: 10, textAnchor: 'middle', fontWeight: 700
+            }, 'Image (virtual)'));
+            return planeChildren;
           }
           // Curved mirror — 3 principal rays from object tip
           var children = [];
@@ -493,20 +1735,28 @@
             }));
           }
           // Ray 1: parallel to axis from object tip → hits mirror at (0, hObj) → reflects through F
-          children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
+          children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: OP_RAY.incident, strokeWidth: 1.5 }));
           if (imgIsValid && d_i > 0) {
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1.5 }));
-            photonPaths.push({ color: '#10b981',
+            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: OP_RAY.reflected, strokeWidth: 1.5 }));
+            photonPaths.push({ color: OP_RAY.reflected,
               path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(imgX) + ' ' + sy(imgY) });
           } else if (imgIsValid && d_i < 0) {
-            // Virtual: reflect away from F, dotted extension behind mirror to virtual image
-            // The reflected ray, when extended backward, passes through the virtual image
-            var divergedRightX = cmMax;
-            var divergedRightY = hObj + (cmMax / Math.abs(f)) * hObj;
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(divergedRightX), y2: sy(divergedRightY), stroke: '#10b981', strokeWidth: 1.5 }));
-            children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.6 }));
-            photonPaths.push({ color: '#10b981',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(divergedRightX) + ' ' + sy(divergedRightY) });
+            // The physical reflected ray stays in front of the mirror. Its
+            // dashed backward extension alone reaches the virtual image.
+            var virtualSlope = (imgY - hObj) / imgX;
+            var divergedLeftX = cmMin;
+            var divergedLeftY = hObj + virtualSlope * divergedLeftX;
+            if (divergedLeftY < -14.5) {
+              divergedLeftY = -14.5;
+              divergedLeftX = (divergedLeftY - hObj) / virtualSlope;
+            } else if (divergedLeftY > 14.5) {
+              divergedLeftY = 14.5;
+              divergedLeftX = (divergedLeftY - hObj) / virtualSlope;
+            }
+            children.push(h('line', { key: 'r1b', 'data-op-mirror-ray': 'reflected', 'data-op-mirror-ray-side': 'incident-medium', x1: sx(0), y1: sy(hObj), x2: sx(divergedLeftX), y2: sy(divergedLeftY), stroke: OP_RAY.reflected, strokeWidth: 1.5 }));
+            children.push(h('line', { key: 'r1c', 'data-op-mirror-ray': 'virtual-extension', 'data-op-mirror-ray-side': 'behind-mirror', x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY), stroke: OP_RAY.virtual, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }));
+            photonPaths.push({ color: OP_RAY.reflected,
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(divergedLeftX) + ' ' + sy(divergedLeftY) });
           }
           // Ray 2: through F → reflects parallel
           if (mt === 'concave' && d_o > Math.abs(f)) {
@@ -514,19 +1764,27 @@
             // Slope from tip (objX, hObj) through F (-f, 0)
             var slope2 = (0 - hObj) / (-f - objX);
             var yAtMirror = hObj + slope2 * (0 - objX);
-            children.push(h('line', { key: 'r2a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
-            children.push(h('line', { key: 'r2b', x1: sx(0), y1: sy(yAtMirror), x2: sx(cmMax), y2: sy(yAtMirror), stroke: '#06b6d4', strokeWidth: 1.5 }));
-            photonPaths.push({ color: '#06b6d4',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMirror) + ' L ' + sx(cmMax) + ' ' + sy(yAtMirror) });
+            children.push(h('line', { key: 'r2a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMirror), stroke: OP_RAY.incident, strokeWidth: 1.5 }));
+            children.push(h('line', { key: 'r2b', 'data-op-mirror-ray': 'reflected', 'data-op-mirror-ray-side': 'incident-medium', x1: sx(0), y1: sy(yAtMirror), x2: sx(cmMin), y2: sy(yAtMirror), stroke: OP_RAY.reflected, strokeWidth: 1.5 }));
+            photonPaths.push({ color: OP_RAY.reflected,
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMirror) + ' L ' + sx(cmMin) + ' ' + sy(yAtMirror) });
           }
           // Ray 3: through C (center of curvature, at -2f) → reflects back along itself
-          if (mt === 'concave') {
-            var slope3 = (0 - hObj) / (-2 * f - objX);
+          var centerX = -2 * f;
+          var centerDenom = centerX - objX;
+          if (Math.abs(centerDenom) > 1e-6) {
+            var slope3 = (0 - hObj) / centerDenom;
             var yAtMir3 = hObj + slope3 * (0 - objX);
-            children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMir3), stroke: '#a855f7', strokeWidth: 1.5 }));
-            children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtMir3), x2: sx(objX), y2: sy(hObj), stroke: '#a855f7', strokeWidth: 1.5, strokeDasharray: '0' }));
-            photonPaths.push({ color: '#a855f7',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMir3) + ' L ' + sx(objX) + ' ' + sy(hObj) });
+            // Omit a construction ray that misses the finite drawn aperture.
+            if (Math.abs(yAtMir3) <= 12) {
+              children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtMir3), stroke: OP_RAY.incident, strokeWidth: 1.5 }));
+              children.push(h('line', { key: 'r3b', 'data-op-mirror-ray': 'reflected', 'data-op-mirror-ray-side': 'incident-medium', x1: sx(0), y1: sy(yAtMir3), x2: sx(objX), y2: sy(hObj), stroke: OP_RAY.reflected, strokeWidth: 1.5, strokeDasharray: '0' }));
+              if (d_i < 0 && imgIsValid) {
+                children.push(h('line', { key: 'r3c', 'data-op-mirror-ray': 'virtual-extension', 'data-op-mirror-ray-side': 'behind-mirror', x1: sx(0), y1: sy(yAtMir3), x2: sx(imgX), y2: sy(imgY), stroke: OP_RAY.virtual, strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.7 }));
+              }
+              photonPaths.push({ color: OP_RAY.reflected,
+                path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtMir3) + ' L ' + sx(objX) + ' ' + sy(hObj) });
+            }
           }
           // Image arrow
           if (imgIsValid) {
@@ -558,18 +1816,91 @@
           });
           return children;
         })(),
+        // Movable sampling plane. This is intentionally translucent: on a
+        // mirror bench incoming and reflected light share the same side.
+        (function() {
+          var screenX = sx(-screenCm);
+          var screenY = clamp(sy(screenCenterY), pad.t + 8, H - pad.b - 8);
+          var apertureRadiusPx = Math.abs(sy(10) - sy(0));
+          var spotRadiusY = clamp(apertureRadiusPx * screenBundleRatio, 2, 34);
+          var screenAnchor = screenX < 92 ? 'start' : 'end';
+          var screenLabelX = screenAnchor === 'start' ? screenX + 7 : screenX - 7;
+          var screenColor = screenFocused ? '#86efac' : '#e2e8f0';
+          return h('g', {
+            role: 'slider', tabIndex: 0, 'data-op-focusable': 'true',
+            'data-op-direct-handle': 'mirror-sampling-screen',
+            'data-op-mirror-screen-handle': 'true',
+            'data-op-variable': 'reflScreenCm',
+            'data-screen-distance': screenCm.toFixed(3),
+            'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
+            'data-screen-focused': screenFocused ? 'true' : 'false',
+            'data-screen-capturable': screenCapturable ? 'true' : 'false',
+            'aria-label': 'Mirror sampling screen handle',
+            'aria-valuemin': screenMin, 'aria-valuemax': screenMax, 'aria-valuenow': screenCm,
+            'aria-valuetext': screenCm.toFixed(1) + ' centimeters in front of the mirror. ' + screenStatus,
+            onPointerDown: startMirrorScreenDrag, onPointerMove: moveMirrorScreenDrag,
+            onPointerUp: endMirrorScreenDrag, onPointerCancel: endMirrorScreenDrag,
+            onKeyDown: keyMirrorScreenDrag
+          },
+            h('rect', { x: screenX - 13, y: pad.t, width: 26, height: H - pad.t - pad.b, fill: 'transparent' }),
+            h('line', {
+              x1: screenX, y1: pad.t + 5, x2: screenX, y2: H - pad.b - 3,
+              stroke: screenColor, strokeWidth: screenFocused ? 3.0 : 2.0,
+              strokeDasharray: '5 4', opacity: screenFocused ? 0.94 : 0.58
+            }),
+            h('ellipse', {
+              'data-op-mirror-screen-spot': 'true',
+              cx: screenX, cy: screenY, rx: screenFocused ? 4 : 5.5, ry: spotRadiusY,
+              fill: screenFocused ? '#86efac' : '#22d3ee',
+              opacity: screenFocused ? 0.92 : 0.30,
+              stroke: screenFocused ? '#dcfce7' : '#67e8f9', strokeWidth: 1
+            }),
+            h('polygon', {
+              points: [screenX - 5, sy(0), screenX, sy(0) - 5, screenX + 5, sy(0), screenX, sy(0) + 5].join(' '),
+              fill: screenColor, stroke: '#0b1220', strokeWidth: 0.8
+            }),
+            h('text', {
+              x: screenLabelX, y: pad.t + 13, fill: screenColor,
+              fontSize: 9, textAnchor: screenAnchor, fontWeight: 700
+            }, 'sample ' + screenCm.toFixed(1) + ' cm'),
+            h('text', {
+              x: screenLabelX, y: H - pad.b - 7,
+              fill: screenFocused ? '#86efac' : '#67e8f9',
+              fontSize: 9, textAnchor: screenAnchor, fontWeight: 700
+            }, screenShortStatus)
+          );
+        })(),
         // X axis label
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'distance from mirror (cm) — click to move object')
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'distance from mirror (cm) — drag object or use arrow keys')
       ),
-      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
-        '🟢 parallel ray  •  🔵 ray through F  •  🟣 ray through C (concave)  •  🔴 image (red = real, faded = virtual)'
-      )
+      h('div', {
+        role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+        'data-op-mirror-screen-test': screenState,
+        'data-screen-distance': screenCm.toFixed(6),
+        'data-image-distance': d_i == null ? 'infinity' : d_i.toFixed(6),
+        'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
+        'data-screen-capturable': screenCapturable ? 'true' : 'false',
+        style: {
+          maxWidth: 460, marginTop: 6,
+          color: screenFocused ? 'var(--op-green-text,#86efac)' : 'var(--allo-stem-text,#cbd5e1)',
+          fontSize: 10, lineHeight: 1.45
+        }
+      }, screenStatus),
+      h('div', {
+        role: 'status', 'aria-live': 'polite', 'data-op-mirror-path-summary': mt,
+        style: {
+          maxWidth: 460, marginTop: 6, padding: '7px 9px', borderRadius: 7,
+          background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)',
+          color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.45
+        }
+      }, mirrorPathSummary),
+      _renderOpticsSemanticKey(h)
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // REFLECTION CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderReflectionCalc(state, upd, h, addToast, awardXP) {
     var mt = state.reflMirrorType || 'concave';
     var f = mt === 'plane' ? Infinity : (mt === 'concave' ? Math.abs(state.reflFocal || 10) : -Math.abs(state.reflFocal || 10));
@@ -590,7 +1921,11 @@
       rows.push(['Orientation', lens.isUpright ? 'Upright (m > 0)' : 'Inverted (m < 0)']);
       rows.push(['Size', lens.isMagnified ? 'Enlarged (|m| > 1)' : 'Reduced (|m| < 1)']);
       var mirrorImageX = -lens.d_i;
-      if (mirrorImageX < -50 || mirrorImageX > 20) rows.push(['Diagram scale', 'Image is outside the -50 to +20 cm SVG window; use the numeric d_i readout.']);
+      var mirrorDiagramMin = -Math.max(50, Math.ceil((d_o + 5) / 5) * 5);
+      var mirrorDiagramMax = mt === 'plane' ? Math.max(20, Math.ceil((d_o + 5) / 5) * 5) : 20;
+      if (mirrorImageX < mirrorDiagramMin || mirrorImageX > mirrorDiagramMax) {
+        rows.push(['Diagram scale', 'Image is outside the current SVG window; use the numeric d_i readout.']);
+      }
     }
     return h('div', null,
       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, lineHeight: 1.5 } },
@@ -643,10 +1978,10 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // REFRACTION SIM — Snell's law + TIR
-  // ──────────────────────────────────────────────────────────────────
-  // ──────────────────────────────────────────────────────────────────
+  // ---
+  // ---
   // Snell's window
   //
   // This tool tells the student, twice, that a fish looking up sees the whole
@@ -663,7 +1998,7 @@
   // The shared lifecycle is ready to extract into
   // stem_lab_module.js next to makeBayViewer. Not done here only because the
   // host module had uncommitted work from another session at the time.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var OW_DEPTH = 6;              // how far the eye sits below the surface
   var OW_AZIMUTHS = 14;          // ray fans around the cone
   var OW_SKY_STEPS = 5;          // sky angles sampled per fan
@@ -983,12 +2318,271 @@
     };
   })();
 
+  // Direct 3D Snell bench with a parallel ray fan.
+  var OpticsRefractionGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '', notify = null;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var c = group.children[i];
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        group.remove(c);
+      }
+    }
+    function addLine(THREE, pts, color, opacity, width) {
+      var geometry = new THREE.BufferGeometry().setFromPoints(pts);
+      var material = new THREE.LineBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity, linewidth: width || 1 });
+      var line = new THREE.Line(geometry, material);
+      line.frustumCulled = false;
+      S.model.add(line);
+      return line;
+    }
+    function addArrowHead(THREE, from, to, color, opacity) {
+      var direction = new THREE.Vector3().subVectors(to, from);
+      if (direction.lengthSq() < 1e-8) return;
+      direction.normalize();
+      var arrow = new THREE.Mesh(
+        new THREE.ConeGeometry(0.13, 0.38, 12),
+        new THREE.MeshBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity, depthWrite: false })
+      );
+      arrow.position.copy(from).lerp(to, 0.62);
+      arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      S.model.add(arrow);
+    }
+    function addArc(THREE, angle, upper, color) {
+      var pts = [], radius = 1.25;
+      for (var i = 0; i <= 24; i++) {
+        var a = angle * i / 24;
+        pts.push(new THREE.Vector3(
+          radius * Math.sin(a),
+          (upper ? 1 : -1) * radius * Math.cos(a),
+          0.02
+        ));
+      }
+      addLine(THREE, pts, color, 0.9, 2);
+    }
+    function applyModel(m) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+      var theta1 = m.theta1;
+      var theta2 = m.theta2;
+      var tir = !!m.tir;
+      var reflectance = clamp(m.reflectance == null ? (tir ? 1 : 0) : m.reflectance, 0, 1);
+      var transmittance = clamp(m.transmittance == null ? (tir ? 0 : 1) : m.transmittance, 0, 1);
+      // Alpha follows field amplitude (sqrt of power) with a visibility floor;
+      // the adjacent numeric meter carries the exact physical percentages.
+      var reflectedVisibility = 0.2 + 0.8 * Math.sqrt(reflectance);
+      var transmittedVisibility = 0.2 + 0.8 * Math.sqrt(transmittance);
+      var span = 5.4;
+
+      var upper = new THREE.Mesh(
+        new THREE.BoxGeometry(13, 4.2, 9),
+        new THREE.MeshBasicMaterial({ color: 0x0c4a6e, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false })
+      );
+      upper.position.y = 2.15;
+      S.model.add(upper);
+      var lower = new THREE.Mesh(
+        new THREE.BoxGeometry(13, 4.2, 9),
+        new THREE.MeshBasicMaterial({ color: 0x3730a3, transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false })
+      );
+      lower.position.y = -2.15;
+      S.model.add(lower);
+
+      var incidencePlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(13, 8.4),
+        new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.055, side: THREE.DoubleSide, depthWrite: false })
+      );
+      incidencePlane.position.z = -0.01;
+      S.model.add(incidencePlane);
+
+      var surface = new THREE.Mesh(
+        new THREE.PlaneGeometry(13, 9),
+        new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false })
+      );
+      surface.rotation.x = -Math.PI / 2;
+      S.model.add(surface);
+      for (var g = -4; g <= 4; g += 2) {
+        addLine(THREE, [new THREE.Vector3(-6.5, 0.015, g), new THREE.Vector3(6.5, 0.015, g)], 0x38bdf8, 0.16);
+      }
+      for (var gx = -6; gx <= 6; gx += 2) {
+        addLine(THREE, [new THREE.Vector3(gx, 0.015, -4.5), new THREE.Vector3(gx, 0.015, 4.5)], 0x38bdf8, 0.16);
+      }
+      addLine(THREE, [new THREE.Vector3(0, -4.2, 0), new THREE.Vector3(0, 4.2, 0)], 0xe2e8f0, 0.48);
+
+      [-0.75, 0, 0.75].forEach(function(z, index) {
+        var opacity = index === 1 ? 1 : 0.42;
+        var hit = new THREE.Vector3(0, 0, z);
+        var incoming = new THREE.Vector3(-span * Math.sin(theta1), span * Math.cos(theta1), z);
+        addLine(THREE, [incoming, hit], 0xfbbf24, opacity, 2);
+        if (index === 1) addArrowHead(THREE, incoming, hit, 0xfbbf24, 1);
+        if (tir) {
+          var reflected = new THREE.Vector3(span * Math.sin(theta1), span * Math.cos(theta1), z);
+          addLine(THREE, [hit, reflected], 0xfb7185, opacity * reflectedVisibility, 2);
+          if (index === 1) addArrowHead(THREE, hit, reflected, 0xfb7185, reflectedVisibility);
+        } else {
+          var refracted = new THREE.Vector3(span * Math.sin(theta2), -span * Math.cos(theta2), z);
+          addLine(THREE, [hit, refracted], 0x22d3ee, opacity * transmittedVisibility, 2);
+          if (index === 1) addArrowHead(THREE, hit, refracted, 0x22d3ee, transmittedVisibility);
+          var reflectedWeak = new THREE.Vector3(span * Math.sin(theta1), span * Math.cos(theta1), z);
+          addLine(THREE, [hit, reflectedWeak], 0xfb7185, opacity * reflectedVisibility, 1);
+          if (index === 1) addArrowHead(THREE, hit, reflectedWeak, 0xfb7185, reflectedVisibility);
+        }
+      });
+      addArc(THREE, theta1, true, 0xfbbf24);
+      if (!tir) addArc(THREE, theta2, false, 0x22d3ee);
+
+      var impact = new THREE.Mesh(
+        new THREE.SphereGeometry(0.13, 14, 10),
+        new THREE.MeshBasicMaterial({ color: tir ? 0xfb7185 : 0xfef08a })
+      );
+      S.model.add(impact);
+      S.target.set(0, 0, 0);
+      S.half.set(6.7, 4.5, 4.8);
+      S.theta1Deg = +(theta1 * 180 / Math.PI).toFixed(2);
+      S.theta2Deg = tir ? null : +(theta2 * 180 / Math.PI).toFixed(2);
+      S.tir = tir;
+      S.reflectance = reflectance;
+      S.transmittance = transmittance;
+      S.rays = 3;
+    }
+    function scheduleFrame() {
+      if (!S || S.raf || S.contextLost) return;
+      S.raf = requestAnimationFrame(frame);
+    }
+    function frame() {
+      if (!S) return;
+      S.raf = 0;
+      if (S.contextLost || !S.renderer || (typeof document !== 'undefined' && document.hidden)) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      var el = S.renderer.domElement;
+      var width = el.clientWidth || 1, height = el.clientHeight || 1;
+      if (width !== S.lastW || height !== S.lastH) {
+        S.lastW = width; S.lastH = height;
+        S.renderer.setSize(width, height, false);
+        S.camera.aspect = width / Math.max(1, height);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var dir = new S.THREE.Vector3(Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)).normalize();
+      var up0 = new S.THREE.Vector3(0, 1, 0);
+      var right = new S.THREE.Vector3().crossVectors(up0, dir);
+      if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+      right.normalize();
+      var upv = new S.THREE.Vector3().crossVectors(dir, right).normalize();
+      var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+      var tanH = tanV * Math.max(0.2, S.camera.aspect);
+      var fit = 1;
+      for (var sx = -1; sx <= 1; sx += 2) for (var sy = -1; sy <= 1; sy += 2) for (var sz = -1; sz <= 1; sz += 2) {
+        var v = new S.THREE.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+        var along = v.dot(dir);
+        fit = Math.max(fit, Math.abs(v.dot(right)) / tanH + along, Math.abs(v.dot(upv)) / tanV + along);
+      }
+      var dist = fit * 1.07 / Math.max(0.35, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(dir, dist);
+      S.camera.near = Math.max(0.05, dist * 0.01);
+      S.camera.far = dist * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) {}
+    }
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var width = host.clientWidth || 460, height = host.clientHeight || 280;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x07111f, 1);
+      var el = renderer.domElement;
+      el.style.cssText = 'display:block;width:100%;height:100%;border-radius:8px;touch-action:pan-y';
+      el.setAttribute('data-optics-refraction-gl', 'true');
+      el.setAttribute('aria-hidden', 'true');
+      host.appendChild(el);
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, width / Math.max(1, height), 0.1, 2000);
+      var model = new THREE.Group();
+      scene.add(model);
+      S = { THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        target: new THREE.Vector3(), half: new THREE.Vector3(6.7, 4.5, 4.8),
+        rotY: 36, rotX: 12, zoom: 1, contextLost: false, lastW: width, lastH: height, raf: 0,
+        theta1Deg: null, theta2Deg: null, tir: false, reflectance: null, transmittance: null, rays: 0 };
+      el.addEventListener('webglcontextlost', function(ev) { ev.preventDefault(); S.contextLost = true; setStatus('failed'); });
+      el.addEventListener('webglcontextrestored', function() { S.contextLost = false; sig = ''; setStatus('ready'); scheduleFrame(); });
+      if (typeof ResizeObserver === 'function') {
+        S.resizeObserver = new ResizeObserver(function() { scheduleFrame(); });
+        S.resizeObserver.observe(host);
+      }
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        S.visibilityHandler = function() { if (!document.hidden) scheduleFrame(); };
+        document.addEventListener('visibilitychange', S.visibilityHandler);
+      }
+      scheduleFrame();
+      return true;
+    }
+    return {
+      attach: function(host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host; setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D view unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function(THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function() { setStatus('failed'); });
+      },
+      push: function(data) { pending = data; scheduleFrame(); },
+      onStatusChange: function(fn) { notify = fn; },
+      status: function() { return status; },
+      debug: function() {
+        return { state: status, contextLost: !!(S && S.contextLost), theta1Deg: S ? S.theta1Deg : null,
+          theta2Deg: S ? S.theta2Deg : null, tir: !!(S && S.tir),
+          reflectance: S ? S.reflectance : null, transmittance: S ? S.transmittance : null,
+          rays: S ? S.rays : 0,
+          canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null };
+      },
+      dispose: function() {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          if (S.visibilityHandler && typeof document !== 'undefined' && document.removeEventListener) {
+            document.removeEventListener('visibilitychange', S.visibilityHandler);
+          }
+          if (S.resizeObserver) { try { S.resizeObserver.disconnect(); } catch (e) {} }
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; notify = null; setStatus('idle');
+      }
+    };
+  })();
+
   function opticsWindowGlRef(nodeOrNull) { OpticsWindowGL.attach(nodeOrNull); }
   var opticsWinDrag = { current: null };
+  function opticsRefractionGlRef(nodeOrNull) { OpticsRefractionGL.attach(nodeOrNull); }
+  var opticsRefractionDrag = { current: null };
   if (typeof window !== 'undefined') window.__alloOpticsWindowGL = OpticsWindowGL;
+  if (typeof window !== 'undefined') window.__alloOpticsRefractionGL = OpticsRefractionGL;
 
   function _renderRefractionSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var n1 = state.refrN1 != null ? state.refrN1 : 1.000;
     var n2 = state.refrN2 != null ? state.refrN2 : 1.520;
@@ -998,19 +2592,46 @@
     var theta_c = criticalAngle(n1, n2);  // null if n1 ≤ n2
     var isTIR = !!snellRes.tir;
     var theta2 = isTIR ? null : snellRes.theta2;
-    // Drag the incident ray angle by clicking the upper half
+    var powerSplit = fresnelUnpolarized(theta1, n1, n2);
+    var reflectance = powerSplit.error ? (isTIR ? 1 : 0) : powerSplit.reflectance;
+    var transmittance = powerSplit.error ? (isTIR ? 0 : 1) : powerSplit.transmittance;
+    var reflectedPct = (reflectance * 100).toFixed(1);
+    var transmittedPct = (transmittance * 100).toFixed(1);
+    var reflectedVisual = Math.sqrt(reflectance);
+    var transmittedVisual = Math.sqrt(transmittance);
+    var energySplitText = reflectedPct + '% reflected and ' + transmittedPct + '% transmitted, unpolarized light.';
+    // Direct manipulation of the incident ray angle.
     var cx = W / 2, cy = H / 2;  // interface midpoint
-    function onClick(e) {
-      var rect = e.currentTarget.getBoundingClientRect();
-      var pxX = e.clientX - rect.left;
-      var pxY = e.clientY - rect.top;
+    function setAngleFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
       // Compute angle from normal (vertical at interface midpoint), in upper half only
-      var dx = pxX - cx;
-      var dy = cy - pxY;  // positive = above interface
+      var dx = point.x - cx;
+      var dy = cy - point.y;  // positive = above interface
       if (dy <= 1) return;
       var rawDeg = Math.atan2(dx, dy) / DEG;
       var newDeg = clamp(rawDeg, -89, 89);
       upd('refrTheta1', Math.round(newDeg * 10) / 10);
+    }
+    function startAngleDrag(e) {
+      opticsDirectDrag.current = { kind: 'refraction', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setAngleFromPointer(e);
+    }
+    function moveAngleDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'refraction') return;
+      setAngleFromPointer(e);
+    }
+    function endAngleDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'refraction') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyAngleDrag(e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      var step = e.shiftKey ? 0.1 : 0.5;
+      var delta = (e.key === 'ArrowRight' || e.key === 'ArrowUp') ? step : -step;
+      upd('refrTheta1', Math.round(clamp(theta1Deg + delta, 0, 89) * 10) / 10);
     }
     // Build endpoints relative to (cx, cy) for the incident, refracted, reflected rays
     var rayLen = 130;
@@ -1026,6 +2647,15 @@
       refrX = cx + rayLen * Math.sin(theta2);
       refrY = cy + rayLen * Math.cos(theta2);
     }
+    var ghost = _opticsGhostSetup('refraction', state);
+    var ghostN1 = ghost ? +(ghost.refrN1 != null ? ghost.refrN1 : n1) : null;
+    var ghostN2 = ghost ? +(ghost.refrN2 != null ? ghost.refrN2 : n2) : null;
+    var ghostTheta1 = ghost ? degToRad(+(ghost.refrTheta1 != null ? ghost.refrTheta1 : theta1Deg)) : null;
+    var ghostSnell = ghost ? snell(ghostTheta1, ghostN1, ghostN2) : null;
+    var ghostInX = ghost ? cx - rayLen * Math.sin(ghostTheta1) : null;
+    var ghostInY = ghost ? cy - rayLen * Math.cos(ghostTheta1) : null;
+    var ghostOutX = ghost && !ghostSnell.tir && !ghostSnell.error ? cx + rayLen * Math.sin(ghostSnell.theta2) : null;
+    var ghostOutY = ghost && !ghostSnell.tir && !ghostSnell.error ? cy + rayLen * Math.cos(ghostSnell.theta2) : null;
     // Find a common medium label by matching n
     function nearestN(n) {
       var best = null, bestDiff = Infinity;
@@ -1039,6 +2669,114 @@
     // Only exists looking OUT of the denser medium, which is also the condition
     // for a critical angle to exist at all — so the panel teaches the condition
     // by refusing to draw without it, and offers the swap that fixes it.
+    var showRefraction3D = !!state.refrShow3D;
+    var refractionCamera = state.refr3DCamera || 'oblique';
+    function setRefractionCamera(view) {
+      var preset = view === 'side' ? { rotY: 0, rotX: 0 }
+        : (view === 'normal' ? { rotY: 0, rotX: 82 } : { rotY: 36, rotX: 12 });
+      upd({ refr3DCamera: view, refr3DRot: preset, refr3DZoom: 1 });
+    }
+    var refraction3DLive = OpticsRefractionGL.status() === 'ready';
+    if (showRefraction3D) {
+      OpticsRefractionGL.onStatusChange(function() { upd('refr3DTick', ((state.refr3DTick || 0) + 1)); });
+      OpticsRefractionGL.push({
+        sig: [n1.toFixed(4), n2.toFixed(4), theta1Deg.toFixed(2), isTIR ? 'tir' : radToDeg(theta2).toFixed(2), reflectance.toFixed(6)].join('|'),
+        theta1: theta1, theta2: theta2, tir: isTIR,
+        reflectance: reflectance, transmittance: transmittance,
+        rotY: state.refr3DRot ? state.refr3DRot.rotY : 36,
+        rotX: state.refr3DRot ? state.refr3DRot.rotX : 12,
+        zoom: state.refr3DZoom || 1
+      });
+    }
+    var refraction3DAlt = 'Three-dimensional refraction ray bench. A three-ray parallel fan enters an interface from refractive index '
+      + n1.toFixed(3) + ' at ' + theta1Deg.toFixed(1) + ' degrees. '
+      + (isTIR ? 'It totally internally reflects into the first medium. ' : 'It refracts into index ' + n2.toFixed(3) + ' at ' + radToDeg(theta2).toFixed(1) + ' degrees. ')
+      + 'The interface power split is ' + energySplitText;
+    var refraction3DPanel = h('div', { style: { marginBottom: 10 } },
+      h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text,#cbd5e1)', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+        h('input', {
+          type: 'checkbox', checked: showRefraction3D,
+          onChange: function(e) { upd('refrShow3D', e.target.checked); },
+          'data-op-focusable': 'true', 'aria-label': 'Show the direct three-dimensional refraction ray bench'
+        }),
+        'Ray-space bench (3D — orbit the plane of incidence)'
+      ),
+      showRefraction3D && h('div', null,
+        _renderOptics3DToolbar({
+          id: 'refraction', label: 'Refraction 3D controls', camera: refractionCamera,
+          onCamera: setRefractionCamera,
+          onReset: function() { setRefractionCamera('oblique'); },
+          motion: state.opMotionEnabled !== false,
+          onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
+        }, h),
+        h('div', {
+          style: { position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden', background: 'var(--allo-stem-deeper,#07111f)', border: '1px solid var(--allo-stem-border,#334155)' }
+        },
+          h('div', {
+            ref: opticsRefractionGlRef, role: 'group', 'data-a11y-static': 'true',
+            tabIndex: 0, 'data-op-focusable': 'true', 'data-op-refraction-3d-control': 'true',
+            'aria-roledescription': 'interactive 3D model',
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
+            'aria-label': refraction3DAlt + ' Drag or use arrow keys to orbit. Use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
+            style: { position: 'absolute', inset: 0 },
+            onPointerDown: function(ev) {
+              opticsRefractionDrag.current = { x: ev.clientX, y: ev.clientY,
+                rotY: state.refr3DRot ? state.refr3DRot.rotY : 36,
+                rotX: state.refr3DRot ? state.refr3DRot.rotX : 12 };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+            },
+            onPointerMove: function(ev) {
+              var drag = opticsRefractionDrag.current;
+              if (!drag) return;
+              upd({ refr3DCamera: 'custom', refr3DRot: {
+                rotY: drag.rotY + (ev.clientX - drag.x) * 0.5,
+                rotX: Math.max(-82, Math.min(82, drag.rotX + (ev.clientY - drag.y) * 0.35))
+              } });
+            },
+            onPointerUp: function() { opticsRefractionDrag.current = null; },
+            onPointerCancel: function() { opticsRefractionDrag.current = null; },
+            onWheel: function(ev) {
+              ev.preventDefault();
+              upd({ refr3DCamera: 'custom', refr3DZoom: Math.max(0.5, Math.min(3, (state.refr3DZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
+            },
+            onKeyDown: function(ev) {
+              var key = ev.key;
+              var rot = state.refr3DRot || { rotY: 36, rotX: 12 };
+              var patch = null;
+              if (key === 'ArrowLeft') patch = { refr3DCamera: 'custom', refr3DRot: { rotY: rot.rotY - 6, rotX: rot.rotX } };
+              else if (key === 'ArrowRight') patch = { refr3DCamera: 'custom', refr3DRot: { rotY: rot.rotY + 6, rotX: rot.rotX } };
+              else if (key === 'ArrowUp') patch = { refr3DCamera: 'custom', refr3DRot: { rotY: rot.rotY, rotX: Math.max(-82, rot.rotX - 5) } };
+              else if (key === 'ArrowDown') patch = { refr3DCamera: 'custom', refr3DRot: { rotY: rot.rotY, rotX: Math.min(82, rot.rotX + 5) } };
+              else if (key === '+' || key === '=') patch = { refr3DCamera: 'custom', refr3DZoom: Math.min(3, (state.refr3DZoom || 1) * 1.12) };
+              else if (key === '-' || key === '_') patch = { refr3DCamera: 'custom', refr3DZoom: Math.max(0.5, (state.refr3DZoom || 1) * 0.89) };
+              else if (key === '0') patch = { refr3DCamera: 'oblique', refr3DRot: { rotY: 36, rotX: 12 }, refr3DZoom: 1 };
+              if (!patch) return;
+              ev.preventDefault(); ev.stopPropagation(); upd(patch);
+            }
+          }),
+          h('div', {
+            'aria-hidden': 'true',
+            style: { position: 'absolute', zIndex: 2, left: 8, top: 7, pointerEvents: 'none', background: 'rgba(7,17,31,.82)', color: '#e2e8f0', padding: '5px 7px', borderRadius: 7, fontSize: 9, lineHeight: 1.45 }
+          },
+            h('div', null, 'Above: n₁ = ' + n1.toFixed(3)),
+            h('div', null, 'Below: n₂ = ' + n2.toFixed(3)),
+            h('div', null, isTIR ? 'θ₁ = ' + theta1Deg.toFixed(1) + '° · TIR' : 'θ₁ ' + theta1Deg.toFixed(1) + '° → θ₂ ' + radToDeg(theta2).toFixed(1) + '°'),
+            h('div', { 'data-op-refraction-3d-energy': 'true', style: { marginTop: 2, fontWeight: 700 } }, 'R ' + reflectedPct + '% · T ' + transmittedPct + '%'),
+            h('div', { style: { marginTop: 2 } }, 'Gold in · Cyan out · Red reflected')
+          ),
+          !refraction3DLive && h('div', {
+            style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 12, color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 11, pointerEvents: 'none' }
+          }, OpticsRefractionGL.status() === 'failed' ? '3D view unavailable on this device — the 2D model remains fully interactive.' : 'Loading 3D ray bench…'),
+          refraction3DLive && h('div', {
+            style: { position: 'absolute', left: 8, bottom: 6, fontSize: 10, color: '#cbd5e1', pointerEvents: 'none', background: 'rgba(7,17,31,.78)', padding: '2px 7px', borderRadius: 999 }
+          }, 'Drag / arrows: orbit · Scroll / +/-: zoom · 0: reset')
+        ),
+        h('p', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft,#94a3b8)', lineHeight: 1.5, margin: '6px 0 0', maxWidth: 460 } },
+          'Gold enters, cyan refracts, and red reflects. Ray emphasis follows the Fresnel power split with a visibility floor for weak branches; rotate the bench to inspect the plane of incidence.'
+        )
+      )
+    );
+
     var showWindow = !!state.refrShowWindow;
     var windowPossible = theta_c != null;
     var winLive = OpticsWindowGL.status() === 'ready';
@@ -1059,6 +2797,12 @@
          + 'circle ' + (windowConeDeg * 2).toFixed(0) + ' degrees wide directly overhead. Outside that '
          + 'circle the surface acts as a mirror and reflects the bottom back down.')
       : 'Snell\'s window needs the observer in the denser medium.';
+    var windowCamera = state.refrWinCamera || 'oblique';
+    function setWindowCamera(view) {
+      var preset = view === 'side' ? { rotY: 0, rotX: 0 }
+        : (view === 'normal' ? { rotY: 0, rotX: -82 } : { rotY: 28, rotX: -18 });
+      upd({ refrWinCamera: view, refrWinRot: preset, refrWinZoom: 1 });
+    }
 
     var windowPanel = h('div', { style: { marginBottom: 10 } },
       h('label', {
@@ -1094,6 +2838,13 @@
         }, 'Swap the media (n₁ ⇄ n₂)')
       ) : null,
       showWindow && windowPossible ? h('div', null,
+        _renderOptics3DToolbar({
+          id: 'snell-window', label: "Snell's window 3D controls", camera: windowCamera,
+          onCamera: setWindowCamera,
+          onReset: function() { setWindowCamera('oblique'); },
+          motion: state.opMotionEnabled !== false,
+          onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
+        }, h),
         h('div', {
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
@@ -1102,8 +2853,10 @@
         },
           h('div', {
             ref: opticsWindowGlRef,
-            role: 'img',
+            role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
             'data-a11y-static': 'true',
+            'aria-roledescription': 'interactive 3D model',
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
             'aria-label': windowAlt,
             style: { position: 'absolute', inset: 0 },
             onPointerDown: function (ev) {
@@ -1125,6 +2878,19 @@
             onWheel: function (ev) {
               ev.preventDefault();
               upd('refrWinZoom', Math.max(0.5, Math.min(3, (state.refrWinZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+            },
+            onKeyDown: function(ev) {
+              var rot = state.refrWinRot || { rotY: 28, rotX: -18 };
+              var patch = null;
+              if (ev.key === 'ArrowLeft') patch = { refrWinRot: { rotY: rot.rotY - 6, rotX: rot.rotX }, refrWinCamera: 'custom' };
+              else if (ev.key === 'ArrowRight') patch = { refrWinRot: { rotY: rot.rotY + 6, rotX: rot.rotX }, refrWinCamera: 'custom' };
+              else if (ev.key === 'ArrowUp') patch = { refrWinRot: { rotY: rot.rotY, rotX: Math.max(-84, rot.rotX - 5) }, refrWinCamera: 'custom' };
+              else if (ev.key === 'ArrowDown') patch = { refrWinRot: { rotY: rot.rotY, rotX: Math.min(84, rot.rotX + 5) }, refrWinCamera: 'custom' };
+              else if (ev.key === '+' || ev.key === '=') patch = { refrWinZoom: Math.min(3, (state.refrWinZoom || 1) * 1.12) };
+              else if (ev.key === '-' || ev.key === '_') patch = { refrWinZoom: Math.max(0.5, (state.refrWinZoom || 1) * 0.89) };
+              else if (ev.key === '0') { setWindowCamera('oblique'); ev.preventDefault(); return; }
+              if (!patch) return;
+              ev.preventDefault(); ev.stopPropagation(); upd(patch);
             }
           }),
           !winLive ? h('div', {
@@ -1158,12 +2924,14 @@
     );
 
     return h('div', null,
+      refraction3DPanel,
       windowPanel,
       // Material selectors + theta slider
       h('div', { style: { display: 'flex', gap: 10, marginBottom: 8, flexWrap: 'wrap', alignItems: 'center' } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Top n₁:',
           h('select', {
             value: nearestN(n1),
+            'data-op-variable': 'refrN1',
             onChange: function(e) {
               var sel = COMMON_N.filter(function(c) { return c.label === e.target.value; })[0];
               if (sel) upd('refrN1', sel.n);
@@ -1176,6 +2944,7 @@
           ),
           h('input', {
             type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n1, 'aria-label': 'Top refractive index',
+            'data-op-variable': 'refrN1',
             onChange: function(e) { upd('refrN1', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
             style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--op-amber-text, #fbbf24)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
@@ -1184,6 +2953,7 @@
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Bottom n₂:',
           h('select', {
             value: nearestN(n2),
+            'data-op-variable': 'refrN2',
             onChange: function(e) {
               var sel = COMMON_N.filter(function(c) { return c.label === e.target.value; })[0];
               if (sel) upd('refrN2', sel.n);
@@ -1196,6 +2966,7 @@
           ),
           h('input', {
             type: 'number', step: 0.001, min: 1.0, max: 3.5, value: n2, 'aria-label': 'Bottom refractive index',
+            'data-op-variable': 'refrN2',
             onChange: function(e) { upd('refrN2', parseFloat(e.target.value) || 1.0); },
             'data-op-focusable': 'true',
             style: { width: 60, padding: '4px 6px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--op-amber-text, #fbbf24)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, fontWeight: 700 }
@@ -1207,6 +2978,7 @@
           h('input', {
             type: 'range', min: 0, max: 89, step: 0.5,
             value: theta1Deg,
+            'data-op-variable': 'refrTheta1',
             onChange: function(e) { upd('refrTheta1', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Incident angle',
             'aria-valuetext': theta1Deg.toFixed(1) + ' degrees incidence. ' + (isTIR ? 'Total internal reflection; no refracted ray.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
@@ -1217,10 +2989,10 @@
       ),
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
-        'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.'),
-        onClick: onClick,
-        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        className: 'opticslab-core-svg',
+        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        'aria-label': 'Refraction diagram. n1=' + n1 + ', n2=' + n2 + ', incident angle=' + theta1Deg.toFixed(1) + '°.' + (isTIR ? ' Total internal reflection.' : ' Refraction angle=' + radToDeg(theta2).toFixed(1) + '°.') + ' Interface power: ' + energySplitText,
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         h('defs', null,
           h('linearGradient', { id: 'op-refr-sky', x1: '0', y1: '0', x2: '0', y2: '1' },
@@ -1258,6 +3030,13 @@
         // Normal (dashed vertical)
         h('line', { x1: cx, y1: pad.t, x2: cx, y2: H - pad.b, stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 3' }),
         h('text', { x: cx + 4, y: pad.t + 12, fill: '#94a3b8', fontSize: 10 }, 'normal'),
+        ghost && h('g', { className: 'opticslab-ghost-layer', 'aria-hidden': 'true' },
+          h('line', { x1: ghostInX, y1: ghostInY, x2: cx, y2: cy, stroke: OP_RAY.previous, strokeWidth: 2, strokeDasharray: '5 4' }),
+          ghostSnell.tir
+            ? h('line', { x1: cx, y1: cy, x2: cx + rayLen * Math.sin(ghostTheta1), y2: cy - rayLen * Math.cos(ghostTheta1), stroke: OP_RAY.virtual, strokeWidth: 2, strokeDasharray: '5 4' })
+            : h('line', { x1: cx, y1: cy, x2: ghostOutX, y2: ghostOutY, stroke: OP_RAY.virtual, strokeWidth: 2, strokeDasharray: '5 4' }),
+          h('text', { x: pad.l + 6, y: pad.t + 14 }, 'previous setup')
+        ),
         // ── Critical-angle reference ray (only when n1 > n2) ──
         // Dashed line at θ_c on the incident side. Brightens to red when the
         // student crosses past θ_c — making "the critical angle" a visible threshold.
@@ -1327,15 +3106,43 @@
         h('line', { x1: inX, y1: inY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2.5 }),
         h('polygon', { points: (cx - 4) + ',' + (cy - 5) + ' ' + (cx + 4) + ',' + (cy - 5) + ' ' + cx + ',' + (cy + 1), fill: '#fbbf24', transform: 'rotate(' + theta1Deg + ' ' + cx + ' ' + cy + ')' }),
         h('text', { x: (inX + cx) / 2 + 8, y: (inY + cy) / 2, fill: '#fbbf24', fontSize: 10, fontWeight: 700 }, 'incident (' + theta1Deg.toFixed(1) + '°)'),
-        // Reflected ray (green, dashed)
-        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: isTIR ? '#fb7185' : '#34d399', strokeWidth: isTIR ? 13 : 7, opacity: isTIR ? 0.3 : 0.1, filter: 'url(#op-ray-bloom)' }),
-        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: isTIR ? '#fb7185' : '#10b981', strokeWidth: isTIR ? 2.8 : 1.8, strokeDasharray: isTIR ? '0' : '4 3', opacity: isTIR ? 1 : 0.85 }),
-        h('text', { x: (reflX + cx) / 2 + 4, y: (reflY + cy) / 2, fill: '#10b981', fontSize: 10 }, 'reflected'),
+        h('g', {
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'incident-angle',
+          'data-op-variable': 'refrTheta1',
+          'aria-label': 'Incident angle handle', 'aria-valuemin': 0, 'aria-valuemax': 89, 'aria-valuenow': theta1Deg,
+          'aria-valuetext': theta1Deg.toFixed(1) + ' degrees. ' + (isTIR ? 'Total internal reflection.' : 'Refracted angle ' + radToDeg(theta2).toFixed(1) + ' degrees.'),
+          onPointerDown: startAngleDrag, onPointerMove: moveAngleDrag,
+          onPointerUp: endAngleDrag, onPointerCancel: endAngleDrag, onKeyDown: keyAngleDrag
+        },
+          h('circle', { cx: inX, cy: inY, r: 15, fill: 'transparent' }),
+          h('circle', { cx: inX, cy: inY, r: 6, fill: OP_RAY.incident, stroke: '#fff', strokeWidth: 1.5 }),
+          h('circle', { cx: inX, cy: inY, r: 10, fill: 'none', stroke: OP_RAY.incident, strokeWidth: 1, strokeDasharray: '2 2', opacity: .7 })
+        ),
+        // Reflected ray (solid because it is physical; emphasis follows power).
+        h('line', { x1: cx, y1: cy, x2: reflX, y2: reflY, stroke: OP_RAY.reflected, strokeWidth: 5 + 8 * reflectedVisual, opacity: 0.05 + 0.25 * reflectedVisual, filter: 'url(#op-ray-bloom)' }),
+        h('line', {
+          x1: cx, y1: cy, x2: reflX, y2: reflY,
+          'data-op-refraction-ray': 'reflected',
+          'data-power-fraction': reflectance.toFixed(6),
+          'data-visual-emphasis': reflectedVisual.toFixed(6),
+          stroke: OP_RAY.reflected,
+          strokeWidth: 1.1 + 1.7 * reflectedVisual,
+          opacity: 0.36 + 0.64 * reflectedVisual
+        }),
+        h('text', { x: (reflX + cx) / 2 + 4, y: (reflY + cy) / 2, fill: OP_RAY.reflected, fontSize: 10 }, 'reflected R ' + reflectedPct + '%'),
         // Refracted (or TIR) ray
         !isTIR && theta2 != null ? [
-          h('line', { key: 'rfrglow', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#22d3ee', strokeWidth: 12, opacity: 0.18, filter: 'url(#op-ray-bloom)' }),
-          h('line', { key: 'rfr', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#06b6d4', strokeWidth: 2.5 }),
-          h('text', { key: 'rfrlab', x: (refrX + cx) / 2 + 8, y: (refrY + cy) / 2, fill: '#06b6d4', fontSize: 10, fontWeight: 700 }, 'refracted (' + radToDeg(theta2).toFixed(1) + '°)')
+          h('line', { key: 'rfrglow', x1: cx, y1: cy, x2: refrX, y2: refrY, stroke: '#22d3ee', strokeWidth: 5 + 7 * transmittedVisual, opacity: 0.05 + 0.13 * transmittedVisual, filter: 'url(#op-ray-bloom)' }),
+          h('line', {
+            key: 'rfr', x1: cx, y1: cy, x2: refrX, y2: refrY,
+            'data-op-refraction-ray': 'transmitted',
+            'data-power-fraction': transmittance.toFixed(6),
+            'data-visual-emphasis': transmittedVisual.toFixed(6),
+            stroke: '#06b6d4',
+            strokeWidth: 1.1 + 1.4 * transmittedVisual,
+            opacity: 0.36 + 0.64 * transmittedVisual
+          }),
+          h('text', { key: 'rfrlab', x: (refrX + cx) / 2 + 8, y: (refrY + cy) / 2, fill: '#06b6d4', fontSize: 10, fontWeight: 700 }, 'refracted T ' + transmittedPct + '%')
         ] : [
           // TIR: draw the reflected ray as the strong outgoing ray (no transmitted light)
           h('text', { key: 'tir', x: cx, y: H - 8, fill: '#ef4444', fontSize: 12, fontWeight: 800, textAnchor: 'middle' }, '⚡ TIR — no light transmitted into n₂')
@@ -1376,15 +3183,16 @@
             className: 'opticslab-photon',
             cx: 0, cy: 0
           }));
-          // Reflected photons — green
+          // Reflected photons — red (shared semantic mapping)
           photons.push(h('circle', {
-            key: 'pref1', r: 3, fill: '#34d399',
+            key: 'pref1', r: 3, fill: OP_RAY.reflected,
             stroke: '#fff', strokeWidth: 0.4,
             style: {
               offsetPath: 'path("' + reflPath + '")',
               WebkitOffsetPath: 'path("' + reflPath + '")',
-              filter: 'drop-shadow(0 0 3px #34d399)',
-              animationDuration: '1.8s'
+              filter: 'drop-shadow(0 0 3px ' + OP_RAY.reflected + ')',
+              animationDuration: '1.8s',
+              opacity: 0.32 + 0.68 * reflectedVisual
             },
             className: 'opticslab-photon',
             cx: 0, cy: 0
@@ -1401,7 +3209,8 @@
                 offsetPath: 'path("' + refPath + '")',
                 WebkitOffsetPath: 'path("' + refPath + '")',
                 filter: 'drop-shadow(0 0 4px #22d3ee)',
-                animationDuration: refDur + 's'
+                animationDuration: refDur + 's',
+                opacity: 0.32 + 0.68 * transmittedVisual
               },
               className: 'opticslab-photon',
               cx: 0, cy: 0
@@ -1414,7 +3223,8 @@
                 WebkitOffsetPath: 'path("' + refPath + '")',
                 filter: 'drop-shadow(0 0 3px #22d3ee)',
                 animationDuration: refDur + 's',
-                animationDelay: '-' + (parseFloat(refDur) / 2).toFixed(2) + 's'
+                animationDelay: '-' + (parseFloat(refDur) / 2).toFixed(2) + 's',
+                opacity: 0.32 + 0.68 * transmittedVisual
               },
               className: 'opticslab-photon',
               cx: 0, cy: 0
@@ -1437,8 +3247,9 @@
           // cycle on the refracted ray so students see the wavelength visibly
           // compress when light enters glass. The ticks use offsetRotate: 90deg
           // so each rides the path perpendicular to its tangent.
-          function addCrests(pathStr, n_medium, n_baseCrests, color, dur, keyPrefix) {
+          function addCrests(pathStr, n_medium, n_baseCrests, color, dur, keyPrefix, visualEmphasis) {
             var nCrests = Math.max(3, Math.round(n_baseCrests * n_medium));
+            var crestOpacity = 0.18 + 0.37 * (visualEmphasis == null ? 1 : visualEmphasis);
             for (var k = 0; k < nCrests; k++) {
               // Wrap the line in a <g> for reliable CSS Motion Path support —
               // some browsers don't honor offset-path on bare SVG primitives.
@@ -1456,28 +3267,58 @@
               },
                 h('line', {
                   x1: -5, y1: 0, x2: 5, y2: 0,
-                  stroke: color, strokeWidth: 1.4, opacity: 0.55
+                  stroke: color, strokeWidth: 1.4, opacity: crestOpacity
                 })
               ));
             }
           }
-          addCrests(incPath, n1, 4, '#fde047', '1.8', 'crestIn');
-          addCrests(reflPath, n1, 4, '#34d399', '1.8', 'crestRef');
+          addCrests(incPath, n1, 4, '#fde047', '1.8', 'crestIn', 1);
+          addCrests(reflPath, n1, 4, OP_RAY.reflected, '1.8', 'crestRef', reflectedVisual);
           if (!isTIR && theta2 != null) {
             var refPath = 'M ' + cx + ' ' + cy + ' L ' + refrX.toFixed(1) + ' ' + refrY.toFixed(1);
             var refDur = (1.8 * Math.max(0.5, Math.min(2.2, n2 / n1))).toFixed(2);
-            addCrests(refPath, n2, 4, '#22d3ee', refDur, 'crestRfr');
+            addCrests(refPath, n2, 4, '#22d3ee', refDur, 'crestRfr', transmittedVisual);
           }
           return photons;
         })(),
         // Critical angle indicator (when n1 > n2)
         theta_c != null && h('text', { x: pad.l + 8, y: pad.t + 14, fill: '#fbbf24', fontSize: 10 }, 'θ_c = ' + radToDeg(theta_c).toFixed(2) + '°'),
         // Click hint
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'click upper half to set incident angle')
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'drag the gold handle or use arrow keys')
       ),
-      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
-        '🟡 incident  •  🟢 reflected (always present)  •  🔵 refracted  •  ⚡ red banner = total internal reflection'
+      h('div', {
+        'data-op-fresnel-split': 'refraction',
+        'data-fresnel-model': 'unpolarized-lossless',
+        'data-reflectance': reflectance.toFixed(6),
+        'data-transmittance': transmittance.toFixed(6),
+        style: { maxWidth: 460, marginTop: 8 }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginBottom: 5 } },
+          h('strong', { style: { color: 'var(--allo-stem-text,#e2e8f0)', fontSize: 11 } }, 'Interface power'),
+          h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10 } }, 'Fresnel · unpolarized · lossless')
+        ),
+        h('div', {
+          role: 'img',
+          'aria-label': 'Interface power bar: ' + energySplitText,
+          style: { display: 'flex', height: 10, overflow: 'hidden', background: 'var(--allo-stem-canvas,#0f172a)', borderRadius: 999 }
+        },
+          h('span', { 'aria-hidden': 'true', 'data-op-fresnel-segment': 'reflected', style: { display: 'block', flex: '0 0 ' + reflectedPct + '%', background: OP_RAY.reflected } }),
+          h('span', { 'aria-hidden': 'true', 'data-op-fresnel-segment': 'transmitted', style: { display: 'block', flex: '0 0 ' + transmittedPct + '%', background: '#22d3ee' } })
+        ),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, marginTop: 4, fontSize: 10, fontFamily: 'monospace' } },
+          h('span', { 'data-op-fresnel-value': 'reflected', style: { color: OP_RAY.reflected } }, 'Reflected ', h('strong', null, reflectedPct + '%')),
+          h('span', { 'data-op-fresnel-value': 'transmitted', style: { color: '#22d3ee', textAlign: 'right' } }, 'Transmitted ', h('strong', null, transmittedPct + '%'))
+        ),
+        h('div', {
+          role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          'data-op-fresnel-status': isTIR ? 'tir' : 'partial',
+          style: { color: 'var(--allo-stem-text,#cbd5e1)', fontSize: 10, lineHeight: 1.45, marginTop: 4 }
+        }, isTIR ? 'Total internal reflection: ' + energySplitText : energySplitText),
+        h('div', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 9, lineHeight: 1.4, marginTop: 2 } },
+          'Ray emphasis follows the split; a visibility floor keeps weak branches traceable.'
+        )
       ),
+      _renderOpticsSemanticKey(h),
       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 2 } },
         'Tip: count the wavelength tick marks on each ray. The refracted ray has more ticks per beat in dense media — that\'s ',
         h('em', null, 'λ = v/f'),
@@ -1486,15 +3327,16 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // REFRACTION CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderRefractionCalc(state, upd, h) {
     var n1 = state.refrN1 != null ? state.refrN1 : 1.000;
     var n2 = state.refrN2 != null ? state.refrN2 : 1.520;
     var theta1Deg = state.refrTheta1 != null ? state.refrTheta1 : 30;
     var theta1 = degToRad(theta1Deg);
     var res = snell(theta1, n1, n2);
+    var calcPower = fresnelUnpolarized(theta1, n1, n2);
     var theta_c = criticalAngle(n1, n2);
     var rows = [];
     rows.push(['n₁ (incident medium)', _fmt(n1, 3)]);
@@ -1503,12 +3345,15 @@
     if (theta_c != null) rows.push(['θ_c (critical angle)', _fmt(radToDeg(theta_c), 3) + '°']);
     if (res.tir) {
       rows.push(['Result', '⚡ Total internal reflection (θ₁ > θ_c)']);
-      rows.push(['Light transmitted into n₂', '0% — all reflected back']);
+      rows.push(['Reflected power (unpolarized)', '100.0%']);
+      rows.push(['Transmitted power', '0.0%']);
     } else if (res.error) {
       rows.push(['', res.error]);
     } else {
       rows.push(['θ₂ (refraction angle)', _fmt(radToDeg(res.theta2), 3) + '°']);
       rows.push(['Bending', n2 > n1 ? '↘ toward the normal (entering denser medium)' : '↗ away from the normal (entering less dense medium)']);
+      rows.push(['Reflected power (unpolarized)', _fmt(calcPower.reflectance * 100, 1) + '%']);
+      rows.push(['Transmitted power', _fmt(calcPower.transmittance * 100, 1) + '%']);
     }
     return h('div', null,
       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, lineHeight: 1.5 } },
@@ -1557,9 +3402,9 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // LENSES SIM — converging or diverging, three principal rays
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // Sign convention (lenses): light travels left → right.
   //   Object on the LEFT at distance d_o (so x_obj = -d_o relative to lens at x = 0).
   //   f > 0 for converging lens (focuses), f < 0 for diverging lens (spreads).
@@ -1667,13 +3512,15 @@
       var THREE = S.THREE;
       disposeGroup(S.model);
       S.rayCount = 0;
+      S.realRaysContinuePastFocus = false;
 
       // Keep near-focus cases readable. The outgoing direction still uses the
       // exact image point even when that point lies beyond the displayed bench.
       var finiteImage = typeof model.imageDistance === 'number' && isFinite(model.imageDistance)
         && typeof model.imageHeight === 'number' && isFinite(model.imageHeight);
       var cappedImageDistance = finiteImage ? Math.min(Math.abs(model.imageDistance), 80) : 0;
-      var extentCm = Math.max(model.objectDistance, model.focalAbs * 2, cappedImageDistance, 20);
+      var screenDistance = clamp(+model.screenDistance || 20, 2, 42);
+      var extentCm = Math.max(model.objectDistance, model.focalAbs * 2, cappedImageDistance, screenDistance, 20);
       var unit = 8 / Math.max(1, extentCm);
       var leftEdge = -9, rightEdge = 9;
       var objectPoint = new THREE.Vector3(-model.objectDistance * unit, model.objectHeight * unit, 0);
@@ -1707,6 +3554,43 @@
       }
       S.model.add(lensMesh);
 
+      // A physical screen makes the real/virtual distinction testable. Its
+      // spot is the cross-section of the bundle from one object point: it
+      // collapses at a real image plane and expands again beyond that plane.
+      var screenWorld = screenDistance * unit;
+      var screenColor = model.screenFocused ? 0x86efac : 0xe2e8f0;
+      var screenMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(4.9, 4.9),
+        new THREE.MeshBasicMaterial({
+          color: screenColor, transparent: true, opacity: model.screenFocused ? 0.18 : 0.10,
+          side: THREE.DoubleSide, depthWrite: false
+        })
+      );
+      screenMesh.rotation.y = Math.PI / 2;
+      screenMesh.position.x = screenWorld;
+      S.model.add(screenMesh);
+      var screenCorners = [
+        new THREE.Vector3(screenWorld, -2.45, -2.45),
+        new THREE.Vector3(screenWorld, 2.45, -2.45),
+        new THREE.Vector3(screenWorld, 2.45, 2.45),
+        new THREE.Vector3(screenWorld, -2.45, 2.45)
+      ];
+      for (var screenEdge = 0; screenEdge < 4; screenEdge++) {
+        addLine(THREE, [screenCorners[screenEdge], screenCorners[(screenEdge + 1) % 4]], screenColor, 0.68, false);
+      }
+      var spotRadius = clamp(1.72 * Math.abs(model.screenBundleRatio), 0.09, 1.9);
+      var spot = new THREE.Mesh(
+        new THREE.CircleGeometry(spotRadius, 32),
+        new THREE.MeshBasicMaterial({
+          color: model.screenFocused ? 0x86efac : 0x22d3ee,
+          transparent: true, opacity: model.screenFocused ? 0.90 : 0.28,
+          side: THREE.DoubleSide, depthWrite: false
+        })
+      );
+      spot.rotation.y = Math.PI / 2;
+      spot.position.set(screenWorld - 0.01, clamp(model.screenCenterY * unit, -2.15, 2.15), 0);
+      S.model.add(spot);
+
       var fWorld = model.focalAbs * unit;
       if (fWorld <= 8.7) {
         addMarker(THREE, -fWorld, 0xfbbf24);
@@ -1739,8 +3623,12 @@
         }
         if (!imagePoint) return;
         if (model.imageDistance > 0) {
-          var realEnd = imageVisible ? imagePoint : pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
+          // Rays do not terminate at focus: they cross there and diverge again.
+          // Extending them to the bench edge lets a screen before or beyond the
+          // image plane intercept the physically correct bundle.
+          var realEnd = pointAtBenchEdge(THREE, hit, imagePoint, rightEdge);
           addLine(THREE, [hit, realEnd], 0x22d3ee, 0.82, false);
+          if (realEnd.x > imagePoint.x + 1e-6) S.realRaysContinuePastFocus = true;
         } else {
           // The physical ray travels rightward away from the virtual image;
           // only its dashed backward extension intersects that image point.
@@ -1753,6 +3641,10 @@
       });
 
       S.imageVisible = imageVisible;
+      S.screenDistance = screenDistance;
+      S.screenBundleRatio = model.screenBundleRatio;
+      S.screenFocused = !!model.screenFocused;
+      S.screenCapturable = !!model.screenCapturable;
       S.target.set(0, 0, 0);
       S.half.set(9.5, 4.8, 3.2);
     }
@@ -1839,7 +3731,9 @@
         THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
         rotY: 34, rotX: 20, zoom: 1, target: new THREE.Vector3(),
         half: new THREE.Vector3(9.5, 4.8, 3.2), contextLost: false,
-        lastW: width, lastH: height, raf: 0, rayCount: 0, imageVisible: false
+        lastW: width, lastH: height, raf: 0, rayCount: 0, imageVisible: false,
+        screenDistance: null, screenBundleRatio: null, screenFocused: false, screenCapturable: false,
+        realRaysContinuePastFocus: false
       };
 
       canvas.addEventListener('webglcontextlost', function (ev) {
@@ -1885,7 +3779,15 @@
       onStatusChange: function (fn) { notify = fn; },
       status: function () { return status; },
       debug: function () {
-        return { state: status, rayCount: S ? S.rayCount : 0, imageVisible: !!(S && S.imageVisible), contextLost: !!(S && S.contextLost) };
+        return {
+          state: status, rayCount: S ? S.rayCount : 0,
+          imageVisible: !!(S && S.imageVisible), contextLost: !!(S && S.contextLost),
+          screenDistance: S ? S.screenDistance : null,
+          screenBundleRatio: S ? S.screenBundleRatio : null,
+          screenFocused: !!(S && S.screenFocused),
+          screenCapturable: !!(S && S.screenCapturable),
+          realRaysContinuePastFocus: !!(S && S.realRaysContinuePastFocus)
+        };
       },
       dispose: function () {
         if (S) {
@@ -1917,7 +3819,7 @@
   if (typeof window !== 'undefined') window.__alloOpticsLensGL = OpticsLensGL;
 
   function _renderLensSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var lt = state.lensType || 'converging';   // 'converging' | 'diverging'
     var fAbs = Math.abs(state.lensFocal != null ? state.lensFocal : 12);
@@ -1925,18 +3827,58 @@
     var d_o = state.lensDo != null ? state.lensDo : 25;
     var hObj = state.lensObjH != null ? state.lensObjH : 5;
     var lens = thinLens(d_o, f);
+    var atFocal = !!lens.error && lt === 'converging' && Math.abs(d_o - fAbs) < 1e-9;
     var d_i = lens.error ? null : lens.d_i;
     var m = lens.error ? null : lens.m;
     var hImg = (m == null) ? null : m * hObj;
+    var screenMin = 2, screenMax = 42;
+    var screenCm = clamp(state.lensScreenCm != null ? +state.lensScreenCm : 20, screenMin, screenMax);
+    var screenCapturable = !lens.error && d_i > 0;
+    var screenFocusOnBench = screenCapturable && d_i >= screenMin && d_i <= screenMax;
+    // Relative diameter of the ray bundle from one object point. For an ideal
+    // thin lens it is |1 - d_s/d_i| times the aperture diameter, so it reaches
+    // exactly zero only when a real screen coincides with the real image plane.
+    var screenBundleRatio = d_i != null && isFinite(d_i) ? Math.abs(1 - screenCm / d_i) : 1;
+    var screenBundlePct = (screenBundleRatio * 100).toFixed(1);
+    var screenCenterY = -hObj * screenCm / Math.max(1e-9, d_o);
+    var screenDelta = screenCapturable ? screenCm - d_i : null;
+    var screenFocused = screenFocusOnBench && screenBundleRatio <= 0.005;
+    var screenStatus;
+    if (atFocal) {
+      screenStatus = 'No finite screen focus: the outgoing bundle is parallel and remains '
+        + screenBundlePct + '% of the lens aperture width at d_s = ' + screenCm.toFixed(1) + ' cm.';
+    } else if (lens.error) {
+      screenStatus = 'Screen test unavailable: ' + lens.error;
+    } else if (!screenCapturable) {
+      screenStatus = 'No screen focus: this is a virtual image. Physical rays are still '
+        + screenBundlePct + '% of the lens aperture width at d_s = ' + screenCm.toFixed(1) + ' cm.';
+    } else if (!screenFocusOnBench) {
+      screenStatus = 'The real image plane is at d_i = ' + d_i.toFixed(1)
+        + ' cm, beyond the movable screen range. The bundle is ' + screenBundlePct + '% aperture-wide here.';
+    } else if (screenFocused) {
+      screenStatus = 'Sharp focus: the screen and real image plane coincide at '
+        + screenCm.toFixed(1) + ' cm; the point-source bundle has collapsed to 0.0% of the aperture width.';
+    } else {
+      screenStatus = 'Blurred: the screen is ' + Math.abs(screenDelta).toFixed(1) + ' cm '
+        + (screenDelta < 0 ? 'before' : 'beyond') + ' the real image plane; the point-source bundle is '
+        + screenBundlePct + '% of the aperture width.';
+    }
+    var screenShortStatus = screenFocused ? 'sharp focus'
+      : (!screenCapturable ? (atFocal ? 'image at infinity' : 'virtual · no screen focus')
+        : ('bundle ' + screenBundlePct + '% aperture'));
     var showLens3D = !!state.lensShow3D;
     var lensGlLive = showLens3D && OpticsLensGL.status() === 'ready';
     if (showLens3D) {
       OpticsLensGL.onStatusChange(function () { upd('lensGlTick', ((state.lensGlTick || 0) + 1)); });
       OpticsLensGL.push({
         sig: [lt, fAbs.toFixed(3), d_o.toFixed(3), hObj.toFixed(3),
-          d_i == null ? 'infinity' : d_i.toFixed(3), m == null ? 'none' : m.toFixed(4)].join('|'),
+          d_i == null ? 'infinity' : d_i.toFixed(3), m == null ? 'none' : m.toFixed(4),
+          screenCm.toFixed(3), screenBundleRatio.toFixed(6)].join('|'),
         type: lt, focalAbs: fAbs, objectDistance: d_o, objectHeight: hObj,
         imageDistance: d_i, imageHeight: hImg, atInfinity: !!lens.error,
+        screenDistance: screenCm, screenBundleRatio: screenBundleRatio,
+        screenCenterY: screenCenterY, screenFocused: screenFocused,
+        screenCapturable: screenCapturable,
         rotY: state.lensGlRot ? state.lensGlRot.rotY : 34,
         rotX: state.lensGlRot ? state.lensGlRot.rotX : 20,
         zoom: state.lensGlZoom || 1
@@ -1952,23 +3894,120 @@
             + (m < 0 ? 'inverted' : 'upright') + ' image.'
           : 'The rays leave diverging; their dashed backward extensions meet ' + Math.abs(d_i).toFixed(1)
             + ' centimeters to the left at a virtual, ' + (m < 0 ? 'inverted' : 'upright') + ' image.'));
+    lensGlAlt += ' The movable screen is ' + screenCm.toFixed(1) + ' centimeters to the right. ' + screenStatus;
     // Spoken image result for the slider aria-valuetext (so screen-reader users hear
     // the computed image as they adjust the controls, not just the raw number).
-    var _lensVT = lens.error ? lens.error
-      : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
+    var _lensVT;
+    if (atFocal) {
+      _lensVT = 'image at infinity; outgoing rays are parallel and no finite screen image forms';
+    } else if (lens.error) {
+      _lensVT = lens.error;
+    } else {
+      _lensVT = 'image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2)
+        + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted');
+    }
     // Coordinate space: x in cm; lens at x = 0; useful range -45 to +45
     var cmMin = -45, cmMax = 45;
     var sx = _scale(cmMin, cmMax, pad.l, W - pad.r);
     var sy = _scale(-12, 12, H - pad.b, pad.t);
     var objX = -d_o;       // object to the left
     var imgX = (d_i == null) ? null : d_i;   // d_i > 0 → right of lens; d_i < 0 → left
-    function onClickSetObj(e) {
-      var rect = e.currentTarget.getBoundingClientRect();
-      var pxX = e.clientX - rect.left;
-      var newCm = (pxX - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
+    var imageInFrame = imgX != null && _isNum(imgX) && _isNum(hImg)
+      && imgX >= cmMin + 2 && imgX <= cmMax - 2 && Math.abs(hImg) <= 10.5;
+    var lensPathSummary = atFocal
+      ? 'Image at infinity. With d_o = f, the cyan rays leave parallel, so no screen at a finite distance can capture a sharp image.'
+      : (lens.error
+        ? lens.error
+        : (d_i > 0
+          ? 'Cyan rays physically converge ' + d_i.toFixed(1) + ' cm to the right to form a real, '
+            + (m < 0 ? 'inverted' : 'upright') + ' image.'
+            + (imageInFrame ? '' : ' The image is outside the current diagram; the edge label points toward it.')
+          : 'Cyan rays diverge after the lens. Dashed pink backward extensions meet '
+            + Math.abs(d_i).toFixed(1) + ' cm on the object side to locate the virtual image; no physical light travels along those dashed lines.'
+            + (imageInFrame ? '' : ' The virtual image is outside the current diagram; the edge label points toward it.')));
+    function lensRightEndpoint(hitY, slope) {
+      var endX = cmMax;
+      var endY = hitY + slope * endX;
+      if (Math.abs(slope) > 1e-9 && endY < -11.5) {
+        endY = -11.5;
+        endX = (endY - hitY) / slope;
+      } else if (Math.abs(slope) > 1e-9 && endY > 11.5) {
+        endY = 11.5;
+        endX = (endY - hitY) / slope;
+      }
+      return { x: endX, y: endY };
+    }
+    var ghost = _opticsGhostSetup('lenses', state);
+    var ghostType = ghost && (ghost.lensType || lt);
+    var ghostFAbs = ghost ? Math.abs(+(ghost.lensFocal != null ? ghost.lensFocal : fAbs)) : null;
+    var ghostF = ghost ? (ghostType === 'converging' ? ghostFAbs : -ghostFAbs) : null;
+    var ghostDo = ghost ? +(ghost.lensDo != null ? ghost.lensDo : d_o) : null;
+    var ghostH = ghost ? +(ghost.lensObjH != null ? ghost.lensObjH : hObj) : null;
+    var ghostLens = ghost ? thinLens(ghostDo, ghostF) : null;
+    var ghostDi = ghost && !ghostLens.error ? ghostLens.d_i : null;
+    var ghostM = ghost && !ghostLens.error ? ghostLens.m : null;
+    function setLensObjectFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newCm = (point.x - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
       // Object must be on the left (x < 0) and distance ≥ 1 cm
       var newDo = clamp(-newCm, 1, 40);
       upd('lensDo', Math.round(newDo * 10) / 10);
+    }
+    function startLensObjectDrag(e) {
+      opticsDirectDrag.current = { kind: 'lenses', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setLensObjectFromPointer(e);
+    }
+    function moveLensObjectDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'lenses') return;
+      setLensObjectFromPointer(e);
+    }
+    function endLensObjectDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'lenses') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyLensObjectDrag(e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      var step = e.shiftKey ? 0.1 : 0.5;
+      upd('lensDo', Math.round(clamp(d_o + (e.key === 'ArrowLeft' ? step : -step), 1, 40) * 10) / 10);
+    }
+    function setLensScreenFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newCm = (point.x - pad.l) / (W - pad.l - pad.r) * (cmMax - cmMin) + cmMin;
+      upd('lensScreenCm', Math.round(clamp(newCm, screenMin, screenMax) * 10) / 10);
+    }
+    function startLensScreenDrag(e) {
+      opticsDirectDrag.current = { kind: 'lens-screen', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setLensScreenFromPointer(e);
+    }
+    function moveLensScreenDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'lens-screen') return;
+      setLensScreenFromPointer(e);
+    }
+    function endLensScreenDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'lens-screen') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyLensScreenDrag(e) {
+      var next = null;
+      var step = e.shiftKey ? 0.1 : 0.5;
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = screenCm - step;
+      else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = screenCm + step;
+      else if (e.key === 'Home') next = screenMin;
+      else if (e.key === 'End') next = screenMax;
+      if (next == null) return;
+      e.preventDefault();
+      upd('lensScreenCm', Math.round(clamp(next, screenMin, screenMax) * 10) / 10);
+    }
+    var lensCamera = state.lensGlCamera || 'oblique';
+    function setLensCamera(view) {
+      var preset = view === 'side' ? { rotY: 0, rotX: 0 }
+        : (view === 'normal' ? { rotY: 0, rotX: 82 } : { rotY: 34, rotX: 20 });
+      upd({ lensGlCamera: view, lensGlRot: preset, lensGlZoom: 1 });
     }
     var lens3dPanel = h('div', { style: { marginBottom: 10, maxWidth: 460 } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: showLens3D ? 6 : 0 } },
@@ -1983,18 +4022,16 @@
           }),
           '3D ray-space bench'
         ),
-        showLens3D && h('button', {
-          type: 'button',
-          onClick: function () { upd({ lensGlRot: { rotY: 34, rotX: 20 }, lensGlZoom: 1 }); },
-          'data-op-focusable': 'true',
-          style: {
-            fontSize: 10, padding: '3px 8px', borderRadius: 999, cursor: 'pointer',
-            border: '1px solid var(--allo-stem-border, #475569)', background: 'rgba(15,23,42,.65)',
-            color: 'var(--allo-stem-text-soft, #cbd5e1)'
-          }
-        }, 'Reset 3D view')
+        showLens3D && h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10 } }, 'Camera presets and keyboard controls below')
       ),
       showLens3D && h('div', null,
+        _renderOptics3DToolbar({
+          id: 'lens', label: 'Lens 3D controls', camera: lensCamera,
+          onCamera: setLensCamera,
+          onReset: function() { setLensCamera('oblique'); },
+          motion: state.opMotionEnabled !== false,
+          onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
+        }, h),
         h('div', {
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
@@ -2019,16 +4056,16 @@
             onPointerMove: function (ev) {
               var drag = opticsLensDrag.current;
               if (!drag) return;
-              upd('lensGlRot', {
+              upd({ lensGlCamera: 'custom', lensGlRot: {
                 rotY: drag.rotY + (ev.clientX - drag.x) * 0.5,
                 rotX: Math.max(-80, Math.min(80, drag.rotX + (ev.clientY - drag.y) * 0.35))
-              });
+              } });
             },
             onPointerUp: function () { opticsLensDrag.current = null; },
             onPointerCancel: function () { opticsLensDrag.current = null; },
             onWheel: function (ev) {
               ev.preventDefault();
-              upd('lensGlZoom', Math.max(0.5, Math.min(3, (state.lensGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+              upd({ lensGlCamera: 'custom', lensGlZoom: Math.max(0.5, Math.min(3, (state.lensGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
             },
             onKeyDown: function (ev) {
               var rotation = state.lensGlRot || { rotY: 34, rotX: 20 };
@@ -2040,19 +4077,33 @@
               else if (ev.key === '+' || ev.key === '=') {
                 ev.preventDefault();
                 ev.stopPropagation();
-                upd('lensGlZoom', Math.min(3, (state.lensGlZoom || 1) * 1.12));
+                upd({ lensGlCamera: 'custom', lensGlZoom: Math.min(3, (state.lensGlZoom || 1) * 1.12) });
                 return;
               } else if (ev.key === '-' || ev.key === '_') {
                 ev.preventDefault();
                 ev.stopPropagation();
-                upd('lensGlZoom', Math.max(0.5, (state.lensGlZoom || 1) * 0.89));
+                upd({ lensGlCamera: 'custom', lensGlZoom: Math.max(0.5, (state.lensGlZoom || 1) * 0.89) });
                 return;
+              } else if (ev.key === '0') {
+                ev.preventDefault(); ev.stopPropagation(); setLensCamera('oblique'); return;
               } else return;
               ev.preventDefault();
               ev.stopPropagation();
-              upd('lensGlRot', nextRotation);
+              upd({ lensGlCamera: 'custom', lensGlRot: nextRotation });
             }
           }),
+          lensGlLive && h('div', {
+            'aria-hidden': 'true', 'data-op-lens-3d-screen': 'true',
+            'data-screen-focused': screenFocused ? 'true' : 'false',
+            style: {
+              position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
+              color: '#e2e8f0', background: 'rgba(8,17,31,.80)', padding: '4px 7px',
+              borderRadius: 7, fontSize: 9, lineHeight: 1.45
+            }
+          },
+            h('div', null, 'Screen d_s = ' + screenCm.toFixed(1) + ' cm'),
+            h('div', { style: { color: screenFocused ? '#86efac' : '#67e8f9', fontWeight: 700 } }, screenShortStatus)
+          ),
           !lensGlLive ? h('div', {
             role: 'status', 'aria-live': 'polite',
             style: {
@@ -2077,7 +4128,8 @@
         },
           'Yellow rays spread from one object point across the circular aperture; cyan rays are the physical light after the lens. ',
           d_i < 0 ? 'Dashed pink lines are backward extensions, not physical rays. ' : '',
-          'The camera scale adapts to the distances; lens thickness and aperture are schematic.'
+          'The white plane is the movable screen and its cyan spot shows the intercepted bundle. '
+          + 'The camera scale adapts to the distances; lens thickness and aperture are schematic.'
         )
       )
     );
@@ -2086,6 +4138,7 @@
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Lens:',
           h('select', {
             value: lt,
+            'data-op-variable': 'lensType',
             onChange: function(e) { upd('lensType', e.target.value); },
             'data-op-focusable': 'true', 'aria-label': 'Lens type',
             style: { padding: '4px 8px', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e0e7ff)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 12 }
@@ -2099,6 +4152,7 @@
           h('input', {
             type: 'range', min: 4, max: 35, step: 0.5,
             value: fAbs,
+            'data-op-variable': 'lensFocal',
             onChange: function(e) { upd('lensFocal', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Focal length',
             'aria-valuetext': fAbs.toFixed(1) + ' cm focal length. ' + _lensVT,
@@ -2111,21 +4165,69 @@
           h('input', {
             type: 'range', min: 1, max: 40, step: 0.5,
             value: d_o,
+            'data-op-variable': 'lensDo',
             onChange: function(e) { upd('lensDo', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Object distance',
             'aria-valuetext': d_o.toFixed(1) + ' cm object distance. ' + _lensVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
+        ),
+        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+          'h_o (cm):',
+          h('input', {
+            type: 'range', min: 2, max: 10, step: 0.5,
+            value: hObj,
+            'data-op-variable': 'lensObjH',
+            onChange: function(e) { upd('lensObjH', parseFloat(e.target.value)); },
+            'data-op-focusable': 'true', 'aria-label': 'Object height',
+            'aria-valuetext': atFocal
+              ? hObj.toFixed(1) + ' cm object height. Outgoing bundle angle '
+                + Math.abs(Math.atan(hObj / fAbs) * 180 / Math.PI).toFixed(1) + ' degrees below the optical axis.'
+              : hObj.toFixed(1) + ' cm object height. Image height ' + hImg.toFixed(1) + ' cm.',
+            style: { width: 110 }
+          }),
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, hObj.toFixed(1))
         )
+      ),
+      h('div', {
+        'data-op-lens-screen-controls': 'true',
+        style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', maxWidth: 460, marginBottom: 10 }
+      },
+        h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, flex: '1 1 250px', minWidth: 0, color: 'var(--allo-stem-text,#cbd5e1)', fontSize: 11 } },
+          'Screen d_s:',
+          h('input', {
+            id: 'op-lens-screen-range',
+            type: 'range', min: screenMin, max: screenMax, step: 0.5, value: screenCm,
+            'data-op-variable': 'lensScreenCm', 'data-op-focusable': 'true',
+            'aria-label': 'Screen position',
+            'aria-valuetext': screenCm.toFixed(1) + ' centimeters to the right of the lens. ' + screenStatus,
+            onChange: function(e) { upd('lensScreenCm', parseFloat(e.target.value)); },
+            style: { flex: '1 1 130px', minWidth: 110 }
+          }),
+          h('output', {
+            htmlFor: 'op-lens-screen-range',
+            style: { minWidth: 48, textAlign: 'right', color: 'var(--op-accent-text,#7dd3fc)', fontFamily: 'monospace', fontWeight: 700 }
+          }, screenCm.toFixed(1) + ' cm')
+        ),
+        screenFocusOnBench && h('button', {
+          type: 'button', className: 'opticslab-preset-button', 'data-op-focusable': 'true',
+          'data-op-place-screen-at-image': 'true',
+          onClick: function() { upd('lensScreenCm', d_i); },
+          'aria-label': 'Place screen at the real image plane, ' + d_i.toFixed(1) + ' centimeters'
+        }, screenFocused ? 'Screen at image ✓' : 'Place at image')
       ),
       lens3dPanel,
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
-        'aria-label': lt + ' lens, f = ' + f.toFixed(1) + ' cm, object distance ' + d_o.toFixed(1) + ' cm.' + (d_i != null ? (' Image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + '.') : ''),
-        onClick: onClickSetObj,
-        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, cursor: 'crosshair', maxWidth: 460 }
+        className: 'opticslab-core-svg',
+        role: 'group', 'aria-roledescription': 'interactive ray diagram',
+        'aria-label': lt + ' lens, f = ' + f.toFixed(1) + ' cm, object distance ' + d_o.toFixed(1) + ' cm.'
+          + (atFocal
+            ? ' Object is at the focal plane; outgoing rays are parallel and the image is at infinity.'
+            : (d_i != null ? (' Image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + '.') : ''))
+          + ' ' + lensPathSummary + ' Screen test: ' + screenStatus,
+        style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
         // Background grid
         (function() {
@@ -2140,6 +4242,18 @@
         })(),
         // Optical axis
         h('line', { x1: pad.l, y1: sy(0), x2: W - pad.r, y2: sy(0), stroke: '#475569', strokeWidth: 1, strokeDasharray: '3 3' }),
+        ghost && h('g', { className: 'opticslab-ghost-layer', 'aria-hidden': 'true' },
+          h('line', { x1: sx(-ghostDo), y1: sy(0), x2: sx(-ghostDo), y2: sy(ghostH), stroke: OP_RAY.previous, strokeWidth: 2, strokeDasharray: '5 4' }),
+          ghostDi != null && _isNum(ghostM) && h('line', {
+            x1: sx(ghostDi), y1: sy(0), x2: sx(ghostDi), y2: sy(ghostM * ghostH),
+            stroke: OP_RAY.virtual, strokeWidth: 2, strokeDasharray: '5 4'
+          }),
+          ghostDi != null && _isNum(ghostM) && h('polyline', {
+            points: [sx(-ghostDo) + ',' + sy(ghostH), sx(0) + ',' + sy(ghostH), sx(ghostDi) + ',' + sy(ghostM * ghostH)].join(' '),
+            fill: 'none', stroke: OP_RAY.previous, strokeWidth: 1.4, strokeDasharray: '4 4'
+          }),
+          h('text', { x: pad.l + 5, y: pad.t + 13 }, 'previous setup')
+        ),
         // Lens at x = 0 — dimensional glass profile with an accessible symbolic outline.
         (function() {
           var lensX = sx(0);
@@ -2180,16 +4294,60 @@
         h('text', { x: sx(-2 * fAbs), y: sy(0) - 6, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, '2F'),
         h('circle', { cx: sx(2 * fAbs), cy: sy(0), r: 2, fill: '#94a3b8', stroke: '#0b1220', strokeWidth: 1 }),
         h('text', { x: sx(2 * fAbs), y: sy(0) - 6, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, "2F'"),
-        // Object arrow
-        h('line', { x1: sx(objX), y1: sy(0), x2: sx(objX), y2: sy(hObj), stroke: '#fbbf24', strokeWidth: 3 }),
-        h('polygon', {
-          points: [sx(objX) - 4, sy(hObj) + 4, sx(objX) + 4, sy(hObj) + 4, sx(objX), sy(hObj) - 2].join(' '),
-          fill: '#fbbf24'
-        }),
-        h('text', { x: sx(objX), y: sy(hObj) - 6, fill: '#fbbf24', fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object'),
+        // Object arrow doubles as a large pointer and keyboard handle.
+        h('g', {
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'object-distance',
+          'data-op-variable': 'lensDo',
+          'aria-label': 'Object distance', 'aria-valuemin': 1, 'aria-valuemax': 40, 'aria-valuenow': d_o,
+          'aria-valuetext': d_o.toFixed(1) + ' centimeters. ' + _lensVT,
+          onPointerDown: startLensObjectDrag, onPointerMove: moveLensObjectDrag,
+          onPointerUp: endLensObjectDrag, onPointerCancel: endLensObjectDrag, onKeyDown: keyLensObjectDrag
+        },
+          h('rect', { x: sx(objX) - 14, y: sy(hObj) - 15, width: 28, height: sy(0) - sy(hObj) + 30, fill: 'transparent' }),
+          h('line', { x1: sx(objX), y1: sy(0), x2: sx(objX), y2: sy(hObj), stroke: OP_RAY.incident, strokeWidth: 3 }),
+          h('polygon', {
+            points: [sx(objX) - 4, sy(hObj) + 4, sx(objX) + 4, sy(hObj) + 4, sx(objX), sy(hObj) - 2].join(' '),
+            fill: OP_RAY.incident
+          }),
+          h('text', { x: sx(objX), y: sy(hObj) - 6, fill: OP_RAY.incident, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object')
+        ),
         // Three principal rays from the tip of the object (objX, hObj)
         (function() {
           var children = [];
+          if (atFocal) {
+            // In the d_o = f limit, every refracted ray from this object point
+            // has the same slope (-h_o/f). The bundle is collimated, so its
+            // image exists at infinity rather than at a finite screen position.
+            var focalSlope = -hObj / fAbs;
+            var apertureHits = [8, 0, -8];
+            children.push(h('polygon', {
+              key: 'focal-cone-in',
+              points: [sx(objX), sy(hObj), sx(0), sy(8), sx(0), sy(-8)].join(' '),
+              fill: 'rgba(251,191,36,0.09)', stroke: 'rgba(251,191,36,0.2)', strokeWidth: 0.5
+            }));
+            apertureHits.forEach(function(hitY, rayIndex) {
+              var focalEnd = lensRightEndpoint(hitY, focalSlope);
+              children.push(h('line', {
+                key: 'focal-in-' + rayIndex,
+                'data-lens-focal-ray': 'incoming',
+                'data-op-lens-ray': 'incident',
+                x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hitY),
+                stroke: '#fbbf24', strokeWidth: 1.5
+              }));
+              children.push(h('line', {
+                key: 'focal-out-' + rayIndex,
+                'data-lens-focal-ray': 'outgoing',
+                'data-op-lens-ray': 'output',
+                x1: sx(0), y1: sy(hitY), x2: sx(focalEnd.x), y2: sy(focalEnd.y),
+                stroke: '#22d3ee', strokeWidth: 1.8
+              }));
+            });
+            children.push(h('text', {
+              key: 'focal-label', x: sx(24), y: sy(9.8),
+              fill: '#67e8f9', fontSize: 10, textAnchor: 'middle', fontWeight: 700
+            }, 'parallel bundle → image at ∞'));
+            return children;
+          }
           if (d_i == null || lens.error) return children;
           var imgY = m * hObj;
           var isVirtual = d_i < 0;
@@ -2201,7 +4359,7 @@
           // The intersection at the lens is exactly where Snell-bent rays
           // change direction. Students see "every point on the object emits
           // light that fills the lens and converges to one image point."
-          if (lt === 'converging' && d_i > 0 && _isNum(imgY)) {
+          if (lt === 'converging' && d_i > 0 && _isNum(imgY) && imageInFrame) {
             children.push(h('polygon', {
               key: 'cone-in',
               points: [
@@ -2225,46 +4383,69 @@
           // animate along each ray (CSS Motion Path). This gives students a
           // visceral sense of light actually moving through the system.
           var photonPaths = [];
-          // Ray 1 — parallel to axis from tip → hits lens at (0, hObj) → bends through F' (right focus, at +fAbs)
-          children.push(h('line', { key: 'r1a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: '#10b981', strokeWidth: 1.5 }));
+          // Ray 1 — parallel to axis from tip → lens → through/apparently from a focus.
+          children.push(h('line', { key: 'r1a', 'data-op-lens-ray': 'incident', 'data-op-lens-principal-ray': 'parallel', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(hObj), stroke: OP_RAY.incident, strokeWidth: 1.5 }));
           if (lt === 'converging') {
-            // Goes through F' on the right. From (0, hObj) toward (fAbs, 0) and beyond.
-            // Compute extension point at right edge
             var slope1 = (0 - hObj) / (fAbs - 0);
-            var rightX = cmMax;
-            var rightY = hObj + slope1 * (rightX - 0);
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rightX), y2: sy(rightY), stroke: '#10b981', strokeWidth: 1.5 }));
-            photonPaths.push({ color: '#10b981',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rightX) + ' ' + sy(rightY) });
+            var ray1End = lensRightEndpoint(hObj, slope1);
+            children.push(h('line', { key: 'r1b', 'data-op-lens-ray': 'output', 'data-op-lens-principal-ray': 'parallel', x1: sx(0), y1: sy(hObj), x2: sx(ray1End.x), y2: sy(ray1End.y), stroke: OP_RAY.output, strokeWidth: 1.5 }));
+            if (isVirtual) {
+              children.push(h('line', {
+                key: 'r1c', 'data-op-lens-virtual-extension': 'parallel-ray',
+                x1: sx(0), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY),
+                stroke: OP_RAY.virtual, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.78
+              }));
+            }
+            photonPaths.push({ color: OP_RAY.output,
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(ray1End.x) + ' ' + sy(ray1End.y) });
           } else {
-            // Diverging: ray bends as if it came from the LEFT focus (F at -fAbs).
-            // The outgoing ray's extension passes through (-fAbs, 0).
-            // Slope from (-fAbs, 0) to (0, hObj): hObj / fAbs. Forward (right of lens) the ray goes from (0, hObj) with the same slope.
             var sl = hObj / fAbs;
-            var rx = cmMax;
-            var ry = hObj + sl * (rx - 0);
-            children.push(h('line', { key: 'r1b', x1: sx(0), y1: sy(hObj), x2: sx(rx), y2: sy(ry), stroke: '#10b981', strokeWidth: 1.5 }));
-            // Dotted backward extension to F (the apparent virtual source)
-            children.push(h('line', { key: 'r1c', x1: sx(0), y1: sy(hObj), x2: sx(-fAbs), y2: sy(0), stroke: '#10b981', strokeWidth: 1, strokeDasharray: '3 3', opacity: 0.5 }));
-            photonPaths.push({ color: '#10b981',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(rx) + ' ' + sy(ry) });
+            var divergingEnd = lensRightEndpoint(hObj, sl);
+            children.push(h('line', { key: 'r1b', 'data-op-lens-ray': 'output', 'data-op-lens-principal-ray': 'parallel', x1: sx(0), y1: sy(hObj), x2: sx(divergingEnd.x), y2: sy(divergingEnd.y), stroke: OP_RAY.output, strokeWidth: 1.5 }));
+            // Backward extension to the near focus; the virtual image lies on it.
+            children.push(h('line', { key: 'r1c', 'data-op-lens-virtual-extension': 'parallel-ray', x1: sx(0), y1: sy(hObj), x2: sx(-fAbs), y2: sy(0), stroke: OP_RAY.virtual, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.78 }));
+            photonPaths.push({ color: OP_RAY.output,
+              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(hObj) + ' L ' + sx(divergingEnd.x) + ' ' + sy(divergingEnd.y) });
           }
-          // Ray 2 — through center of lens, undeviated
+          // Ray 2 — through center of lens, undeviated. Split at the lens so
+          // incident gold never masquerades as cyan output light.
           var slope2 = (0 - hObj) / (0 - objX);
-          var rx2 = cmMax;
-          var ry2 = hObj + slope2 * (rx2 - objX);
-          children.push(h('line', { key: 'r2', x1: sx(objX), y1: sy(hObj), x2: sx(rx2), y2: sy(ry2), stroke: '#06b6d4', strokeWidth: 1.5 }));
-          photonPaths.push({ color: '#06b6d4',
-            path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(rx2) + ' ' + sy(ry2) });
-          // Ray 3 — through near focal point F (left, at -fAbs) emerges parallel to axis (converging only)
+          var centerEnd = lensRightEndpoint(0, slope2);
+          children.push(h('line', { key: 'r2a', 'data-op-lens-ray': 'incident', 'data-op-lens-principal-ray': 'center', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(0), stroke: OP_RAY.incident, strokeWidth: 1.5 }));
+          children.push(h('line', { key: 'r2b', 'data-op-lens-ray': 'output', 'data-op-lens-principal-ray': 'center', x1: sx(0), y1: sy(0), x2: sx(centerEnd.x), y2: sy(centerEnd.y), stroke: OP_RAY.output, strokeWidth: 1.5 }));
+          if (isVirtual && lt === 'converging') {
+            // From lens to object this extension overlaps real incident light;
+            // draw only the non-overlapping segment beyond the object.
+            children.push(h('line', {
+              key: 'r2c', 'data-op-lens-virtual-extension': 'center-ray',
+              'data-op-extension-visible-segment': 'beyond-object',
+              x1: sx(objX), y1: sy(hObj), x2: sx(imgX), y2: sy(imgY),
+              stroke: OP_RAY.virtual, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.78
+            }));
+          }
+          photonPaths.push({ color: OP_RAY.output,
+            path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(0) + ' L ' + sx(centerEnd.x) + ' ' + sy(centerEnd.y) });
+          // Ray 3 — near-focus construction for converging lenses; far-focus
+          // construction for diverging lenses. Both emerge parallel.
           if (lt === 'converging' && d_o > fAbs) {
-            // Slope from (objX, hObj) through (-fAbs, 0)
             var slope3 = (0 - hObj) / (-fAbs - objX);
             var yAtLens = hObj + slope3 * (0 - objX);
-            children.push(h('line', { key: 'r3a', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
-            children.push(h('line', { key: 'r3b', x1: sx(0), y1: sy(yAtLens), x2: sx(cmMax), y2: sy(yAtLens), stroke: '#a855f7', strokeWidth: 1.5 }));
-            photonPaths.push({ color: '#a855f7',
-              path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtLens) + ' L ' + sx(cmMax) + ' ' + sy(yAtLens) });
+            if (Math.abs(yAtLens) <= 10) {
+              children.push(h('line', { key: 'r3a', 'data-op-lens-ray': 'incident', 'data-op-lens-principal-ray': 'near-focus', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(yAtLens), stroke: OP_RAY.incident, strokeWidth: 1.5, strokeDasharray: '6 3' }));
+              children.push(h('line', { key: 'r3b', 'data-op-lens-ray': 'output', 'data-op-lens-principal-ray': 'near-focus', x1: sx(0), y1: sy(yAtLens), x2: sx(cmMax), y2: sy(yAtLens), stroke: OP_RAY.output, strokeWidth: 1.5, strokeDasharray: '6 3' }));
+              photonPaths.push({ color: OP_RAY.output,
+                path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(yAtLens) + ' L ' + sx(cmMax) + ' ' + sy(yAtLens) });
+            }
+          } else if (lt === 'diverging') {
+            var farFocusSlope = (0 - hObj) / (fAbs - objX);
+            var farFocusHitY = hObj + farFocusSlope * (0 - objX);
+            if (Math.abs(farFocusHitY) <= 10) {
+              children.push(h('line', { key: 'r3a', 'data-op-lens-ray': 'incident', 'data-op-lens-principal-ray': 'far-focus', x1: sx(objX), y1: sy(hObj), x2: sx(0), y2: sy(farFocusHitY), stroke: OP_RAY.incident, strokeWidth: 1.5, strokeDasharray: '6 3' }));
+              children.push(h('line', { key: 'r3b', 'data-op-lens-ray': 'output', 'data-op-lens-principal-ray': 'far-focus', x1: sx(0), y1: sy(farFocusHitY), x2: sx(cmMax), y2: sy(farFocusHitY), stroke: OP_RAY.output, strokeWidth: 1.5, strokeDasharray: '6 3' }));
+              children.push(h('line', { key: 'r3c', 'data-op-lens-virtual-extension': 'far-focus-ray', x1: sx(0), y1: sy(farFocusHitY), x2: sx(imgX), y2: sy(imgY), stroke: OP_RAY.virtual, strokeWidth: 1.2, strokeDasharray: '4 3', opacity: 0.78 }));
+              photonPaths.push({ color: OP_RAY.output,
+                path: 'M ' + sx(objX) + ' ' + sy(hObj) + ' L ' + sx(0) + ' ' + sy(farFocusHitY) + ' L ' + sx(cmMax) + ' ' + sy(farFocusHitY) });
+            }
           }
           // Add traveling photon dots — one per ray, staggered in time.
           // Uses CSS Motion Path (offset-path) so the dot follows the ray.
@@ -2289,7 +4470,7 @@
           });
           // Image arrow
           var imgIsValid = imgX != null && _isNum(imgX) && _isNum(imgY);
-          if (imgIsValid) {
+          if (imgIsValid && imageInFrame) {
             var stroke = isVirtual ? '#fca5a5' : '#ef4444';
             var dash = isVirtual ? '3 3' : '0';
             var op = isVirtual ? 0.7 : 1;
@@ -2305,7 +4486,7 @@
                 style: { animationDuration: '1.6s', transformOrigin: sx(imgX) + 'px ' + sy(imgY) + 'px' }
               }));
             }
-            children.push(h('line', { key: 'img', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: op }));
+            children.push(h('line', { key: 'img', 'data-op-lens-image': isVirtual ? 'virtual' : 'real', x1: sx(imgX), y1: sy(0), x2: sx(imgX), y2: sy(imgY), stroke: stroke, strokeWidth: 3, strokeDasharray: dash, opacity: op }));
             var arrowOff = imgY > 0 ? 4 : -4;
             var arrowY = imgY > 0 ? sy(imgY) - 2 : sy(imgY) + 2;
             children.push(h('polygon', {
@@ -2318,28 +4499,129 @@
               fill: stroke, fontSize: 10, textAnchor: 'middle', fontWeight: 700
             }, (isVirtual ? 'Image (virtual, ' : 'Image (real, ') + (m < 0 ? 'inverted)' : 'upright)')));
           }
+          if (imgIsValid && !imageInFrame) {
+            var offLeft = imgX < cmMin + 2;
+            var offRight = imgX > cmMax - 2;
+            var edgeX = offLeft ? pad.l + 6 : (offRight ? W - pad.r - 6 : clamp(sx(imgX), 92, W - 92));
+            var edgeY = imgY >= 0 ? pad.t + 16 : H - pad.b - 8;
+            var edgeAnchor = offLeft ? 'start' : (offRight ? 'end' : 'middle');
+            var edgeDirection = offLeft ? '← ' : (offRight ? ' →' : (imgY >= 0 ? ' ↑' : ' ↓'));
+            var edgeLabel = (offLeft ? edgeDirection : '')
+              + (isVirtual ? 'virtual' : 'real') + ' image off-scale · dᵢ = '
+              + (d_i > 0 ? '+' : '') + d_i.toFixed(1) + ' cm'
+              + (offLeft ? '' : edgeDirection);
+            children.push(h('text', {
+              key: 'image-offscale', 'data-op-lens-image-offscale': isVirtual ? 'virtual' : 'real',
+              x: edgeX, y: edgeY, fill: isVirtual ? OP_RAY.virtual : '#ef4444',
+              fontSize: 10, textAnchor: edgeAnchor, fontWeight: 700
+            }, edgeLabel));
+          }
           return children;
         })(),
+        // Movable physical image screen. The cyan spot is the cross-section of
+        // the outgoing bundle from the object's tip, normalized to the lens
+        // aperture so focus is visible without inventing a camera model.
+        (function() {
+          var screenX = sx(screenCm);
+          var screenY = clamp(sy(screenCenterY), pad.t + 8, H - pad.b - 8);
+          var apertureRadiusPx = Math.abs(sy(10) - sy(0));
+          var spotRadiusY = clamp(apertureRadiusPx * screenBundleRatio, 2, 34);
+          var screenAnchor = screenX > W - 82 ? 'end' : 'start';
+          var screenLabelX = screenAnchor === 'end' ? screenX - 7 : screenX + 7;
+          var screenColor = screenFocused ? '#86efac' : '#e2e8f0';
+          return h('g', {
+            role: 'slider', tabIndex: 0, 'data-op-focusable': 'true',
+            'data-op-direct-handle': 'image-screen', 'data-op-lens-screen-handle': 'true',
+            'data-op-variable': 'lensScreenCm',
+            'data-screen-distance': screenCm.toFixed(3),
+            'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
+            'data-screen-focused': screenFocused ? 'true' : 'false',
+            'data-screen-capturable': screenCapturable ? 'true' : 'false',
+            'aria-label': 'Image screen handle',
+            'aria-valuemin': screenMin, 'aria-valuemax': screenMax, 'aria-valuenow': screenCm,
+            'aria-valuetext': screenCm.toFixed(1) + ' centimeters. ' + screenStatus,
+            onPointerDown: startLensScreenDrag, onPointerMove: moveLensScreenDrag,
+            onPointerUp: endLensScreenDrag, onPointerCancel: endLensScreenDrag,
+            onKeyDown: keyLensScreenDrag
+          },
+            h('rect', { x: screenX - 13, y: pad.t, width: 26, height: H - pad.t - pad.b, fill: 'transparent' }),
+            h('line', {
+              x1: screenX, y1: pad.t + 5, x2: screenX, y2: H - pad.b - 3,
+              stroke: screenColor, strokeWidth: screenFocused ? 3.2 : 2.2,
+              opacity: screenFocused ? 0.95 : 0.62
+            }),
+            h('ellipse', {
+              'data-op-lens-screen-spot': 'true',
+              cx: screenX, cy: screenY, rx: screenFocused ? 4 : 5.5, ry: spotRadiusY,
+              fill: screenFocused ? '#86efac' : '#22d3ee',
+              opacity: screenFocused ? 0.92 : 0.30,
+              stroke: screenFocused ? '#dcfce7' : '#67e8f9', strokeWidth: 1
+            }),
+            h('polygon', {
+              points: [screenX - 5, sy(0), screenX, sy(0) - 5, screenX + 5, sy(0), screenX, sy(0) + 5].join(' '),
+              fill: screenColor, stroke: '#0b1220', strokeWidth: 0.8
+            }),
+            h('text', {
+              x: screenLabelX, y: pad.t + 13, fill: screenColor,
+              fontSize: 9, textAnchor: screenAnchor, fontWeight: 700
+            }, 'screen ' + screenCm.toFixed(1) + ' cm'),
+            h('text', {
+              x: screenLabelX, y: H - pad.b - 7,
+              fill: screenFocused ? '#86efac' : '#67e8f9',
+              fontSize: 9, textAnchor: screenAnchor, fontWeight: 700
+            }, screenFocused ? 'sharp' : screenBundlePct + '% aperture')
+          );
+        })(),
         // Click hint
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'click to move object')
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'drag gold object or white screen · arrows adjust')
       ),
-      h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
-        '🟢 parallel ray  •  🔵 through center  •  🟣 through F (converging)  •  🔴 image (red = real, faded = virtual)'
-      )
+      h('div', {
+        role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+        'data-op-lens-screen-test': screenFocused ? 'sharp'
+          : (atFocal ? 'infinity' : (!screenCapturable ? 'virtual' : (screenFocusOnBench ? 'blurred' : 'out-of-range'))),
+        'data-screen-distance': screenCm.toFixed(6),
+        'data-image-distance': d_i == null ? 'infinity' : d_i.toFixed(6),
+        'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
+        'data-screen-capturable': screenCapturable ? 'true' : 'false',
+        style: {
+          maxWidth: 460, marginTop: 6,
+          color: screenFocused ? 'var(--op-green-text,#86efac)' : 'var(--allo-stem-text,#cbd5e1)',
+          fontSize: 10, lineHeight: 1.45
+        }
+      }, screenStatus),
+      h('div', {
+        role: 'status', 'aria-live': 'polite',
+        'data-op-lens-path-summary': atFocal ? 'infinity' : (d_i > 0 ? 'real' : 'virtual'),
+        style: {
+          maxWidth: 460, marginTop: 6, padding: '7px 9px', borderRadius: 7,
+          border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)',
+          color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.45
+        }
+      }, lensPathSummary),
+      _renderOpticsSemanticKey(h)
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // LENSES CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderLensCalc(state, upd, h, addToast, awardXP) {
     var lt = state.lensType || 'converging';
     var fAbs = Math.abs(state.lensFocal != null ? state.lensFocal : 12);
     var f = lt === 'converging' ? fAbs : -fAbs;
     var d_o = state.lensDo != null ? state.lensDo : 25;
     var lens = thinLens(d_o, f);
+    var atFocal = !!lens.error && lt === 'converging' && Math.abs(d_o - fAbs) < 1e-9;
     var rows = [];
-    if (lens.error) {
+    if (atFocal) {
+      rows.push(['Lens type', 'converging (f > 0)']);
+      rows.push(['f', _fmt(f, 2) + ' cm']);
+      rows.push(['d_o', _fmt(d_o, 2) + ' cm']);
+      rows.push(['1/d_i', '0 cm⁻¹']);
+      rows.push(['d_i', '∞ (image at infinity)']);
+      rows.push(['Ray behavior', 'Parallel / collimated after lens']);
+      rows.push(['Screen image', 'No finite screen position']);
+    } else if (lens.error) {
       rows.push(['', lens.error]);
     } else {
       rows.push(['Lens type', lt + ' (f ' + (f > 0 ? '> 0' : '< 0') + ')']);
@@ -2370,8 +4652,17 @@
         'aria-expanded': !!state.lensShowMath,
         style: { marginTop: 8, background: 'transparent', color: 'var(--op-indigo-text, #a5b4fc)', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 800, padding: 0 }
       }, (state.lensShowMath ? '▼' : '▶') + ' 📐 Show me the math'),
-      state.lensShowMath && !lens.error && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre' } },
-        [
+      state.lensShowMath && h('div', { style: { marginTop: 8, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 6, fontFamily: 'monospace', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
+        atFocal ? [
+          'At the focal plane:  d_o = f',
+          '',
+          '  1/f = 1/f + 1/d_i',
+          '  1/d_i = 0',
+          '  d_i → ∞',
+          '',
+          'The outgoing rays are parallel (collimated).',
+          'They do not meet on a screen at any finite distance.'
+        ].join('\n') : lens.error ? lens.error : [
           'Thin lens equation:  1/f = 1/d_o + 1/d_i',
           '',
           '  Solve for d_i:   d_i = (f · d_o) / (d_o − f)',
@@ -2394,12 +4685,227 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  function _opticsGratingGeometry(state) {
+    var density = state && state.diffGrating != null ? +state.diffGrating : 600;
+    if (!isFinite(density) || density <= 0) density = 600;
+    var dutyPercent = state && state.diffGratingDuty != null ? +state.diffGratingDuty : 50;
+    if (!isFinite(dutyPercent)) dutyPercent = 50;
+    dutyPercent = clamp(dutyPercent, 10, 90);
+    var spacingM = 1 / (density * 1000);
+    return { density: density, dutyPercent: dutyPercent, spacingM: spacingM, openingM: spacingM * dutyPercent / 100 };
+  }
+  function _opticsWavefieldIntensity(tab, state, lateralM, distanceM) {
+    var lambdaValue = tab === 'interference' ? state.intLambda : state.diffLambda;
+    var lambda = +(lambdaValue != null ? lambdaValue : 600) * 1e-9;
+    var theta = Math.atan2(lateralM, Math.max(.02, distanceM));
+    if (tab === 'interference') {
+      return doubleSlitIntensity((state.intSlitWidth || 50) * 1e-6, (state.intSlitSep || .1) * 1e-3, lambda, theta, 1);
+    }
+    if ((state.diffMode || 'single') === 'single') {
+      return singleSlitIntensity((state.diffSlitWidth || 30) * 1e-6, lambda, theta, 1);
+    }
+    var aperture = _opticsGratingGeometry(state);
+    var alpha = Math.PI * aperture.spacingM * Math.sin(theta) / lambda;
+    var N = 50;
+    var grating = Math.abs(Math.sin(alpha)) < 1e-9 ? 1 : Math.pow(Math.sin(N * alpha) / (N * Math.sin(alpha)), 2);
+    return singleSlitIntensity(aperture.openingM, lambda, theta, 1) * grating;
+  }
+  function _opticsWaveProject(camera, W, H, depth, lateral, amplitude) {
+    if (camera === 'side') return { x: 40 + depth * (W - 78), y: H * .58 + lateral * 32 - amplitude * 72 };
+    if (camera === 'normal') return { x: W * .5 + lateral * W * .38, y: H * .78 - amplitude * 112 - depth * 13 };
+    return { x: 48 + depth * W * .68 + lateral * W * .13, y: H * .76 + lateral * H * .25 - depth * H * .18 - amplitude * 62 };
+  }
+  function _opticsWavefieldRows(tab, state, camera, W, H, range, distance, motion, probeDepth, h) {
+    var rows = [], longitudinal = [];
+    var sampleCount = tab === 'diffraction' && (state.diffMode || 'single') === 'grating' ? 120 : 40;
+    for (var row = 1; row <= 10; row++) {
+      var depth = row / 10;
+      var isScreen = row === 10;
+      var isProbe = Math.abs(depth - probeDepth) < 0.001;
+      var rowPoints = [];
+      for (var sample = 0; sample <= sampleCount; sample++) {
+        var lateral = -1 + 2 * sample / sampleCount;
+        var intensity = _opticsWavefieldIntensity(tab, state, lateral * range, distance * depth);
+        var point = _opticsWaveProject(camera, W, H, depth, lateral, clamp(intensity, 0, 1));
+        rowPoints.push(point.x.toFixed(1) + ',' + point.y.toFixed(1));
+      }
+      rows.push(h('polyline', {
+        key: 'row-' + row, points: rowPoints.join(' '), fill: 'none',
+        stroke: isScreen ? OP_RAY.output : (isProbe ? OP_RAY.incident : '#38bdf8'),
+        strokeWidth: isScreen || isProbe ? 2.7 : 1.15,
+        opacity: isProbe ? .95 : (.28 + row * .055), strokeDasharray: isScreen || isProbe ? '0' : '7 5',
+        'data-op-wavefield-probe': isProbe ? 'true' : undefined,
+        className: motion && !isScreen && !isProbe ? 'opticslab-wavefield-flow op-anim' : undefined,
+        style: { animationDelay: (-row * .13) + 's' }
+      }));
+    }
+    [-1, -.5, 0, .5, 1].forEach(function(lateral, index) {
+      var points = [];
+      for (var step = 1; step <= 10; step++) {
+        var depth = step / 10;
+        var intensity = _opticsWavefieldIntensity(tab, state, lateral * range, distance * depth);
+        var point = _opticsWaveProject(camera, W, H, depth, lateral, clamp(intensity, 0, 1));
+        points.push(point.x.toFixed(1) + ',' + point.y.toFixed(1));
+      }
+      longitudinal.push(h('polyline', { key: 'long-' + index, points: points.join(' '), fill: 'none', stroke: '#64748b', strokeWidth: 1, opacity: .35 }));
+    });
+    return { rows: rows, longitudinal: longitudinal };
+  }
+  function _renderOpticsWavefieldScene(tab, state, camera, W, H, range, distance, motion, probeDepth, h) {
+    var mesh = _opticsWavefieldRows(tab, state, camera, W, H, range, distance, motion, probeDepth, h);
+    var baseLeft = _opticsWaveProject(camera, W, H, .05, -1, 0);
+    var baseRight = _opticsWaveProject(camera, W, H, .05, 1, 0);
+    var screenLeft = _opticsWaveProject(camera, W, H, 1, -1, 0);
+    var screenRight = _opticsWaveProject(camera, W, H, 1, 1, 0);
+    var peak = _opticsWaveProject(camera, W, H, 1, 0, 1);
+    var lambdaNm = tab === 'interference' ? (state.intLambda || 600) : (state.diffLambda || 600);
+    var apertureMode = tab === 'interference' ? 'double' : ((state.diffMode || 'single') === 'single' ? 'single' : 'grating');
+    var gratingGeometry = apertureMode === 'grating' ? _opticsGratingGeometry(state) : null;
+    var apertureLabel = apertureMode === 'double' ? 'two slits' : (apertureMode === 'single' ? 'single slit' : 'grating · ' + gratingGeometry.dutyPercent.toFixed(0) + '% open');
+    var detectorRaw = tab === 'interference' ? state.intScreenProbeMm : state.diffScreenProbeMm;
+    var detectorMm = detectorRaw == null || !isFinite(+detectorRaw) ? 0 : +detectorRaw;
+    var detectorLateral = detectorMm * 1e-3 / range;
+    var detectorOnSurface = Math.abs(detectorLateral) <= 1.0001;
+    var detectorIntensity = clamp(_opticsWavefieldIntensity(tab, state, detectorMm * 1e-3, distance), 0, 1);
+    var detectorDigits = tab === 'interference' ? 1 : 0;
+    var detectorValueLabel = (detectorMm > 0 ? '+' : '') + detectorMm.toFixed(detectorDigits) + ' mm';
+    var probePercent = Math.round(probeDepth * 100);
+    var sceneLabel = 'Interactive three-dimensional ' + tab + ' intensity surface at wavelength ' + lambdaNm
+      + ' nanometers through ' + apertureLabel + '. Ten cross-sections show the wavefield developing from the aperture to the screen. The probe is at ' + probePercent
+      + ' percent depth. Height directly encodes normalized intensity I over I zero. The final cyan ridge is the same screen slice shown in the two-dimensional plot. The linked detector is at ' + detectorValueLabel
+      + ' with ' + (detectorIntensity * 100).toFixed(1) + ' percent relative intensity' + (detectorOnSurface ? '.' : ', outside the current three-dimensional crop.');
+    var probeLabel = _opticsWaveProject(camera, W, H, probeDepth, -1, 0);
+    var detectorBase = detectorOnSurface ? _opticsWaveProject(camera, W, H, 1, detectorLateral, 0) : null;
+    var detectorPoint = detectorOnSurface ? _opticsWaveProject(camera, W, H, 1, detectorLateral, detectorIntensity) : null;
+    var apertureMarks = [];
+    function addApertureMark(center, halfWidth, key) {
+      var markA = _opticsWaveProject(camera, W, H, .05, center - halfWidth, 0);
+      var markB = _opticsWaveProject(camera, W, H, .05, center + halfWidth, 0);
+      apertureMarks.push(h('line', {
+        key: key, x1: markA.x, y1: markA.y, x2: markB.x, y2: markB.y,
+        stroke: OP_RAY.incident, strokeWidth: 5, strokeLinecap: 'round'
+      }));
+    }
+    if (apertureMode === 'double') {
+      addApertureMark(-.18, .035, 'double-a');
+      addApertureMark(.18, .035, 'double-b');
+    } else if (apertureMode === 'single') {
+      addApertureMark(0, .15, 'single');
+    } else {
+      var visibleOpenings = 9;
+      var visualPeriod = 1.7 / (visibleOpenings - 1);
+      var visualHalfOpening = visualPeriod * (gratingGeometry.dutyPercent / 100) * .42;
+      for (var openingIndex = 0; openingIndex < visibleOpenings; openingIndex++) {
+        addApertureMark(-.85 + openingIndex * visualPeriod, visualHalfOpening, 'grating-' + openingIndex);
+      }
+    }
+    return h('svg', {
+      viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': sceneLabel,
+      'data-op-wavefield-3d': tab, 'data-op-wavefield-height': 'relative-intensity'
+    },
+      h('title', null, sceneLabel),
+      h('desc', null, 'Height represents relative intensity. Depth runs from the slit plane to the screen; lateral position runs across the pattern. The amber ridge marks the adjustable probe slice, and the white screen marker shows the linked detector measurement.'),
+      h('polygon', {
+        points: [baseLeft.x + ',' + baseLeft.y, baseRight.x + ',' + baseRight.y, screenRight.x + ',' + screenRight.y, screenLeft.x + ',' + screenLeft.y].join(' '),
+        fill: 'rgba(14,165,233,.035)', stroke: '#334155', strokeWidth: 1
+      }),
+      mesh.longitudinal,
+      mesh.rows,
+      h('line', { x1: baseLeft.x, y1: baseLeft.y, x2: baseRight.x, y2: baseRight.y, stroke: '#94a3b8', strokeWidth: 4 }),
+      h('g', {
+        'data-op-wavefield-aperture': apertureMode,
+        'data-op-grating-opening-count': apertureMode === 'grating' ? apertureMarks.length : undefined,
+        'aria-hidden': 'true'
+      }, apertureMarks),
+      h('line', { x1: screenLeft.x, y1: screenLeft.y, x2: peak.x, y2: peak.y, stroke: OP_RAY.output, strokeWidth: 1.5, opacity: .6 }),
+      h('line', { x1: screenRight.x, y1: screenRight.y, x2: peak.x, y2: peak.y, stroke: OP_RAY.output, strokeWidth: 1.5, opacity: .6 }),
+      h('g', {
+        'data-op-wavefield-detector': tab,
+        'data-op-detector-mm': detectorMm.toFixed(3),
+        'data-op-detector-intensity': detectorIntensity.toFixed(4),
+        'data-op-detector-visible': detectorOnSurface ? 'true' : 'false',
+        'aria-hidden': 'true'
+      }, detectorOnSurface && [
+        h('line', {
+          key: 'detector-height', x1: detectorBase.x, y1: detectorBase.y, x2: detectorPoint.x, y2: detectorPoint.y,
+          stroke: '#f8fafc', strokeWidth: 1.2, strokeDasharray: '2 2', opacity: .86
+        }),
+        h('circle', { key: 'detector-ring', cx: detectorPoint.x, cy: detectorPoint.y, r: 5, fill: '#020617', stroke: '#f8fafc', strokeWidth: 1.7 }),
+        h('circle', { key: 'detector-core', cx: detectorPoint.x, cy: detectorPoint.y, r: 2.4, fill: OP_RAY.output, opacity: .35 + detectorIntensity * .65 }),
+        h('text', {
+          key: 'detector-label', x: clamp(detectorPoint.x + 8, 8, W - 108), y: clamp(detectorPoint.y - 8, 14, H - 18),
+          fill: '#f8fafc', stroke: '#07111f', strokeWidth: 2.5, paintOrder: 'stroke', fontSize: 10, fontWeight: 700
+        }, 'detector ' + detectorValueLabel + ' / ' + (detectorIntensity * 100).toFixed(1) + '%')
+      ]),
+      h('text', { x: Math.max(10, baseLeft.x - 4), y: Math.max(14, baseLeft.y - 8), fill: '#fbbf24', fontSize: 11 }, apertureLabel),
+      probeDepth < 1 && h('text', { x: clamp(probeLabel.x - 6, 8, W - 72), y: clamp(probeLabel.y - 8, 14, H - 18), fill: OP_RAY.incident, fontSize: 11, fontWeight: 700 }, 'probe ' + probePercent + '%'),
+      h('text', { x: Math.min(W - 52, screenRight.x - 20), y: Math.min(H - 8, screenRight.y + 18), fill: '#67e8f9', fontSize: 11, fontWeight: 700 }, 'screen slice'),
+      h('text', { x: W / 2, y: H - 7, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, 'depth: aperture to screen - height = I / I₀ (0 to 1)')
+    );
+  }
+  function _renderOpticsWavefield3D(tab, state, upd, h) {
+    var showKey = tab === 'interference' ? 'intShowWavefield3D' : 'diffShowWavefield3D';
+    var probeKey = tab === 'interference' ? 'intWavefieldProbe' : 'diffWavefieldProbe';
+    var show = !!state[showKey];
+    var camera = state.opWavefieldCamera || 'oblique';
+    var motion = state.opMotionEnabled !== false;
+    var probeDepth = clamp(state[probeKey] == null ? 1 : +state[probeKey], 0.1, 1);
+    var W = _opticsDiagramWidth(state), H = 248;
+    var lambdaNm = tab === 'interference' ? (state.intLambda || 600) : (state.diffLambda || 600);
+    var distance = tab === 'interference' ? (state.intScreenL || 1) : (state.diffScreenL || 1.5);
+    var characteristic;
+    var rangeMultiplier = 3.2;
+    if (tab === 'interference') characteristic = lambdaNm * 1e-9 * distance / ((state.intSlitSep || .1) * 1e-3);
+    else if ((state.diffMode || 'single') === 'single') characteristic = lambdaNm * 1e-9 * distance / ((state.diffSlitWidth || 30) * 1e-6);
+    else {
+      var gratingGeometry = _opticsGratingGeometry(state);
+      var firstOrderSin = lambdaNm * 1e-9 / gratingGeometry.spacingM;
+      characteristic = firstOrderSin < 1 ? distance * Math.tan(Math.asin(firstOrderSin)) : distance * .35;
+      rangeMultiplier = 1.3;
+    }
+    var range = Math.max(.012, characteristic * rangeMultiplier);
+    function setCamera(view) { upd('opWavefieldCamera', view); }
+    return h('div', { className: 'opticslab-wavefield' },
+      h('div', { className: 'opticslab-wavefield-head' },
+        h('label', { className: 'opticslab-wavefield-title' },
+          h('input', {
+            type: 'checkbox', checked: show, 'data-op-focusable': 'true',
+            onChange: function(event) { var patch = {}; patch[showKey] = event.target.checked; upd(patch); },
+            'aria-label': 'Show the three-dimensional ' + tab + ' wavefield surface'
+          }),
+          ' 3D wavefield surface'
+        ),
+        h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10 } }, 'Synced to the live controls')
+      ),
+      show && _renderOptics3DToolbar({
+        id: 'wavefield', label: tab + ' wavefield controls', camera: camera,
+        onCamera: setCamera, onReset: function() { setCamera('oblique'); },
+        motion: motion, onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
+      }, h),
+      show && h('label', { className: 'opticslab-wavefield-probe' },
+        h('span', null, h('strong', null, 'Depth probe '), Math.round(probeDepth * 100) + '%'),
+        h('input', {
+          type: 'range', min: 0.1, max: 1, step: 0.1, value: probeDepth,
+          'data-op-focusable': 'true', 'data-op-wavefield-depth': tab,
+          onChange: function(event) { var patch = {}; patch[probeKey] = parseFloat(event.target.value); upd(patch); },
+          'aria-label': tab + ' wavefield depth probe',
+          'aria-valuetext': Math.round(probeDepth * 100) + ' percent from the aperture' + (probeDepth === 1 ? ', at the screen' : '')
+        })
+      ),
+      show && _renderOpticsWavefieldScene(tab, state, camera, W, H, range, distance, motion, probeDepth, h),
+      show && h('p', { style: { margin: '6px 0 0', color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10, lineHeight: 1.45 } },
+        (probeDepth < 1 ? 'The amber ridge is the live probe slice. ' : 'The probe is on the final screen slice. ')
+          + 'The cyan screen ridge stays synchronized with the two-dimensional pattern above.'
+      )
+    );
+  }
+
+  // ---
   // INTERFERENCE SIM — Young's double-slit
   // λ in nm; d (slit separation) in mm; L (slit-to-screen) in m.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderInterferenceSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var lambdaNm = state.intLambda != null ? state.intLambda : 600;     // nm
     var d_mm = state.intSlitSep != null ? state.intSlitSep : 0.10;       // mm
@@ -2417,16 +4923,26 @@
     // Render: barrier on left half, screen on right half, intensity strip on screen
     // Layout: barrier at x = pad.l + 60, screen at x = W - pad.r - 30
     var barX = pad.l + 70;
-    var screenX = W - pad.r - 14;
-    var midY = (H - pad.b + pad.t) / 2;
+    // Keep a stable physical screen scale while d, a, and L reshape the
+    // apparatus. Auto-scaling from the current fringe spacing made visibly
+    // different setups look deceptively identical.
+    var screenMinX = barX + 104;
+    var screenMaxX = W - pad.r - 14;
+    var screenX = _scale(0.2, 3.0, screenMinX, screenMaxX)(clamp(L_m, 0.2, 3.0));
+    var screenTop = pad.t + 20, screenBot = H - pad.b - 6;
+    var screenHeight = screenBot - screenTop;
+    // The source, slit pair, physical ruler, and y = 0 detector mark must
+    // share one optical axis. Previously the screen center sat 7 px lower.
+    var midY = (screenTop + screenBot) / 2;
     // Slit positions on barrier (above & below center, at half slit-separation each)
-    var slitOffsetPx = 18;
+    var slitOffsetPx = _scale(0.02, 0.50, 8, 42)(clamp(d_mm, 0.02, 0.50));
+    var slitHeightPx = _scale(10, 200, 2, 11)(clamp(slitWidth_um, 10, 200));
     var slitTopY = midY - slitOffsetPx;
     var slitBotY = midY + slitOffsetPx;
     // Build intensity envelope on the screen
-    // y in meters on the actual physical screen; we map a window of ±5 fringe spacings
-    var screenWindow_m = 6 * fringeSpacing_m;
-    var nSamples = 60;
+    // y in meters on the actual physical screen; the view spans a fixed ±30 mm.
+    var screenWindow_m = 0.060;
+    var nSamples = 160;
     var intensitySamples = [];
     var I0 = 1.0;
     for (var s = 0; s < nSamples; s++) {
@@ -2436,8 +4952,73 @@
       intensitySamples.push(I);
     }
     // Map intensity to bar height/opacity along the screen
-    var screenTop = pad.t + 20, screenBot = H - pad.b - 6;
-    var screenHeight = screenBot - screenTop;
+    var detectorHalfMm = screenWindow_m * 500;
+    var detectorMm = clamp(state.intScreenProbeMm == null ? 0 : +state.intScreenProbeMm, -detectorHalfMm, detectorHalfMm);
+    var detectorY = midY - (detectorMm / detectorHalfMm) * (screenHeight / 2);
+    var detectorIntensity = clamp(_opticsWavefieldIntensity('interference', state, detectorMm * 1e-3, L), 0, 1);
+    var detectorTheta = Math.atan2(detectorMm * 1e-3, L);
+    var detectorFringeFactor = Math.pow(Math.cos(Math.PI * d * Math.sin(detectorTheta) / lambda), 2);
+    var detectorClass = detectorFringeFactor >= .72 ? 'bright fringe' : (detectorFringeFactor <= .08 ? 'dark fringe' : 'between fringes');
+    var interferenceDetectorTargets = [
+      { id: 'center', label: 'Center', value: 0, ariaLabel: 'Measure the central bright fringe at zero millimeters' }
+    ];
+    var firstDarkSin = lambda / (2 * d);
+    if (firstDarkSin <= 1) {
+      var firstDarkMm = L * Math.tan(Math.asin(firstDarkSin)) * 1000;
+      if (firstDarkMm <= detectorHalfMm) interferenceDetectorTargets.push({
+        id: 'dark-half', label: 'Dark +½', value: firstDarkMm,
+        ariaLabel: 'Measure the first dark fringe at plus ' + firstDarkMm.toFixed(2) + ' millimeters'
+      });
+    }
+    var firstBrightSin = lambda / d;
+    if (firstBrightSin <= 1) {
+      var firstBrightMm = L * Math.tan(Math.asin(firstBrightSin)) * 1000;
+      if (firstBrightMm <= detectorHalfMm) interferenceDetectorTargets.push({
+        id: 'bright-1', label: 'Bright +1', value: firstBrightMm,
+        ariaLabel: 'Measure the first-order bright fringe at plus ' + firstBrightMm.toFixed(2) + ' millimeters'
+      });
+    }
+    function updateInterferenceDrag(event) {
+      var drag = opticsDirectDrag.current;
+      if (!drag || drag.bench !== 'interference') return;
+      var point = _opticsSvgPoint(event, W, H);
+      if (!point) return;
+      if (drag.kind === 'slit-separation') {
+        var nextSep = _scale(8, 42, 0.02, 0.50)(clamp(Math.abs(point.y - midY), 8, 42));
+        upd('intSlitSep', Math.round(nextSep * 100) / 100);
+      } else if (drag.kind === 'screen-distance') {
+        var nextDistance = _scale(screenMinX, screenMaxX, 0.2, 3.0)(clamp(point.x, screenMinX, screenMaxX));
+        upd('intScreenL', Math.round(nextDistance * 10) / 10);
+      } else if (drag.kind === 'screen-detector') {
+        var nextDetector = _scale(screenTop, screenBot, detectorHalfMm, -detectorHalfMm)(clamp(point.y, screenTop, screenBot));
+        upd('intScreenProbeMm', Math.round(nextDetector * 2) / 2);
+      }
+    }
+    function startInterferenceDrag(kind, event) {
+      opticsDirectDrag.current = { bench: 'interference', kind: kind };
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch (err) {}
+      updateInterferenceDrag(event);
+    }
+    function stopInterferenceDrag() {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.bench === 'interference') opticsDirectDrag.current = null;
+    }
+    function adjustInterferenceValue(kind, event) {
+      var key = event.key;
+      if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End' && key !== '0') return;
+      event.preventDefault();
+      var positive = key === 'ArrowUp' || key === 'ArrowRight';
+      if (kind === 'slit-separation') {
+        var nextSep = key === 'Home' ? 0.02 : (key === 'End' ? 0.50 : d_mm + (positive ? 0.01 : -0.01) * (event.shiftKey ? 5 : 1));
+        upd('intSlitSep', Math.round(clamp(nextSep, 0.02, 0.50) * 100) / 100);
+      } else if (kind === 'screen-distance') {
+        var nextDistance = key === 'Home' ? 0.2 : (key === 'End' ? 3.0 : L_m + (positive ? 0.1 : -0.1) * (event.shiftKey ? 5 : 1));
+        upd('intScreenL', Math.round(clamp(nextDistance, 0.2, 3.0) * 10) / 10);
+      } else {
+        var nextDetector = key === '0' ? 0 : (key === 'Home' ? -detectorHalfMm : (key === 'End' ? detectorHalfMm
+          : detectorMm + (positive ? 0.5 : -0.5) * (event.shiftKey ? 10 : 1)));
+        upd('intScreenProbeMm', Math.round(clamp(nextDetector, -detectorHalfMm, detectorHalfMm) * 2) / 2);
+      }
+    }
     return h('div', null,
       // Sliders
       h('div', { className: 'opticslab-control-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 190px), 1fr))', gap: 8, marginBottom: 10 } },
@@ -2446,6 +5027,7 @@
           h('input', {
             type: 'range', min: 380, max: 750, step: 5,
             value: lambdaNm,
+            'data-op-variable': 'intLambda',
             onChange: function(e) { upd('intLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Wavelength',
             'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
@@ -2458,6 +5040,7 @@
           h('input', {
             type: 'range', min: 0.02, max: 0.50, step: 0.01,
             value: d_mm,
+            'data-op-variable': 'intSlitSep',
             onChange: function(e) { upd('intSlitSep', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit separation',
             'aria-valuetext': d_mm.toFixed(2) + ' millimeters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
@@ -2470,6 +5053,7 @@
           h('input', {
             type: 'range', min: 0.2, max: 3.0, step: 0.1,
             value: L_m,
+            'data-op-variable': 'intScreenL',
             onChange: function(e) { upd('intScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Screen distance',
             'aria-valuetext': L_m.toFixed(1) + ' meters; fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' millimeters.',
@@ -2482,6 +5066,7 @@
           h('input', {
             type: 'range', min: 10, max: 200, step: 5,
             value: slitWidth_um,
+            'data-op-variable': 'intSlitWidth',
             onChange: function(e) { upd('intSlitWidth', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit width',
             'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; the single-slit envelope shapes the fringe intensity.',
@@ -2492,7 +5077,8 @@
       ),
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
+        className: 'opticslab-core-svg',
+        role: 'group', 'aria-roledescription': 'interactive interference bench',
         'aria-label': "Young's double-slit interference. Wavelength " + lambdaNm + ' nm, slit separation ' + d_mm + ' mm, screen ' + L_m + ' m. Fringe spacing ' + fringeSpacing_mm.toFixed(2) + ' mm.',
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
       },
@@ -2503,8 +5089,17 @@
         h('line', { x1: pad.l + 12, y1: midY, x2: barX, y2: midY, stroke: color, strokeWidth: 2, opacity: 0.55, style: { filter: 'drop-shadow(0 0 4px ' + color + ')' } }),
         // Barrier — opaque with two slits
         h('rect', { x: barX, y: pad.t, width: 6, height: H - pad.b - pad.t, fill: '#475569' }),
-        h('rect', { x: barX, y: slitTopY - 1, width: 6, height: 3, fill: '#000' }),
-        h('rect', { x: barX, y: slitBotY - 1, width: 6, height: 3, fill: '#000' }),
+        h('rect', { x: barX, y: slitTopY - slitHeightPx / 2, width: 6, height: slitHeightPx, fill: '#000' }),
+        h('rect', { x: barX, y: slitBotY - slitHeightPx / 2, width: 6, height: slitHeightPx, fill: '#000' }),
+        h('circle', {
+          cx: barX + 3, cy: slitTopY, r: 9, fill: 'rgba(251,191,36,.14)', stroke: OP_RAY.incident, strokeWidth: 1.5,
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'slit-separation', 'data-op-variable': 'intSlitSep',
+          'aria-label': 'Drag to change slit separation', 'aria-valuemin': 0.02, 'aria-valuemax': 0.50, 'aria-valuenow': d_mm,
+          'aria-valuetext': d_mm.toFixed(2) + ' millimeters',
+          onPointerDown: function(event) { startInterferenceDrag('slit-separation', event); }, onPointerMove: updateInterferenceDrag,
+          onPointerUp: stopInterferenceDrag, onPointerCancel: stopInterferenceDrag,
+          onKeyDown: function(event) { adjustInterferenceValue('slit-separation', event); }
+        }),
         h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'barrier'),
         // Live wavefronts: animated expanding circles from each slit, clipped
         // to the right of the barrier so they look like wavefronts emerging
@@ -2513,10 +5108,10 @@
         // students can see the constructive/destructive zones forming live.
         (function() {
           var defs = h('defs', { key: 'wf-defs' },
-            h('clipPath', { id: 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length) },
+            h('clipPath', { id: 'optics-int-wave-clip' },
               h('rect', { x: barX + 6, y: pad.t, width: screenX - barX - 6, height: H - pad.t - pad.b })
             ),
-            h('filter', { id: 'opt-soft-glow' },
+            h('filter', { id: 'optics-int-soft-glow' },
               h('feGaussianBlur', { stdDeviation: '1.4', result: 'g' }),
               h('feMerge', null,
                 h('feMergeNode', { in: 'g' }),
@@ -2524,20 +5119,20 @@
               )
             )
           );
-          var clipId = 'opt-int-clip-' + Math.abs((d_mm + L_m).toString().length);
+          var clipId = 'optics-int-wave-clip';
           var rings = [];
           ['', 'opticslab-wavefront-2', 'opticslab-wavefront-3'].forEach(function(extraCls, ki) {
             rings.push(h('circle', {
               key: 'wt' + ki, cx: barX + 6, cy: slitTopY, r: 4,
               fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
-              filter: 'url(#opt-soft-glow)',
+              filter: 'url(#optics-int-soft-glow)',
               className: 'opticslab-wavefront ' + extraCls,
               clipPath: 'url(#' + clipId + ')'
             }));
             rings.push(h('circle', {
               key: 'wb' + ki, cx: barX + 6, cy: slitBotY, r: 4,
               fill: 'none', stroke: color, strokeWidth: 1.2, opacity: 0.7,
-              filter: 'url(#opt-soft-glow)',
+              filter: 'url(#optics-int-soft-glow)',
               className: 'opticslab-wavefront ' + extraCls,
               clipPath: 'url(#' + clipId + ')'
             }));
@@ -2566,6 +5161,15 @@
         h('rect', { x: screenX - 10, y: screenTop - 4, width: 28, height: screenHeight + 8, fill: color, opacity: 0.08, rx: 12, style: { filter: 'blur(7px)' } }),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
+        h('circle', {
+          cx: screenX + 4, cy: screenBot + 7, r: 7, fill: OP_RAY.output, stroke: '#e0f2fe', strokeWidth: 1.5,
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'screen-distance', 'data-op-variable': 'intScreenL',
+          'aria-label': 'Drag to change screen distance', 'aria-valuemin': 0.2, 'aria-valuemax': 3.0, 'aria-valuenow': L_m,
+          'aria-valuetext': L_m.toFixed(1) + ' meters',
+          onPointerDown: function(event) { startInterferenceDrag('screen-distance', event); }, onPointerMove: updateInterferenceDrag,
+          onPointerUp: stopInterferenceDrag, onPointerCancel: stopInterferenceDrag,
+          onKeyDown: function(event) { adjustInterferenceValue('screen-distance', event); }
+        }),
         // Intensity bars on the screen (one per sample, mapped to screen y range)
         intensitySamples.map(function(I, si) {
           var yPx = screenTop + screenHeight * (si / (nSamples - 1));
@@ -2598,12 +5202,35 @@
             })
           );
         })(),
+        h('g', { 'data-op-screen-ruler': 'interference', 'aria-hidden': 'true' },
+          [-1, -.5, 0, .5, 1].map(function(mark) {
+            var rulerY = midY - mark * screenHeight / 2;
+            return h('line', { key: mark, x1: screenX + 8, y1: rulerY, x2: screenX + (mark === 0 ? 16 : 13), y2: rulerY, stroke: '#94a3b8', strokeWidth: mark === 0 ? 1.5 : 1, opacity: .8 });
+          })
+        ),
+        h('g', {
+          className: 'opticslab-screen-detector', role: 'slider', tabIndex: 0,
+          'data-op-focusable': 'true', 'data-op-direct-handle': 'screen-detector', 'data-op-screen-detector': 'interference',
+          'aria-label': 'Interference screen detector position', 'aria-valuemin': -detectorHalfMm, 'aria-valuemax': detectorHalfMm, 'aria-valuenow': detectorMm,
+          'aria-valuetext': detectorMm.toFixed(1) + ' millimeters; relative intensity ' + (detectorIntensity * 100).toFixed(1) + ' percent; ' + detectorClass,
+          'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End 0',
+          onPointerDown: function(event) { startInterferenceDrag('screen-detector', event); }, onPointerMove: updateInterferenceDrag,
+          onPointerUp: stopInterferenceDrag, onPointerCancel: stopInterferenceDrag,
+          onKeyDown: function(event) { adjustInterferenceValue('screen-detector', event); }
+        },
+          h('line', { x1: screenX - 18, y1: detectorY, x2: screenX + 18, y2: detectorY, stroke: '#f8fafc', strokeWidth: 1, strokeDasharray: '3 2', opacity: .9 }),
+          h('circle', { className: 'opticslab-screen-detector-ring', cx: screenX + 4, cy: detectorY, r: 7, fill: '#020617', stroke: '#f8fafc', strokeWidth: 1.8 }),
+          h('circle', { cx: screenX + 4, cy: detectorY, r: 3.5, fill: color, opacity: .25 + detectorIntensity * .75 })
+        ),
         h('text', { x: screenX + 4, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'screen'),
         // Fringe-spacing annotation: vertical bracket between two adjacent maxima
         (function() {
           // Two adjacent bright fringes are at Δy_pixels = (fringeSpacing_m / screenWindow_m) * screenHeight
           var frPx = (fringeSpacing_m / screenWindow_m) * screenHeight;
           if (!isFinite(frPx) || frPx < 4) return null;
+          if (frPx > screenHeight / 2 - 4) {
+            return h('text', { x: screenX - 10, y: screenTop + 12, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' }, 'next fringe off-screen');
+          }
           var y1 = screenTop + screenHeight / 2 - frPx;
           var y2 = screenTop + screenHeight / 2;
           var bx = screenX - 26;
@@ -2614,17 +5241,39 @@
             h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' }, 'y = ' + fringeSpacing_mm.toFixed(2) + ' mm')
           );
         })(),
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, "y = mλL/d  •  yellow bracket = one fringe spacing")
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'fixed 60 mm screen window  •  drag setup handles or the white detector')
       ),
+      h('div', {
+        className: 'opticslab-screen-probe-readout', role: 'note', 'aria-live': 'polite', 'aria-atomic': 'true',
+        'aria-label': 'Interference screen detector reading', 'data-op-screen-probe-readout': 'interference'
+      },
+        h('strong', null, 'Screen detector'),
+        h('output', null,
+          'y = ' + (detectorMm > 0 ? '+' : '') + detectorMm.toFixed(1) + ' mm',
+          h('span', { 'aria-hidden': 'true' }, '•'),
+          'I / I₀ = ' + (detectorIntensity * 100).toFixed(1) + '%',
+          h('span', { className: 'opticslab-screen-probe-class' }, detectorClass)
+        ),
+        h('span', null, 'scale: −' + detectorHalfMm.toFixed(0) + ' to +' + detectorHalfMm.toFixed(0) + ' mm')
+      ),
+      _renderOpticsDetectorTargets({
+        tab: 'interference', value: detectorMm, tolerance: .04, targets: interferenceDetectorTargets,
+        onSelect: function(value) { upd('intScreenProbeMm', clamp(value, -detectorHalfMm, detectorHalfMm)); }
+      }, h),
+      _renderOpticsIntensityProfile({
+        tab: 'interference', width: W, values: intensitySamples, halfRangeMm: detectorHalfMm,
+        detectorMm: detectorMm, detectorIntensity: detectorIntensity, detectorDigits: 1, axisDigits: 0, color: color
+      }, h),
       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
         'Bright fringes form where path lengths from the two slits differ by an integer number of wavelengths (constructive). Try shrinking d to widen the fringes; try a single slit (close one) to see the diffraction envelope alone.'
-      )
+      ),
+      _renderOpticsWavefield3D('interference', state, upd, h)
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // INTERFERENCE CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderInterferenceCalc(state, upd, h) {
     var lambdaNm = state.intLambda != null ? state.intLambda : 600;
     var d_mm = state.intSlitSep != null ? state.intSlitSep : 0.10;
@@ -2683,11 +5332,11 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // DIFFRACTION SIM — single-slit OR diffraction grating
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderDiffractionSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var mode = state.diffMode || 'single';   // 'single' | 'grating'
     var lambdaNm = state.diffLambda != null ? state.diffLambda : 600;
@@ -2695,13 +5344,22 @@
     var L_m = state.diffScreenL != null ? state.diffScreenL : 1.5;
     var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;     // lines/mm
     var lambda = lambdaNm * 1e-9;
-    var a = slitWidth_um * 1e-6;
-    var dGrating = (1 / (grooveDensity * 1000));   // m (line spacing)
+    var gratingGeometry = _opticsGratingGeometry(state);
+    var gratingDuty = gratingGeometry.dutyPercent;
+    var dGrating = gratingGeometry.spacingM;
+    // A grating opening must be narrower than its period. Grating mode uses a
+    // dimensionless open fraction; the micrometer slit-width control belongs
+    // only to the single-slit apparatus.
+    var a = mode === 'single' ? slitWidth_um * 1e-6 : gratingGeometry.openingM;
     var color = wavelengthToRGB(lambdaNm);
     // First-min position single slit:  y₁ ≈ λL/a
     var firstMin_m = singleSlitFirstMin(lambda, L_m, a);
-    var screenWindow_m = mode === 'single' ? 6 * firstMin_m : 0.4;  // ±0.2 m for grating
-    var nSamples = 80;
+    // Fixed physical windows make changes in spread visible instead of
+    // silently zooming the pattern back to the same apparent width.
+    var screenWindow_m = mode === 'single' ? 0.18 : 1.0;
+    // Grating orders are much narrower than a single-slit lobe. Sample them
+    // densely enough that the physical-scale screen cannot skip a real peak.
+    var nSamples = mode === 'single' ? 180 : 520;
     var I0 = 1.0;
     var samples = [];
     for (var s = 0; s < nSamples; s++) {
@@ -2713,7 +5371,7 @@
       } else {
         // Grating: high-finesse maxima at d sin(theta) = m lambda.
         var alpha = Math.PI * dGrating * Math.sin(theta) / lambda;
-        // Finite slit width supplies the single-slit envelope around those orders.
+        // The physically valid opening width supplies the single-slit envelope.
         var Nslits = 50;
         var num = Math.sin(Nslits * alpha);
         var den = Math.sin(alpha);
@@ -2722,16 +5380,112 @@
       }
       samples.push({ y: yPhys, I: I });
     }
-    var screenX = W - pad.r - 14;
     var screenTop = pad.t + 14, screenBot = H - pad.b - 6;
     var screenHeight = screenBot - screenTop;
     var midY = (screenTop + screenBot) / 2;
     var barX = pad.l + 70;
+    var screenMinX = barX + 104;
+    var screenMaxX = W - pad.r - 14;
+    var screenX = _scale(0.3, 3.0, screenMinX, screenMaxX)(clamp(L_m, 0.3, 3.0));
+    var slitHeightPx = _scale(5, 100, 2, 14)(clamp(slitWidth_um, 5, 100));
+    var visualGratingCount = Math.round(_scale(200, 1500, 5, 13)(clamp(grooveDensity, 200, 1500)));
+    var visualGratingSpacing = _scale(200, 1500, 10, 3.5)(clamp(grooveDensity, 200, 1500));
+    var visualGratingOpening = clamp(visualGratingSpacing * gratingDuty / 100, .8, Math.max(.8, visualGratingSpacing - .5));
+    var detectorHalfMm = screenWindow_m * 500;
+    var detectorMm = clamp(state.diffScreenProbeMm == null ? 0 : +state.diffScreenProbeMm, -detectorHalfMm, detectorHalfMm);
+    var detectorY = midY - (detectorMm / detectorHalfMm) * (screenHeight / 2);
+    var detectorIntensity = clamp(_opticsWavefieldIntensity('diffraction', state, detectorMm * 1e-3, L_m), 0, 1);
+    var detectorTheta = Math.atan2(detectorMm * 1e-3, L_m);
+    var detectorAlpha = Math.PI * dGrating * Math.sin(detectorTheta) / lambda;
+    var detectorGratingFactor = Math.abs(Math.sin(detectorAlpha)) < 1e-9 ? 1 : Math.pow(Math.sin(50 * detectorAlpha) / (50 * Math.sin(detectorAlpha)), 2);
+    var detectorOrderValue = dGrating * Math.sin(detectorTheta) / lambda;
+    var detectorNearestOrder = Math.round(detectorOrderValue);
+    var detectorClass = mode === 'single'
+      ? (detectorIntensity <= .04 ? 'dark minimum' : (Math.abs(detectorMm) < firstMin_m * 1000 ? 'central maximum' : 'side lobe'))
+      : (detectorGratingFactor >= .5 ? 'resolved order m = ' + (detectorNearestOrder > 0 ? '+' : '') + detectorNearestOrder : (detectorGratingFactor <= .03 ? 'dark region' : 'between orders'));
+    var visibleGratingOrders = [];
+    if (mode === 'grating') {
+      for (var orderIndex = -3; orderIndex <= 3; orderIndex++) {
+        var orderSin = orderIndex * lambda / dGrating;
+        if (Math.abs(orderSin) > 1) continue;
+        var orderMm = L_m * Math.tan(Math.asin(orderSin)) * 1000;
+        if (Math.abs(orderMm) <= detectorHalfMm) visibleGratingOrders.push({ order: orderIndex, mm: orderMm });
+      }
+    }
+    var diffractionDetectorTargets = [
+      { id: 'center', label: 'Center', value: 0, ariaLabel: 'Measure the central maximum at zero millimeters' }
+    ];
+    if (mode === 'single') {
+      var exactFirstMinSin = lambda / a;
+      if (exactFirstMinSin <= 1) {
+        var exactFirstMinMm = L_m * Math.tan(Math.asin(exactFirstMinSin)) * 1000;
+        if (exactFirstMinMm <= detectorHalfMm) diffractionDetectorTargets.push({
+          id: 'minimum-1', label: 'First minimum', value: exactFirstMinMm,
+          ariaLabel: 'Measure the first diffraction minimum at plus ' + exactFirstMinMm.toFixed(2) + ' millimeters'
+        });
+      }
+    } else {
+      for (var targetMagnitude = 1; targetMagnitude <= 3; targetMagnitude++) {
+        [-targetMagnitude, targetMagnitude].forEach(function(targetOrder) {
+          var targetEntry = visibleGratingOrders.find(function(entry) { return entry.order === targetOrder; });
+          if (!targetEntry) return;
+          diffractionDetectorTargets.push({
+            id: 'order-' + targetOrder, label: 'm=' + (targetOrder > 0 ? '+' : '') + targetOrder, value: targetEntry.mm,
+            ariaLabel: 'Measure grating order m equals ' + (targetOrder > 0 ? 'plus ' : 'minus ') + Math.abs(targetOrder)
+              + ' at ' + (targetEntry.mm > 0 ? 'plus ' : 'minus ') + Math.abs(targetEntry.mm).toFixed(1) + ' millimeters'
+          });
+        });
+      }
+    }
+    function updateDiffractionDrag(event) {
+      var drag = opticsDirectDrag.current;
+      if (!drag || drag.bench !== 'diffraction') return;
+      var point = _opticsSvgPoint(event, W, H);
+      if (!point) return;
+      if (drag.kind === 'slit-width' && mode === 'single') {
+        var halfHeight = clamp(Math.abs(point.y - midY), 1, 7);
+        var nextWidth = _scale(1, 7, 5, 100)(halfHeight);
+        upd('diffSlitWidth', Math.round(nextWidth));
+      } else if (drag.kind === 'screen-distance') {
+        var nextDistance = _scale(screenMinX, screenMaxX, 0.3, 3.0)(clamp(point.x, screenMinX, screenMaxX));
+        upd('diffScreenL', Math.round(nextDistance * 10) / 10);
+      } else if (drag.kind === 'screen-detector') {
+        var nextDetector = _scale(screenTop, screenBot, detectorHalfMm, -detectorHalfMm)(clamp(point.y, screenTop, screenBot));
+        var detectorStep = mode === 'single' ? 1 : 5;
+        upd('diffScreenProbeMm', Math.round(nextDetector / detectorStep) * detectorStep);
+      }
+    }
+    function startDiffractionDrag(kind, event) {
+      opticsDirectDrag.current = { bench: 'diffraction', kind: kind };
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch (err) {}
+      updateDiffractionDrag(event);
+    }
+    function stopDiffractionDrag() {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.bench === 'diffraction') opticsDirectDrag.current = null;
+    }
+    function adjustDiffractionValue(kind, event) {
+      var key = event.key;
+      if (key !== 'ArrowUp' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'Home' && key !== 'End' && key !== '0') return;
+      event.preventDefault();
+      var positive = key === 'ArrowUp' || key === 'ArrowRight';
+      if (kind === 'slit-width') {
+        var nextWidth = key === 'Home' ? 5 : (key === 'End' ? 100 : slitWidth_um + (positive ? 1 : -1) * (event.shiftKey ? 5 : 1));
+        upd('diffSlitWidth', Math.round(clamp(nextWidth, 5, 100)));
+      } else if (kind === 'screen-distance') {
+        var nextDistance = key === 'Home' ? 0.3 : (key === 'End' ? 3.0 : L_m + (positive ? 0.1 : -0.1) * (event.shiftKey ? 5 : 1));
+        upd('diffScreenL', Math.round(clamp(nextDistance, 0.3, 3.0) * 10) / 10);
+      } else {
+        var detectorStep = mode === 'single' ? 1 : 5;
+        var nextDetector = key === '0' ? 0 : (key === 'Home' ? -detectorHalfMm : (key === 'End' ? detectorHalfMm
+          : detectorMm + (positive ? detectorStep : -detectorStep) * (event.shiftKey ? 5 : 1)));
+        upd('diffScreenProbeMm', Math.round(clamp(nextDetector, -detectorHalfMm, detectorHalfMm) / detectorStep) * detectorStep);
+      }
+    }
     return h('div', null,
       h('div', { role: 'note', style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(148,163,184,0.08)', border: '1px solid rgba(148,163,184,0.22)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } },
         mode === 'single'
-          ? 'Schematic view: the screen is auto-scaled to keep several fringes visible; the numeric first-minimum readout carries the physical scale.'
-          : 'Schematic view: the pattern is normalized for visibility. This idealized model uses 50 interfering slits with a finite single-slit envelope; the calculator reports physical order angles.'
+          ? 'Physical-scale view: the screen shows a fixed 180 mm window, so narrowing the slit visibly spreads the central maximum.'
+          : 'Physical-scale view: the fixed 1000 mm screen reveals the classic 1 m setup\'s first-order peaks. The 50-slit model uses a physical opening fraction, so every opening stays narrower than its groove spacing.'
       ),
       // Mode toggle + sliders
       h('div', { style: { display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center', flexWrap: 'wrap' } },
@@ -2740,7 +5494,7 @@
             var sel = mode === m;
             return h('button', {
               key: m, role: 'tab', 'aria-selected': sel, tabIndex: sel ? 0 : -1,
-              'data-op-focusable': 'true', 'data-op-tab-value': m,
+              'data-op-focusable': 'true', 'data-op-tab-value': m, 'data-op-variable': 'diffMode',
               onClick: function() { upd('diffMode', m); },
               onKeyDown: function(e) { opTabKeyDown(e, function(value) { upd('diffMode', value); }); },
               style: {
@@ -2759,6 +5513,7 @@
           'λ (nm):',
           h('input', {
             type: 'range', min: 380, max: 750, step: 5, value: lambdaNm,
+            'data-op-variable': 'diffLambda',
             onChange: function(e) { upd('diffLambda', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Wavelength',
             'aria-valuetext': lambdaNm.toFixed(0) + ' nanometers; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating mode is active.'),
@@ -2766,15 +5521,14 @@
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, lambdaNm.toFixed(0))
         ),
-        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+        mode === 'single' && h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'a (μm):',
           h('input', {
             type: 'range', min: 5, max: 100, step: 1, value: slitWidth_um,
+            'data-op-variable': 'diffSlitWidth',
             onChange: function(e) { upd('diffSlitWidth', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Slit width',
-            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; ' + (mode === 'single'
-              ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.'
-              : 'finite single-slit envelope shapes each grating order.'),
+            'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers; first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.',
             style: { flex: 1 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, slitWidth_um.toFixed(0))
@@ -2783,6 +5537,7 @@
           'lines/mm:',
           h('input', {
             type: 'range', min: 200, max: 1500, step: 50, value: grooveDensity,
+            'data-op-variable': 'diffGrating',
             onChange: function(e) { upd('diffGrating', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Grating line density',
             'aria-valuetext': grooveDensity.toFixed(0) + ' lines per millimeter; line spacing ' + (dGrating * 1e6).toFixed(2) + ' micrometers.',
@@ -2790,10 +5545,23 @@
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 40, textAlign: 'right' } }, grooveDensity.toFixed(0))
         ),
+        mode === 'grating' && h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+          'open %:',
+          h('input', {
+            type: 'range', min: 10, max: 90, step: 5, value: gratingDuty,
+            'data-op-variable': 'diffGratingDuty',
+            onChange: function(e) { upd('diffGratingDuty', parseFloat(e.target.value)); },
+            'data-op-focusable': 'true', 'aria-label': 'Grating open fraction',
+            'aria-valuetext': gratingDuty.toFixed(0) + ' percent open; opening width ' + (gratingGeometry.openingM * 1e6).toFixed(2) + ' micrometers; the opening envelope controls relative order brightness.',
+            style: { flex: 1 }
+          }),
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 40, textAlign: 'right' } }, gratingDuty.toFixed(0) + '%')
+        ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           'L (m):',
           h('input', {
             type: 'range', min: 0.3, max: 3.0, step: 0.1, value: L_m,
+            'data-op-variable': 'diffScreenL',
             onChange: function(e) { upd('diffScreenL', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'Screen distance',
             'aria-valuetext': L_m.toFixed(1) + ' meters; ' + (mode === 'single' ? 'first minimum at ' + (firstMin_m * 1000).toFixed(2) + ' millimeters.' : 'grating orders are measured on the screen.'),
@@ -2804,8 +5572,11 @@
       ),
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
-        'aria-label': 'Diffraction pattern: ' + mode + ' at λ=' + lambdaNm + ' nm.',
+        className: 'opticslab-core-svg',
+        role: 'group', 'aria-roledescription': 'interactive diffraction bench',
+        'aria-label': 'Diffraction pattern: ' + mode + ' at λ=' + lambdaNm + ' nm.' + (mode === 'grating'
+          ? ' ' + grooveDensity.toFixed(0) + ' lines per millimeter, ' + gratingDuty.toFixed(0) + ' percent open; ' + visibleGratingOrders.length + ' labeled orders are on screen.'
+          : ''),
         style: { background: '#000', borderRadius: 8, maxWidth: 460 }
       },
         // Source
@@ -2815,28 +5586,59 @@
         h('rect', { x: barX, y: pad.t, width: 6, height: H - pad.b - pad.t, fill: '#475569' }),
         // Slit(s)
         mode === 'single'
-          ? h('rect', { x: barX, y: midY - 2, width: 6, height: 4, fill: '#000' })
+          ? h('g', null,
+              h('rect', { x: barX, y: midY - slitHeightPx / 2, width: 6, height: slitHeightPx, fill: '#000' }),
+              h('circle', {
+                cx: barX + 3, cy: midY - slitHeightPx / 2, r: 8, fill: 'rgba(251,191,36,.14)', stroke: OP_RAY.incident, strokeWidth: 1.5,
+                role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'slit-width', 'data-op-variable': 'diffSlitWidth',
+                'aria-label': 'Drag to change slit width', 'aria-valuemin': 5, 'aria-valuemax': 100, 'aria-valuenow': slitWidth_um,
+                'aria-valuetext': slitWidth_um.toFixed(0) + ' micrometers',
+                onPointerDown: function(event) { startDiffractionDrag('slit-width', event); }, onPointerMove: updateDiffractionDrag,
+                onPointerUp: stopDiffractionDrag, onPointerCancel: stopDiffractionDrag,
+                onKeyDown: function(event) { adjustDiffractionValue('slit-width', event); }
+              })
+            )
           : (function() {
-              // Draw 5-7 evenly spaced slits within the central window
-              var nSlits = 6;
-              var spacing = 6;
-              var start = midY - (nSlits / 2) * spacing;
+              // More lines per millimeter are shown as more, tighter openings.
+              var nSlits = visualGratingCount;
+              var spacing = visualGratingSpacing;
+              var start = midY - ((nSlits - 1) / 2) * spacing;
               var rects = [];
               for (var k = 0; k < nSlits; k++) {
-                rects.push(h('rect', { key: 'gs' + k, x: barX, y: start + k * spacing - 1, width: 6, height: 2, fill: '#000' }));
+                rects.push(h('rect', { key: 'gs' + k, x: barX, y: start + k * spacing - visualGratingOpening / 2, width: 6, height: visualGratingOpening, fill: '#000' }));
               }
-              return rects;
+              return h('g', {
+                'data-op-grating-aperture': 'true', 'data-op-grating-duty': gratingDuty,
+                'data-op-grating-visible-openings': nSlits, 'aria-hidden': 'true'
+              }, rects);
             })(),
         // Diffracted rays — sample a few spreading from slit
         (function() {
           var rays = [];
           var slitX = barX + 6;
+          // Grating guides land on physical orders; the single-slit fan stays schematic.
+          if (mode === 'grating') {
+            visibleGratingOrders.forEach(function(entry) {
+              var orderTheta = Math.asin(entry.order * lambda / dGrating);
+              var orderEnvelope = clamp(singleSlitIntensity(a, lambda, orderTheta, 1), 0, 1);
+              var orderY = midY - (entry.mm / detectorHalfMm) * (screenHeight / 2);
+              rays.push(h('line', {
+                key: 'order-ray-' + entry.order, x1: slitX, y1: midY, x2: screenX, y2: orderY,
+                stroke: color, strokeWidth: .7 + orderEnvelope * .8, opacity: .14 + orderEnvelope * .28,
+                'data-op-diffraction-order-ray': entry.order
+              }));
+            });
+            return rays;
+          }
           for (var k = -3; k <= 3; k++) {
-            if (k === 0) continue;
             var theta = k * 0.18;
             var endX = screenX;
             var endY = midY + (endX - slitX) * Math.tan(theta);
-            rays.push(h('line', { key: 'rr' + k, x1: slitX, y1: midY, x2: endX, y2: endY, stroke: color, strokeWidth: 0.6, opacity: 0.18 }));
+            rays.push(h('line', {
+              key: 'rr' + k, x1: slitX, y1: midY, x2: endX, y2: endY,
+              stroke: color, strokeWidth: k === 0 ? .9 : .6, opacity: k === 0 ? .28 : .18,
+              'data-op-diffraction-guide-ray': k
+            }));
           }
           return rays;
         })(),
@@ -2849,14 +5651,14 @@
         // don't leak backward through the source side.
         (function() {
           var slitX = barX + 6;
-          var clipId = 'opt-diff-clip-' + Math.abs((slitWidth_um + L_m * 100).toString().length);
+          var clipId = 'optics-diff-wave-clip';
           var nodes = [];
           // SVG defs: clip path + soft glow filter
           nodes.push(h('defs', { key: 'diff-defs' },
             h('clipPath', { id: clipId },
               h('rect', { x: slitX, y: pad.t, width: screenX - slitX, height: H - pad.t - pad.b })
             ),
-            h('filter', { id: 'opt-diff-glow' },
+            h('filter', { id: 'optics-diff-soft-glow' },
               h('feGaussianBlur', { stdDeviation: '1.2', result: 'g' }),
               h('feMerge', null,
                 h('feMergeNode', { in: 'g' }),
@@ -2869,9 +5671,9 @@
           if (mode === 'single') {
             origins = [midY];
           } else {
-            var nSlits = 6;
-            var spacing = 6;
-            var startY = midY - (nSlits / 2) * spacing;
+            var nSlits = visualGratingCount;
+            var spacing = visualGratingSpacing;
+            var startY = midY - ((nSlits - 1) / 2) * spacing;
             origins = [];
             for (var k = 0; k < nSlits; k++) origins.push(startY + k * spacing);
           }
@@ -2883,7 +5685,7 @@
                 cx: slitX, cy: oy, r: 4,
                 fill: 'none', stroke: color, strokeWidth: mode === 'single' ? 1.2 : 0.7,
                 opacity: mode === 'single' ? 0.7 : 0.45,
-                filter: 'url(#opt-diff-glow)',
+                filter: 'url(#optics-diff-soft-glow)',
                 className: 'opticslab-wavefront ' + extraCls,
                 clipPath: 'url(#' + clipId + ')'
               }));
@@ -2893,6 +5695,15 @@
         })(),
         // Screen
         h('rect', { x: screenX, y: screenTop, width: 8, height: screenHeight, fill: '#1e293b', stroke: '#475569', strokeWidth: 1 }),
+        h('circle', {
+          cx: screenX + 4, cy: screenBot + 7, r: 7, fill: OP_RAY.output, stroke: '#e0f2fe', strokeWidth: 1.5,
+          role: 'slider', tabIndex: 0, 'data-op-focusable': 'true', 'data-op-direct-handle': 'screen-distance', 'data-op-variable': 'diffScreenL',
+          'aria-label': 'Drag to change screen distance', 'aria-valuemin': 0.3, 'aria-valuemax': 3.0, 'aria-valuenow': L_m,
+          'aria-valuetext': L_m.toFixed(1) + ' meters',
+          onPointerDown: function(event) { startDiffractionDrag('screen-distance', event); }, onPointerMove: updateDiffractionDrag,
+          onPointerUp: stopDiffractionDrag, onPointerCancel: stopDiffractionDrag,
+          onKeyDown: function(event) { adjustDiffractionValue('screen-distance', event); }
+        }),
         // Intensity samples
         samples.map(function(samp, si) {
           var yPx = screenTop + screenHeight * (si / (nSamples - 1));
@@ -2903,10 +5714,29 @@
             fill: color, opacity: alpha
           });
         }),
+        h('g', { 'data-op-screen-ruler': 'diffraction', 'aria-hidden': 'true' },
+          [-1, -.5, 0, .5, 1].map(function(mark) {
+            var rulerY = midY - mark * screenHeight / 2;
+            return h('line', { key: mark, x1: screenX + 8, y1: rulerY, x2: screenX + (mark === 0 ? 16 : 13), y2: rulerY, stroke: '#94a3b8', strokeWidth: mark === 0 ? 1.5 : 1, opacity: .8 });
+          })
+        ),
+        mode === 'grating' && h('g', { 'data-op-grating-orders': visibleGratingOrders.length, 'aria-hidden': 'true' },
+          visibleGratingOrders.map(function(entry) {
+            var orderY = midY - (entry.mm / detectorHalfMm) * (screenHeight / 2);
+            var orderLabel = 'm=' + (entry.order > 0 ? '+' : '') + entry.order;
+            return h('g', { key: entry.order, 'data-op-grating-order': entry.order },
+              h('line', { x1: screenX - 8, y1: orderY, x2: screenX, y2: orderY, stroke: '#fbbf24', strokeWidth: 1.4 }),
+              h('text', { x: screenX - 11, y: orderY + 3, fill: '#fbbf24', fontSize: 9, textAnchor: 'end', fontWeight: 700 }, orderLabel)
+            );
+          })
+        ),
         // First-minimum bracket (single slit only)
         mode === 'single' && (function() {
           var firstMinPx = (firstMin_m / screenWindow_m) * screenHeight;
           if (!isFinite(firstMinPx) || firstMinPx < 4) return null;
+          if (firstMinPx > screenHeight / 2 - 4) {
+            return h('text', { x: screenX - 10, y: screenTop + 12, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' }, 'first minimum off-screen');
+          }
           var y1 = midY - firstMinPx;
           var y2 = midY;
           var bx = screenX - 28;
@@ -2917,21 +5747,57 @@
             h('text', { x: bx - 6, y: (y1 + y2) / 2 + 3, fill: '#fbbf24', fontSize: 9, textAnchor: 'end' }, 'y₁ = ' + (firstMin_m * 1000).toFixed(2) + ' mm')
           );
         })(),
+        h('g', {
+          className: 'opticslab-screen-detector', role: 'slider', tabIndex: 0,
+          'data-op-focusable': 'true', 'data-op-direct-handle': 'screen-detector', 'data-op-screen-detector': 'diffraction',
+          'aria-label': 'Diffraction screen detector position', 'aria-valuemin': -detectorHalfMm, 'aria-valuemax': detectorHalfMm, 'aria-valuenow': detectorMm,
+          'aria-valuetext': detectorMm.toFixed(0) + ' millimeters; relative intensity ' + (detectorIntensity * 100).toFixed(1) + ' percent; ' + detectorClass,
+          'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End 0',
+          onPointerDown: function(event) { startDiffractionDrag('screen-detector', event); }, onPointerMove: updateDiffractionDrag,
+          onPointerUp: stopDiffractionDrag, onPointerCancel: stopDiffractionDrag,
+          onKeyDown: function(event) { adjustDiffractionValue('screen-detector', event); }
+        },
+          h('line', { x1: screenX - 18, y1: detectorY, x2: screenX + 18, y2: detectorY, stroke: '#f8fafc', strokeWidth: 1, strokeDasharray: '3 2', opacity: .9 }),
+          h('circle', { className: 'opticslab-screen-detector-ring', cx: screenX + 4, cy: detectorY, r: 7, fill: '#020617', stroke: '#f8fafc', strokeWidth: 1.8 }),
+          h('circle', { cx: screenX + 4, cy: detectorY, r: 3.5, fill: color, opacity: .25 + detectorIntensity * .75 })
+        ),
         h('text', { x: barX + 3, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, mode === 'single' ? 'one slit' : 'grating'),
         h('text', { x: screenX + 4, y: pad.t + 10, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'screen'),
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, mode === 'single' ? 'a sinθ = mλ → first min at λL/a' : 'd sinθ = mλ → sharp peaks per order')
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, mode === 'single' ? 'fixed 180 mm window • drag setup handles or the white detector' : 'fixed 1000 mm window • density sets spacing; open % shapes brightness')
       ),
+      h('div', {
+        className: 'opticslab-screen-probe-readout', role: 'note', 'aria-live': 'polite', 'aria-atomic': 'true',
+        'aria-label': 'Diffraction screen detector reading', 'data-op-screen-probe-readout': 'diffraction'
+      },
+        h('strong', null, 'Screen detector'),
+        h('output', null,
+          'y = ' + (detectorMm > 0 ? '+' : '') + detectorMm.toFixed(0) + ' mm',
+          h('span', { 'aria-hidden': 'true' }, '•'),
+          'I / I₀ = ' + (detectorIntensity * 100).toFixed(1) + '%',
+          h('span', { className: 'opticslab-screen-probe-class' }, detectorClass)
+        ),
+        h('span', null, 'scale: −' + detectorHalfMm.toFixed(0) + ' to +' + detectorHalfMm.toFixed(0) + ' mm')
+      ),
+      _renderOpticsDetectorTargets({
+        tab: 'diffraction', value: detectorMm, tolerance: mode === 'grating' ? 1 : .06, targets: diffractionDetectorTargets,
+        onSelect: function(value) { upd('diffScreenProbeMm', clamp(value, -detectorHalfMm, detectorHalfMm)); }
+      }, h),
+      _renderOpticsIntensityProfile({
+        tab: 'diffraction', width: W, values: samples.map(function(sample) { return sample.I; }), halfRangeMm: detectorHalfMm,
+        detectorMm: detectorMm, detectorIntensity: detectorIntensity, detectorDigits: 0, axisDigits: 0, color: color
+      }, h),
       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
         mode === 'single'
           ? 'Single-slit diffraction: sinc² envelope with central max at θ=0 and first minimum where a sinθ = λ.'
-          : 'Diffraction grating: many slits → narrow peaks per order m; the finite slit envelope controls their relative brightness. Higher line density spreads the peaks farther apart.'
-      )
+          : 'Diffraction grating: line density sets order positions; the physical open fraction shapes their envelope and relative brightness. Higher line density spreads the orders farther apart.'
+      ),
+      _renderOpticsWavefield3D('diffraction', state, upd, h)
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // DIFFRACTION CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderDiffractionCalc(state, upd, h) {
     var mode = state.diffMode || 'single';
     var lambdaNm = state.diffLambda != null ? state.diffLambda : 600;
@@ -2950,12 +5816,13 @@
       rows.push(['Central max width (2y₁)', _fmt(firstMin_m * 2000, 3) + ' mm']);
       rows.push(['Angle to first min', _fmt(radToDeg(Math.asin(clamp(lambda / a, -1, 1))), 3) + '°']);
     } else {
-      var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
-      var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;
-      var dGrating = 1 / (grooveDensity * 1000);
-      rows.push(['Slit width (envelope)', slitWidth_um.toFixed(0) + ' um']);
+      var gratingGeometry = _opticsGratingGeometry(state);
+      var grooveDensity = gratingGeometry.density;
+      var dGrating = gratingGeometry.spacingM;
       rows.push(['Lines/mm', grooveDensity.toFixed(0)]);
       rows.push(['d (groove spacing)', _fmt(dGrating * 1000, 5) + ' mm']);
+      rows.push(['Open fraction', gratingGeometry.dutyPercent.toFixed(0) + '%']);
+      rows.push(['a (opening width)', _fmt(gratingGeometry.openingM * 1e6, 3) + ' um']);
       // Angles for orders m=1,2,3
       [1, 2, 3].forEach(function(m) {
         var sinT = m * lambda / dGrating;
@@ -3009,12 +5876,13 @@
               '     = ' + _fmt(firstMin_m * 1000, 3) + ' mm'
             ].join('\n');
           } else {
-            var slitWidth_um = state.diffSlitWidth != null ? state.diffSlitWidth : 30;
-            var grooveDensity = state.diffGrating != null ? state.diffGrating : 600;
-            var dGrating = 1 / (grooveDensity * 1000);
+            var gratingGeometry = _opticsGratingGeometry(state);
+            var grooveDensity = gratingGeometry.density;
+            var dGrating = gratingGeometry.spacingM;
             return [
-              '  Slit width a = ' + slitWidth_um.toFixed(0) + ' um',
-              '  The finite single-slit envelope controls relative order brightness.',
+              '  Open fraction = ' + gratingGeometry.dutyPercent.toFixed(0) + '%',
+              '  Opening a = duty × d = ' + _fmt(gratingGeometry.openingM * 1e6, 3) + ' um',
+              '  The physical opening envelope controls relative order brightness.',
               '',
               'Diffraction grating:  d sin θ = m λ',
               '',
@@ -3033,12 +5901,12 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // POLARIZATION SIM — unpolarized → P1 (axis 0°) → P2 (rotatable) → optional P3
   // Malus: I = I₀ cos²(Δθ between consecutive polarizer axes).
   // After unpolarized light through ONE polarizer: I drops to I₀/2.
-  // ──────────────────────────────────────────────────────────────────
-  // ──────────────────────────────────────────────────────────────────
+  // ---
+  // ---
   // 3D polarization viewer
   //
   // The E field of a light wave lives in the two-dimensional plane transverse
@@ -3056,7 +5924,7 @@
   // Giving the transverse plane its own two axes also makes Malus's law
   // visible as what it actually is — a projection of a vector onto an axis,
   // squared — rather than a cos^2 to be memorised.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var OP_BEAM_LEN = 19;          // world units along the beam
   var OP_WAVE_SEGS = 240;        // samples along the tip locus
   var OP_COMB_EVERY = 8;         // draw a field vector every Nth sample
@@ -3429,7 +6297,7 @@
   if (typeof window !== 'undefined') window.__alloOpticsGL = OpticsGL;
 
   function _renderPolarizationSim(state, upd, h) {
-    var W = 460, H = 280;
+    var W = _opticsDiagramWidth(state), H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;   // degrees, axis of P2
     var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;   // degrees, axis of P3
@@ -3450,9 +6318,37 @@
     // After P2 the light is linear again, along P2's axis, so P3 is Malus as usual.
     var afterP3 = useP3 ? malus(afterP2, degToRad(theta3 - theta2)) : null;
     // Layout: three vertical polarizer disks across the width
-    var disk1X = 110, disk2X = useP3 ? 230 : 290, disk3X = 350;
+    var disk1X = W * .23, disk2X = useP3 ? W * .50 : W * .63, disk3X = W * .78;
     var midY = (pad.t + H - pad.b) / 2;
     var diskR = 36;
+    function setPolarizerAxisFromPointer(key, cx, event) {
+      var point = _opticsSvgPoint(event, W, H);
+      if (!point) return;
+      var degrees = radToDeg(Math.atan2(point.y - midY, point.x - cx)) - 90;
+      degrees = ((degrees % 180) + 180) % 180;
+      upd(key, Math.round(degrees));
+    }
+    function startPolarizerDrag(key, cx, event) {
+      opticsDirectDrag.current = { kind: 'polarization', key: key, cx: cx };
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch (e) {}
+      setPolarizerAxisFromPointer(key, cx, event);
+    }
+    function movePolarizerDrag(event) {
+      var drag = opticsDirectDrag.current;
+      if (!drag || drag.kind !== 'polarization') return;
+      setPolarizerAxisFromPointer(drag.key, drag.cx, event);
+    }
+    function endPolarizerDrag(event) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'polarization') opticsDirectDrag.current = null;
+      try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (e) {}
+    }
+    function keyPolarizerAxis(key, value, event) {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight' && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      event.preventDefault();
+      var step = event.shiftKey ? 1 : 5;
+      var increase = event.key === 'ArrowRight' || event.key === 'ArrowUp';
+      upd(key, clamp(value + (increase ? step : -step), 0, 180));
+    }
     function polarizerDisk(cx, axisDeg, label, intensity, isClickable) {
       // Bars indicating axis
       var nBars = 8;
@@ -3466,7 +6362,22 @@
         var y2 = midY + Math.sin(degToRad(axisDeg - 90)) * (diskR - 4) + bxOff * Math.sin(degToRad(axisDeg));
         bars.push(h('line', { key: 'b' + k, x1: x1, y1: y1, x2: x2, y2: y2, stroke: '#475569', strokeWidth: 0.6, opacity: 0.35 }));
       }
-      return h('g', null,
+      return h('g', {
+        role: isClickable ? 'slider' : undefined, tabIndex: isClickable ? 0 : undefined,
+        'data-op-focusable': isClickable ? 'true' : undefined,
+        'data-op-variable': isClickable || undefined,
+        'aria-label': isClickable ? label + ' polarizer axis' : undefined,
+        'aria-valuemin': isClickable ? 0 : undefined, 'aria-valuemax': isClickable ? 180 : undefined,
+        'aria-valuenow': isClickable ? axisDeg : undefined,
+        'aria-valuetext': isClickable ? axisDeg.toFixed(0) + ' degrees. Drag the disk or use arrow keys to rotate.' : undefined,
+        onPointerDown: isClickable ? function(event) { startPolarizerDrag(isClickable, cx, event); } : undefined,
+        onPointerMove: isClickable ? movePolarizerDrag : undefined,
+        onPointerUp: isClickable ? endPolarizerDrag : undefined,
+        onPointerCancel: isClickable ? endPolarizerDrag : undefined,
+        onKeyDown: isClickable ? function(event) { keyPolarizerAxis(isClickable, axisDeg, event); } : undefined,
+        style: isClickable ? { cursor: 'grab', touchAction: 'none' } : undefined
+      },
+        isClickable && h('circle', { cx: cx, cy: midY, r: diskR + 8, fill: 'transparent', stroke: 'transparent' }),
         h('circle', { cx: cx, cy: midY, r: diskR, fill: 'rgba(99,102,241,0.10)', stroke: '#7dd3fc', strokeWidth: 2 }),
         bars,
         // Axis line (yellow)
@@ -3489,7 +6400,33 @@
     try {
       reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     } catch (e) {}
-    var animate = state.polAnimate !== false && !reduceMotion;
+    var animate = state.polAnimate !== false && state.opMotionEnabled !== false && !reduceMotion;
+    var polCamera = state.polCamera || 'oblique';
+    var polCameraPresets = {
+      side: { rotY: 0, rotX: 0 },
+      oblique: { rotY: 34, rotX: 23 },
+      normal: { rotY: 90, rotX: 0 }
+    };
+    var polRot = state.polRot || polCameraPresets[polCamera] || polCameraPresets.oblique;
+    var polZoom = state.polZoom || 1;
+    function setPolCamera(view) {
+      upd({ polCamera: view, polRot: polCameraPresets[view], polZoom: 1 });
+    }
+    function resetPolView() {
+      upd({ polCamera: 'oblique', polRot: polCameraPresets.oblique, polZoom: 1 });
+    }
+    function keyPolView(event) {
+      var key = event.key;
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', '_', '0'].indexOf(key) === -1) return;
+      event.preventDefault();
+      if (key === '0') { resetPolView(); return; }
+      if (key === '+' || key === '=') { upd({ polCamera: 'custom', polZoom: Math.min(3, polZoom * 1.12) }); return; }
+      if (key === '-' || key === '_') { upd({ polCamera: 'custom', polZoom: Math.max(.5, polZoom * .89) }); return; }
+      upd({ polCamera: 'custom', polRot: {
+        rotY: polRot.rotY + (key === 'ArrowLeft' ? -4 : key === 'ArrowRight' ? 4 : 0),
+        rotX: clamp(polRot.rotX + (key === 'ArrowUp' ? -4 : key === 'ArrowDown' ? 4 : 0), -80, 80)
+      } });
+    }
     var segs = [
       { unpolarized: true, amp: 1.55, deg: 0, tag: 'unpol' },
       { deg: 0, amp: 1.55 * Math.sqrt(afterP1 / 0.5), color: 0xfacc15, tag: 'p1' }
@@ -3512,9 +6449,9 @@
             afterP3 == null ? 'x' : afterP3.toFixed(4)].join('|'),
       segments: segs, discs: discs, mode: useQwp ? 'circular' : 'linear',
       animate: animate, wavelength: 4.4,
-      rotY: state.polRot ? state.polRot.rotY : 34,
-      rotX: state.polRot ? state.polRot.rotX : 23,
-      zoom: state.polZoom || 1
+      rotY: polRot.rotY,
+      rotX: polRot.rotX,
+      zoom: polZoom
     });
 
     var glAlt = 'Three-dimensional view along the beam. '
@@ -3529,7 +6466,17 @@
       + (useP3 ? ' P3 at ' + theta3.toFixed(0) + ' degrees projects once more.' : '');
 
     var gl3d = h('div', { style: { marginBottom: 10 } },
+      _renderOptics3DToolbar({
+        id: 'polarization', label: 'Polarization three-dimensional scene controls', camera: polCamera,
+        onCamera: setPolCamera, onReset: resetPolView,
+        motion: state.opMotionEnabled !== false,
+        onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
+      }, h),
       h('div', {
+        role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
+        'aria-label': 'Interactive three-dimensional polarization scene',
+        'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
+        onKeyDown: keyPolView,
         style: {
           position: 'relative', height: 260, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
           background: 'var(--allo-stem-deeper, #0b1220)', border: '1px solid var(--allo-stem-border, #334155)'
@@ -3544,22 +6491,22 @@
           style: { position: 'absolute', inset: 0 },
           onPointerDown: function (ev) {
             opticsDrag.current = { x: ev.clientX, y: ev.clientY,
-              rotY: state.polRot ? state.polRot.rotY : 34, rotX: state.polRot ? state.polRot.rotX : 23 };
+              rotY: polRot.rotY, rotX: polRot.rotX };
             try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
           },
           onPointerMove: function (ev) {
             var g = opticsDrag.current;
             if (!g) return;
-            upd('polRot', {
+            upd({ polCamera: 'custom', polRot: {
               rotY: g.rotY + (ev.clientX - g.x) * 0.5,
               rotX: Math.max(-80, Math.min(80, g.rotX + (ev.clientY - g.y) * 0.35))
-            });
+            } });
           },
           onPointerUp: function () { opticsDrag.current = null; },
           onPointerCancel: function () { opticsDrag.current = null; },
           onWheel: function (ev) {
             ev.preventDefault();
-            upd('polZoom', Math.max(0.5, Math.min(3, (state.polZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+            upd({ polCamera: 'custom', polZoom: Math.max(0.5, Math.min(3, polZoom * (ev.deltaY < 0 ? 1.12 : 0.89))) });
           }
         }),
         !glLive ? h('div', {
@@ -3590,6 +6537,7 @@
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           h('input', {
             type: 'checkbox', checked: useQwp,
+            'data-op-variable': 'polQwp',
             onChange: function (e) { upd('polQwp', e.target.checked); },
             'data-op-focusable': 'true', 'aria-label': 'Insert a quarter-wave plate after P1 to make the light circularly polarized'
           }),
@@ -3597,11 +6545,11 @@
         ),
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
           h('input', {
-            type: 'checkbox', checked: animate, disabled: reduceMotion,
+            type: 'checkbox', checked: state.polAnimate !== false, disabled: reduceMotion,
             onChange: function (e) { upd('polAnimate', e.target.checked); },
             'data-op-focusable': 'true', 'aria-label': 'Animate the travelling wave'
           }),
-          reduceMotion ? 'Animation off (system setting)' : 'Animate the wave'
+          reduceMotion ? 'Animation off (system setting)' : (state.opMotionEnabled === false ? 'Animate wave (global motion paused)' : 'Animate the wave')
         )
       ),
       useQwp ? h('p', {
@@ -3619,6 +6567,7 @@
           h('input', {
             type: 'range', min: 0, max: 180, step: 1,
             value: theta2,
+            'data-op-variable': 'polTheta2',
             onChange: function(e) { upd('polTheta2', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'P2 polarizer axis',
             'aria-valuetext': theta2.toFixed(0) + ' degrees; transmitted intensity after P2 ' + (afterP2 * 100).toFixed(1) + ' percent of I0.',
@@ -3630,6 +6579,7 @@
           h('input', {
             type: 'checkbox',
             checked: useP3,
+            'data-op-variable': 'polUseP3',
             onChange: function(e) { upd('polUseP3', e.target.checked); },
             'data-op-focusable': 'true', 'aria-label': 'Add third polarizer'
           }),
@@ -3640,6 +6590,7 @@
           h('input', {
             type: 'range', min: 0, max: 180, step: 1,
             value: theta3,
+            'data-op-variable': 'polTheta3',
             onChange: function(e) { upd('polTheta3', parseFloat(e.target.value)); },
             'data-op-focusable': 'true', 'aria-label': 'P3 polarizer axis',
             'aria-valuetext': theta3.toFixed(0) + ' degrees; final intensity ' + (afterP3 * 100).toFixed(1) + ' percent of I0.',
@@ -3650,7 +6601,8 @@
       ),
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-        role: 'img',
+        className: 'opticslab-core-svg',
+        role: 'group',
         'aria-label': 'Polarizer chain. P1 axis 0°, P2 axis ' + theta2 + '°' + (useP3 ? ', P3 axis ' + theta3 + '°' : '') + '. Final intensity ' + ((useP3 ? afterP3 : afterP2) * 100).toFixed(1) + '% of I₀.',
         style: { background: 'var(--allo-stem-deeper, #0b1220)', borderRadius: 8, maxWidth: 460 }
       },
@@ -3707,7 +6659,7 @@
           }
           return pts;
         })(),
-        polarizerDisk(disk2X, theta2, 'P₂', afterP2),
+        polarizerDisk(disk2X, theta2, 'P₂', afterP2, 'polTheta2'),
         useP3 ? [
           h('rect', { key: 'beam23', x: disk2X + diskR, y: midY - 6, width: disk3X - diskR - (disk2X + diskR), height: 12, fill: '#fef3c7', opacity: afterP2 * 0.6 + 0.05 }),
           // After P2 (axis = theta2)
@@ -3731,7 +6683,7 @@
             }
             return pts;
           })(),
-          polarizerDisk(disk3X, theta3, 'P₃', afterP3),
+          polarizerDisk(disk3X, theta3, 'P₃', afterP3, 'polTheta3'),
           h('rect', { key: 'beamout', x: disk3X + diskR, y: midY - 6, width: W - pad.r - (disk3X + diskR), height: 12, fill: '#fef3c7', opacity: afterP3 * 0.6 + 0.05 }),
           // After P3 (axis = theta3)
           (function() {
@@ -3787,14 +6739,14 @@
         h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, "yellow line in each disk = polarizer's transmission axis")
       ),
       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4, fontStyle: 'italic' } },
-        'Try Δθ = 90° (P₁ ⊥ P₂) → I = 0 (light blocked). Then add P₃ at 45° between → light reappears! That\'s the classic three-polarizer paradox.'
+        'Drag the P₂/P₃ disks or use their arrow keys. Try Δθ = 90° (P₁ ⊥ P₂) → I = 0, then add P₃ at 45° between them so light reappears.'
       )
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // POLARIZATION CALCULATOR
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderPolarizationCalc(state, upd, h) {
     var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;
     var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;
@@ -3870,10 +6822,10 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // SAMPLE PROBLEM LIBRARY — 10 AP-aligned scenarios
   // Each item pre-loads parameters into the appropriate tab and jumps there.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var SAMPLE_PROBLEMS = [
     {
       id: 'snorkeler_lookup', topic: 'AP Physics 2 — Refraction',
@@ -3944,7 +6896,7 @@
       title: 'Diffraction grating spectrum',
       research_question: 'A 600 lines/mm grating is lit with 632.8 nm helium-neon laser light. At what angles do the m=1 and m=2 maxima appear?',
       tab: 'diffraction',
-      params: { diffMode: 'grating', diffLambda: 633, diffGrating: 600, diffScreenL: 1.0 },
+      params: { diffMode: 'grating', diffLambda: 633, diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1.0 },
       hint: 'd sinθ = mλ. With d ≈ 1.67 μm, m=1 should land near 22°. m=2 is around 50°.'
     },
     {
@@ -3964,9 +6916,664 @@
     upd(patch);
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  var OPTICS_TOPIC_CONTROL_KEYS = {
+    reflection: ['reflMirrorType', 'reflFocal', 'reflDo', 'reflObjH', 'reflScreenCm', 'reflShow3D'],
+    refraction: ['refrN1', 'refrN2', 'refrTheta1', 'refrShow3D', 'refrShowWindow'],
+    lenses: ['lensType', 'lensFocal', 'lensDo', 'lensObjH', 'lensScreenCm', 'lensShow3D'],
+    interference: ['intLambda', 'intSlitSep', 'intScreenL', 'intSlitWidth'],
+    diffraction: ['diffMode', 'diffLambda', 'diffSlitWidth', 'diffScreenL', 'diffGrating', 'diffGratingDuty'],
+    polarization: ['polTheta2', 'polTheta3', 'polUseP3', 'polQwp']
+  };
+  var OPTICS_TOPIC_DEFAULTS = {
+    reflection: { reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflObjH: 6, reflScreenCm: 15, reflShow3D: false },
+    refraction: { refrN1: 1.000, refrN2: 1.520, refrTheta1: 30, refrShow3D: false, refrShowWindow: false },
+    lenses: { lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5, lensScreenCm: 20, lensShow3D: false },
+    interference: { intLambda: 600, intSlitSep: 0.10, intScreenL: 1.0, intSlitWidth: 50, intScreenProbeMm: 0 },
+    diffraction: { diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5, diffGrating: 600, diffGratingDuty: 50, diffScreenProbeMm: 0 },
+    polarization: { polTheta2: 30, polTheta3: 90, polUseP3: false, polQwp: false }
+  };
+  var OPTICS_TOPIC_PRESETS = {
+    reflection: [
+      { label: 'Real image', patch: { reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflScreenCm: 16.666667 } },
+      { label: 'Makeup mirror', patch: { reflMirrorType: 'concave', reflFocal: 10, reflDo: 6 } },
+      { label: 'Wide view', patch: { reflMirrorType: 'convex', reflFocal: 12, reflDo: 30 } }
+    ],
+    refraction: [
+      { label: 'Air → glass', patch: { refrN1: 1.000, refrN2: 1.520, refrTheta1: 30 } },
+      { label: 'Water TIR', patch: { refrN1: 1.333, refrN2: 1.000, refrTheta1: 60 } },
+      { label: 'Critical edge', patch: { refrN1: 1.500, refrN2: 1.000, refrTheta1: 41.8 } }
+    ],
+    lenses: [
+      { label: 'Real image', patch: { lensType: 'converging', lensFocal: 12, lensDo: 25, lensScreenCm: 23.076923 } },
+      { label: 'At focal plane', patch: { lensType: 'converging', lensFocal: 12, lensDo: 12, lensScreenCm: 20 } },
+      { label: 'Magnifier', patch: { lensType: 'converging', lensFocal: 12, lensDo: 7, lensScreenCm: 20 } }
+    ],
+    interference: [
+      { label: 'Classic fringes', patch: { intLambda: 600, intSlitSep: 0.10, intScreenL: 1.0 } },
+      { label: 'Wide fringes', patch: { intLambda: 700, intSlitSep: 0.06, intScreenL: 1.5 } },
+      { label: 'Tight fringes', patch: { intLambda: 450, intSlitSep: 0.18, intScreenL: 0.8 } }
+    ],
+    diffraction: [
+      { label: 'Narrow slit', patch: { diffMode: 'single', diffLambda: 600, diffSlitWidth: 10, diffScreenL: 1.5 } },
+      { label: 'Wide slit', patch: { diffMode: 'single', diffLambda: 500, diffSlitWidth: 80, diffScreenL: 1.5 } },
+      { label: 'Grating', patch: { diffMode: 'grating', diffLambda: 633, diffGrating: 600, diffGratingDuty: 50, diffScreenL: 1.0 } }
+    ],
+    polarization: [
+      { label: 'Aligned', patch: { polTheta2: 0, polUseP3: false, polQwp: false } },
+      { label: 'Crossed', patch: { polTheta2: 90, polUseP3: false, polQwp: false } },
+      { label: 'Three filters', patch: { polTheta2: 45, polTheta3: 90, polUseP3: true, polQwp: false } }
+    ]
+  };
+  function _captureOpticsTopicState(tab, state) {
+    var keys = OPTICS_TOPIC_CONTROL_KEYS[tab] || [];
+    var captured = {};
+    keys.forEach(function(key) {
+      if (state && state[key] != null && typeof state[key] !== 'object') captured[key] = state[key];
+    });
+    return captured;
+  }
+  function _opticsTrialRecord(tab, state, preview) {
+    var now = Date.now();
+    var trial = {
+      id: preview ? 'preview' : tab + '-' + now + '-' + Math.random().toString(36).slice(2, 7),
+      capturedAt: now,
+      setup: _captureOpticsTopicState(tab, state),
+      series: tab,
+      x: null, y: null, xLabel: '', yLabel: '', xUnit: '', yUnit: '', summary: ''
+    };
+    if (tab === 'reflection' || tab === 'lenses') {
+      var isMirror = tab === 'reflection';
+      var objectDistance = +(isMirror ? state.reflDo : state.lensDo);
+      var focalMagnitude = Math.abs(+(isMirror ? state.reflFocal : state.lensFocal));
+      var converging = isMirror ? state.reflMirrorType !== 'convex' : state.lensType !== 'diverging';
+      var image = thinLens(objectDistance, converging ? focalMagnitude : -focalMagnitude);
+      trial.x = objectDistance;
+      trial.y = image.error ? null : image.d_i;
+      trial.xLabel = 'Object distance'; trial.xUnit = 'cm';
+      trial.yLabel = 'Image distance'; trial.yUnit = 'cm';
+      trial.series = tab + '-' + (converging ? 'converging' : 'diverging');
+      trial.summary = image.error
+        ? 'Image at infinity: the object is on the focal plane.'
+        : 'd_i = ' + _fmt(image.d_i, 2) + ' cm; ' + (image.isReal ? 'real' : 'virtual') + ', '
+          + (image.isUpright ? 'upright' : 'inverted') + ', m = ' + _fmt(image.m, 2) + '.';
+    } else if (tab === 'refraction') {
+      var incidentDeg = +(state.refrTheta1 != null ? state.refrTheta1 : 30);
+      var refracted = snell(degToRad(incidentDeg), +(state.refrN1 || 1), +(state.refrN2 || 1));
+      trial.x = incidentDeg;
+      trial.y = refracted.tir || refracted.error ? null : radToDeg(refracted.theta2);
+      trial.xLabel = 'Incident angle'; trial.xUnit = 'deg';
+      trial.yLabel = 'Refracted angle'; trial.yUnit = 'deg';
+      trial.summary = refracted.tir
+        ? 'Total internal reflection: no transmitted ray.'
+        : (refracted.error ? refracted.error : 'theta2 = ' + _fmt(trial.y, 2) + ' deg; light bends '
+          + (Math.abs(trial.y) < Math.abs(incidentDeg) ? 'toward' : 'away from') + ' the normal.');
+    } else if (tab === 'interference') {
+      var intLambda = +(state.intLambda != null ? state.intLambda : 600) * 1e-9;
+      var separationMm = +(state.intSlitSep != null ? state.intSlitSep : 0.1);
+      var spacingMm = doubleSlitFringe(1, intLambda, +(state.intScreenL != null ? state.intScreenL : 1), separationMm * 1e-3) * 1000;
+      trial.x = separationMm; trial.y = spacingMm;
+      trial.xLabel = 'Slit separation'; trial.xUnit = 'mm';
+      trial.yLabel = 'Fringe spacing'; trial.yUnit = 'mm';
+      trial.summary = 'Adjacent bright fringes are ' + _fmt(spacingMm, 3) + ' mm apart.';
+    } else if (tab === 'diffraction') {
+      var diffLambda = +(state.diffLambda != null ? state.diffLambda : 600) * 1e-9;
+      var screenDistance = +(state.diffScreenL != null ? state.diffScreenL : 1.5);
+      if ((state.diffMode || 'single') === 'single') {
+        var slitWidthUm = +(state.diffSlitWidth != null ? state.diffSlitWidth : 30);
+        var firstMinimumMm = singleSlitFirstMin(diffLambda, screenDistance, slitWidthUm * 1e-6) * 1000;
+        trial.series = 'diffraction-single';
+        trial.x = slitWidthUm; trial.y = firstMinimumMm;
+        trial.xLabel = 'Slit width'; trial.xUnit = 'um';
+        trial.yLabel = 'First minimum'; trial.yUnit = 'mm';
+        trial.summary = 'First minimum at ' + _fmt(firstMinimumMm, 3) + ' mm; central maximum width ' + _fmt(firstMinimumMm * 2, 3) + ' mm.';
+      } else {
+        var gratingGeometry = _opticsGratingGeometry(state);
+        var linesPerMm = gratingGeometry.density;
+        var grooveSpacing = gratingGeometry.spacingM;
+        var sinOrder1 = diffLambda / grooveSpacing;
+        var orderAngle = Math.abs(sinOrder1) <= 1 ? radToDeg(Math.asin(sinOrder1)) : null;
+        trial.series = 'diffraction-grating';
+        trial.x = linesPerMm; trial.y = orderAngle;
+        trial.xLabel = 'Line density'; trial.xUnit = 'lines/mm';
+        trial.yLabel = 'First-order angle'; trial.yUnit = 'deg';
+        trial.summary = (orderAngle == null ? 'No real first-order maximum for this setup.' : 'First-order maximum at ' + _fmt(orderAngle, 3) + ' deg.')
+          + ' Grating is ' + gratingGeometry.dutyPercent.toFixed(0) + '% open.';
+      }
+    } else if (tab === 'polarization') {
+      var p2 = +(state.polTheta2 != null ? state.polTheta2 : 30);
+      var p3 = +(state.polTheta3 != null ? state.polTheta3 : 90);
+      var afterP1 = 0.5;
+      var afterP2 = state.polQwp ? afterP1 * 0.5 : malus(afterP1, degToRad(p2));
+      var output = state.polUseP3 ? malus(afterP2, degToRad(p3 - p2)) : afterP2;
+      trial.series = state.polUseP3 ? 'polarization-three-filter' : (state.polQwp ? 'polarization-quarter-wave' : 'polarization-two-filter');
+      trial.x = p2; trial.y = output * 100;
+      trial.xLabel = 'P2 angle'; trial.xUnit = 'deg';
+      trial.yLabel = 'Output intensity'; trial.yUnit = '% of I0';
+      trial.summary = 'Output intensity = ' + _fmt(output * 100, 2) + '% of I0' + (state.polUseP3 ? ' after P3.' : '.');
+    }
+    return trial;
+  }
+  function _opticsTrialValue(value, unit) {
+    return _isNum(value) ? _fmt(value, Math.abs(value) < 1 ? 3 : 2) + (unit ? ' ' + unit : '') : 'not plotted';
+  }
+  function _opticsTrialDelta(label, delta, unit) {
+    if (!_isNum(delta)) return label + ' could not be compared';
+    if (Math.abs(delta) < 1e-9) return label + ' did not change';
+    return label + (delta > 0 ? ' increased by ' : ' decreased by ') + _opticsTrialValue(Math.abs(delta), unit);
+  }
+  function _downloadOpticsTrialsCsv(tab, trials) {
+    try {
+      function csvCell(value) { return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"'; }
+      var rows = [['captured_at', 'topic', 'series', 'x_label', 'x_value', 'x_unit', 'y_label', 'y_value', 'y_unit', 'summary', 'setup_json']];
+      (trials || []).forEach(function(trial) {
+        rows.push([
+          new Date(trial.capturedAt).toISOString(), tab, trial.series, trial.xLabel, trial.x, trial.xUnit,
+          trial.yLabel, trial.y, trial.yUnit, trial.summary, JSON.stringify(trial.setup || {})
+        ]);
+      });
+      var csv = rows.map(function(row) { return row.map(csvCell).join(','); }).join('\r\n');
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      var href = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = href; link.download = 'optics-lab-' + tab + '-trials.csv';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      setTimeout(function() { try { URL.revokeObjectURL(href); } catch (e) {} }, 0);
+      opAnnounce('Downloaded ' + (trials || []).length + ' ' + tab + ' trials as CSV.');
+    } catch (e) {
+      opAnnounce('The trial CSV could not be downloaded in this environment.');
+    }
+  }
+  function _renderOpticsTrialPlot(tab, trials, h) {
+    if (!Array.isArray(trials) || !trials.length) return null;
+    var latest = trials[trials.length - 1];
+    var points = trials.filter(function(trial) {
+      return trial && trial.series === latest.series && _isNum(trial.x) && _isNum(trial.y);
+    });
+    if (!points.length) {
+      return h('div', { className: 'opticslab-trial-compare', role: 'status' },
+        'This run has no finite plotted output. That is expected for total internal reflection or an image at infinity.'
+      );
+    }
+    var W = 420, H = 188, left = 48, right = 12, top = 12, bottom = 39;
+    var xs = points.map(function(point) { return point.x; });
+    var ys = points.map(function(point) { return point.y; });
+    var xMin = Math.min.apply(Math, xs), xMax = Math.max.apply(Math, xs);
+    var yMin = Math.min.apply(Math, ys), yMax = Math.max.apply(Math, ys);
+    var xPad = xMin === xMax ? Math.max(1, Math.abs(xMin) * 0.08) : (xMax - xMin) * 0.08;
+    var yPad = yMin === yMax ? Math.max(1, Math.abs(yMin) * 0.08) : (yMax - yMin) * 0.1;
+    xMin -= xPad; xMax += xPad; yMin -= yPad; yMax += yPad;
+    function px(value) { return left + (value - xMin) / (xMax - xMin) * (W - left - right); }
+    function py(value) { return top + (yMax - value) / (yMax - yMin) * (H - top - bottom); }
+    function short(value) { return Math.abs(value) >= 100 ? value.toFixed(0) : (Math.abs(value) >= 10 ? value.toFixed(1) : value.toFixed(2)); }
+    var linePoints = points.map(function(point) { return px(point.x).toFixed(1) + ',' + py(point.y).toFixed(1); }).join(' ');
+    var label = tab + ' evidence plot. ' + points.length + ' plotted trial' + (points.length === 1 ? '' : 's')
+      + ', from ' + latest.xLabel + ' ' + short(Math.min.apply(Math, xs)) + ' to ' + short(Math.max.apply(Math, xs)) + ' ' + latest.xUnit
+      + ', and ' + latest.yLabel + ' ' + short(Math.min.apply(Math, ys)) + ' to ' + short(Math.max.apply(Math, ys)) + ' ' + latest.yUnit + '.';
+    return h('figure', { className: 'opticslab-trial-plot' },
+      h('figcaption', null,
+        h('span', null, 'Evidence trend'),
+        h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontWeight: 700 } }, (latest.series || tab).replace(/-/g, ' '))
+      ),
+      h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': label },
+        h('title', null, label),
+        [0, 0.5, 1].map(function(frac, index) {
+          var x = left + frac * (W - left - right);
+          var value = xMin + frac * (xMax - xMin);
+          return h('g', { key: 'x' + index },
+            h('line', { x1: x, y1: top, x2: x, y2: H - bottom, stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1 }),
+            h('text', { x: x, y: H - bottom + 15, textAnchor: 'middle', fill: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 9 }, short(value))
+          );
+        }),
+        [0, 0.5, 1].map(function(frac, index) {
+          var y = top + frac * (H - top - bottom);
+          var value = yMax - frac * (yMax - yMin);
+          return h('g', { key: 'y' + index },
+            h('line', { x1: left, y1: y, x2: W - right, y2: y, stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1 }),
+            h('text', { x: left - 6, y: y + 3, textAnchor: 'end', fill: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 9 }, short(value))
+          );
+        }),
+        points.length > 1 && h('polyline', { points: linePoints, fill: 'none', stroke: '#38bdf8', strokeWidth: 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+        points.map(function(point, index) {
+          var isLatest = point.id === latest.id;
+          return h('circle', { key: point.id || index, cx: px(point.x), cy: py(point.y), r: isLatest ? 5 : 3.5,
+            fill: isLatest ? '#fbbf24' : '#38bdf8', stroke: '#07111f', strokeWidth: 1.5 });
+        }),
+        h('text', { x: (left + W - right) / 2, y: H - 5, textAnchor: 'middle', fill: 'var(--allo-stem-text,#cbd5e1)', fontSize: 9, fontWeight: 700 }, latest.xLabel + ' (' + latest.xUnit + ')'),
+        h('text', { transform: 'translate(11 ' + ((top + H - bottom) / 2) + ') rotate(-90)', textAnchor: 'middle', fill: 'var(--allo-stem-text,#cbd5e1)', fontSize: 9, fontWeight: 700 }, latest.yLabel + ' (' + latest.yUnit + ')')
+      )
+    );
+  }
+  function _opticsSeriesPlotModel(all) {
+    var points = all.filter(function(trial) { return _isNum(trial.x) && _isNum(trial.y); }).slice().sort(function(a, b) { return a.x - b.x; });
+    var edgeCases = all.filter(function(trial) { return !_isNum(trial.x) || !_isNum(trial.y); });
+    if (!points.length) return { points: points, edgeCases: edgeCases, basis: all[0], latest: all[all.length - 1] };
+    var xs = points.map(function(point) { return point.x; });
+    var ys = points.map(function(point) { return point.y; });
+    var xMin = Math.min.apply(Math, xs), xMax = Math.max.apply(Math, xs);
+    var yMin = Math.min.apply(Math, ys), yMax = Math.max.apply(Math, ys);
+    var xPad = xMin === xMax ? Math.max(1, Math.abs(xMin) * .08) : (xMax - xMin) * .08;
+    var yPad = yMin === yMax ? Math.max(1, Math.abs(yMin) * .08) : (yMax - yMin) * .1;
+    return {
+      points: points, edgeCases: edgeCases, basis: points[0], latest: all[all.length - 1],
+      xMin: xMin - xPad, xMax: xMax + xPad, yMin: yMin - yPad, yMax: yMax + yPad
+    };
+  }
+  function _renderOpticsSeriesSvg(name, model, config, color, h) {
+    if (!model.points.length) return null;
+    var W = 320, H = 210, left = 61, right = 11, top = 13, bottom = 47;
+    function px(value) { return left + (value - model.xMin) / (model.xMax - model.xMin) * (W - left - right); }
+    function py(value) { return top + (model.yMax - value) / (model.yMax - model.yMin) * (H - top - bottom); }
+    function short(value) { return Math.abs(value) >= 100 ? value.toFixed(0) : (Math.abs(value) >= 10 ? value.toFixed(1) : value.toFixed(2)); }
+    function restoreFromMark(event, trial) {
+      if (event.type === 'keydown' && event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      if (config.onRestore) config.onRestore(trial);
+    }
+    var polyline = model.points.map(function(point) { return px(point.x).toFixed(1) + ',' + py(point.y).toFixed(1); }).join(' ');
+    var chartLabel = name.replace(/-/g, ' ') + ' evidence plot with ' + model.points.length + ' finite trials. Select a point to restore its setup.';
+    return h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'group', 'aria-roledescription': 'evidence plot', 'aria-label': chartLabel },
+      h('title', null, chartLabel),
+      [0, .5, 1].map(function(frac, index) {
+        var x = left + frac * (W - left - right);
+        return h('g', { key: 'x' + index },
+          h('line', { x1: x, y1: top, x2: x, y2: H - bottom, stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1 }),
+          h('text', { x: x, y: H - bottom + 17, textAnchor: 'middle', fill: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 11 }, short(model.xMin + frac * (model.xMax - model.xMin)))
+        );
+      }),
+      [0, .5, 1].map(function(frac, index) {
+        var y = top + frac * (H - top - bottom);
+        return h('g', { key: 'y' + index },
+          h('line', { x1: left, y1: y, x2: W - right, y2: y, stroke: 'var(--allo-stem-border,#334155)', strokeWidth: 1 }),
+          h('text', { x: left - 7, y: y + 4, textAnchor: 'end', fill: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 11 }, short(model.yMax - frac * (model.yMax - model.yMin)))
+        );
+      }),
+      model.points.length > 1 && h('polyline', { points: polyline, fill: 'none', stroke: color, strokeWidth: 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
+      model.points.map(function(point, pointIndex) {
+        var run = config.trials.indexOf(point) + 1;
+        var label = 'Trial ' + run + ': ' + point.summary + ' Select to restore.';
+        return h('circle', {
+          key: point.id || pointIndex, className: 'opticslab-trial-point',
+          'data-op-trial-point': point.id || String(pointIndex), 'data-op-focusable': 'true', tabIndex: 0, role: 'button',
+          cx: px(point.x), cy: py(point.y), r: point.id === model.latest.id ? 6 : 5,
+          fill: point.id === model.latest.id ? '#fbbf24' : color, stroke: '#07111f', strokeWidth: 1.5,
+          'aria-label': label,
+          onClick: function(event) { restoreFromMark(event, point); },
+          onKeyDown: function(event) { restoreFromMark(event, point); }
+        }, h('title', null, label));
+      }),
+      h('text', { x: (left + W - right) / 2, y: H - 6, textAnchor: 'middle', fill: 'var(--allo-stem-text,#cbd5e1)', fontSize: 11, fontWeight: 700 }, model.basis.xLabel + ' (' + model.basis.xUnit + ')'),
+      h('text', { transform: 'translate(15 ' + ((top + H - bottom) / 2) + ') rotate(-90)', textAnchor: 'middle', fill: 'var(--allo-stem-text,#cbd5e1)', fontSize: 11, fontWeight: 700 }, model.basis.yLabel + ' (' + model.basis.yUnit + ')')
+    );
+  }
+  function _renderOpticsSeriesPlot(name, all, config, color, h) {
+    var model = _opticsSeriesPlotModel(all);
+    return h('figure', { key: name, className: 'opticslab-trial-plot' },
+      h('figcaption', null,
+        h('span', null, 'Evidence trend · ' + name.replace(/-/g, ' ')),
+        h('span', { style: { color: 'var(--allo-stem-text-soft,#94a3b8)', fontWeight: 700 } }, all.length + ' trial' + (all.length === 1 ? '' : 's'))
+      ),
+      _renderOpticsSeriesSvg(name, model, config, color, h),
+      model.edgeCases.length > 0 && h('ul', { className: 'opticslab-trial-categorical', 'aria-label': name + ' edge-case outcomes' },
+        model.edgeCases.map(function(trial) {
+          var run = config.trials.indexOf(trial) + 1;
+          return h('li', { key: trial.id }, h('button', {
+            type: 'button', 'data-op-focusable': 'true',
+            onClick: function() { if (config.onRestore) config.onRestore(trial); }
+          }, 'Trial ' + run + ' - ' + trial.summary + ' - Restore setup'));
+        })
+      )
+    );
+  }
+  function _renderOpticsTrialPlots(config, h) {
+    var tab = config.tab;
+    var trials = Array.isArray(config.trials) ? config.trials : [];
+    if (!trials.length) return null;
+    var groups = {};
+    trials.forEach(function(trial) {
+      var key = (trial && trial.series) || tab;
+      if (!groups[key]) groups[key] = [];
+      if (trial) groups[key].push(trial);
+    });
+    var names = Object.keys(groups);
+    var nonfiniteCount = trials.filter(function(trial) { return !_isNum(trial.x) || !_isNum(trial.y); }).length;
+    return h('div', null,
+      h('div', { className: 'opticslab-compare-now', role: 'status', 'aria-live': 'polite' },
+        h('strong', null, 'Showing all ' + trials.length + ' trials'),
+        'across ' + names.length + ' comparable setup ' + (names.length === 1 ? 'family' : 'families') + '.',
+        nonfiniteCount ? ' ' + nonfiniteCount + ' edge-case ' + (nonfiniteCount === 1 ? 'result is' : 'results are') + ' listed below the axes.' : ''
+      ),
+      h('div', { className: 'opticslab-trial-plot-grid' }, names.map(function(name, index) {
+        return _renderOpticsSeriesPlot(name, groups[name], config, ['#38bdf8', '#a78bfa', '#22c55e', '#fb7185', '#f59e0b', '#14b8a6'][index % 6], h);
+      }))
+    );
+  }
+  function _renderOpticsTrialJournal(config, h) {
+    var tab = config.tab;
+    var trials = config.trials || [];
+    var historyExpanded = !!config.historyExpanded;
+    var visibleTrials = historyExpanded ? trials.slice().reverse() : trials.slice(-4).reverse();
+    return h('div', { className: 'opticslab-journal', 'data-op-trial-journal': tab },
+      h('div', { className: 'opticslab-journal-head' },
+        h('div', { className: 'opticslab-journal-title' }, 'Evidence journal'),
+        h('span', { className: 'opticslab-journal-count', 'aria-live': 'polite' }, trials.length + ' / 20 trials'),
+        h('div', { className: 'opticslab-journal-actions' },
+          h('button', {
+            type: 'button', className: 'opticslab-journal-button opticslab-journal-button--capture',
+            'data-op-focusable': 'true', 'data-op-trial-capture': tab, onClick: config.onCapture
+          }, '+ Capture trial'),
+          trials.length > 0 && h('button', {
+            type: 'button', className: 'opticslab-journal-button',
+            'data-op-focusable': 'true', 'data-op-trial-export': tab,
+            onClick: function() { _downloadOpticsTrialsCsv(tab, trials); }
+          }, 'Export CSV'),
+          trials.length > 0 && h('button', {
+            type: 'button', className: 'opticslab-journal-button',
+            'data-op-focusable': 'true', onClick: config.onClear,
+            'aria-label': 'Clear all ' + tab + ' evidence trials'
+          }, 'Clear')
+        )
+      ),
+      h('p', { style: { margin: '0 0 5px', fontSize: 10, lineHeight: 1.45, color: 'var(--allo-stem-text-soft,#94a3b8)' } },
+        'Capture the current setup, change one variable, then capture again. Every setup family has its own plot; select any point or edge-case result to restore it.'
+      ),
+      config.comparison && h('div', { className: 'opticslab-trial-compare', 'aria-live': 'polite' },
+        h('strong', { style: { color: 'var(--op-green-text,#86efac)' } }, 'Latest comparison: '), config.comparison
+      ),
+      _renderOpticsTrialPlots(config, h),
+      trials.length > 0 && h('div', { className: 'opticslab-trial-list', 'data-op-trial-list': tab, 'aria-label': tab + ' captured trials' },
+        visibleTrials.map(function(trial) {
+          var runNumber = trials.indexOf(trial) + 1;
+          return h('div', { key: trial.id, className: 'opticslab-trial-row' },
+            h('span', { className: 'opticslab-rubric-mark', 'aria-hidden': 'true' }, runNumber),
+            h('span', { className: 'opticslab-trial-copy' },
+              h('span', { className: 'opticslab-trial-summary' }, trial.summary),
+              h('span', { className: 'opticslab-trial-time' }, (trial.series || tab).replace(/-/g, ' ') + ' · ' + config.formatTime(trial) + ' · ' + _opticsTrialValue(trial.x, trial.xUnit) + ' to ' + _opticsTrialValue(trial.y, trial.yUnit))
+            ),
+            h('button', {
+              type: 'button', className: 'opticslab-journal-button', 'data-op-focusable': 'true',
+              onClick: function() { config.onRestore(trial); }, 'aria-label': 'Restore trial ' + runNumber + ' setup'
+            }, 'Restore')
+          );
+        }),
+        trials.length > 4 && h('button', {
+          type: 'button', className: 'opticslab-journal-button opticslab-history-toggle',
+          'data-op-focusable': 'true', 'aria-expanded': historyExpanded ? 'true' : 'false',
+          onClick: config.onToggleHistory
+        }, historyExpanded ? 'Show recent 4 trials' : 'Show all ' + trials.length + ' trials')
+      )
+    );
+  }
+  function _downloadOpticsLabNote(tab, state) {
+    try {
+      var snapshots = (state.opTopicSnapshots && state.opTopicSnapshots[tab]) || {};
+      var payload = {
+        format: 'AlloFlow Optics Lab Note v2',
+        topic: tab,
+        exportedAt: new Date().toISOString(),
+        prediction: (state.opPredictionNotes && state.opPredictionNotes[tab]) || '',
+        observation: (state.opObservationNotes && state.opObservationNotes[tab]) || '',
+        explanation: (state.aiDrafts && state.aiDrafts[tab]) || '',
+        before: snapshots.before || null,
+        after: snapshots.after || _captureOpticsTopicState(tab, state),
+        trials: (state.opTrialRuns && state.opTrialRuns[tab]) || []
+      };
+      var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      var href = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = href;
+      link.download = 'optics-lab-' + tab + '-note.json';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(function() { try { URL.revokeObjectURL(href); } catch (e) {} }, 0);
+      opAnnounce('Downloaded ' + tab + ' lab note.');
+    } catch (e) {
+      opAnnounce('The lab note could not be downloaded in this environment.');
+    }
+  }
+
+  function _opticsFormulaSpec(tab, state) {
+    if (tab === 'reflection') return {
+      parts: [{ text: '1/', key: null }, { text: 'f', key: 'reflFocal' }, { text: ' = 1/' }, { text: 'dₒ', key: 'reflDo' }, { text: ' + 1/dᵢ', key: 'reflImage' }],
+      hint: 'Changing focal length or object distance moves the image predicted by the mirror equation.'
+    };
+    if (tab === 'lenses') return {
+      parts: [{ text: '1/', key: null }, { text: 'f', key: 'lensFocal' }, { text: ' = 1/' }, { text: 'dₒ', key: 'lensDo' }, { text: ' + 1/dᵢ', key: 'lensImage' }],
+      hint: 'The highlighted input and the cyan/red image update through the same thin-lens relationship.'
+    };
+    if (tab === 'refraction') return {
+      parts: [{ text: 'n₁', key: 'refrN1' }, { text: ' sin ' }, { text: 'θ₁', key: 'refrTheta1' }, { text: ' = ' }, { text: 'n₂', key: 'refrN2' }, { text: ' sin θ₂', key: 'refrResult' }],
+      hint: 'The material indices and incident angle determine the transmitted cyan ray or the TIR boundary.'
+    };
+    if (tab === 'interference') return {
+      parts: [{ text: 'Δy = ' }, { text: 'λ', key: 'intLambda' }, { text: ' ' }, { text: 'L', key: 'intScreenL' }, { text: ' / ' }, { text: 'd', key: 'intSlitSep' }],
+      hint: 'Larger wavelength or screen distance widens fringes; larger slit separation tightens them.'
+    };
+    if (tab === 'diffraction' && (state.diffMode || 'single') === 'grating') return {
+      parts: [{ text: 'd', key: 'diffGrating' }, { text: ' sin θ = m' }, { text: 'λ', key: 'diffLambda' }, { text: '   a = ' }, { text: 'η', key: 'diffGratingDuty' }, { text: 'd' }],
+      hint: 'Line density sets order positions; open fraction η sets the physical opening a and reshapes relative brightness.'
+    };
+    if (tab === 'diffraction') return {
+      parts: [{ text: 'y₁ = ' }, { text: 'λ', key: 'diffLambda' }, { text: ' ' }, { text: 'L', key: 'diffScreenL' }, { text: ' / ' }, { text: 'a', key: 'diffSlitWidth' }],
+      hint: 'A narrower slit produces a wider central maximum.'
+    };
+    return {
+      parts: [{ text: 'I = Iᵢₙ cos²(' }, { text: 'Δθ', key: 'polTheta2' }, { text: ')' }],
+      hint: 'Rotating a polarizer changes field projection first; intensity follows the square.'
+    };
+  }
+  function _renderOpticsFormulaLink(tab, state, h) {
+    var spec = _opticsFormulaSpec(tab, state);
+    var active = state.opActiveVariable || '';
+    return h('div', { className: 'opticslab-formula-link', 'aria-live': 'polite' },
+      h('span', { style: { fontWeight: 850, color: 'var(--allo-stem-text,#e2e8f0)' } }, 'Live relationship'),
+      h('code', null, spec.parts.map(function(part, index) {
+        return h('span', {
+          key: index, className: 'opticslab-formula-token',
+          'data-active': part.key && part.key === active ? 'true' : 'false'
+        }, part.text);
+      })),
+      h('span', { className: 'opticslab-variable-hint' }, spec.hint)
+    );
+  }
+  function _opticsMissionCatalog(tab, state) {
+    var focal, result, spacing, width, groove, order, afterP2, afterP3;
+    if (tab === 'reflection') {
+      focal = Math.abs(state.reflFocal || 10);
+      return [
+        { title: 'Form a real mirror image', copy: 'Use a concave mirror with the object beyond the focal point.', done: state.reflMirrorType === 'concave' && state.reflDo > focal },
+        { title: 'Cross the focal boundary', copy: 'Move the object inside f and make the image virtual and upright.', done: state.reflMirrorType === 'concave' && state.reflDo < focal },
+        { title: 'Build a wide-angle view', copy: 'Use a convex mirror and observe a reduced virtual image.', done: state.reflMirrorType === 'convex' }
+      ];
+    }
+    if (tab === 'refraction') {
+      result = snell(degToRad(state.refrTheta1 || 0), state.refrN1 || 1, state.refrN2 || 1);
+      var critical = criticalAngle(state.refrN1 || 1, state.refrN2 || 1);
+      return [
+        { title: 'Bend toward the normal', copy: 'Send light into a higher-index medium at more than 10°.', done: state.refrN2 > state.refrN1 && Math.abs(state.refrTheta1 || 0) > 10 },
+        { title: 'Trigger total internal reflection', copy: 'Aim from higher n to lower n and pass the critical angle.', done: !!result.tir },
+        { title: 'Balance on the critical edge', copy: 'Set θ₁ within 1° of θc without crossing it.', done: critical != null && !result.tir && Math.abs((state.refrTheta1 || 0) - radToDeg(critical)) <= 1 }
+      ];
+    }
+    if (tab === 'lenses') {
+      focal = Math.abs(state.lensFocal || 12);
+      return [
+        { title: 'Find the 2f landmark', copy: 'Use a converging lens and place the object at twice the focal length.', done: state.lensType === 'converging' && Math.abs(state.lensDo - 2 * focal) <= .75 },
+        { title: 'Collimate the output', copy: 'Place the object on the focal plane so the outgoing rays become parallel.', done: state.lensType === 'converging' && Math.abs(state.lensDo - focal) <= .25 },
+        { title: 'Turn the lens into a magnifier', copy: 'Move the object inside f to form a virtual enlarged image.', done: state.lensType === 'converging' && state.lensDo < focal }
+      ];
+    }
+    if (tab === 'interference') {
+      spacing = doubleSlitFringe(1, (state.intLambda || 600) * 1e-9, state.intScreenL || 1, (state.intSlitSep || .1) * 1e-3) * 1000;
+      return [
+        { title: 'Make visible fringes', copy: 'Tune the setup until adjacent bright fringes are at least 6 mm apart.', done: spacing >= 6 },
+        { title: 'Stretch the pattern', copy: 'Create fringe spacing of at least 10 mm.', done: spacing >= 10 },
+        { title: 'Compress the pattern', copy: 'Create fringe spacing below 3 mm.', done: spacing < 3 }
+      ];
+    }
+    if (tab === 'diffraction') {
+      width = 2 * singleSlitFirstMin((state.diffLambda || 600) * 1e-9, state.diffScreenL || 1.5, (state.diffSlitWidth || 30) * 1e-6) * 1000;
+      groove = 1 / ((state.diffGrating || 600) * 1000);
+      order = (state.diffLambda || 600) * 1e-9 / groove;
+      return [
+        { title: 'Spread the central maximum', copy: 'In single-slit mode, make the central maximum wider than 60 mm.', done: (state.diffMode || 'single') === 'single' && width > 60 },
+        { title: 'Resolve a grating order', copy: 'Switch to the grating and produce a real first-order maximum.', done: state.diffMode === 'grating' && order <= 1 },
+        { title: 'Close the first order', copy: 'Tune the grating until m = 1 is no longer physically possible.', done: state.diffMode === 'grating' && order > 1 }
+      ];
+    }
+    afterP2 = state.polQwp ? .25 : malus(.5, degToRad(state.polTheta2 || 0));
+    afterP3 = state.polUseP3 ? malus(afterP2, degToRad((state.polTheta3 || 0) - (state.polTheta2 || 0))) : afterP2;
+    return [
+      { title: 'Reach extinction', copy: 'Cross P₂ at 90° with no third polarizer.', done: !state.polUseP3 && !state.polQwp && Math.abs((state.polTheta2 || 0) - 90) <= 1 },
+      { title: 'Reopen crossed polarizers', copy: 'Add P₃ at 90° and place P₂ near 45° so light returns.', done: state.polUseP3 && Math.abs((state.polTheta2 || 0) - 45) <= 2 && Math.abs((state.polTheta3 || 0) - 90) <= 2 && afterP3 > .01 },
+      { title: 'Make circular light', copy: 'Insert the quarter-wave plate and verify P₂ cannot fully extinguish the beam.', done: !!state.polQwp && afterP2 > .2 }
+    ];
+  }
+  var OPTICS_CAUSAL_CONTROLS = {
+    reflMirrorType: { label: 'Mirror type' }, reflFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, reflDo: { label: 'Object distance', unit: 'cm', digits: 1 }, reflScreenCm: { label: 'Sampling screen position', unit: 'cm', digits: 1 },
+    refrN1: { label: 'First index', digits: 3 }, refrN2: { label: 'Second index', digits: 3 }, refrTheta1: { label: 'Incident angle', unit: 'deg', digits: 1 },
+    lensType: { label: 'Lens type' }, lensFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, lensDo: { label: 'Object distance', unit: 'cm', digits: 1 }, lensScreenCm: { label: 'Screen position', unit: 'cm', digits: 1 },
+    intLambda: { label: 'Wavelength', unit: 'nm', digits: 0 }, intSlitSep: { label: 'Slit separation', unit: 'mm', digits: 2 }, intScreenL: { label: 'Screen distance', unit: 'm', digits: 1 }, intSlitWidth: { label: 'Slit width', unit: 'um', digits: 0 },
+    diffMode: { label: 'Aperture mode' }, diffLambda: { label: 'Wavelength', unit: 'nm', digits: 0 }, diffSlitWidth: { label: 'Slit width', unit: 'um', digits: 0 }, diffScreenL: { label: 'Screen distance', unit: 'm', digits: 1 }, diffGrating: { label: 'Line density', unit: 'lines/mm', digits: 0 }, diffGratingDuty: { label: 'Grating open fraction', unit: '%', digits: 0 },
+    polTheta2: { label: 'P2 angle', unit: 'deg', digits: 0 }, polTheta3: { label: 'P3 angle', unit: 'deg', digits: 0 }, polUseP3: { label: 'Third polarizer' }, polQwp: { label: 'Quarter-wave plate' }
+  };
+  var OPTICS_CAUSAL_RULES = {
+    reflMirrorType: 'Changing mirror curvature changes the sign of focal length, so real and virtual image rules swap.',
+    reflFocal: 'Mirror power is proportional to 1/f; changing |f| changes how strongly rays converge or diverge.',
+    reflDo: 'The mirror equation links reciprocal object and image distances; crossing f changes the image type.',
+    reflScreenCm: 'A sampling screen becomes sharp only where a real reflected bundle collapses at the image plane; virtual and parallel bundles cannot be captured.',
+    refrN1: 'Snell\'s law uses the ratio n1/n2, so changing the incident medium changes the permitted transmitted angle.',
+    refrN2: 'A larger destination index bends the ray closer to the normal; a lower index can create a critical angle.',
+    refrTheta1: 'Snell\'s law tracks sin(theta); increasing the incident angle pushes the transmitted ray toward the critical boundary.',
+    lensType: 'Changing the sign of focal length switches between convergence and divergence.',
+    lensFocal: 'Optical power is proportional to 1/f, so focal length controls where the rays meet.',
+    lensDo: 'The thin-lens equation links reciprocal object and image distances; crossing f sends the image through infinity.',
+    lensScreenCm: 'A physical screen is sharp only where a real outgoing ray bundle collapses at the image plane.',
+    intLambda: 'Fringe spacing is directly proportional to wavelength: delta-y = lambda L / d.',
+    intSlitSep: 'Fringe spacing is inversely proportional to slit separation: delta-y = lambda L / d.',
+    intScreenL: 'Fringe spacing is directly proportional to screen distance: delta-y = lambda L / d.',
+    intSlitWidth: 'Slit width changes the diffraction envelope around the double-slit fringes, not their ideal spacing.',
+    diffMode: 'A single slit creates a broad sinc-squared envelope; many slits create narrow grating orders.',
+    diffLambda: 'Longer wavelengths diffract farther because the governing angle depends on lambda divided by aperture spacing.',
+    diffSlitWidth: 'The first minimum obeys y1 = lambda L / a, so a narrower slit spreads the pattern.',
+    diffScreenL: 'The linear pattern size grows directly with screen distance.',
+    diffGrating: 'More lines per millimeter means smaller groove spacing, which pushes each grating order to a larger angle.',
+    diffGratingDuty: 'Open fraction changes opening width relative to groove spacing, reshaping the single-opening envelope without moving the ideal order angles.',
+    polTheta2: 'Malus\'s law squares the field projection: I = Iin cos^2(delta-theta).',
+    polTheta3: 'Each polarizer projects the field from the previous polarizer, so the relevant angle is between neighboring axes.',
+    polUseP3: 'An intermediate projection can rotate the surviving field and reopen a path through otherwise crossed polarizers.',
+    polQwp: 'A quarter-wave plate changes the polarization state, so no single analyzer angle can fully extinguish circular light.'
+  };
+  function _opticsCausalValue(key, value) {
+    var spec = OPTICS_CAUSAL_CONTROLS[key] || { label: key };
+    if (typeof value === 'boolean') return value ? 'on' : 'off';
+    if (_isNum(value)) {
+      var digits = spec.digits != null ? spec.digits : (Math.abs(value) < 1 ? 2 : (Math.abs(value) < 10 ? 1 : 0));
+      return _fmt(value, digits) + (spec.unit ? ' ' + spec.unit : '');
+    }
+    return String(value == null ? 'not set' : value);
+  }
+  function _opticsCausalInsight(tab, state, before) {
+    if (!before || typeof before !== 'object') return null;
+    var current = _captureOpticsTopicState(tab, state);
+    var keys = OPTICS_TOPIC_CONTROL_KEYS[tab] || [];
+    var changed = keys.filter(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(before, key)) return false;
+      var a = before[key], b = current[key];
+      return !(a === b || (_isNum(a) && _isNum(b) && Math.abs(a - b) < 1e-9));
+    });
+    if (!changed.length) return null;
+    var beforeState = Object.assign({}, state, before);
+    var previousTrial = _opticsTrialRecord(tab, beforeState, true);
+    var currentTrial = _opticsTrialRecord(tab, state, true);
+    var changeCopy;
+    var lawCopy;
+    if (changed.length === 1) {
+      var key = changed[0];
+      var control = OPTICS_CAUSAL_CONTROLS[key] || { label: key };
+      changeCopy = control.label + ': ' + _opticsCausalValue(key, before[key]) + ' → ' + _opticsCausalValue(key, current[key]);
+      lawCopy = OPTICS_CAUSAL_RULES[key] || 'This control changes the boundary conditions used by the live optical model.';
+    } else {
+      var shown = changed.slice(0, 3).map(function(key) { return (OPTICS_CAUSAL_CONTROLS[key] || { label: key }).label; });
+      changeCopy = shown.join(', ') + (changed.length > shown.length ? ' +' + (changed.length - shown.length) + ' more' : '');
+      lawCopy = changed.length + ' variables changed together. The result is valid, but isolate one control in the next trial before claiming a single cause.';
+    }
+    var resultCopy = currentTrial.summary;
+    if (changed.length === 1 && previousTrial.series === currentTrial.series
+        && _isNum(previousTrial.y) && _isNum(currentTrial.y)) {
+      resultCopy = _opticsTrialDelta(currentTrial.yLabel, currentTrial.y - previousTrial.y, currentTrial.yUnit)
+        + '. Now: ' + currentTrial.summary;
+    }
+    return { change: changeCopy, law: lawCopy, result: resultCopy, isolated: changed.length === 1 };
+  }
+  function _renderOpticsCausalChain(tab, state, before, onBaseline, h) {
+    var insight = _opticsCausalInsight(tab, state, before);
+    if (!insight) return null;
+    return h('div', {
+      className: 'opticslab-causal-chain', role: 'note', 'aria-label': 'Cause, physics law, and result',
+      'data-op-causal-insight': tab, 'data-isolated-variable': insight.isolated ? 'true' : 'false'
+    },
+      h('div', { className: 'opticslab-causal-step opticslab-causal-step--change' },
+        h('span', null, '1 · Changed'), h('strong', null, insight.change)
+      ),
+      h('div', { className: 'opticslab-causal-step opticslab-causal-step--law' },
+        h('span', null, '2 · Physics link'), h('strong', null, insight.law)
+      ),
+      h('div', { className: 'opticslab-causal-step opticslab-causal-step--result' },
+        h('span', null, '3 · Result'), h('strong', null, insight.result)
+      ),
+      onBaseline && h('div', { className: 'opticslab-causal-action' },
+        h('span', null, 'Ready for another contrast?'),
+        h('button', {
+          type: 'button', className: 'opticslab-baseline-button',
+          'data-op-focusable': 'true', 'data-op-set-baseline': tab,
+          onClick: onBaseline
+        }, 'Set current as baseline'),
+        h('span', null, 'Then change exactly one control.')
+      )
+    );
+  }
+  function _opticsLiveComparison(tab, state, trials) {
+    if (!trials || !trials.length) return '';
+    var current = _opticsTrialRecord(tab, state, true);
+    var prior = null;
+    for (var i = trials.length - 1; i >= 0; i--) {
+      if (trials[i].series === current.series && !_sameOpticsSetup(tab, trials[i].setup, current.setup)) { prior = trials[i]; break; }
+    }
+    if (!prior) return '';
+    if (_isNum(prior.x) && _isNum(prior.y) && _isNum(current.x) && _isNum(current.y)) {
+      return 'Compared with the ghosted trial: ' + _opticsTrialDelta(current.xLabel, current.x - prior.x, current.xUnit)
+        + '; ' + _opticsTrialDelta(current.yLabel, current.y - prior.y, current.yUnit) + '.';
+    }
+    return 'Compared with the ghosted trial: previous ' + prior.summary + ' Current ' + current.summary;
+  }
+  function _renderOpticsMission(tab, state, upd, h) {
+    var catalog = _opticsMissionCatalog(tab, state);
+    var stages = state.opMissionStage || {};
+    var stage = Math.max(0, Math.min(catalog.length - 1, +(stages[tab] || 0)));
+    var mission = catalog[stage];
+    function nextMission() {
+      var next = Object.assign({}, stages);
+      next[tab] = (stage + 1) % catalog.length;
+      upd('opMissionStage', next);
+      opAnnounce('Next ' + tab + ' mission: ' + catalog[next[tab]].title + '.');
+    }
+    return h('div', {
+      className: 'opticslab-mission', 'data-complete': mission.done ? 'true' : 'false',
+      role: 'status', 'aria-live': 'polite'
+    },
+      h('span', { 'aria-hidden': 'true' }, mission.done ? '✓' : '◎'),
+      h('div', { className: 'opticslab-mission-copy' },
+        h('strong', null, 'Mission ' + (stage + 1) + '/' + catalog.length + ': ' + mission.title + '. '),
+        mission.done ? 'Complete - the live model meets the target.' : mission.copy
+      ),
+      mission.done && h('button', { type: 'button', className: 'opticslab-mission-button', 'data-op-focusable': 'true', onClick: nextMission }, 'Next mission')
+    );
+  }
+
+  // ---
   // GLOSSARY — 25 terms tagged by topic; auto-filtered per active tab
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var OPTICS_GLOSSARY = {
     'focal_length': { name: 'Focal length (f)', tags: ['reflection', 'lenses'], def: 'The distance from a lens or mirror to its focal point. Converging lenses + concave mirrors have f > 0; diverging lenses + convex mirrors have f < 0. Larger |f| → less bending.' },
     'principal_axis': { name: 'Principal axis', tags: ['reflection', 'lenses'], def: 'The straight line through the center of a lens or mirror, perpendicular to its surface. All distances (d_o, d_i, f) are measured along this axis.' },
@@ -4006,9 +7613,9 @@
     return keys;
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // MISCONCEPTIONS — per-topic warnings
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var MISCONCEPTIONS = {
     reflection: [
       { wrong: '"d_i = d_o for any mirror because reflection is symmetric."', right: 'Only true for PLANE mirrors. Curved mirrors form images at distances given by 1/f = 1/d_o + 1/d_i — which can be very different from d_o.' },
@@ -4040,9 +7647,9 @@
     ]
   };
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // AP EXAM QUIZ BANK — core items tagged by topic; optional extensions appended below
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   var AP_OPTICS_QUIZ = [
     // Reflection
     { tags: ['reflection', 'universal'], q: 'A concave mirror has f = 10 cm. An object is placed 5 cm in front. The image is:',
@@ -4212,9 +7819,9 @@
     return picked.map(_shuffleOpticsQuestionChoices);
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // PLUGIN REGISTRATION + UI
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   window.StemLab.registerTool('opticsLab', {
     icon: '🔆',
     label: 'Optics Lab',
@@ -4283,29 +7890,39 @@
             mode: 'home',  // home | reflection | refraction | lenses | interference | diffraction | polarization | quiz
             showOpticsLibrary: false,
             // Reflection
-            reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflObjH: 6,
-            reflShowMath: false,
+            reflMirrorType: 'concave', reflFocal: 10, reflDo: 25, reflObjH: 6, reflScreenCm: 15,
+            reflShowMath: false, reflShow3D: false,
             // Refraction
             refrN1: 1.000, refrN2: 1.520, refrTheta1: 30,
+            refrShow3D: false, refrShowWindow: false,
             refrShowMath: false,
             // Lenses
-            lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5,
+            lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 5, lensScreenCm: 20,
             lensShowMath: false, lensShow3D: false,
             // Interference (Young's double-slit)
             intLambda: 600, intSlitSep: 0.10, intScreenL: 1.0, intSlitWidth: 50,
             intShowMath: false,
             // Diffraction (single slit + grating)
-            diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5, diffGrating: 600,
+            diffMode: 'single', diffLambda: 600, diffSlitWidth: 30, diffScreenL: 1.5, diffGrating: 600, diffGratingDuty: 50,
             diffShowMath: false,
             // Polarization
-            polTheta2: 30, polTheta3: 90, polUseP3: false,
+            polTheta2: 30, polTheta3: 90, polUseP3: false, polQwp: false,
             polShowMath: false,
             // Glossary, AI grader, samples
             showGlossary: false,
             aiDrafts: {}, aiResponse: null, aiResponseTab: null, aiLoadingTab: null, aiGradedCount: 0,
             activeSampleId: null, lastTopicTab: null,
-            // Prediction notebook (kept in the current lab session)
+            // Persistent predict → observe → explain notebook
             opPredictionDrafts: {}, opPredictionNotes: {},
+            opObservationDrafts: {}, opObservationNotes: {},
+            opTopicTouched: {}, opTopicSnapshots: {}, opTrialRuns: {},
+            opTrialHistoryExpanded: {}, opMissionStage: {},
+            opActiveVariable: '', opMotionEnabled: true, opFocusMode: false, opViewportWidth: 1100,
+            intShowWavefield3D: false, diffShowWavefield3D: false,
+            intWavefieldProbe: 1, diffWavefieldProbe: 1,
+            intScreenProbeMm: 0, diffScreenProbeMm: 0,
+            opWavefieldCamera: 'oblique',
+            opticsLibraryGroup: 'explore', opticsLibraryQuery: '', opticsRecentModes: [],
             // Quiz
             quizQuestions: null, quizAnswers: [], quizSubmitted: false, quizCorrect: 0, quizBestCorrect: 0, quizCompletedCount: 0,
             // Quest tracking
@@ -4349,6 +7966,11 @@
             if (seed.quizMastery && !d.quizMastery) merge.quizMastery = seed.quizMastery;
             if (seed.quizCompletedCount != null && !d.quizCompletedCount) merge.quizCompletedCount = seed.quizCompletedCount;
             if (seed.quizBestCorrect != null && (d.quizBestCorrect == null || seed.quizBestCorrect > d.quizBestCorrect)) merge.quizBestCorrect = seed.quizBestCorrect;
+            ['opPredictionDrafts', 'opPredictionNotes', 'opObservationDrafts', 'opObservationNotes',
+              'opTopicTouched', 'opTopicSnapshots', 'opTrialRuns', 'opMissionStage', 'aiDrafts', 'opticsRecentModes'].forEach(function(key) {
+              if (seed[key] && typeof seed[key] === 'object') merge[key] = seed[key];
+            });
+            if (seed.opMotionEnabled != null) merge.opMotionEnabled = !!seed.opMotionEnabled;
             if (Object.keys(merge).length > 0) {
               setLabToolData(function (prev) {
                 return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, merge) });
@@ -4372,12 +7994,25 @@
             quizMastery: d.quizMastery || {},
             quizCompletedCount: d.quizCompletedCount || 0,
             quizBestCorrect: d.quizBestCorrect || 0,
+            opPredictionDrafts: d.opPredictionDrafts || {},
+            opPredictionNotes: d.opPredictionNotes || {},
+            opObservationDrafts: d.opObservationDrafts || {},
+            opObservationNotes: d.opObservationNotes || {},
+            opTopicTouched: d.opTopicTouched || {},
+            opTopicSnapshots: d.opTopicSnapshots || {},
+            opTrialRuns: d.opTrialRuns || {},
+            opMissionStage: d.opMissionStage || {},
+            opMotionEnabled: d.opMotionEnabled !== false,
+            aiDrafts: d.aiDrafts || {},
+            opticsRecentModes: d.opticsRecentModes || [],
             _ts: Date.now()
           };
           window.__alloflowOpticsLab = snapshot;
           try { localStorage.setItem('opticsLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
         } catch (e) {}
-      }, [d.quizMastery, d.quizCompletedCount]);
+      }, [d.quizMastery, d.quizCompletedCount, d.quizBestCorrect, d.opPredictionDrafts,
+        d.opPredictionNotes, d.opObservationDrafts, d.opObservationNotes,
+        d.opTopicTouched, d.opTopicSnapshots, d.opTrialRuns, d.opMissionStage, d.opMotionEnabled, d.aiDrafts, d.opticsRecentModes]);
 
       // Hot-reload from a project-JSON load mid-session.
       React.useEffect(function () {
@@ -4389,6 +8024,11 @@
               if (w.quizMastery) patch.quizMastery = w.quizMastery;
               if (w.quizCompletedCount != null) patch.quizCompletedCount = w.quizCompletedCount;
               if (w.quizBestCorrect != null) patch.quizBestCorrect = w.quizBestCorrect;
+              ['opPredictionDrafts', 'opPredictionNotes', 'opObservationDrafts', 'opObservationNotes',
+                'opTopicTouched', 'opTopicSnapshots', 'opTrialRuns', 'opMissionStage', 'aiDrafts', 'opticsRecentModes'].forEach(function(key) {
+                if (w[key] && typeof w[key] === 'object') patch[key] = w[key];
+              });
+              if (w.opMotionEnabled != null) patch.opMotionEnabled = !!w.opMotionEnabled;
               return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, patch) });
             });
           } catch (e) {}
@@ -4409,6 +8049,26 @@
             patch[k] = v;
           }
           next.opticsLab = Object.assign({}, prev.opticsLab, patch);
+          var activeTopic = next.opticsLab.mode;
+          var topicKeys = OPTICS_TOPIC_CONTROL_KEYS[activeTopic] || [];
+          var changedControl = Object.keys(patch).some(function(key) { return topicKeys.indexOf(key) !== -1; });
+          if (changedControl && !Object.prototype.hasOwnProperty.call(patch, 'opTopicTouched')) {
+            var touched = Object.assign({}, prev.opticsLab.opTopicTouched || {});
+            touched[activeTopic] = true;
+            next.opticsLab.opTopicTouched = touched;
+            var snapshots = Object.assign({}, prev.opticsLab.opTopicSnapshots || {});
+            var priorSnapshot = snapshots[activeTopic] || {};
+            snapshots[activeTopic] = {
+              before: priorSnapshot.before || _captureOpticsTopicState(activeTopic, prev.opticsLab),
+              after: _captureOpticsTopicState(activeTopic, next.opticsLab)
+            };
+            next.opticsLab.opTopicSnapshots = snapshots;
+          }
+          if (patch.mode && patch.mode !== 'home' && !Object.prototype.hasOwnProperty.call(patch, 'opticsRecentModes')) {
+            var recentModes = (prev.opticsLab.opticsRecentModes || []).filter(function(mode) { return mode !== patch.mode; });
+            recentModes.unshift(patch.mode);
+            next.opticsLab.opticsRecentModes = recentModes.slice(0, 6);
+          }
           if (['reflection', 'refraction', 'lenses', 'interference', 'diffraction', 'polarization'].indexOf(next.opticsLab.mode) !== -1) {
             next.opticsLab.simRunOnce = true;
           }
@@ -4426,6 +8086,30 @@
           return next;
         });
       }
+
+      React.useEffect(function() {
+        if (typeof window === 'undefined' || !window.addEventListener) return;
+        var frame = null;
+        var frameIsTimer = false;
+        function syncViewport() { frame = null; upd('opViewportWidth', window.innerWidth || 1100); }
+        function scheduleViewport() {
+          if (frame != null) {
+            if (frameIsTimer) clearTimeout(frame);
+            else if (window.cancelAnimationFrame) window.cancelAnimationFrame(frame);
+          }
+          frameIsTimer = !window.requestAnimationFrame;
+          frame = frameIsTimer ? setTimeout(syncViewport, 0) : window.requestAnimationFrame(syncViewport);
+        }
+        scheduleViewport();
+        window.addEventListener('resize', scheduleViewport);
+        return function() {
+          window.removeEventListener('resize', scheduleViewport);
+          if (frame != null) {
+            if (frameIsTimer) clearTimeout(frame);
+            else if (window.cancelAnimationFrame) window.cancelAnimationFrame(frame);
+          }
+        };
+      }, []);
 
       // Award simulation milestones from effects, never from render paths.
       React.useEffect(function() {
@@ -4498,7 +8182,14 @@
       var opMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
       var opTotalQuestions = AP_OPTICS_QUIZ.length || 0;
       var opMasteredCount = AP_OPTICS_QUIZ.filter(function(q) { return !!opMastery[q.q]; }).length;
-      var showFullOpticsNav = !!d.showOpticsLibrary || OP_CORE_MODES.indexOf(d.mode) === -1;
+      var opIsExpandedMode = OP_CORE_MODES.indexOf(d.mode) === -1;
+      var showFullOpticsNav = !!d.showOpticsLibrary || opIsExpandedMode;
+      React.useEffect(function() {
+        try {
+          var activeTab = document.getElementById('op-tab-' + d.mode);
+          if (activeTab && activeTab.scrollIntoView) activeTab.scrollIntoView({ block: 'nearest', inline: 'center' });
+        } catch (e) {}
+      }, [d.mode, showFullOpticsNav]);
       var opFocusInfo = {
         home: { title: t('stem.optics.focus_choose_bench', 'Choose a light bench'), copy: t('stem.optics.focus_choose_bench_copy', 'Start with a core simulation, then open the reference library when you need deeper AP support.') },
         reflection: { title: t('stem.optics.focus_reflection', 'Mirror bench'), copy: t('stem.optics.focus_reflection_copy', 'Move objects around curved mirrors and compare ray diagrams with the mirror equation.') },
@@ -4517,12 +8208,38 @@
         { id: 'refraction', title: t('stem.optics.route_refraction', 'Refraction'), copy: t('stem.optics.route_refraction_copy', 'Bend light across materials.') },
         { id: 'lenses', title: t('stem.optics.route_lenses', 'Lenses'), copy: t('stem.optics.route_lenses_copy', 'Form real and virtual images.') },
         { id: 'interference', title: t('stem.optics.route_interference', 'Interference'), copy: t('stem.optics.route_interference_copy', 'Build bright and dark fringes.') },
+        { id: 'diffraction', title: t('stem.optics.route_diffraction', 'Diffraction'), copy: t('stem.optics.route_diffraction_copy', 'Compare slit and grating patterns.') },
         { id: 'polarization', title: t('stem.optics.route_polarization', 'Polarizers'), copy: t('stem.optics.route_polarization_copy', 'Rotate axes and test brightness.') }
       ];
+      var OP_TAB_GROUPS = {
+        home: 'core', reflection: 'core', refraction: 'core', lenses: 'core', interference: 'core', diffraction: 'core', polarization: 'core',
+        phenomena: 'explore', calcs: 'explore', instruments: 'explore', lab_kits: 'explore', deep: 'explore',
+        worked: 'practice', sleuth: 'practice', quiz: 'practice', mastery: 'practice', inquiry: 'practice',
+        phenomena_db: 'reference', history: 'reference', glossary_ex: 'reference', reference: 'reference',
+        scientists: 'people', careers: 'people'
+      };
+      var OP_LIBRARY_GROUPS = [
+        { id: 'explore', label: t('stem.optics.library_explore', 'Explore') },
+        { id: 'practice', label: t('stem.optics.library_practice', 'Practice') },
+        { id: 'reference', label: t('stem.optics.library_reference', 'Reference') },
+        { id: 'people', label: t('stem.optics.library_people', 'People') },
+        { id: 'recent', label: t('stem.optics.library_recent', 'Recent') },
+        { id: 'all', label: t('stem.optics.library_all', 'All') }
+      ];
+      var opLibraryGroup = d.opticsLibraryGroup || 'explore';
+      var opLibraryQuery = String(d.opticsLibraryQuery || '').trim().toLowerCase();
 
       return h('div', {
-        className: 'opticslab-tool-shell',
+        className: 'opticslab-tool-shell' + (d.opFocusMode ? ' opticslab-focus-mode' : '') + (d.opMotionEnabled === false ? ' opticslab-motion-paused' : ''),
         'data-opticslab-tool': 'true',
+        onFocusCapture: function(event) {
+          var key = event.target && event.target.getAttribute && event.target.getAttribute('data-op-variable');
+          if (key && d.opActiveVariable !== key) upd('opActiveVariable', key);
+        },
+        onInputCapture: function(event) {
+          var key = event.target && event.target.getAttribute && event.target.getAttribute('data-op-variable');
+          if (key && d.opActiveVariable !== key) upd('opActiveVariable', key);
+        },
         style: {
           fontFamily: 'system-ui, sans-serif',
           background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 14,
@@ -4538,14 +8255,14 @@
         }
       },
         // Header
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
+        h('div', { className: 'opticslab-app-header', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', { style: { fontSize: 36 } }, '🔆'),
           h('div', { style: { flex: 1 } },
             h('h2', { style: { margin: 0, color: 'var(--op-accent-text, #7dd3fc)', fontSize: 24, fontWeight: 900 } }, t('stem.optics.optics_lab', 'Optics Lab')),
             h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, t('stem.optics.ap_physics_2_ray_diagrams_snell_s_law_', 'AP Physics 2: ray diagrams, Snell\'s law, mirrors, lenses, interference, diffraction, polarization. Side-by-side sims + calculators.'))
           )
         ),
-        h('section', { className: 'opticslab-focus-panel', 'data-opticslab-focus': 'true' },
+        h('section', { className: 'opticslab-focus-panel' + (d.mode === 'home' ? '' : ' opticslab-focus-panel--compact'), 'data-opticslab-focus': 'true' },
           h('div', { className: 'opticslab-focus-grid' },
             h('div', null,
               h('p', { className: 'opticslab-focus-kicker' }, t('stem.optics.light_bench', 'Light bench')),
@@ -4568,7 +8285,7 @@
                 })
               )
             ),
-            h('div', null,
+            h('div', { className: 'opticslab-focus-side' },
               h('div', { className: 'opticslab-status-grid' },
                 [
                   { label: t('stem.optics.status_station', 'Station'), value: opCurrentInfo.title },
@@ -4582,21 +8299,66 @@
                   );
                 })
               ),
-              h('button', {
-                type: 'button',
-                className: 'opticslab-library-toggle',
-                'data-op-focusable': 'true',
-                'aria-expanded': showFullOpticsNav ? 'true' : 'false',
-                onClick: function() { upd({ showOpticsLibrary: !d.showOpticsLibrary }); }
-              }, showFullOpticsNav ? t('stem.optics.hide_reference_tabs', 'Hide reference tabs') : t('stem.optics.show_reference_tabs', 'Show reference tabs'))
+              h('div', { className: 'opticslab-focus-actions' },
+                d.mode !== 'home' && h('button', {
+                  type: 'button', className: 'opticslab-home-button',
+                  'data-op-focusable': 'true',
+                  onClick: function() { upd({ mode: 'home', showOpticsLibrary: false }); }
+                }, t('stem.optics.back_to_benches', '← Bench home')),
+                d.mode === 'home' && d.lastTopicTab && h('button', {
+                  type: 'button', className: 'opticslab-home-button',
+                  'data-op-focusable': 'true',
+                  onClick: function() { upd({ mode: d.lastTopicTab, showOpticsLibrary: false }); }
+                }, 'Resume ' + d.lastTopicTab + ' →'),
+                h('button', {
+                  type: 'button',
+                  className: 'opticslab-library-toggle',
+                  'data-op-focusable': 'true',
+                  'aria-expanded': showFullOpticsNav ? 'true' : 'false',
+                  onClick: function() {
+                    if (showFullOpticsNav) {
+                      upd(opIsExpandedMode ? { mode: 'home', showOpticsLibrary: false } : { showOpticsLibrary: false });
+                    } else {
+                      upd({ showOpticsLibrary: true, opticsLibraryGroup: d.opticsLibraryGroup || 'explore' });
+                    }
+                  }
+                }, opIsExpandedMode
+                  ? t('stem.optics.return_to_core_benches', 'Return to core benches')
+                  : (showFullOpticsNav ? t('stem.optics.hide_reference_tabs', 'Hide reference tabs') : t('stem.optics.show_reference_tabs', 'Show reference tabs')))
+              )
             )
+          )
+        ),
+        showFullOpticsNav && h('div', {
+          className: 'opticslab-library-nav', role: 'search',
+          'aria-label': t('stem.optics.filter_reference_library', 'Filter reference library')
+        },
+          h('input', {
+            type: 'search', className: 'opticslab-library-search',
+            value: d.opticsLibraryQuery || '',
+            placeholder: t('stem.optics.search_library', 'Search library tabs…'),
+            'aria-label': t('stem.optics.search_library', 'Search library tabs'),
+            'data-op-focusable': 'true',
+            onChange: function(e) { upd('opticsLibraryQuery', e.target.value); }
+          }),
+          h('div', { className: 'opticslab-library-groups', role: 'group', 'aria-label': t('stem.optics.library_categories', 'Library categories') },
+            OP_LIBRARY_GROUPS.map(function(group) {
+              return h('button', {
+                key: group.id, type: 'button', className: 'opticslab-library-group',
+                'aria-pressed': opLibraryGroup === group.id ? 'true' : 'false',
+                'data-op-focusable': 'true',
+                onClick: function() { upd('opticsLibraryGroup', group.id); }
+              }, group.label);
+            })
           )
         ),
         // Mode tabs
         h('div', {
           role: 'tablist',
           'aria-label': t('stem.optics.optics_lab_navigation', 'Optics Lab navigation'),
-          style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }
+          'aria-orientation': 'horizontal',
+          className: 'opticslab-tab-strip',
+          'data-opticslab-tab-strip': 'true'
         },
           (showFullOpticsNav ? [
             { id: 'home', label: t('stem.optics.home', '🏠 Home'), desc: t('stem.optics.sample_problems', 'Sample problems') },
@@ -4633,7 +8395,15 @@
             { id: 'quiz', label: t('stem.optics.quiz', 'Quiz'), desc: t('stem.optics.ap_exam_practice', 'AP exam practice') },
             { id: 'mastery', label: t('stem.optics.mastery', 'Mastery'), desc: t('stem.optics.concept_progress_which_questions_you_h', 'Concept progress + which questions you have nailed') },
             { id: 'inquiry', label: t('stem.optics.inquiry', 'Inquiry'), desc: t('stem.optics.snell_s_law_sandbox_predict_tir_disper', 'Snell\'s law sandbox - predict TIR + dispersion') }
-          ]).map(function(tab) {
+          ]).filter(function(tab) {
+            if (!showFullOpticsNav || tab.id === d.mode) return true;
+            var matchesQuery = !opLibraryQuery || (tab.label + ' ' + tab.desc).toLowerCase().indexOf(opLibraryQuery) !== -1;
+            var matchesGroup = opLibraryGroup === 'all'
+              || (opLibraryGroup === 'recent'
+                ? (d.opticsRecentModes || []).indexOf(tab.id) !== -1
+                : OP_TAB_GROUPS[tab.id] === opLibraryGroup);
+            return matchesQuery && matchesGroup;
+          }).map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
               key: tab.id,
@@ -4745,9 +8515,9 @@
           var incY = cy - Math.cos(rad) * len;
           var refX = isTIR ? cx + Math.sin(rad) * len : cx + Math.sin(theta2 * Math.PI / 180) * len;
           var refY = isTIR ? cy - Math.cos(rad) * len : cy + Math.cos(theta2 * Math.PI / 180) * len;
-          return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
+          return h('div', { className: 'opticslab-dark-inquiry', style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, t('stem.optics.snell_s_law_inquiry_refraction_tir_dis', '🔬 Snell\'s Law Inquiry — Refraction, TIR, Dispersion')),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂, incidence angle, and wavelength. Predict where the system transitions from refraction to TIR. No score, no reveal.')),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, t('stem.optics.set_n_n_incidence_angle_and_wavelength', 'Set n₁, n₂, incidence angle, and wavelength, then observe where the model transitions from refraction to total internal reflection. The result updates live; record a hypothesis or pattern you notice.')),
             h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 10 } },
@@ -4765,11 +8535,11 @@
             h('svg', { role: 'img', 'aria-label': "Snell law inquiry diagram showing refraction, total internal reflection, and dispersion.", width: '100%', height: 200, viewBox: '0 0 320 200', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
               h('rect', { x: 0, y: 0, width: 320, height: 100, fill: '#0a1a2a', opacity: 0.4 }),
               h('rect', { x: 0, y: 100, width: 320, height: 100, fill: sm.color, opacity: 0.12 }),
-              h('line', { x1: 0, y1: 100, x2: 320, y2: 100, stroke: '#475569', strokeWidth: 1 }),
-              h('line', { x1: cx, y1: 0, x2: cx, y2: 200, stroke: '#1e293b', strokeDasharray: '3 3' }),
+              h('line', { x1: 0, y1: 100, x2: 320, y2: 100, stroke: '#94a3b8', strokeWidth: 1 }),
+              h('line', { x1: cx, y1: 0, x2: cx, y2: 200, stroke: '#64748b', strokeDasharray: '3 3' }),
               h('text', { x: 8, y: 14, fill: '#94a3b8', fontSize: 9 }, 'medium 1 (n₁=' + iq.n1.toFixed(2) + ')'),
               h('text', { x: 8, y: 116, fill: '#94a3b8', fontSize: 9 }, 'medium 2 (n₂=' + iq.n2.toFixed(2) + ')'),
-              h('text', { x: cx + 4, y: 12, fill: '#475569', fontSize: 8 }, 'normal'),
+              h('text', { x: cx + 4, y: 12, fill: '#cbd5e1', fontSize: 8 }, 'normal'),
               h('line', { x1: incX, y1: incY, x2: cx, y2: cy, stroke: '#fbbf24', strokeWidth: 2 }),
               h('text', { x: incX - 6, y: incY - 4, fill: '#fbbf24', fontSize: 10, textAnchor: 'end' }, 'θ₁=' + iq.angle + '°'),
               // wavelength → visible-light color (rough mapping for the refracted ray;
@@ -4812,7 +8582,7 @@
             ),
             h('div', { style: { display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' } },
               [['air', 1.00], ['water', 1.33], ['glass', 1.50], ['acrylic', 1.49], ['diamond', 2.42]].map(function(p) {
-                return h('button', { key: p[0], onClick: function() { setIQ({ n2: p[1] }); }, style: { padding: '3px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, p[0] + ' (' + p[1] + ')');
+                return h('button', { key: p[0], className: 'opticslab-dark-control', onClick: function() { setIQ({ n2: p[1] }); }, style: { padding: '3px 8px', fontSize: 10, borderRadius: 4, border: '1px solid #64748b', background: '#0a0a1a', color: '#cbd5e1', cursor: 'pointer' } }, p[0] + ' (' + p[1] + ')');
               })
             ),
             h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
@@ -4820,7 +8590,7 @@
                 var t = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: t, n1: iq.n1.toFixed(2), n2: iq.n2.toFixed(2), a: iq.angle, l: iq.wavelength, tir: isTIR, state: sm.label }]) });
               }, style: { flex: 1, padding: 6, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, t('stem.optics.log_this_configuration', '📋 Log this configuration')),
-              h('button', { onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }); }, 'data-op-focusable': 'true', style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, t('stem.optics.reset', 'Reset'))
+              h('button', { className: 'opticslab-dark-control', onClick: function() { setIQ({ n1: 1.0, n2: 1.5, angle: 30, wavelength: 550, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }); }, 'data-op-focusable': 'true', style: { padding: '6px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #64748b', background: '#0a0a1a', color: '#cbd5e1', cursor: 'pointer' } }, t('stem.optics.reset', 'Reset'))
             ),
             iq.log.length > 0 && h('div', { style: { maxHeight: 80, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · n₁=' + e.n1 + ' n₂=' + e.n2 + ' θ=' + e.a + ' λ=' + e.l + (e.tir ? ' · TIR' : '')); })
@@ -4882,9 +8652,9 @@
     }
   });
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // HOME PANEL — welcome + sample problem library + topic shortcuts
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderHome(d, upd, h) {
     var _hMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
     var _hMasteredCount = AP_OPTICS_QUIZ.filter(function (q) { return !!_hMastery[q.q]; }).length;
@@ -4938,10 +8708,11 @@
       // Sample problem library
       h('div', { style: { marginBottom: 18 } },
         h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '📚 AP Physics 2 sample problems'),
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10 } },
           SAMPLE_PROBLEMS.map(function(s) {
             return h('button', {
               key: s.id,
+              className: 'opticslab-sample-card',
               onClick: function() { loadSampleProblem(s.id, upd); },
               'data-op-focusable': 'true',
               style: {
@@ -4975,6 +8746,7 @@
           ].map(function(card) {
             return h('button', {
               key: card.mode,
+              className: 'opticslab-topic-shortcut',
               onClick: function() { upd('mode', card.mode); },
               'data-op-focusable': 'true',
               style: {
@@ -4995,9 +8767,9 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // GLOSSARY + MISCONCEPTIONS + AI GRADER — rendered inside topic panels
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderGlossaryPanel(tab, d, upd, h) {
     var keys = _glossaryForTab(tab);
     if (keys.length === 0) return null;
@@ -5042,6 +8814,36 @@
       })
     );
   }
+  function _localOpticsRubric(tab, draft) {
+    var text = String(draft || '').toLowerCase();
+    var topicTerms = {
+      reflection: ['reflect', 'mirror', 'ray', 'image'],
+      refraction: ['refract', 'snell', 'index', 'normal', 'tir', 'critical'],
+      lenses: ['lens', 'focal', 'ray', 'image', 'magnification'],
+      interference: ['interference', 'fringe', 'path', 'wavelength', 'slit'],
+      diffraction: ['diffraction', 'slit', 'minimum', 'wavelength', 'grating'],
+      polarization: ['polar', 'malus', 'intensity', 'axis', 'angle']
+    };
+    function hasAny(words) { return words.some(function(word) { return text.indexOf(word) !== -1; }); }
+    var checks = [
+      { label: 'Physics principle', ok: hasAny(topicTerms[tab] || [tab]), strength: 'Names a relevant optics principle or quantity.', issue: 'Name the governing optics principle or quantity.' },
+      { label: 'Cause and effect', ok: hasAny(['because', 'therefore', 'so ', 'causes', 'means']), strength: 'Connects cause and result.', issue: 'Use “because” or “therefore” to connect the setup to the result.' },
+      { label: 'Observable outcome', ok: hasAny(['increase', 'decrease', 'larger', 'smaller', 'toward', 'away', 'real', 'virtual', 'bright', 'dark', 'parallel', 'converge', 'diverge']), strength: 'States a direction, classification, or observable outcome.', issue: 'State the direction of change or classify the observed result.' },
+      { label: 'Model evidence', ok: hasAny(['diagram', 'calculation', 'equation', 'value', 'angle', 'distance', 'intensity', 'pattern', 'ray']), strength: 'Refers to evidence from the model.', issue: 'Cite a ray, value, equation, or pattern visible in the model.' },
+      { label: 'Clear explanation', ok: text.trim().length >= 60 && /[.!?]/.test(text), strength: 'Provides a complete, readable explanation.', issue: 'Use at least two clear clauses or sentences.' }
+    ];
+    var strengths = checks.filter(function(check) { return check.ok; }).map(function(check) { return check.strength; });
+    var issues = checks.filter(function(check) { return !check.ok; }).map(function(check) { return check.issue; });
+    return {
+      local: true,
+      score: strengths.length * 2,
+      strengths: strengths,
+      issues: issues,
+      criteria: checks.map(function(check) { return { label: check.label, pass: check.ok, guidance: check.ok ? check.strength : check.issue }; }),
+      improved_version: null
+    };
+  }
+
   // isMounted is threaded in from the component that owns the ref. The two
   // post-await guards below read _mounted directly, but this function lives at
   // module scope and never could see it — so both threw inside the promise
@@ -5052,7 +8854,13 @@
     var stillMounted = function () { return !isMounted || isMounted.current !== false; };
     function grade() {
       if (!callGemini) {
-        if (addToast) addToast('AI grading unavailable in this environment.', 'error');
+        var localDraft = d.aiDrafts && d.aiDrafts[tab];
+        if (!localDraft || localDraft.trim().length < 10) {
+          if (addToast) addToast('Write a sentence or two of explanation first.', 'info');
+          return;
+        }
+        upd({ aiLoadingTab: null, aiResponseTab: tab, aiResponse: _localOpticsRubric(tab, localDraft) });
+        if (addToast) addToast('Local rubric feedback ready', 'success');
         return;
       }
       var draft = d.aiDrafts && d.aiDrafts[tab];
@@ -5101,14 +8909,18 @@
     var isLoading = d.aiLoadingTab === tab;
     var resp = (d.aiResponseTab === tab) ? d.aiResponse : null;
     return h('div', {
+      id: 'op-explain-' + tab, tabIndex: -1,
+      className: 'opticslab-topic-card',
       style: {
         background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.45)',
-        borderRadius: 10, padding: 12, marginTop: 12
+        borderRadius: 10, padding: 12, marginTop: 12, scrollMarginTop: 12
       }
     },
-      h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-purple-text, #d8b4fe)', marginBottom: 6 } }, '🤖 AI-graded explanation'),
+      h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-purple-text, #d8b4fe)', marginBottom: 6 } }, '3 · Explain what happened'),
       h('p', { style: { margin: '0 0 8px', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
-        'Write a 2-3 sentence physics explanation of what you just observed. AI feedback grades the physics accuracy and points out common errors.'
+        callGemini
+          ? 'Write a 2-3 sentence physics explanation of what you just observed. AI feedback grades the physics accuracy and points out common errors.'
+          : 'Write a 2-3 sentence physics explanation. The offline rubric checks for a principle, cause-and-effect reasoning, an observable outcome, and evidence from the model.'
       ),
       h('label', { htmlFor: 'op-ai-' + tab, style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', display: 'block', marginBottom: 2 } }, 'Your explanation:'),
       h('textarea', {
@@ -5136,21 +8948,33 @@
           borderRadius: 8, cursor: isLoading ? 'wait' : 'pointer',
           fontSize: 12, fontWeight: 700
         }
-      }, isLoading ? '🤖 Grading…' : '🤖 Grade my explanation'),
+      }, isLoading ? 'Grading…' : (callGemini ? 'Grade my explanation' : 'Check with offline rubric')),
       resp && h('div', { style: { marginTop: 10, padding: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 8 } },
         resp.error
           ? h('div', { style: { fontSize: 12, color: '#fca5a5' } }, '⚠ ' + resp.error)
           : h('div', null,
               _isNum(resp.score) && h('div', { style: { fontSize: 16, fontWeight: 900, color: 'var(--allo-stem-text, #fef3c7)', marginBottom: 6 } },
-                'Score: ' + resp.score + ' / 10'
+                (resp.local ? 'Local rubric estimate: ' : 'Score: ') + resp.score + ' / 10'
               ),
-              Array.isArray(resp.strengths) && resp.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
+              resp.local && h('p', { style: { margin: '0 0 7px', fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'This deterministic checklist works offline; it does not judge scientific nuance like teacher or AI feedback.'),
+              resp.local && Array.isArray(resp.criteria) && h('div', { className: 'opticslab-rubric-list', 'aria-label': 'Explanation checklist' },
+                resp.criteria.map(function(criterion, i) {
+                  return h('div', { key: i, className: 'opticslab-rubric-item', 'data-pass': criterion.pass ? 'true' : 'false' },
+                    h('span', { className: 'opticslab-rubric-mark', 'aria-hidden': 'true' }, criterion.pass ? '✓' : '!'),
+                    h('span', null,
+                      h('strong', { style: { display: 'block', color: 'var(--allo-stem-text,#e2e8f0)' } }, criterion.label),
+                      criterion.guidance
+                    )
+                  );
+                })
+              ),
+              !resp.local && Array.isArray(resp.strengths) && resp.strengths.length > 0 && h('div', { style: { marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', marginBottom: 2 } }, '✓ Strengths'),
                 h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                   resp.strengths.map(function(s, i) { return h('li', { key: i }, s); })
                 )
               ),
-              Array.isArray(resp.issues) && resp.issues.length > 0 && h('div', { style: { marginBottom: 8 } },
+              !resp.local && Array.isArray(resp.issues) && resp.issues.length > 0 && h('div', { style: { marginBottom: 8 } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', marginBottom: 2 } }, '✗ Issues to address'),
                 h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } },
                   resp.issues.map(function(s, i) { return h('li', { key: i }, s); })
@@ -5167,14 +8991,14 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // SIGN CONVENTION SLEUTH (net-new mini-game)
   // 10 vignettes. Each describes a setup (object distance + lens/mirror type
   // + focal length); player picks the resulting image type from 4 options:
   // real-inverted-magnified / real-inverted-reduced / virtual-upright-magnified
   // / virtual-upright-reduced. Tests the AP Physics 2 canonical reflex of
   // predicting image character from object position relative to focal length.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderSleuthPanel(d, upd, h, addToast) {
     var TYPES = [
       { id: 'realInvMag',  label: 'Real, inverted, magnified',  color: '#ef4444', icon: '🔻',
@@ -5356,16 +9180,16 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // QUIZ PANEL — 5-question AP-style multiple choice
-  // ──────────────────────────────────────────────────────────────────
-  // ──────────────────────────────────────────────────────────────────
+  // ---
+  // ---
   // CONCEPT MASTERY PANEL — cross-attempt log of AP quiz questions the
   // student has answered correctly at least once, rolled up into the six
   // main AP Physics 2 optics concepts. Mirrors the BirdLab life list +
   // PetsLab decoder mastery pattern: per-attempt scores reset; mastery
   // accumulates forever.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderMasteryPanel(d, upd, h) {
     var mastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
     var totalQuestions = AP_OPTICS_QUIZ.length;
@@ -5751,17 +9575,59 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // TOPIC-PANEL TEMPLATE — side-by-side sim + calculator,
   // followed by glossary, misconceptions, and AI-graded explanation.
   // Pass tab='reflection'/'refraction'/etc. to opts.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderTopicPanel(opts) {
     var h = opts.h, d = opts.d, upd = opts.upd, tab = opts.tab;
     var predictionDrafts = (d.opPredictionDrafts && typeof d.opPredictionDrafts === 'object') ? d.opPredictionDrafts : {};
     var predictionNotes = (d.opPredictionNotes && typeof d.opPredictionNotes === 'object') ? d.opPredictionNotes : {};
     var predictionDraft = String(predictionDrafts[tab] || '');
     var predictionNote = String(predictionNotes[tab] || '');
+    var observationDrafts = (d.opObservationDrafts && typeof d.opObservationDrafts === 'object') ? d.opObservationDrafts : {};
+    var observationNotes = (d.opObservationNotes && typeof d.opObservationNotes === 'object') ? d.opObservationNotes : {};
+    var observationDraft = String(observationDrafts[tab] || '');
+    var observationNote = String(observationNotes[tab] || '');
+    var topicTouched = !!(d.opTopicTouched && d.opTopicTouched[tab]);
+    var topicSnapshot = (d.opTopicSnapshots && d.opTopicSnapshots[tab]) || {};
+    var trialRunsByTopic = (d.opTrialRuns && typeof d.opTrialRuns === 'object') ? d.opTrialRuns : {};
+    var topicTrials = Array.isArray(trialRunsByTopic[tab]) ? trialRunsByTopic[tab].filter(function(trial) { return trial && typeof trial === 'object'; }) : [];
+    var trialHistoryByTopic = (d.opTrialHistoryExpanded && typeof d.opTrialHistoryExpanded === 'object') ? d.opTrialHistoryExpanded : {};
+    var historyExpanded = !!trialHistoryByTopic[tab];
+    function toggleTrialHistory() {
+      var nextHistory = Object.assign({}, trialHistoryByTopic);
+      nextHistory[tab] = !historyExpanded;
+      upd('opTrialHistoryExpanded', nextHistory);
+    }
+    var latestTrial = topicTrials.length ? topicTrials[topicTrials.length - 1] : null;
+    var previousComparableTrial = null;
+    if (latestTrial) {
+      for (var trialIndex = topicTrials.length - 2; trialIndex >= 0; trialIndex--) {
+        if (topicTrials[trialIndex] && topicTrials[trialIndex].series === latestTrial.series) {
+          previousComparableTrial = topicTrials[trialIndex];
+          break;
+        }
+      }
+    }
+    var trialComparisonCopy = '';
+    if (latestTrial && previousComparableTrial) {
+      if (_isNum(latestTrial.x) && _isNum(previousComparableTrial.x) && _isNum(latestTrial.y) && _isNum(previousComparableTrial.y)) {
+        var xDelta = latestTrial.x - previousComparableTrial.x;
+        var yDelta = latestTrial.y - previousComparableTrial.y;
+        trialComparisonCopy = _opticsTrialDelta(latestTrial.xLabel, xDelta, latestTrial.xUnit)
+          + '; ' + _opticsTrialDelta(latestTrial.yLabel, yDelta, latestTrial.yUnit) + '.';
+      } else {
+        trialComparisonCopy = 'Previous: ' + previousComparableTrial.summary + ' Latest: ' + latestTrial.summary;
+      }
+    }
+    function formatTopicState(values) {
+      if (!values || typeof values !== 'object') return 'No setup captured yet.';
+      var keys = Object.keys(values);
+      if (!keys.length) return 'No setup captured yet.';
+      return keys.map(function(key) { return key.replace(/^(refl|refr|lens|int|diff|pol)/, '') + ': ' + values[key]; }).join(' · ');
+    }
     function savePrediction() {
       var note = predictionDraft.trim();
       if (!note) {
@@ -5780,6 +9646,101 @@
       delete nextDrafts[tab];
       upd({ opPredictionNotes: nextNotes, opPredictionDrafts: nextDrafts });
     }
+    function saveObservation() {
+      var note = observationDraft.trim();
+      if (!note) {
+        if (opts.addToast) opts.addToast('Write what you observed before saving it.', 'info');
+        return;
+      }
+      var nextNotes = Object.assign({}, observationNotes);
+      var touched = Object.assign({}, d.opTopicTouched || {});
+      var snapshots = Object.assign({}, d.opTopicSnapshots || {});
+      var prior = snapshots[tab] || {};
+      nextNotes[tab] = note;
+      touched[tab] = true;
+      snapshots[tab] = {
+        before: prior.before || _captureOpticsTopicState(tab, d),
+        after: _captureOpticsTopicState(tab, d)
+      };
+      upd({ opObservationNotes: nextNotes, opTopicTouched: touched, opTopicSnapshots: snapshots });
+      opAnnounce('Observation saved for ' + tab + '. Compare it with your prediction.');
+    }
+    function clearObservation() {
+      var nextNotes = Object.assign({}, observationNotes);
+      var nextDrafts = Object.assign({}, observationDrafts);
+      delete nextNotes[tab];
+      delete nextDrafts[tab];
+      upd({ opObservationNotes: nextNotes, opObservationDrafts: nextDrafts });
+    }
+    function applyTopicPreset(preset) {
+      upd(Object.assign({ activeSampleId: null }, preset.patch));
+      opAnnounce(preset.label + ' preset loaded for ' + tab + '.');
+    }
+    function resetTopicExperiment() {
+      var touched = Object.assign({}, d.opTopicTouched || {});
+      var snapshots = Object.assign({}, d.opTopicSnapshots || {});
+      delete touched[tab];
+      delete snapshots[tab];
+      upd(Object.assign({}, OPTICS_TOPIC_DEFAULTS[tab] || {}, {
+        activeSampleId: null, opTopicTouched: touched, opTopicSnapshots: snapshots
+      }));
+      opAnnounce(tab + ' experiment reset to its default setup. Notebook entries were kept.');
+    }
+    function setComparisonBaseline() {
+      var snapshots = Object.assign({}, d.opTopicSnapshots || {});
+      var current = _captureOpticsTopicState(tab, d);
+      snapshots[tab] = { before: current, after: current };
+      upd('opTopicSnapshots', snapshots);
+      opAnnounce('Current ' + tab + ' setup is now the comparison baseline. Change one control for an isolated contrast.');
+    }
+    function captureTrial() {
+      var trial = _opticsTrialRecord(tab, d);
+      var nextRuns = Object.assign({}, trialRunsByTopic);
+      nextRuns[tab] = topicTrials.concat([trial]).slice(-20);
+      upd('opTrialRuns', nextRuns);
+      opAnnounce('Captured ' + tab + ' trial ' + nextRuns[tab].length + ': ' + trial.summary);
+      if (opts.addToast) opts.addToast('Trial captured in the evidence journal', 'success');
+    }
+    function restoreTrial(trial) {
+      if (!trial || !trial.setup) return;
+      upd(Object.assign({ activeSampleId: null }, trial.setup));
+      opAnnounce('Restored a ' + tab + ' trial setup.');
+    }
+    function clearTrials() {
+      var nextRuns = Object.assign({}, trialRunsByTopic);
+      delete nextRuns[tab];
+      upd('opTrialRuns', nextRuns);
+      opAnnounce('Cleared the ' + tab + ' evidence journal.');
+    }
+    function formatTrialTime(trial) {
+      try { return new Date(trial.capturedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+      catch (e) { return 'Captured run'; }
+    }
+    var explanationDraft = String((d.aiDrafts && d.aiDrafts[tab]) || '');
+    function jumpToTopicSection(id) {
+      try {
+        var node = document.getElementById(id);
+        if (!node) return;
+        var reduceMotion = typeof window !== 'undefined' && window.matchMedia
+          && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (node.scrollIntoView) node.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+        if (node.focus) node.focus({ preventScroll: true });
+      } catch (e) {}
+    }
+    function openPredictionDrawer() {
+      try {
+        var drawer = document.getElementById('op-prelab-' + tab);
+        if (drawer) drawer.open = true;
+      } catch (e) {}
+      jumpToTopicSection('op-predict-' + tab);
+    }
+    function openLearningDrawer() {
+      try {
+        var drawer = document.getElementById('op-learning-' + tab);
+        if (drawer) drawer.open = true;
+      } catch (e) {}
+      jumpToTopicSection('op-explain-' + tab);
+    }
     var researchQuestion = null;
     if (d.activeSampleId) {
       for (var i = 0; i < SAMPLE_PROBLEMS.length; i++) {
@@ -5791,24 +9752,47 @@
     }
     // Topic-specific accent palette — keys off the tab id so each topic feels distinct
     var topicMeta = {
-      'reflection':   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', hint: 'Mirrors flip the path. Predict where the image lands before running the sim.',
+      'reflection':   { accent: '#0ea5e9', ink: '#0369a1', soft: 'rgba(14,165,233,0.10)', hint: 'Mirrors flip the path. Predict where the image lands before running the sim.',
         tryThis: 'Drag the object inside the focal length of a concave mirror. Predict whether the image will be real or virtual BEFORE you look \u2014 then check.' },
-      'refraction':   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  hint: "Light slows in denser media. Snell's law: n\u2081 sin\u03B8\u2081 = n\u2082 sin\u03B8\u2082.",
+      'refraction':   { accent: '#06b6d4', ink: '#0e7490', soft: 'rgba(6,182,212,0.10)',  hint: "Light slows in denser media. Snell's law: n\u2081 sin\u03B8\u2081 = n\u2082 sin\u03B8\u2082.",
         tryThis: 'Push the angle past the critical angle (try water \u2192 air, n\u2081 = 1.33). Watch the refracted ray vanish into total internal reflection \u2014 the basis of fiber optics and diamond brilliance.' },
-      'lenses':       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', hint: 'Same equation as a mirror, different sign convention. Real vs virtual depends on object distance.',
+      'lenses':       { accent: '#a855f7', ink: '#7e22ce', soft: 'rgba(168,85,247,0.10)', hint: 'Same equation as a mirror, different sign convention. Real vs virtual depends on object distance.',
         tryThis: 'Move the object from beyond 2f \u2192 exactly at 2f \u2192 between f and 2f \u2192 inside f. Watch the image flip from reduced to magnified, then jump to virtual the moment you cross f.' },
-      'interference': { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', hint: 'Two slits: bright fringes where path difference equals an integer number of wavelengths.',
+      'interference': { accent: '#f59e0b', ink: '#92400e', soft: 'rgba(245,158,11,0.10)', hint: 'Two slits: bright fringes where path difference equals an integer number of wavelengths.',
         tryThis: 'Halve the slit spacing d. Predict what happens to fringe spacing y = \u03BBL/d before changing it \u2014 then verify. Now try doubling \u03BB. Same prediction game.' },
-      'diffraction':  { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  hint: 'Light bends around edges. The narrower the slit relative to \u03BB, the more spread.',
+      'diffraction':  { accent: '#ef4444', ink: '#b91c1c', soft: 'rgba(239,68,68,0.10)',  hint: 'Light bends around edges. The narrower the slit relative to \u03BB, the more spread.',
         tryThis: 'Make the slit width comparable to \u03BB. Watch the central peak fill the screen. Now make it 100\u00D7 \u03BB \u2014 the peak collapses to a thin line. The slit/wavelength ratio is everything.' },
-      'polarization': { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', hint: "Malus's law: I = I\u2080 cos\u00B2\u03B8. Two crossed polarizers: total extinction.",
+      'polarization': { accent: '#10b981', ink: '#047857', soft: 'rgba(16,185,129,0.10)', hint: "Malus's law: I = I\u2080 cos\u00B2\u03B8. Two crossed polarizers: total extinction.",
         tryThis: 'Cross two polarizers (90\u00B0) \u2014 output is zero. Now insert a third polarizer at 45\u00B0 between them. Output reappears. The intermediate polarizer creates light where there was none \u2014 a counterintuitive consequence of cos\u00B2\u03B8.' }
     };
-    var meta = topicMeta[tab] || { accent: '#7dd3fc', soft: 'rgba(125,211,252,0.10)', hint: '' };
-    return h('div', null,
+    var meta = topicMeta[tab] || { accent: '#7dd3fc', ink: '#0369a1', soft: 'rgba(125,211,252,0.10)', hint: '' };
+    var flowSteps = [
+      { number: '1', title: 'Predict', status: predictionNote ? 'Saved ✓' : 'Start here', target: 'op-predict-' + tab, complete: !!predictionNote },
+      { number: '2', title: 'Explore', status: observationNote ? 'Observation saved ✓' : (topicTouched ? 'Experiment changed ✓' : (predictionNote ? 'Test your idea' : 'Then change one control')), target: 'op-explore-' + tab, complete: topicTouched },
+      { number: '3', title: 'Explain', status: explanationDraft.trim() ? 'Draft ready ✓' : 'Finish with evidence', target: 'op-explain-' + tab, complete: !!explanationDraft.trim() }
+    ];
+    var nextAction;
+    if (!predictionNote) {
+      nextAction = { label: 'Write a prediction', copy: 'Start by committing to an outcome before the live result can influence you.', run: openPredictionDrawer };
+    } else if (!topicTouched) {
+      nextAction = { label: 'Change one control', copy: 'Test the prediction by changing one variable while keeping the others fixed.', run: function() { jumpToTopicSection('op-explore-' + tab); } };
+    } else if (!topicTrials.length) {
+      nextAction = { label: 'Capture this trial', copy: 'Freeze the current setup and calculated result as your first evidence point.', run: captureTrial };
+    } else if (!observationNote) {
+      nextAction = { label: 'Record the evidence', copy: 'Describe the visible ray, angle, image, intensity, or pattern—not only whether you were right.', run: function() { jumpToTopicSection('op-results-' + tab); } };
+    } else if (!explanationDraft.trim()) {
+      nextAction = { label: 'Explain the physics', copy: 'Connect the setup to the evidence with the governing law and a because/therefore statement.', run: openLearningDrawer };
+    } else {
+      nextAction = { label: 'Run a contrast trial', copy: 'Your evidence loop is complete. Change one variable, capture another run, and compare the trend.', run: function() { jumpToTopicSection('op-explore-' + tab); } };
+    }
+    var liveComparison = _opticsLiveComparison(tab, d, topicTrials);
+    return h('div', { className: 'opticslab-topic-page', style: { '--op-topic-accent': meta.accent, '--op-topic-ink': meta.ink } },
       // Topic hero — gradient banner with title + tagline (lifts the BirdLab tab-hero pattern).
       h('div', {
+        className: 'opticslab-topic-hero',
         style: {
+          '--op-topic-accent': meta.accent,
+          '--op-topic-glow': meta.soft,
           background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0.6) 100%)',
           border: '1px solid ' + meta.accent + '55',
           borderLeft: '4px solid ' + meta.accent,
@@ -5825,36 +9809,101 @@
           meta.hint && h('p', {
             style: { margin: '4px 0 0', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' }
           }, meta.hint)
+        ),
+        h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+          h('button', {
+            type: 'button', className: 'opticslab-focus-toggle', 'data-op-focusable': 'true',
+            'aria-pressed': d.opFocusMode ? 'true' : 'false', onClick: function() { upd('opFocusMode', !d.opFocusMode); }
+          }, d.opFocusMode ? 'Exit focus view' : 'Focus on experiment'),
+          h('button', {
+            type: 'button', className: 'opticslab-focus-toggle', 'data-op-focusable': 'true',
+            'aria-pressed': d.opMotionEnabled === false ? 'true' : 'false',
+            onClick: function() { upd('opMotionEnabled', d.opMotionEnabled === false); }
+          }, d.opMotionEnabled === false ? 'Resume motion' : 'Pause motion')
+        )
+      ),
+      h('div', { className: 'opticslab-progress-strip' },
+        h('nav', { 'aria-label': 'Experiment workflow' },
+          h('ol', { className: 'opticslab-flow' },
+          flowSteps.map(function(step) {
+            return h('li', { key: step.number },
+              h('button', {
+                type: 'button', className: 'opticslab-flow-step',
+                'data-complete': step.complete ? 'true' : 'false',
+                'data-op-focusable': 'true',
+                onClick: function() {
+                  if (step.number === '1') openPredictionDrawer();
+                  else if (step.number === '3') openLearningDrawer();
+                  else jumpToTopicSection(step.target);
+                }
+              },
+                h('span', { className: 'opticslab-flow-number', style: { '--op-topic-accent': meta.accent } }, step.complete ? '✓' : step.number),
+                h('span', null,
+                  h('span', { className: 'opticslab-flow-title' }, step.title),
+                  h('span', { className: 'opticslab-flow-status' }, step.status)
+                )
+              )
+            );
+          })
+          )
+        ),
+        h('aside', { className: 'opticslab-next-action', style: { '--op-topic-accent': meta.accent }, 'aria-label': 'Recommended next action' },
+          h('div', { className: 'opticslab-next-action-copy' },
+            h('strong', null, 'Next best action'),
+            nextAction.copy
+          ),
+          h('button', { type: 'button', className: 'opticslab-next-action-button', 'data-op-focusable': 'true', onClick: nextAction.run }, nextAction.label + ' →')
         )
       ),
       // "Try this" experiment prompt — concrete thing to do with the sim. Each
       // topic has a curated prompt that turns "click around" into a directed
       // exploration with a predict-then-verify loop.
-      meta.tryThis && h('div', {
+      h('div', { className: 'opticslab-preset-bar', role: 'group', 'aria-label': tab + ' experiment setups' },
+        h('span', { className: 'opticslab-preset-label' }, 'Quick setups'),
+        (OPTICS_TOPIC_PRESETS[tab] || []).map(function(preset) {
+          return h('button', {
+            key: preset.label, type: 'button', className: 'opticslab-preset-button',
+            'data-op-focusable': 'true', onClick: function() { applyTopicPreset(preset); }
+          }, preset.label);
+        }),
+        h('button', {
+          type: 'button', className: 'opticslab-reset-button',
+          'data-op-focusable': 'true', onClick: resetTopicExperiment
+        }, '↺ Reset experiment')
+      ),
+      _renderOpticsMission(tab, d, upd, h),
+      meta.tryThis && h('details', { id: 'op-prelab-' + tab, className: 'opticslab-prelab-drawer' },
+      h('summary', null, predictionNote ? 'Prediction saved — reopen the challenge' : 'Predict first — guided challenge and notebook'),
+      h('div', { className: 'opticslab-drawer-body' },
+      h('div', { className: 'opticslab-guided-grid' },
+      h('div', {
+        className: 'opticslab-topic-card',
         style: {
           background: 'rgba(34,197,94,0.07)',
           border: '1px solid rgba(34,197,94,0.35)',
           borderRadius: 10,
-          padding: '8px 12px', marginBottom: 12,
+          padding: '9px 12px',
           display: 'flex', alignItems: 'flex-start', gap: 10
         },
         role: 'note', 'aria-label': 'Suggested experiment'
       },
         h('span', { 'aria-hidden': 'true', style: { fontSize: 16, lineHeight: '20px', flexShrink: 0 } }, '🎯'),
         h('div', null,
-          h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-green-text, #86efac)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } }, 'Try this'),
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-green-text, #86efac)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } }, 'Guided challenge'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55 } }, meta.tryThis)
         )
       ),
-      meta.tryThis && h('section', {
+      h('section', {
+        id: 'op-predict-' + tab, tabIndex: -1,
         role: 'region', 'aria-label': 'Prediction notebook',
+        className: 'opticslab-topic-card',
         style: {
           background: 'rgba(14,165,233,0.06)',
           border: '1px solid rgba(56,189,248,0.28)',
-          borderRadius: 10, padding: '9px 12px', marginBottom: 12
+          borderRadius: 10, padding: '9px 12px', scrollMarginTop: 12
         }
       },
-        h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, 'Prediction notebook'),
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 } }, '1 · Prediction notebook'),
         h('p', { style: { margin: '0 0 6px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.45 } }, 'Before changing a control, write what you expect to happen. Save it, run the simulation, then compare the result with your prediction.'),
         h('textarea', {
           value: predictionDraft,
@@ -5873,7 +9922,7 @@
           h('button', {
             type: 'button', disabled: !predictionDraft.trim(), onClick: savePrediction,
             'data-op-focusable': 'true',
-            style: { padding: '5px 10px', background: 'rgba(14,165,233,0.18)', color: '#bae6fd', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, cursor: predictionDraft.trim() ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 800, opacity: predictionDraft.trim() ? 1 : 0.6 }
+            style: { padding: '5px 10px', background: 'rgba(14,165,233,0.18)', color: 'var(--op-accent-text, #bae6fd)', border: '1px solid rgba(56,189,248,0.42)', borderRadius: 6, cursor: predictionDraft.trim() ? 'pointer' : 'not-allowed', fontSize: 11, fontWeight: 800, opacity: predictionDraft.trim() ? 1 : 0.6 }
           }, 'Save prediction'),
           predictionNote && h('button', {
             type: 'button', onClick: clearPrediction, 'data-op-focusable': 'true',
@@ -5881,6 +9930,9 @@
           }, 'Clear'),
           predictionNote && h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: 'var(--op-green-text, #86efac)', lineHeight: 1.4 } }, 'Saved: ' + predictionNote)
         )
+      )
+      )
+      )
       ),
       researchQuestion && h('div', {
         style: {
@@ -5900,40 +9952,109 @@
           style: { marginTop: 6, padding: '3px 10px', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, cursor: 'pointer', fontSize: 10 }
         }, 'Dismiss')
       ),
+      _renderOpticsFormulaLink(tab, d, h),
+      topicTouched && _renderOpticsCausalChain(tab, d, topicSnapshot.before, setComparisonBaseline, h),
+      liveComparison && h('div', { className: 'opticslab-compare-now', role: 'status', 'aria-live': 'polite' },
+        h('strong', null, 'Before → now'),
+        liveComparison
+      ),
       h('div', { className: 'opticslab-topic-grid' },
         // Left: simulation
         h('div', {
+          id: 'op-explore-' + tab, tabIndex: -1,
+          className: 'opticslab-topic-card',
           style: {
             background: 'rgba(56,189,248,0.05)',
             border: '1px solid rgba(56,189,248,0.30)',
-            borderRadius: 10, padding: 14
+            borderRadius: 10, padding: 14, scrollMarginTop: 12
           }
         },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '🎮 Simulation'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-accent-text, #7dd3fc)', marginBottom: 8 } }, '2 · Explore the simulation'),
           opts.sim
         ),
         // Right: calculator
         h('div', {
+          className: 'opticslab-topic-card',
           style: {
             background: 'rgba(99,102,241,0.05)',
             border: '1px solid rgba(99,102,241,0.30)',
             borderRadius: 10, padding: 14
           }
         },
-          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-indigo-text, #a5b4fc)', marginBottom: 8 } }, '🧮 Calculator'),
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: 'var(--op-indigo-text, #a5b4fc)', marginBottom: 8 } }, 'Live calculation'),
           opts.calc
         )
+      ),
+      h('section', {
+        id: 'op-results-' + tab, tabIndex: -1,
+        className: 'opticslab-results-panel',
+        role: 'region', 'aria-label': 'Experiment results notebook', style: { scrollMarginTop: 12 }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 5 } },
+          h('div', { style: { flex: 1, minWidth: 180, fontSize: 12, fontWeight: 900, color: 'var(--op-green-text, #86efac)' } }, '2 · Record what changed'),
+          h('button', {
+            type: 'button', 'data-op-focusable': 'true',
+            onClick: function() { _downloadOpticsLabNote(tab, d); },
+            style: { border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', padding: '5px 8px', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
+          }, 'Download lab note')
+        ),
+        h('p', { style: { margin: '0 0 6px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, lineHeight: 1.45 } }, 'Describe the evidence in the diagram or calculation—not just whether your prediction was right.'),
+        h('textarea', {
+          value: observationDraft, rows: 2,
+          onChange: function(e) {
+            var nextDrafts = Object.assign({}, observationDrafts);
+            nextDrafts[tab] = e.target.value;
+            upd('opObservationDrafts', nextDrafts);
+          },
+          'data-op-focusable': 'true', 'aria-label': 'Your observation for the ' + tab + ' experiment',
+          placeholder: 'I observed that ... because the diagram/calculation showed ...',
+          style: { width: '100%', minHeight: 48, boxSizing: 'border-box', resize: 'vertical', padding: '7px 8px', background: 'var(--allo-stem-deeper, #0b1220)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid var(--allo-stem-border, #475569)', borderRadius: 6, fontSize: 11, lineHeight: 1.45 }
+        }),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginTop: 6 } },
+          h('button', {
+            type: 'button', disabled: !observationDraft.trim(), onClick: saveObservation,
+            'data-op-focusable': 'true',
+            style: { padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(34,197,94,.45)', background: 'rgba(34,197,94,.13)', color: 'var(--op-green-text, #86efac)', fontSize: 10, fontWeight: 900, cursor: observationDraft.trim() ? 'pointer' : 'not-allowed', opacity: observationDraft.trim() ? 1 : .6 }
+          }, 'Save observation'),
+          observationNote && h('button', {
+            type: 'button', onClick: clearObservation, 'data-op-focusable': 'true',
+            style: { padding: '5px 8px', borderRadius: 6, border: 0, background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 10, cursor: 'pointer' }
+          }, 'Clear observation'),
+          observationNote && h('span', { role: 'status', 'aria-live': 'polite', style: { color: 'var(--op-green-text, #86efac)', fontSize: 10 } }, 'Observation saved ✓')
+        ),
+        (predictionNote || observationNote || topicTouched) && h('div', { className: 'opticslab-compare-grid', 'aria-live': 'polite' },
+          h('div', { className: 'opticslab-compare-cell' },
+            h('span', { className: 'opticslab-compare-label' }, 'Prediction'),
+            h('div', { className: 'opticslab-compare-copy' }, predictionNote || 'No prediction saved yet.')
+          ),
+          h('div', { className: 'opticslab-compare-cell' },
+            h('span', { className: 'opticslab-compare-label' }, 'Observed result'),
+            h('div', { className: 'opticslab-compare-copy' }, observationNote || 'Run the setup and save an observation.')
+          ),
+          topicTouched && h('div', { className: 'opticslab-compare-cell', style: { gridColumn: '1 / -1' } },
+            h('span', { className: 'opticslab-compare-label' }, 'Setup change'),
+            h('div', { className: 'opticslab-compare-copy' }, formatTopicState(topicSnapshot.before) + ' → ' + formatTopicState(topicSnapshot.after || _captureOpticsTopicState(tab, d)))
+          )
+        ),
+        _renderOpticsTrialJournal({ tab: tab, trials: topicTrials, comparison: trialComparisonCopy,
+          historyExpanded: historyExpanded, onToggleHistory: toggleTrialHistory,
+          onCapture: captureTrial, onClear: clearTrials, onRestore: restoreTrial, formatTime: formatTrialTime }, h)
       ),
       // Optional extra section (e.g., the quantum-twist panel for Interference)
       opts.extra,
       // Pedagogical layers
-      _renderMisconceptionsPanel(tab, h),
-      _renderGlossaryPanel(tab, d, upd, h),
-      _renderAiGrader(tab, d, upd, h, opts.addToast, opts.awardXP, opts.callGemini, opts.isMounted)
+      h('details', { id: 'op-learning-' + tab, className: 'opticslab-learning-drawer' },
+        h('summary', null, 'Explain & extend — misconceptions, glossary, and feedback'),
+        h('div', { className: 'opticslab-drawer-body' },
+          _renderMisconceptionsPanel(tab, h),
+          _renderGlossaryPanel(tab, d, upd, h),
+          _renderAiGrader(tab, d, upd, h, opts.addToast, opts.awardXP, opts.callGemini, opts.isMounted)
+        )
+      )
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // PHENOMENA PANEL — light-based real-world perceptual effects.
   // Bridges the AP physics content into "you see this in the world":
   // rainbows (dispersion + internal reflection), mirages (refraction in
@@ -5941,7 +10062,7 @@
   // (additive vs subtractive), polarized sky (Rayleigh scattering).
   // Pure cognitive illusions (Müller-Lyer, Necker, etc.) intentionally
   // belong in BrainAtlas / a perception tool, not here.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderPhenomenaPanel(d, upd, h) {
     var sub = d.phenoSub || 'rainbow';
     var subModes = [
@@ -7191,7 +11312,7 @@
     return _phLayout(h, svg, controls, explanation);
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // PRISM SPECTROMETER — Newton's classic experiment.
   // White light enters one face of a triangular prism, refracts twice
   // (entry + exit), and exits dispersed into a spectrum. Different
@@ -7199,7 +11320,7 @@
   // refraction varies with wavelength (Cauchy's empirical dispersion).
   // Unlike the rainbow (a single drop with internal reflection),
   // this is the pure two-refraction case — the textbook ray-trace.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderPhPrism(d, upd, h) {
     // Wavelengths to trace (nm). The visible spectrum sample.
     var wavelengths = [
@@ -7445,14 +11566,14 @@
     return _phLayout(h, svg, controls, explanation);
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // QUANTUM TWIST — single-photon accumulator on the classical fringe.
   // Lives inside the Interference tab. Pedagogically, this is the move
   // that makes wave-particle duality visceral: each photon is a discrete
   // event, but the SHAPE the events build up to is the wave-interference
   // intensity profile. AP Physics 2 doesn't formally cover this, but it's
   // the single most striking optics demo and it earns its keep.
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderPhQuantumTwist(d, upd, h) {
     var W = 460, H = 200;
     var dots = d.phenoQuantumDots || [];
@@ -7626,9 +11747,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICAL PHENOMENA ENCYCLOPEDIA — 120+ entries
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // Each entry has: id, name, icon, category, shortDesc, formula (optional),
   // physics, whereSeen, related, funFact. Used by _renderPhenomenaDb.
   var OPTICAL_PHENOMENA_DB = [
@@ -8062,9 +12183,28 @@
       funFact: 'In Buddhist tradition, the glory ring around your shadow is sometimes called "Buddha\'s halo" — visible to ALL observers but always around their OWN shadow, never around a companion\'s. Each observer sees a private personal halo.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // PHENOMENA DB RENDERER — searchable, filterable encyclopedia view
-  // ══════════════════════════════════════════════════════════════════
+  // ---
+  function _opticsVisibleLimit(d, key) {
+    return Math.max(12, Number(d[key]) || 24);
+  }
+
+  function _renderOpticsCollectionStatus(total, limit, key, upd, h) {
+    if (total <= 24) return null;
+    var shown = Math.min(total, limit);
+    return h('div', {
+      style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', margin: '0 0 9px', color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 10 }
+    },
+      h('span', { role: 'status' }, 'Showing ' + shown + ' of ' + total),
+      h('button', {
+        type: 'button', 'data-op-focusable': 'true',
+        onClick: function() { upd(key, shown >= total ? 24 : limit + 24); },
+        style: { border: '1px solid var(--allo-stem-border,#475569)', borderRadius: 999, background: 'transparent', color: 'var(--op-accent-text,#7dd3fc)', padding: '5px 9px', fontSize: 10, fontWeight: 850, cursor: 'pointer' }
+      }, shown >= total ? 'Show fewer' : 'Show 24 more')
+    );
+  }
+
   function _renderPhenomenaDb(d, upd, h) {
     var query = (d.phDbQuery || '').toLowerCase().trim();
     var cat = d.phDbCategory || 'all';
@@ -8088,6 +12228,7 @@
       var hay = (p.name + ' ' + p.shortDesc + ' ' + (p.physics || '') + ' ' + (p.whereSeen || '')).toLowerCase();
       return hay.indexOf(query) !== -1;
     });
+    var phDbLimit = _opticsVisibleLimit(d, 'phDbLimit');
 
     return h('div', null,
       h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
@@ -8121,10 +12262,11 @@
           }, c.icon + ' ' + c.label);
         })
       ),
+      _renderOpticsCollectionStatus(filtered.length, phDbLimit, 'phDbLimit', upd, h),
       filtered.length === 0
         ? h('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'No phenomena match this search. Try a different keyword or category.')
-        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
-            filtered.map(function(p) {
+        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10 } },
+            filtered.slice(0, phDbLimit).map(function(p) {
               var isOpen = openId === p.id;
               return h('div', { key: p.id,
                 role: 'button',
@@ -8164,9 +12306,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // FAMOUS OPTICIANS — 50+ biographies, ancient to modern
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var FAMOUS_OPTICIANS = [
     // ── Ancient & Medieval ──
     { id: 'euclid', name: 'Euclid of Alexandria', icon: '📐', era: 'ancient', years: 'fl. ~300 BCE', country: 'Hellenistic Egypt',
@@ -8743,9 +12885,9 @@
       legacy: 'Zeilinger\'s work is moving us from "wave-particle duality is weird" to "we can use that weirdness to build new computers and communicate securely."' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // SCIENTISTS PANEL RENDERER — biographies with filters
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderScientistsPanel(d, upd, h) {
     var openId = d.scientistOpenId || null;
     var eraFilter = d.scientistEra || 'all';
@@ -8766,6 +12908,7 @@
       var hay = (s.name + ' ' + (s.knownFor || '') + ' ' + (s.bio || '')).toLowerCase();
       return hay.indexOf(query) !== -1;
     });
+    var scientistLimit = _opticsVisibleLimit(d, 'scientistLimit');
 
     return h('div', null,
       h('div', { style: { background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
@@ -8798,10 +12941,11 @@
           }, e.label);
         })
       ),
+      _renderOpticsCollectionStatus(filtered.length, scientistLimit, 'scientistLimit', upd, h),
       filtered.length === 0
         ? h('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'No scientists match this filter.')
-        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
-            filtered.map(function(s) {
+        : h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 10 } },
+            filtered.slice(0, scientistLimit).map(function(s) {
               var isOpen = openId === s.id;
               return h('div', { key: s.id,
                 role: 'button',
@@ -8848,9 +12992,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // HISTORY OF OPTICS — 100+ events from antiquity to today
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_HISTORY = [
     { year: '~3000 BCE', region: 'Egypt', icon: '🪞', event: 'Polished obsidian mirrors used in royal tombs and temple rituals.', sig: 'Earliest known intentional mirror manufacture.' },
     { year: '~2000 BCE', region: 'Egypt/Mesopotamia', icon: '🔍', event: 'Polished rock-crystal lenses appear in Nimrud and elsewhere — possibly used to start fires.', sig: 'Earliest objects with deliberate lens shape.' },
@@ -8958,15 +13102,16 @@
     { year: '2023', region: 'Maine, USA', icon: '🏫', event: 'Maine high schools across the state continue AP Physics 2 instruction with optics modules — students reading this list will encounter most of these milestones in coursework.', sig: 'You are part of the optics history. Document what you learn.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // HISTORY PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderHistoryPanel(d, upd, h) {
     var query = (d.histQuery || '').toLowerCase().trim();
     var filtered = OPTICS_HISTORY.filter(function(e) {
       if (!query) return true;
       return (e.event + ' ' + e.year + ' ' + e.region + ' ' + e.sig).toLowerCase().indexOf(query) !== -1;
     });
+    var historyLimit = _opticsVisibleLimit(d, 'historyLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: 'var(--allo-stem-text, #fcd34d)', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📜 History of Optics'),
@@ -8978,10 +13123,11 @@
         'aria-label': 'Search history',
         style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,191,36,0.30)', borderRadius: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
       }),
+      _renderOpticsCollectionStatus(filtered.length, historyLimit, 'historyLimit', upd, h),
       filtered.length === 0
         ? h('div', { style: { padding: 20, textAlign: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13 } }, 'No events match this search.')
         : h('div', { style: { borderLeft: '3px solid rgba(251,191,36,0.40)', paddingLeft: 14, marginLeft: 8 } },
-            filtered.map(function(e, i) {
+            filtered.slice(0, historyLimit).map(function(e, i) {
               return h('div', { key: 'h'+i, style: { marginBottom: 14, position: 'relative' } },
                 h('div', { style: { position: 'absolute', left: -22, top: 2, width: 14, height: 14, borderRadius: '50%', background: '#fbbf24', border: '2px solid #0f172a' } }),
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 4, flexWrap: 'wrap' } },
@@ -8997,9 +13143,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICAL INSTRUMENTS CATALOG — 60+ devices
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICAL_INSTRUMENTS = [
     // ── Telescopes ──
     { id: 'refractor', name: 'Refracting telescope', icon: '🔭', category: 'astronomy',
@@ -9245,9 +13391,9 @@
       history: 'Heads-up display in aircraft (1960s); Google Glass (2013, withdrawn 2015 consumer); Apple Vision Pro (2024).' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // INSTRUMENTS PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderInstrumentsPanel(d, upd, h) {
     var query = (d.instQuery || '').toLowerCase().trim();
     var catFilter = d.instCategory || 'all';
@@ -9267,6 +13413,7 @@
       if (!query) return true;
       return (i.name + ' ' + (i.principle || '') + ' ' + (i.where || '')).toLowerCase().indexOf(query) !== -1;
     });
+    var instrumentLimit = _opticsVisibleLimit(d, 'instrumentLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#86efac', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '🔭 Optical Instruments Catalog'),
@@ -9294,8 +13441,9 @@
           }, c.label);
         })
       ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
-        filtered.map(function(i) {
+      _renderOpticsCollectionStatus(filtered.length, instrumentLimit, 'instrumentLimit', upd, h),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 10 } },
+        filtered.slice(0, instrumentLimit).map(function(i) {
           var isOpen = openId === i.id;
           return h('div', { key: i.id,
             role: 'button',
@@ -9337,9 +13485,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // LAB KITS — 50+ hands-on optics experiments
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_LAB_KITS = [
     { id: 'pinholeCam', title: 'Build a pinhole camera', icon: '📷', age: '8+', difficulty: 'Easy', time: '20 min', cost: '$0–5',
       goal: 'Project a real, inverted image of the outside world using nothing but a small hole.',
@@ -9511,9 +13659,9 @@
       extension: 'Find a pair labeled in diopters (D). Diopters = 1/f in meters. A +2 D lens has 50 cm focal length; a −4 D lens diverges with 25 cm "virtual" focal length.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // LAB KITS PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderLabKitsPanel(d, upd, h) {
     var query = (d.kitQuery || '').toLowerCase().trim();
     var openId = d.kitOpenId || null;
@@ -9521,6 +13669,7 @@
       if (!query) return true;
       return (k.title + ' ' + k.goal + ' ' + (k.science || '')).toLowerCase().indexOf(query) !== -1;
     });
+    var kitLimit = _opticsVisibleLimit(d, 'kitLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(251,146,60,0.10)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#fdba74', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '🧪 Optics Lab Kits — Hands-On Experiments'),
@@ -9532,8 +13681,9 @@
         'aria-label': 'Search lab kits',
         style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
       }),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))', gap: 10 } },
-        filtered.map(function(k) {
+      _renderOpticsCollectionStatus(filtered.length, kitLimit, 'kitLimit', upd, h),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 330px), 1fr))', gap: 10 } },
+        filtered.slice(0, kitLimit).map(function(k) {
           var isOpen = openId === k.id;
           return h('div', { key: k.id,
             role: 'button',
@@ -9582,9 +13732,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // CAREERS IN OPTICS — 60+ pathways from technician to research
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_CAREERS = [
     // ── Clinical / medical ──
     { id: 'optometrist', title: 'Optometrist (OD)', icon: '👓', category: 'clinical', salary: 'USD $90K–150K (BLS 2023)',
@@ -9823,9 +13973,9 @@
       maine: 'Astronaut Jessica Meir grew up in Caribou, Maine — earned PhD at Scripps, flew on Soyuz/ISS 2019–2020. Maine high-schoolers can dream big.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // CAREERS PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderCareersPanel(d, upd, h) {
     var query = (d.careerQuery || '').toLowerCase().trim();
     var catFilter = d.careerCategory || 'all';
@@ -9848,6 +13998,7 @@
       var hay = (c.title + ' ' + (c.what || '') + ' ' + (c.maine || '')).toLowerCase();
       return hay.indexOf(query) !== -1;
     });
+    var careerLimit = _opticsVisibleLimit(d, 'careerLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#d8b4fe', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '💼 Careers in Optics'),
@@ -9875,8 +14026,9 @@
           }, c.label);
         })
       ),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
-        filtered.map(function(c) {
+      _renderOpticsCollectionStatus(filtered.length, careerLimit, 'careerLimit', upd, h),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 10 } },
+        filtered.slice(0, careerLimit).map(function(c) {
           var isOpen = openId === c.id;
           return h('div', { key: c.id,
             role: 'button',
@@ -9918,9 +14070,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // WORKED PROBLEMS — 100+ AP-style problems with full solutions
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var WORKED_PROBLEMS = [
     // ── Reflection problems ──
     { id: 'wp_r1', topic: 'reflection', difficulty: 'easy', icon: '🪞',
@@ -10189,9 +14341,9 @@
       pitfalls: 'For v << c, we can use the non-relativistic formula. For high-redshift quasars or relativistic jets, you need the relativistic Doppler formula.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // WORKED PROBLEMS PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderWorkedProblemsPanel(d, upd, h) {
     var query = (d.wpQuery || '').toLowerCase().trim();
     var topicFilter = d.wpTopic || 'all';
@@ -10213,6 +14365,7 @@
       if (!query) return true;
       return (p.title + ' ' + (p.problem || '') + ' ' + (p.answer || '')).toLowerCase().indexOf(query) !== -1;
     });
+    var workedLimit = _opticsVisibleLimit(d, 'workedLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#93c5fd', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📝 Worked Problems — Step-by-step solutions'),
@@ -10240,8 +14393,9 @@
           }, t.label);
         })
       ),
+      _renderOpticsCollectionStatus(filtered.length, workedLimit, 'workedLimit', upd, h),
       h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
-        filtered.map(function(p) {
+        filtered.slice(0, workedLimit).map(function(p) {
           var isOpen = openId === p.id;
           var difficultyColor = p.difficulty === 'easy' ? '#86efac' : (p.difficulty === 'medium' ? '#fcd34d' : '#fca5a5');
           // Worked-problem card — same disclosure pattern, same fix: it was mouse-only,
@@ -10292,9 +14446,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICS TRIVIA — 100+ fun facts and surprising connections
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_TRIVIA = [
     { tag: 'biology', text: 'The mantis shrimp has 16 types of photoreceptors. Humans have 4 (3 cones + 1 rod). Yet mantis shrimp brains may process color less precisely than ours — having more receptor types doesn\'t guarantee finer color discrimination.' },
     { tag: 'biology', text: 'A scorpion fluoresces blue-green under UV light. The chemical (β-carboline) outlives the animal — fossil scorpions in amber, ~100 million years old, still glow under a black light.' },
@@ -10353,9 +14507,9 @@
     { tag: 'fun', text: 'If you wear glasses, the prescription number ("OD −2.5") refers to diopters of correction. Diopters are 1/focal-length-in-meters. A −2.5 D lens has a virtual focal length of −40 cm.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICS QUOTES — 60+ memorable quotes about light
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_QUOTES = [
     { author: 'Genesis 1:3', context: 'The Bible (~8th c. BCE)', text: 'Let there be light: and there was light.' },
     { author: 'Plato', context: 'Republic, Book VII, ~380 BCE', text: 'Whoever does not know it must consider it a fairy tale, but he who once gets a glimpse of it must reach out to it always.' },
@@ -10389,9 +14543,9 @@
     { author: 'Maine writer Henry Wadsworth Longfellow', context: 'My Lost Youth, 1855', text: 'Often I think of the beautiful town that is seated by the sea; Often in thought go up and down the pleasant streets of that dear old town — and remember the sea-mist veiling all things.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICS RECORDS — 30+ extreme/superlative records
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_RECORDS = [
     { category: 'Speed', title: 'Fastest light pulse ever measured', value: '~12 attoseconds (1.2×10⁻¹⁷ s)', context: 'European X-ray Free Electron Laser, 2023. A million times shorter than a femtosecond.', icon: '⚡' },
     { category: 'Speed', title: 'Slowest light pulse ever measured', value: '17 meters per second', context: 'Lene Hau\'s group at Harvard, 1999, in a sodium Bose-Einstein condensate. Light then brought to a complete stop in 2001.', icon: '🐢' },
@@ -10418,9 +14572,9 @@
     { category: 'Precision', title: 'LIGO\'s sensitivity', value: '~10⁻²¹ strain', context: 'Detected gravitational wave GW150914 (2015) — a path length change of 10⁻²¹ relative to the 4 km arm length. Like measuring the Sun-Earth distance to better than a hydrogen atom\'s width.', icon: '⫻' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // SAFETY SCENARIOS — 25+ practical safety topics
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var SAFETY_SCENARIOS = [
     { id: 'laserPointer', title: 'Laser pointer eye exposure', icon: '⚠', category: 'laser',
       scenario: 'You\'re demoing a laser pointer for a class. A student tilts their head and the beam briefly enters their eye.',
@@ -10478,9 +14632,9 @@
       maine: 'High school robotics teams (FIRST Robotics) in Maine follow strict shop-safety rules.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // REFRACTIVE INDEX DATA TABLE — 100+ materials
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var REFRACTIVE_INDEX_DATA = [
     // Common materials (n at sodium D line ~589 nm unless noted)
     { material: 'Vacuum', n: 1.0000000, category: 'reference', note: 'by definition' },
@@ -10547,9 +14701,9 @@
     { material: 'BK7 at 1000 nm', n: 1.5075, category: 'wavelength', note: 'longer λ → lower n' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // TEACHING TIPS — 40+ pedagogy notes for educators
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var TEACHING_TIPS = [
     { id: 'rayDiagram', topic: 'reflection', title: 'Always have students draw three rays', icon: '📐',
       tip: 'For curved mirror/lens problems, drill the THREE standard rays: (1) parallel-axis ray reflects/refracts through focal point, (2) ray through focal point comes out parallel, (3) ray through center of curvature reflects on itself. Where any two meet, you have the image.' },
@@ -10583,9 +14737,9 @@
       tip: 'Don\'t just say "scattering." Lead students through: air molecules scatter as 1/λ⁴. Blue (450 nm) scatters ~5.6× more than red (650 nm). At horizon at noon, you see scattered light from all directions — enriched in blue. At sunset, the long atmospheric path removes the blue and leaves red. The "1/λ⁴" line is critical for the answer.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // REFERENCE PANEL RENDERER — combines trivia, records, quotes, safety, data tables, teaching tips
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderReferencePanel(d, upd, h) {
     var subView = d.refSubView || 'trivia';
     var subs = [
@@ -10629,7 +14783,7 @@
           }, s.label + ' (' + s.count + ')');
         })
       ),
-      subView === 'trivia' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
+      subView === 'trivia' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10 } },
         OPTICS_TRIVIA.map(function(t, i) {
           return h('div', { key: 't'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(20,184,166,0.25)', borderRadius: 10, padding: '10px 12px' } },
             h('div', { style: { fontSize: 9, fontWeight: 800, color: '#5eead4', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, t.tag),
@@ -10700,7 +14854,7 @@
           }))
         )
       ),
-      subView === 'teaching' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 10 } },
+      subView === 'teaching' && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 10 } },
         TEACHING_TIPS.map(function(t) {
           return h('div', { key: t.id, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: '12px 14px' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 6 } },
@@ -10744,9 +14898,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: LASERS — comprehensive topic exploration
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var LASERS_DEEP = [
     { id: 'laserBasics', title: '⚡ How a laser works (the basics)', section: 'fundamentals',
       content: 'A laser is fundamentally a feedback amplifier of light. The word LASER is an acronym: Light Amplification by Stimulated Emission of Radiation. It exploits a quantum-mechanical process — stimulated emission — that Einstein predicted in 1917, decades before any laser was built. To make a laser, you need three things: (1) A gain medium with the right atomic-energy-level structure, (2) An energy source (the "pump") that puts atoms into excited states, and (3) An optical cavity (a pair of mirrors) that traps the light for many round trips so the amplification compounds.',
@@ -10823,9 +14977,9 @@
       misconceptions: 'Lasers are often portrayed as glamorous "death rays" in fiction. Most cutting-edge laser research is mundane in feel: clean rooms, vacuum chambers, vibration-isolated tables, alignment headaches. The discoveries are dramatic, but the work is patient engineering.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: VISION & THE HUMAN EYE
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var VISION_DEEP = [
     { id: 'eyeAnatomy', title: '👁 Eye anatomy — optical structure', section: 'anatomy',
       content: 'The human eye is a remarkable optical instrument that has evolved over hundreds of millions of years. Light enters through several refracting elements, focuses on a photoreceptor array, and triggers neural signaling — all in a globe about 24 mm in diameter.',
@@ -10883,9 +15037,9 @@
       misconceptions: 'You "see" the world continuously — but you don\'t. Saccades (rapid eye movements) happen 3–4 times per second, and you\'re effectively blind during each (~30 ms). The brain stitches together brief samples and fills in the rest, giving the ILLUSION of continuous perception.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: COLOR THEORY
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var COLOR_DEEP = [
     { id: 'colorBasics', title: '🎨 What is color, really?', section: 'fundamentals',
       content: 'Color is not a property of light — light has wavelength, frequency, intensity, and polarization, but not "color" per se. Color is the brain\'s interpretation of specific patterns of cone activation.',
@@ -10926,9 +15080,9 @@
       misconceptions: '"sRGB is bad and Adobe RGB is better." NOT EXACTLY. sRGB is the standard for web. If you save Adobe RGB images and upload them to a website without an embedded ICC profile, browsers will interpret them as sRGB — making them look DESATURATED. Always know the target device.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: ASTRONOMY OPTICS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var ASTRO_DEEP = [
     { id: 'astroScopes', title: '🔭 Astronomical telescopes', section: 'instruments',
       content: 'Astronomical telescopes have grown from Galileo\'s 30 mm aperture (1609) to the planned 39-meter Extremely Large Telescope (~2028). Every advance has revealed something fundamentally new about the universe.',
@@ -10971,9 +15125,9 @@
       misconceptions: '"Most exoplanets we know about look like the Solar System." NO. Most have orbital periods of days to weeks (selection bias — easier to detect). Most are larger than Earth (selection bias). The Solar System is unusual in having so many planets but no super-Earths or sub-Neptunes.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE PANEL RENDERER — works for any "deep" topic
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderDeepDivePanel(d, upd, h) {
     var topic = d.deepDiveTopic || 'lasers';
     var topics = [
@@ -11059,9 +15213,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // GLOSSARY MEGA-EXPANSION — 200+ terms with rich detail
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var GLOSSARY_EXPANDED = [
     { term: 'Abbe number', pron: 'AH-bay', def: 'A measure of an optical material\'s dispersion. Higher Abbe number = lower dispersion = sharper color images.',
       etymology: 'Named after Ernst Abbe (1840–1905), German physicist at the Zeiss optical works.',
@@ -11377,15 +15531,16 @@
       related: 'altitude, horizon, nadir' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // GLOSSARY EXPANDED PANEL RENDERER
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   function _renderGlossaryExpandedPanel(d, upd, h) {
     var query = (d.glossExpQuery || '').toLowerCase().trim();
     var filtered = GLOSSARY_EXPANDED.filter(function(g) {
       if (!query) return true;
       return (g.term + ' ' + (g.def || '') + ' ' + (g.example || '') + ' ' + (g.related || '')).toLowerCase().indexOf(query) !== -1;
     });
+    var glossaryLimit = _opticsVisibleLimit(d, 'glossaryLimit');
     return h('div', null,
       h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#86efac', fontSize: 17, fontWeight: 900, margin: '0 0 6px' } }, '📖 Expanded Glossary'),
@@ -11397,8 +15552,9 @@
         'aria-label': 'Search expanded glossary',
         style: { width: '100%', minHeight: 36, padding: '8px 12px', background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 8, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 12, boxSizing: 'border-box' }
       }),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 10 } },
-        filtered.map(function(g, i) {
+      _renderOpticsCollectionStatus(filtered.length, glossaryLimit, 'glossaryLimit', upd, h),
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 310px), 1fr))', gap: 10 } },
+        filtered.slice(0, glossaryLimit).map(function(g, i) {
           return h('div', { key: 'gx'+i, style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e', borderRadius: 10, padding: '10px 12px' } },
             h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
               h('span', { style: { fontSize: 13, fontWeight: 800, color: '#86efac' } }, g.term),
@@ -11414,9 +15570,9 @@
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: PHOTOGRAPHY OPTICS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var PHOTOGRAPHY_DEEP = [
     { id: 'cameraLens', title: '📷 Camera lenses — focal length and field of view', section: 'fundamentals',
       content: 'A camera lens is an assembly of multiple optical elements arranged to project an image of the scene onto a sensor or film, with corrections for aberrations and a controllable aperture.',
@@ -11465,9 +15621,9 @@
       misconceptions: '"Film is back." There\'s been a niche revival, but film accounts for <1% of photographs worldwide. The revival is real but small — most "film looks" are now achieved digitally.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: HOLOGRAPHY & 3D IMAGING
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var HOLOGRAPHY_DEEP = [
     { id: 'holoBasics', title: '✨ Holography fundamentals', section: 'fundamentals',
       content: 'A hologram records both the amplitude AND phase of a wavefront, allowing later reconstruction of the full 3D wavefield — and thus a fully 3D image viewable from different angles like the original object.',
@@ -11498,9 +15654,9 @@
       misconceptions: '"Holograms will replace TV." Even with computational advances, the data rates and resolution required for true holographic video are beyond foreseeable display technology.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: SPECTROSCOPY
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var SPECTROSCOPY_DEEP = [
     { id: 'specBasics', title: '📊 Spectroscopy basics', section: 'fundamentals',
       content: 'Spectroscopy is the study of how matter interacts with electromagnetic radiation. By measuring how light is absorbed, emitted, or scattered as a function of wavelength, we identify chemical composition, structure, and physics of materials.',
@@ -11530,9 +15686,9 @@
       misconceptions: '"Higher resolution is always better." NO — higher resolution means narrower bins, fewer photons per bin, longer exposure times. Match resolution to the science question.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // DEEP DIVE: MEDICAL IMAGING OPTICS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var MEDICAL_OPTICS_DEEP = [
     { id: 'medOctEndo', title: '👁 OCT, Endoscopy, and ophthalmology', section: 'imaging',
       content: 'Optical methods dominate modern non-invasive medical imaging of the eye, gastrointestinal tract, and cardiovascular system.',
@@ -11560,9 +15716,9 @@
       misconceptions: '"Laser surgery is always cutting tissue." MOST laser surgery is gentle: cauterization, photothermal sealing, photochemical activation. Cutting is a small fraction.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE LAB KITS — additional hands-on experiments
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_LAB_KITS_MORE = [
     { id: 'sodaBottleLens', title: 'Soda bottle as a magnifying lens', icon: '🥤', age: '6+', difficulty: 'Easy', time: '5 min', cost: '$0',
       goal: 'Use a clear water bottle as a lens to magnify text.',
@@ -11688,9 +15844,9 @@
       extension: 'Try to predict what color a sample will be based on its thickness. Photograph for documentation.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE WORKED PROBLEMS — additional practice
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var WORKED_PROBLEMS_MORE = [
     { id: 'wpx1', topic: 'reflection', difficulty: 'medium', icon: '🪞',
       title: 'Spherical mirror focal length from radius',
@@ -11774,9 +15930,9 @@
       pitfalls: 'For comparison, the angular diameter of the Sun from Earth is ~32 arcmin = 1920 arcsec — about 100x larger than Earth from Sun. So Earth would be visible as a star, not a disk, from the Sun.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE QUIZ QUESTIONS — append to existing AP_OPTICS_QUIZ
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // (Appended directly to AP_OPTICS_QUIZ array via concat after declaration)
   var QUIZ_EXTRA = [
     { tags: ['reflection'], q: 'A spherical concave mirror has radius of curvature R = 30 cm. Its focal length is:',
@@ -11869,9 +16025,9 @@
     WORKED_PROBLEMS = WORKED_PROBLEMS.concat(WORKED_PROBLEMS_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE PHENOMENA — extend OPTICAL_PHENOMENA_DB
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICAL_PHENOMENA_DB_MORE = [
     { id: 'photoelectric', name: 'Photoelectric effect', icon: '💡', category: 'colorSpectrum',
       shortDesc: 'Light striking a metal surface ejects electrons, but only if photon frequency exceeds a threshold.',
@@ -11971,9 +16127,9 @@
     OPTICAL_PHENOMENA_DB = OPTICAL_PHENOMENA_DB.concat(OPTICAL_PHENOMENA_DB_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE INSTRUMENTS — extend OPTICAL_INSTRUMENTS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICAL_INSTRUMENTS_MORE = [
     { id: 'pmtTube', name: 'Photomultiplier tube (PMT)', icon: '⚡', category: 'scientific',
       principle: 'Photocathode emits electron via photoelectric effect; cascade of dynodes amplifies the signal by millions of times.',
@@ -12051,9 +16207,9 @@
     OPTICAL_INSTRUMENTS = OPTICAL_INSTRUMENTS.concat(OPTICAL_INSTRUMENTS_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE WORKED PROBLEMS — extend pool
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var WORKED_PROBLEMS_EXTRA = [
     { id: 'wpa1', topic: 'reflection', difficulty: 'easy', icon: '🪞',
       title: "Angle of incidence + reflection",
@@ -12141,9 +16297,9 @@
     WORKED_PROBLEMS = WORKED_PROBLEMS.concat(WORKED_PROBLEMS_EXTRA);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE SCIENTISTS — extend FAMOUS_OPTICIANS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var FAMOUS_OPTICIANS_MORE = [
     { id: 'kirchhoff', name: 'Gustav Kirchhoff', icon: '🔬', era: '19th', years: '1824-1887', country: 'Germany',
       knownFor: 'Founder of spectroscopy; three laws of radiation',
@@ -12270,9 +16426,9 @@
     FAMOUS_OPTICIANS = FAMOUS_OPTICIANS.concat(FAMOUS_OPTICIANS_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE CAREERS — extend OPTICS_CAREERS
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_CAREERS_MORE = [
     { id: 'satelliteEngineer', title: 'Satellite optical payload engineer', icon: '🛰', category: 'aerospace', salary: 'USD $100K-180K',
       education: 'Master\'s or PhD in optical engineering, physics, or aerospace engineering. Security clearance for defense satellites.',
@@ -12340,9 +16496,9 @@
     OPTICS_CAREERS = OPTICS_CAREERS.concat(OPTICS_CAREERS_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // FAMOUS EXPERIMENTS — landmark optical experiments
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var FAMOUS_EXPERIMENTS = [
     { id: 'newtonsPrism', title: "Newton's prism (1666)", icon: '🌈', topic: 'color',
       experimenter: 'Isaac Newton',
@@ -12445,9 +16601,9 @@
       modernUnderstanding: 'The Lamb shift is now a standard test of QED. Measured in many atomic systems with increasing precision.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // ANIMAL VISION — comparative optics
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var ANIMAL_VISION = [
     { id: 'mantisShrimp', name: 'Mantis shrimp', icon: '🦐', acuity: 'Modest', special: 'Up to 16 types of photoreceptors',
       details: 'The peacock mantis shrimp has 16 types of color photoreceptors (humans have 4). It can detect ultraviolet, visible, and possibly polarization. Surprisingly, behavioral studies show its color DISCRIMINATION is comparable to or even worse than humans — its brain may use the many receptor types differently, possibly to identify rather than compare colors.',
@@ -12478,9 +16634,9 @@
       adaptation: 'Generalist diurnal primate. Color vision good for ripe-fruit selection.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICAL ILLUSIONS GALLERY
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICAL_ILLUSIONS = [
     { id: 'machBands', name: 'Mach bands', icon: '📊', type: 'lateral inhibition',
       effect: 'At a gradient boundary between two uniform shaded regions, the eye perceives a darker dark band on one side and a brighter bright band on the other than actually exists.',
@@ -12524,9 +16680,9 @@
       why: 'Vision evolved to detect CHANGE, not constant stimuli. Discovered 1804.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // ELECTROMAGNETIC SPECTRUM — bands and applications
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var EM_SPECTRUM_BANDS = [
     { band: 'Radio (ELF)', range: '> 100 km', freq: '< 3 kHz', uses: 'Submarine communications, geophysical surveys',
       examples: 'US Navy ELF system (76 Hz) for communicating with submerged submarines.',
@@ -12611,9 +16767,9 @@
       notes: 'Comes from radioactive decay, nuclear reactions, and cosmic processes (gamma-ray bursts).' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE OPTICAL ILLUSIONS (extending the previous list)
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICAL_ILLUSIONS_MORE = [
     { id: 'mullerLyer', name: 'Müller-Lyer illusion', icon: '➡', type: 'geometric',
       effect: 'Two horizontal lines with arrow-like fins at the ends appear to be different lengths even though they are identical.',
@@ -12661,9 +16817,9 @@
     OPTICAL_ILLUSIONS = OPTICAL_ILLUSIONS.concat(OPTICAL_ILLUSIONS_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE LAB KITS — final batch
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_LAB_KITS_FINAL = [
     { id: 'rangeRangefinderKit', title: 'Triangulation rangefinder', icon: '📏', age: '12+', difficulty: 'Medium', time: '30 min', cost: '$0',
       goal: 'Measure the distance to a far object using only two viewing positions and basic trigonometry.',
@@ -12769,9 +16925,9 @@
     OPTICS_LAB_KITS = OPTICS_LAB_KITS.concat(OPTICS_LAB_KITS_FINAL);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE DEEP DIVES — quantum optics, AR/VR, computational, biophotonics
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var QUANTUM_OPTICS_DEEP = [
     { id: 'qoIntro', title: '⚛ What is quantum optics?', section: 'introduction',
       content: 'Quantum optics is the study of how light and matter interact at the quantum level. Classical wave optics works for many bright-light situations, but breaks down at low photon counts. Quantum optics describes single photons, entanglement, coherent states, and the strange behavior of light when squeezed or split.',
@@ -12861,9 +17017,9 @@
       misconceptions: '"Portrait mode is just blur." Sophisticated depth maps + edge-aware blurring + AI-guided semantic editing all happen for a single portrait photo.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // BIOPHOTONICS DEEP DIVE
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var BIOPHOTONICS_DEEP = [
     { id: 'bpIntro', title: '🧬 Biophotonics overview', section: 'introduction',
       content: 'Biophotonics is the application of optics and photonics to biological problems — from molecular fluorescence labeling to clinical imaging to optogenetic neural control.',
@@ -12942,9 +17098,9 @@
       misconceptions: '"AR/VR is mostly games." Gaming is the biggest revenue, but professional applications (training, medical, design) are growing fast.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MORE HISTORY EVENTS — expand timeline
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_HISTORY_MORE = [
     { year: '~430 BCE', region: 'China', icon: '📜', event: 'Mozi describes the camera obscura — the first known systematic description of pinhole imaging.', sig: 'Earliest known pinhole imaging tradition.' },
     { year: '~350 BCE', region: 'China', icon: '🔍', event: 'Chinese scholar reports concentrating sunlight with curved mirrors to start fires.', sig: 'Earliest documented concentrating optics in East Asia.' },
@@ -12993,9 +17149,9 @@
     OPTICS_HISTORY = OPTICS_HISTORY.concat(OPTICS_HISTORY_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // EXTRA GLOSSARY — even more terms
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var GLOSSARY_EXPANDED_MORE = [
     { term: 'Accommodation', def: 'The change in shape of the eye\'s crystalline lens to focus on objects at different distances. Maximum accommodation in young adults: ~14 diopters.',
       related: 'ciliary muscle, presbyopia, lens' },
@@ -13105,9 +17261,9 @@
     GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_EXPANDED_MORE);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // MEGA GLOSSARY — additional terms for letter coverage E through Z
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var GLOSSARY_E_Z = [
     { term: 'Eclipse', def: 'When one celestial body passes through the shadow of another (lunar) or between an observer and another body (solar).' },
     { term: 'Effective focal length', def: 'Focal length of a compound optical system measured from its principal plane.' },
@@ -13281,9 +17437,9 @@
     GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_E_Z);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // GLOSSARY R-Z (more)
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var GLOSSARY_RZ = [
     { term: 'Quartz', def: 'Crystalline form of silicon dioxide (SiO₂). Common piezoelectric and birefringent crystal.' },
     { term: 'Quasi-monochromatic', def: 'Light with a narrow band of wavelengths — essentially "one color" for practical purposes.' },
@@ -13413,9 +17569,9 @@
     GLOSSARY_EXPANDED = GLOSSARY_EXPANDED.concat(GLOSSARY_RZ);
   }
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // OPTICS IN MAINE — region-specific content
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   var OPTICS_MAINE = [
     { id: 'mePortlandHead', title: 'Portland Head Light', icon: '🗼',
       detail: 'Maine\'s oldest lighthouse (1791), commissioned by George Washington. Currently uses an LED beacon visible 24 nautical miles. Originally used whale-oil lamps, then kerosene, then a Fresnel lens, then incandescent, now LED — a 230-year history of evolving illumination technology.',
@@ -13449,11 +17605,11 @@
       relevance: 'Submarines depend on optical engineering for both periscope and (new) photonic-mast systems.' }
   ];
 
-  // ══════════════════════════════════════════════════════════════════
+  // ---
   // INTERACTIVE CALCULATORS — suite of optical calculators and visualizers
   // Each is callable from the new 'calcs' tab and provides hands-on
   // exploration of optical concepts beyond the existing sim tabs.
-  // ══════════════════════════════════════════════════════════════════
+  // ---
 
   // ───── 1. Brewster's angle visualizer ─────
   function _renderBrewsterCalc(d, upd, h) {
@@ -13487,7 +17643,7 @@
       h('div', { style: { background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#d8b4fe', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, "🕶 Brewster's Angle Visualizer"),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "At Brewster's angle, the reflected beam is 100% s-polarized (perpendicular to the plane of incidence). The reflected p-polarization component vanishes. Used in polarized sunglasses, laser windows, polarimeters.")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(168,85,247,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, 'Controls'),
           h('div', { style: { marginBottom: 8 } },
@@ -13651,7 +17807,7 @@
       h('div', { style: { background: 'rgba(251,146,60,0.10)', border: '1px solid rgba(251,146,60,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#fdba74', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '⚡ Total Internal Reflection Visualizer'),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "Going from denser to less-dense medium, light beyond the critical angle reflects 100% back. Basis of fiber optics, prisms, and diamond brilliance.")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(251,146,60,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fdba74', marginBottom: 8 } }, 'Setup'),
           h('div', { style: { marginBottom: 8 } },
@@ -13731,7 +17887,7 @@
       h('div', { style: { background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#a5b4fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, "🔍 Lensmaker's Equation Calculator"),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "1/f = (n − 1)(1/R₁ − 1/R₂). Sign convention: R positive if center of curvature is on the OUTGOING side.")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(99,102,241,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#a5b4fc', marginBottom: 8 } }, 'Lens parameters'),
           h('div', { style: { marginBottom: 8 } },
@@ -13903,7 +18059,7 @@
       h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🎨 Color Mixer (Additive RGB)'),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "Light sources mix additively — R+G=Yellow, R+B=Magenta, G+B=Cyan, R+G+B=White. The basis of every display.")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { marginBottom: 12 } },
             h('label', { style: { fontSize: 11, color: '#f87171', display: 'block', marginBottom: 4, fontWeight: 700 } }, 'R: ' + Math.round(r)),
@@ -14010,7 +18166,7 @@
       h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '📡 Fiber-Optic Acceptance Angle'),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "Light entering at angles within the acceptance cone undergoes TIR inside the fiber core. NA = √(n_core² − n_clad²).")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Fiber configuration'),
           h('div', { style: { marginBottom: 8 } },
@@ -14107,7 +18263,7 @@
       h('div', { style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#86efac', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '🔦 Anti-Reflection Coating Designer'),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "A quarter-wave thin film cancels reflection. Optimal: n_coat = √n_glass, t = λ/(4 n_coat).")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 8 } }, 'Coating design'),
           h('div', { style: { marginBottom: 8 } },
@@ -14269,7 +18425,7 @@
       h('div', { style: { background: 'rgba(56,189,248,0.10)', border: '1px solid rgba(56,189,248,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 900, margin: '0 0 4px' } }, '👓 Eye Prescription Estimator'),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: 0 } }, "Estimate eyeglass diopters from your eye's near and far points. (For estimation only — see an optometrist for real prescription.)")),
-      h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(280px,1fr) minmax(280px,1fr)', gap: 14 } },
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 14 } },
         h('div', { style: { background: 'rgba(15,23,42,0.65)', border: '1px solid rgba(56,189,248,0.30)', borderRadius: 10, padding: 14 } },
           h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 8 } }, 'Your eye'),
           h('div', { style: { marginBottom: 8 } },
@@ -14353,9 +18509,9 @@
     );
   }
 
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   // CALCULATORS HUB — main panel with sub-navigation
-  // ──────────────────────────────────────────────────────────────────
+  // ---
   function _renderCalculatorsHub(d, upd, h) {
     var subTool = d.calcSubTool || 'photon';
     var tools = [
@@ -14411,9 +18567,9 @@
   }
 
 
-  // ══════════════════════════════════════════════════════════════════════
+  // ---
   // VIZ PANEL — visual + interactive SVG optics mini-tools
-  // ══════════════════════════════════════════════════════════════════════
+  // ---
   function _renderVizPanel(d, upd, h) {
     return h('div', null,
       h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },

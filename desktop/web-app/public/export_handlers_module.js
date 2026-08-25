@@ -55,6 +55,58 @@
     return fallback;
   };
 
+  // Printing can begin before web fonts or image decodes finish, which leaves
+  // missing diagrams and fallback-font line wraps in the browser's PDF output.
+  // Wait for the popup document, fonts, and images, with a bounded fallback so
+  // a broken remote asset can never strand the export.
+  const _alloWaitForPrintReady = async (printWindow, timeoutMs) => {
+    const win = printWindow;
+    const doc = win && win.document;
+    if (!doc) return;
+    const waitMs = Number.isFinite(timeoutMs) ? Math.max(0, timeoutMs) : 6000;
+    const tasks = [];
+    if (doc.readyState === 'loading' && typeof win.addEventListener === 'function') {
+      tasks.push(new Promise(function(resolve) {
+        win.addEventListener('load', resolve, { once: true });
+      }));
+    }
+    if (doc.fonts && doc.fonts.ready && typeof doc.fonts.ready.then === 'function') {
+      tasks.push(Promise.resolve(doc.fonts.ready).catch(function() {}));
+    }
+    const images = doc.images ? Array.from(doc.images) : [];
+    images.forEach(function(img) {
+      const decode = function() {
+        if (typeof img.decode !== 'function') return Promise.resolve();
+        try { return Promise.resolve(img.decode()).catch(function() {}); }
+        catch (_) { return Promise.resolve(); }
+      };
+      if (img.complete) {
+        tasks.push(decode());
+      } else if (typeof img.addEventListener === 'function') {
+        tasks.push(new Promise(function(resolve) {
+          const finish = function() { decode().then(resolve, resolve); };
+          img.addEventListener('load', finish, { once: true });
+          img.addEventListener('error', resolve, { once: true });
+        }));
+      }
+    });
+    if (tasks.length) {
+      let timeoutId;
+      await Promise.race([
+        Promise.all(tasks.map(function(task) { return Promise.resolve(task).catch(function() {}); })),
+        new Promise(function(resolve) { timeoutId = setTimeout(resolve, waitMs); })
+      ]);
+      if (timeoutId) clearTimeout(timeoutId);
+    }
+    await new Promise(function(resolve) {
+      if (typeof win.requestAnimationFrame === 'function') {
+        win.requestAnimationFrame(function() { win.requestAnimationFrame(resolve); });
+      } else {
+        setTimeout(resolve, 0);
+      }
+    });
+  };
+
   const _alloInstructionalTextForExport = (item) => {
     const artifact = item && typeof item === 'object' ? item : {};
     const config = artifact.config && typeof artifact.config === 'object' ? artifact.config : {};
@@ -172,6 +224,45 @@
       setTimeout((function(u) { return function() { URL.revokeObjectURL(u); }; })(url), 4000);
       if (i < files.length - 1) await new Promise(function(r) { setTimeout(r, 300); });
     }
+  };
+
+  // Browsers commonly block a second automatic download. Keep the private
+  // teacher artifact behind an explicit, persistent user gesture instead of
+  // claiming success after a download the browser may have silently dropped.
+  const _alloOfferPrivateTeacherDownload = (file) => {
+    if (!file || !file.blob || !file.name) throw new Error('Private teacher materials could not be prepared.');
+    const prior = document.getElementById('allo-private-teacher-download');
+    if (prior) {
+      try { if (prior.__alloObjectUrl) URL.revokeObjectURL(prior.__alloObjectUrl); } catch (_) {}
+      prior.remove();
+    }
+    const url = URL.createObjectURL(file.blob);
+    const panel = document.createElement('div');
+    panel.id = 'allo-private-teacher-download';
+    panel.__alloObjectUrl = url;
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', 'Private teacher materials download');
+    panel.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(560px,calc(100vw - 32px));padding:14px 16px;border:3px solid #9f1239;border-radius:12px;background:#fff1f2;color:#881337;box-shadow:0 12px 32px rgba(15,23,42,.28);font:700 15px/1.4 system-ui,sans-serif;';
+    const text = document.createElement('span');
+    text.textContent = 'Student HTML downloaded. Keep this separate teacher download private:';
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = file.name;
+    link.textContent = 'Download private teacher materials';
+    link.style.cssText = 'display:inline-flex;min-height:44px;align-items:center;padding:8px 12px;border-radius:8px;background:#9f1239;color:#fff;text-decoration:none;font-weight:800;';
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.textContent = 'Dismiss';
+    dismiss.style.cssText = 'min-height:44px;padding:8px 12px;border:2px solid #9f1239;border-radius:8px;background:#fff;color:#881337;font:inherit;cursor:pointer;';
+    const cleanup = () => {
+      try { URL.revokeObjectURL(url); } catch (_) {}
+      if (panel.parentNode) panel.remove();
+    };
+    link.addEventListener('click', () => setTimeout(cleanup, 2000));
+    dismiss.addEventListener('click', cleanup);
+    panel.appendChild(text); panel.appendChild(link); panel.appendChild(dismiss);
+    (document.body || document.documentElement).appendChild(panel);
+    return link;
   };
 
   // ── executeExportFromPreview ─────────────────────────────────────
@@ -366,11 +457,17 @@
     .replace(/([.!?])\s*\.+/g, '$1')
     .replace(/\.{2,}/g, '.')
     .trim();
-  const _alloAudioDocRoot = (root) => {
+  const _alloTeacherOnlySelector = '.teacher-view,[data-allo-teacher-only],.answer-key';
+  const _alloIsTeacherOnlyNode = (node) => !!(node && node.closest && node.closest(_alloTeacherOnlySelector));
+  const _alloAudioDocRoot = (root, opts) => {
     if (!root) return null;
     const clone = root.cloneNode(true);
     const scoped = (clone.querySelector && (clone.querySelector('body') || clone.querySelector('main'))) || clone;
     try {
+      if (opts && opts.studentSafe) {
+        const teacherOnly = scoped.querySelectorAll(_alloTeacherOnlySelector);
+        for (let i = 0; i < teacherOnly.length; i++) teacherOnly[i].remove();
+      }
       const kill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],script,style,button,input,select,textarea,audio,video,noscript');
       for (let i = 0; i < kill.length; i++) kill[i].remove();
       const hidden = scoped.querySelectorAll('[hidden],[aria-hidden="true"]');
@@ -382,8 +479,8 @@
     } catch (e) {}
     return scoped;
   };
-  const _alloAudioReadyTextFromRoot = (root) => {
-    const scoped = _alloAudioDocRoot(root);
+  const _alloAudioReadyTextFromRoot = (root, opts) => {
+    const scoped = _alloAudioDocRoot(root, opts);
     if (!scoped) return '';
     const doc = scoped.ownerDocument || document;
     let preamble = '';
@@ -426,8 +523,8 @@
     } catch (e) {}
     return _alloSpokenText(preamble + (scoped.textContent || ''));
   };
-  const _alloStructuredAudioTextFromRoot = (root) => {
-    const scoped = _alloAudioDocRoot(root);
+  const _alloStructuredAudioTextFromRoot = (root, opts) => {
+    const scoped = _alloAudioDocRoot(root, opts);
     if (!scoped) return '';
     const out = [];
     const txt = (el) => _alloSpokenText(el && el.textContent ? el.textContent : '');
@@ -619,12 +716,12 @@
     if (type.indexOf('mpeg') !== -1 || type.indexOf('mp3') !== -1) return 'mp3';
     return 'wav';
   };
-  const _alloPlanAudioDownloads = (root, config) => {
+  const _alloPlanAudioDownloads = (root, config, opts) => {
     const plans = [];
     const variants = (config && config.variants) || [];
     for (let i = 0; i < variants.length; i++) {
       const variant = variants[i];
-      const text = variant === 'structured' ? _alloStructuredAudioTextFromRoot(root) : _alloAudioReadyTextFromRoot(root);
+      const text = variant === 'structured' ? _alloStructuredAudioTextFromRoot(root, opts) : _alloAudioReadyTextFromRoot(root, opts);
       const chunks = _alloChunkAudioText(text, 1200);
       if (!chunks.length) continue;
       plans.push({
@@ -762,11 +859,12 @@
       if (addToast) addToast('Selected-voice audio is not available right now, so the export will download without audio.', 'info');
       return result;
     }
-    const downloadPlans = _alloPlanAudioDownloads(root, audioConfig);
+    const studentSafeAudio = !!opts.studentSafeAudio;
+    const downloadPlans = _alloPlanAudioDownloads(root, audioConfig, { studentSafe: studentSafeAudio });
     const docLanguage = opts.language || _alloAudioLanguageFromRoot(root);
     let sections = [];
     if (audioConfig.inlinePassageAudio) {
-      sections = root.querySelectorAll('[data-ka-readable]');
+      sections = Array.from(root.querySelectorAll('[data-ka-readable]')).filter((section) => !studentSafeAudio || !_alloIsTeacherOnlyNode(section));
     }
     if (audioConfig.inlinePassageAudio && !sections.length) {
       // Fallback (the CDN may still serve an older doc without the tags): detect
@@ -776,6 +874,7 @@
       const _picked = [];
       for (let _qi = 0; _qi < _all.length; _qi++) {
         const _s = _all[_qi];
+        if (studentSafeAudio && _alloIsTeacherOnlyNode(_s)) continue;
         if (_s.querySelector('input, textarea, .question, table, .quiz-box, .interactive-textarea, [data-correct], .vp-panel, .allo-ka-passage')) continue;
         const _ps = _s.querySelectorAll('p');
         let _len = 0;
@@ -947,6 +1046,107 @@
     }
   };
 
+  // Split an edited Builder preview into a student-safe copy and a clearly
+  // marked teacher copy. DOM parsing is mandatory here: a regex fallback could
+  // miss nested answer-key markup and silently leak it into the student file.
+  const _alloSeparateStudentTeacherHtml = (htmlContent) => {
+    if (typeof DOMParser === 'undefined') throw new Error('This browser cannot safely separate the student and teacher copies.');
+    const parse = () => new DOMParser().parseFromString(String(htmlContent || ''), 'text/html');
+    const serialize = (doc) => '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    const studentDoc = parse();
+    const teacherSections = Array.from(studentDoc.querySelectorAll('.teacher-view, [data-allo-teacher-only]'));
+    if (teacherSections.length === 0) throw new Error('The teacher answer-key section was not found, so a safe student copy could not be verified.');
+    teacherSections.forEach((section) => {
+      const prior = section.previousElementSibling;
+      if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
+      section.remove();
+    });
+    studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner').forEach((node) => node.remove());
+    if (studentDoc.title) studentDoc.title = studentDoc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
+
+    const teacherDoc = parse();
+    teacherDoc.title = 'TEACHER COPY — ' + (teacherDoc.title || 'AlloFlow resource');
+    if (!teacherDoc.getElementById('alloflow-teacher-copy-css')) {
+      const style = teacherDoc.createElement('style');
+      style.id = 'alloflow-teacher-copy-css';
+      style.textContent = '.alloflow-teacher-copy-banner{margin:0 0 20px;padding:12px 16px;border:3px solid #b91c1c;border-radius:10px;background:#fef2f2;color:#7f1d1d;font:800 16px/1.4 system-ui,sans-serif;text-align:center;break-inside:avoid}@media print{.alloflow-teacher-copy-banner{display:block!important}}';
+      teacherDoc.head.appendChild(style);
+    }
+    if (teacherDoc.body && !teacherDoc.querySelector('.alloflow-teacher-copy-banner')) {
+      const banner = teacherDoc.createElement('div');
+      banner.className = 'alloflow-teacher-copy-banner';
+      banner.setAttribute('role', 'note');
+      banner.textContent = 'TEACHER COPY — CONTAINS ANSWERS — DO NOT SHARE WITH STUDENTS';
+      teacherDoc.body.insertBefore(banner, teacherDoc.body.firstChild);
+    }
+    return { studentHtml: serialize(studentDoc), teacherHtml: serialize(teacherDoc) };
+  };
+
+  // Final fail-safe for graded HTML. The normal document pipeline already
+  // suppresses these answer signals; this second DOM pass protects exports
+  // made from an edited or stale Builder iframe as well.
+  const _alloSanitizeAssessmentStudentHtml = (htmlContent) => {
+    if (typeof DOMParser === 'undefined') throw new Error('This browser cannot verify a student-safe assessment export.');
+    const doc = new DOMParser().parseFromString(String(htmlContent || ''), 'text/html');
+    doc.querySelectorAll('.teacher-view,[data-allo-teacher-only]').forEach((section) => {
+      const prior = section.previousElementSibling;
+      if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
+      section.remove();
+    });
+    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner').forEach((node) => node.remove());
+    doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
+    doc.querySelectorAll('.alloflow-cs-strip[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
+    if (!doc.getElementById('alloflow-assessment-export-safety')) {
+      const style = doc.createElement('style');
+      style.id = 'alloflow-assessment-export-safety';
+      style.textContent = '.quiz-controls,.alloflow-cs-controls{display:none!important}';
+      doc.head.appendChild(style);
+    }
+    if (doc.title) doc.title = doc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
+    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+  };
+
+  const _alloShouldSeparateStudentTeacher = (config) => !!(config
+    && config.includeTeacherKey === true
+    && config.assessmentMode !== true
+    && config.separateTeacherStudentFiles !== false);
+
+  // Download the safe student document as its own obvious file. Teacher HTML
+  // and source project data belong in a second, clearly private package so a
+  // teacher cannot accidentally share one mixed student/answer-key ZIP.
+  const _alloDownloadSeparatedStudentTeacher = async (options) => {
+    const opts = options || {};
+    const copies = _alloSeparateStudentTeacherHtml(opts.htmlContent);
+    const htmlName = opts.htmlName || _alloExportFilename(opts.htmlContent, 'alloflow-export');
+    const dateSuffix = new Date().toISOString().split('T')[0];
+    const studentName = htmlName + '-STUDENT.html';
+    const teacherName = htmlName + '-TEACHER-KEY.html';
+    const projectName = htmlName + '-TEACHER-PROJECT-DO-NOT-SHARE.json';
+    const files = [
+      { name: studentName, blob: new Blob([copies.studentHtml], { type: 'text/html;charset=utf-8' }) }
+    ];
+    if (typeof window !== 'undefined' && window.JSZip) {
+      try {
+        if (opts.addToast) opts.addToast('Building the student file and private teacher package...', 'info');
+        const teacherZip = new window.JSZip();
+        teacherZip.file(teacherName, copies.teacherHtml);
+        teacherZip.file(projectName, JSON.stringify(opts.history == null ? [] : opts.history, null, 2));
+        const teacherBlob = await teacherZip.generateAsync({ type: 'blob' });
+        files.push({ name: htmlName + '-TEACHER-MATERIALS-' + dateSuffix + '.zip', blob: teacherBlob });
+      } catch (zipError) {
+        if (opts.addToast) opts.addToast('The private teacher ZIP could not be built, so the teacher HTML will download separately instead.', 'info');
+        files.push({ name: teacherName, blob: new Blob([copies.teacherHtml], { type: 'text/html;charset=utf-8' }) });
+      }
+    } else {
+      // Two explicit HTML downloads are safer than a third loose project JSON
+      // and less likely to be blocked by a browser's multi-download limit.
+      files.push({ name: teacherName, blob: new Blob([copies.teacherHtml], { type: 'text/html;charset=utf-8' }) });
+    }
+    await _alloDownloadFiles([files[0]]);
+    _alloOfferPrivateTeacherDownload(files[1]);
+    return { copies: copies, files: files.map((file) => file.name) };
+  };
+
   const executeExportFromPreview = async (deps) => {
     const {
       _docPipeline, addToast, t,
@@ -962,7 +1162,11 @@
     }
     const mode = exportPreviewMode;
     const isWorksheet = mode === 'worksheet';
-    const _wantSingleFile = mode === 'html' && (!!(exportConfig && exportConfig.singleFileHtml) || !(typeof window !== 'undefined' && window.JSZip));
+    const _assessmentStudentOnly = mode === 'html' && !!(exportConfig && exportConfig.assessmentMode === true);
+    const _separateTeacherStudent = mode === 'html' && _alloShouldSeparateStudentTeacher(exportConfig);
+    // Split student files must carry their own media: the private teacher ZIP
+    // intentionally does not double as a shared asset container.
+    const _wantSingleFile = mode === 'html' && (_assessmentStudentOnly || _separateTeacherStudent || !!(exportConfig && exportConfig.singleFileHtml) || !(typeof window !== 'undefined' && window.JSZip));
     // Read-aloud modal — asked at download time for HTML exports. Yes => inline
     // sentence-karaoke on every reading passage (generated on the DOM clone below).
     let _readAloudMode = false;
@@ -1019,7 +1223,7 @@
       // sentence-karaoke on the clone (modal-driven, at download time).
       if (_readAloudMode) {
         try {
-          const _kaResult = await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile });
+          const _kaResult = await _alloKaraokeProcess(_exClone, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent });
           _audioAssets = (_kaResult && _kaResult.assets) || [];
           _readAloudApplied = true;
         }
@@ -1053,7 +1257,7 @@
     if (_readAloudMode && !_readAloudApplied && mode === 'html' && typeof DOMParser !== 'undefined') {
       try {
         const _kaDoc = new DOMParser().parseFromString(htmlContent, 'text/html');
-        const _kaResult = await _alloKaraokeProcess(_kaDoc.documentElement, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile });
+        const _kaResult = await _alloKaraokeProcess(_kaDoc.documentElement, { callTTS: callTTS, selectedVoice: selectedVoice, addToast: addToast, mode: _readAloudMode, singleFile: _wantSingleFile, studentSafeAudio: _separateTeacherStudent });
         _audioAssets = (_kaResult && _kaResult.assets) || [];
         htmlContent = '<!DOCTYPE html>\n' + _kaDoc.documentElement.outerHTML;
         _readAloudApplied = true;
@@ -1079,7 +1283,9 @@
       if (printWindow) {
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        setTimeout(function() { printWindow.print(); }, 500);
+        await _alloWaitForPrintReady(printWindow);
+        try { if (typeof printWindow.focus === 'function') printWindow.focus(); } catch (_) {}
+        printWindow.print();
         if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
         return true;
       }
@@ -1090,6 +1296,34 @@
       // downloads folder reads "photosynthesis.html" instead of N identical
       // "index.html" files.
       const _htmlName = _alloExportFilename(htmlContent, 'alloflow-export');
+      if (_assessmentStudentOnly) {
+        let assessmentHtml;
+        try { assessmentHtml = _alloSanitizeAssessmentStudentHtml(htmlContent); }
+        catch (assessmentSafetyError) {
+          _alloExportNotice(assessmentSafetyError && assessmentSafetyError.message ? assessmentSafetyError.message : 'Assessment HTML could not be verified as student-safe.', 'error', addToast);
+          return false;
+        }
+        await _alloDownloadFiles([{ name: _htmlName + '.html', blob: new Blob([assessmentHtml], { type: 'text/html;charset=utf-8' }) }]);
+        if (addToast) addToast('Assessment HTML downloaded without answer-bearing project data.', 'success');
+        if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+        return true;
+      }
+      if (_separateTeacherStudent) {
+        try {
+          await _alloDownloadSeparatedStudentTeacher({
+            htmlContent: htmlContent,
+            htmlName: _htmlName,
+            history: history,
+            addToast: addToast
+          });
+        } catch (copyError) {
+          _alloExportNotice(copyError && copyError.message ? copyError.message : 'Could not safely separate student and teacher files.', 'error', addToast);
+          return false;
+        }
+        if (addToast) addToast('Student file ready. Keep the separately named TEACHER file or package private—it contains answers.', 'success');
+        if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
+        return true;
+      }
       // Single-file option: skip the zip and download just the self-contained
       // .html (images are base64-inlined), so teachers can email one file that
       // offline students double-click.
@@ -1202,7 +1436,9 @@
       if (printWindow) {
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        setTimeout(function() { printWindow.print(); }, 500);
+        await _alloWaitForPrintReady(printWindow);
+        try { if (typeof printWindow.focus === 'function') printWindow.focus(); } catch (_) {}
+        printWindow.print();
       } else {
         _alloExportNotice((t && t('export_status.popup_blocked')) || 'Pop-up blocked — please allow pop-ups for this site to print.', 'error', addToast);
       }
@@ -1212,6 +1448,38 @@
       // lesson-derived names so teachers never have to extract a zip. The old
       // readme.txt only described the zip's contents, so it's dropped here.
       const _htmlName = _alloExportFilename(htmlContent, (t ? t('export.filenames.html_pack') : 'alloflow-export'));
+      if (exportConfig && exportConfig.assessmentMode === true) {
+        try {
+          const assessmentHtml = _alloSanitizeAssessmentStudentHtml(htmlContent);
+          await _alloDownloadFiles([
+            { name: _htmlName + '.html', blob: new Blob([assessmentHtml], { type: 'text/html;charset=utf-8' }) }
+          ]);
+          if (addToast) addToast('Assessment HTML downloaded without answer-bearing project data.', 'success');
+          if (alloBotRef && alloBotRef.current && t) alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+          return true;
+        } catch (assessmentError) {
+          if (typeof warnLog === 'function') warnLog('Assessment HTML download failed', assessmentError);
+          _alloExportNotice('Assessment export could not be downloaded safely.', 'error', addToast);
+          return false;
+        }
+      }
+      if (_alloShouldSeparateStudentTeacher(exportConfig)) {
+        try {
+          await _alloDownloadSeparatedStudentTeacher({
+            htmlContent: htmlContent,
+            htmlName: _htmlName,
+            history: history,
+            addToast: addToast
+          });
+          if (addToast) addToast('Student file ready. Keep the separately named TEACHER file or package private—it contains answers.', 'success');
+          if (alloBotRef && alloBotRef.current && t) alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
+          return true;
+        } catch (splitError) {
+          if (typeof warnLog === 'function') warnLog('Safe student/teacher separation failed', splitError);
+          _alloExportNotice(splitError && splitError.message ? splitError.message : 'Could not safely separate student and teacher files.', 'error', addToast);
+          return false;
+        }
+      }
       try {
         if (addToast) addToast('Downloading files…', 'info');
         await _alloDownloadFiles([
@@ -2358,10 +2626,17 @@
     getChatThemeStyles,
     runGlossaryHealthCheck,
     getSlidesPreviewHTML,
+    separateStudentTeacherHtml: _alloSeparateStudentTeacherHtml,
+    sanitizeAssessmentStudentHtml: _alloSanitizeAssessmentStudentHtml,
+    shouldSeparateStudentTeacher: _alloShouldSeparateStudentTeacher,
+    downloadSeparatedStudentTeacher: _alloDownloadSeparatedStudentTeacher,
+    audioReadyTextFromRoot: _alloAudioReadyTextFromRoot,
+    structuredAudioTextFromRoot: _alloStructuredAudioTextFromRoot,
+    karaokeProcess: _alloKaraokeProcess,
     getTextAccessSummary: _alloTextAccessSummary,
     getLessonContext,
     handleCopyToClipboard
   };
   window.AlloModules.ExportHandlersModule = true;
-  console.log('[ExportHandlersModule] 15 handlers registered (Phase P bundle)');
+  console.log('[ExportHandlersModule] 23 handlers registered (Phase P bundle)');
 })();

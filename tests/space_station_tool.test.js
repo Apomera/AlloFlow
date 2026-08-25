@@ -76,6 +76,7 @@ const BASE = {
   interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
   interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
   interiorGuided: true, lowGImpulse: 10, lowGResult: null,
+  interiorView: '3d', interiorNav: { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 },
   researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {},
   cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
   opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
@@ -348,12 +349,64 @@ describe('space station tool', () => {
       expect(source).toContain("selModule.id === 'cupola' ? renderCupolaInterior()");
       // New quest hooks
       expect(source).toContain("id: 'iss_inside'");
+      expect(source).toContain("id: 'iss_freeflight'");
       expect(source).toContain("id: 'iss_dock'");
       expect(source).toContain("id: 'iss_eva'");
       // Interior shift is interactive, responsive, and exposes hotspot learning
       expect(source).toContain('INTERIOR_ROOMS');
       expect(source).toContain('data-iss-interior');
       expect(source).toContain('iss-interior-layout');
+      expect(source).toContain('INTERIOR_3D_LAYOUT');
+      expect(source).toContain("var INTERIOR_ROUTE_IDS = ['harmony', 'destiny', 'unity', 'tranquility', 'cupola']");
+      expect(source).toContain('function interiorCanvasRef');
+      expect(source).toContain('data-iss-interior-canvas');
+      expect(source).toContain("'aria-describedby': 'iss-interior-flight-instructions iss-interior-flight-status'");
+      expect(source).toContain("'aria-keyshortcuts': 'W A S D R F Q E ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'");
+      expect(source).toContain('cv._issInteriorState = state');
+      expect(source).toContain('cv._issInteriorSetControl');
+      expect(source).toContain('cv._issInteriorGrabRail');
+      expect(source).toContain('cv._issInteriorCenter');
+      expect(source).toContain('cv._issInteriorReset');
+      expect(source).toContain('cv._issInteriorCleanup = cleanup');
+      expect(source).toContain('state.velocity.addScaledVector');
+      expect(source).toContain("mode: 'STATIONARY'");
+      expect(source).toContain("state.mode = 'RAIL HOLD'");
+      expect(source).toContain('Math.ceil(elapsed / 0.04)');
+      expect(source).toContain('if (state.velocity.length() > 0.78)');
+      expect(source).toContain('COASTING // NO DRAG');
+      expect(source).toContain('function crossedConnectorPlane');
+      expect(source).toContain('function canOccupyFromRoom');
+      expect(source).toContain('canOccupyFromRoom(state.room, tempCandidate)');
+      expect(source).not.toContain('if (roomAt(tempCandidate))');
+      expect(source).toContain("emit('hatch'");
+      expect(source).toContain("emit('cargo-clear'");
+      expect(source).toContain("emit('orientation-recovered'");
+      expect(source).toContain("emit('route-complete'");
+      expect(source).toContain('function railDistance');
+      expect(source).toContain('function nextRouteTarget');
+      expect(source).toContain('distance > 0.68');
+      expect(source).toContain('speed >= 0.12 && speed <= 0.35');
+      expect(source).toContain('side: THREE.BackSide');
+      expect(source).toContain('THREE.CanvasTexture');
+      expect(source).toContain('function addModulePlacard');
+      expect(source).toContain('function addActivityBeacon');
+      expect(source).toContain('iss-interior-route-map');
+      expect(source).toContain('iss-route-schematic');
+      expect(source).toContain('data-iss-interior-rail-distance');
+      expect(source).toContain('data-iss-interior-next-label');
+      expect(source).toContain('data-iss-interior-next-distance');
+      expect(source).toContain('data-iss-interior-next-arrow');
+      expect(source).toContain('data-iss-interior-event');
+      expect(source).toContain('data-iss-interior-objective');
+      expect(source).toContain('grabEl.disabled = false');
+      expect(source).toContain("grabEl.setAttribute('aria-disabled', distanceToRail > 0.68 ? 'true' : 'false')");
+      expect(source).toContain('data-iss-next-maneuver');
+      expect(source).toContain('data-iss-interior-fallback');
+      expect(source).toContain('function showInteriorFallback');
+      expect(source).toContain("shell.setAttribute('data-iss-webgl-state', 'unavailable')");
+      expect(source).toContain("shell.querySelectorAll('.iss-interior-controls button')");
+      expect(source).toContain('unavailableControls[controlIndex].disabled = true');
+      expect(source).toContain('.iss-interior-sim[data-iss-webgl-state="unavailable"] .iss-interior-controls{display:none}');
       expect(source).toContain('chooseInterior');
       expect(source).toContain('data-iss-lowg-sim');
       expect(source).toContain('data-iss-lowg-trajectory');
@@ -407,10 +460,85 @@ describe('space station tool', () => {
       const html = mountWithSeed({ ...BASE, tab: 'interior' });
       expect(html).toContain('Float inside. Work like an astronaut.');
       expect(html).toContain('Crew quarters');
-      expect(html).toContain('AFT');
-      expect(html).toContain('FORWARD');
+      expect(html).toContain('CONNECTED INTERIOR ROUTE');
+      expect(html).toContain('PORT TURN // NADIR DESCENT');
       expect(html).toContain('data-iss-room-transition');
       expect(html).toContain('Stow your sleep station');
+      const routeStart = html.indexOf('YOU // HARMONY');
+      const routeDestiny = html.indexOf('>DESTINY<');
+      const routeUnity = html.indexOf('>UNITY<');
+      const routeTranquility = html.indexOf('>TRANQUILITY<');
+      const routeCupola = html.indexOf('>CUPOLA<');
+      expect(routeStart).toBeGreaterThan(-1);
+      expect(routeDestiny).toBeGreaterThan(routeStart);
+      expect(routeUnity).toBeGreaterThan(routeDestiny);
+      expect(routeTranquility).toBeGreaterThan(routeUnity);
+      expect(routeCupola).toBeGreaterThan(routeTranquility);
+    });
+
+    it('switches between navigable 3-D and the equivalent accessible diagram', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: '3d' });
+      try {
+        const freeFlight = live.host.querySelector('[data-iss-interior-view="3d"]');
+        const diagram = live.host.querySelector('[data-iss-interior-view="diagram"]');
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(freeFlight.getAttribute('aria-pressed')).toBe('true');
+        expect(diagram.getAttribute('aria-pressed')).toBe('false');
+        expect(canvas).not.toBeNull();
+        expect(canvas.getAttribute('role')).toBe('application');
+        expect(canvas.getAttribute('aria-describedby')).toBe('iss-interior-flight-instructions iss-interior-flight-status');
+        expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Space Home');
+        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(5);
+        expect(live.host.querySelector('.iss-interior-route-map')).not.toBeNull();
+        expect(live.host.querySelector('.iss-route-schematic')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-rail-distance]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-next-label]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-next-distance]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-next-arrow]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-event]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-objective]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-next-maneuver]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-mode]').textContent).toBe('STATIONARY');
+        expect(live.host.textContent).toContain('with no passive braking');
+        expect(live.host.textContent).toContain('Grab handrail');
+
+        act(() => { diagram.click(); });
+        expect(live.host.querySelector('[data-iss-interior-canvas]')).toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-view="diagram"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-iss-room-transition]').getAttribute('data-iss-room-transition')).toBe('harmony');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        expect(live.host.querySelector('[data-iss-interior-canvas]')).not.toBeNull();
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists free-flight hatch, handrail, and loose-object challenges', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: '3d' });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+        act(() => {
+          canvas._issInteriorEvent({ type: 'hatch', from: 'harmony', to: 'destiny', speed: 0.32 });
+          canvas._issInteriorEvent({ type: 'rail-grab', room: 'destiny', speed: 0.21 });
+          canvas._issInteriorEvent({ type: 'cargo-clear', room: 'unity', speed: 0.18 });
+        });
+        expect(live.host.querySelector('[data-iss-interior-3d]').getAttribute('data-iss-interior-3d')).toBe('destiny');
+        expect(live.host.querySelector('[data-iss-nav-challenge="hatch"]').className).toContain('is-complete');
+        expect(live.host.querySelector('[data-iss-nav-challenge="rail"]').className).toContain('is-complete');
+        expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
+        expect(live.host.textContent).toContain('1 hatch transitions / 1 rail catches');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('3 of 5 complete');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        expect(live.host.querySelector('[data-iss-nav-challenge="hatch"]').className).toContain('is-complete');
+        expect(live.host.querySelector('[data-iss-nav-challenge="rail"]').className).toContain('is-complete');
+        expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
+      } finally {
+        live.cleanup();
+      }
     });
 
     it('moves focus and selection together across the section tabs', async () => {

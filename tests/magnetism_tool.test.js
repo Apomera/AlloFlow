@@ -1560,7 +1560,9 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('FIELD VS DISTANCE');
     expect(html).toContain('B ∝ 1/r³');
     expect(html).toContain('Measured |B|');
-    expect(html).toContain('Components Bx · By');
+    expect(html).toContain('Field components');
+    expect(html).toContain('Bx ');
+    expect(html).toContain('/ By ');
     expect(html).toContain('Power-law exponent');
     expect(html).toContain('-3.00');
     expect(html).toContain('Controlled scan.');

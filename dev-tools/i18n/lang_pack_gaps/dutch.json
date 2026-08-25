@@ -1,0 +1,10 @@
+{
+  "langName": "dutch",
+  "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
+  "totalEnglishKeys": 1430,
+  "translatedKeys": 1405,
+  "missingKeys": 0,
+  "passthroughKeys": 25,
+  "coveragePct": 98.3,
+  "missing": {}
+}

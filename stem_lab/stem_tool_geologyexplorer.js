@@ -160,11 +160,11 @@
   }
 
   // ── First-person "drop into the world" explorer — pure, testable seams ─────────
-  // GHOST/FLY model (no collision): you fly THROUGH rock to read depth/temp/pressure
-  // anywhere — essential for the radial deep-Earth core and the geode void. The HUD
-  // defers ALL science to rockFacts() so each scene keeps its own geotherm (crust
-  // linear, deepEarth non-linear — never the ~160,000°C artifact). NO pointer-lock /
-  // fullscreen API (both blocked in the Canvas iframe): look = drag + keyboard.
+  // Surface scenes use a grounded mine/walk model; Deep Earth deliberately keeps the
+  // ghost-flight model because concentric shells have no meaningful horizontal floor.
+  // The HUD defers ALL science to rockFacts() so each scene keeps its own geotherm
+  // (crust linear, deepEarth non-linear — never the ~160,000°C artifact). Pointer-lock
+  // is not required in the Canvas iframe: look = drag + keyboard, mine = click/tap.
   function fpClampN(n, a, b) { return n < a ? a : (n > b ? b : n); }
   function easeInOutCubic(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
   function fpClampPitch(p) { var M = Math.PI / 2 - 0.05; return p < -M ? -M : (p > M ? M : p); }
@@ -184,11 +184,147 @@
              y: fpClampN(Math.round((NY - 1) / 2 - wy / VOXEL), 0, NY - 1),
              z: fpClampN(Math.round(wz / VOXEL + (NZ - 1) / 2), 0, NZ - 1) };
   }
-  function fpSeedPose(sceneId) {                              // drop-in eye-point + facing per scene (faces into the block)
+  function fpExplorerMode(sceneId) { return sceneId === 'deepEarth' ? 'fly' : 'mine'; }
+  // Gameplay properties are deliberately keyed by the material's physical state,
+  // not by its colour. Water can be entered and swum through; molten cells are a
+  // checkpoint hazard; everything else supports the grounded capsule.
+  var FP_FLUID_MATERIALS = { oceanWater: 1, outerCore: 1 };
+  var FP_HAZARD_MATERIALS = { magma: 1, arcMagma: 1, axialMagma: 1, conduit: 1 };
+  function fpMaterialPhysics(key) {
+    if (FP_FLUID_MATERIALS[key]) return { kind: 'fluid', speed: 0.52, gravity: 0.18, buoyancy: 0.72 };
+    if (FP_HAZARD_MATERIALS[key]) return { kind: 'hazard', speed: 0, gravity: 1, buoyancy: 0 };
+    return { kind: 'solid', speed: 1, gravity: 1, buoyancy: 0 };
+  }
+  // Mining duration is short enough to keep the explorer brisk, but distinct
+  // enough that loose sediment, layered rock, and crystalline rock feel different.
+  function fpMiningProfile(key, type) {
+    if (FP_FLUID_MATERIALS[key]) return { mineable: false, ms: 0, label: 'Fluid', reason: 'Water flows around the tool — swim through it and target the rock beyond.' };
+    if (FP_HAZARD_MATERIALS[key] || type === 'Molten') return { mineable: false, ms: 0, label: 'Molten hazard', reason: 'Molten rock cannot be mined safely. Find a solid route around it.' };
+    if (key === 'soil' || key === 'sediment') return { mineable: true, ms: 180, label: 'Loose' };
+    if (key === 'sandstone' || key === 'shale' || key === 'limestone') return { mineable: true, ms: 340, label: 'Layered' };
+    if (key === 'chalcedony' || key === 'agate' || key === 'quartz' || key === 'amethyst' || type === 'Mineral' || (type && type.indexOf('Mineral') === 0)) return { mineable: true, ms: 520, label: 'Crystalline' };
+    if (key === 'basement' || key === 'intrusion' || key === 'gabbro' || key === 'dikes' || type === 'Igneous (intrusive)' || type === 'Metamorphic') return { mineable: true, ms: 680, label: 'Hard' };
+    return { mineable: true, ms: 460, label: 'Dense' };
+  }
+  function fpMiningStage(progress, stages) { var total = Math.max(1, Math.round(Number(stages) || 8)); return Math.max(0, Math.min(total, Math.ceil((Number(progress) || 0) * total))); }
+  function fpToolMiningDuration(profile, tool) {
+    var ms = Math.max(0, Number(profile && profile.ms) || 0);
+    return tool === 'drill' ? Math.max(90, Math.round(ms / 2.5)) : ms;
+  }
+  function fpDrillHeatRate(profile) { return 0.55 + Math.min(0.45, Math.max(0, Number(profile && profile.ms) || 0) / 1600); }
+  // Directional core rigs recover an intact stratigraphic column while keeping
+  // water and molten rock as meaningful boundaries rather than mineable blocks.
+  var CORE_RIG_ANGLES = { vertical: 90, slant: 60, shallow: 35 };
+  var CORE_RIG_DEPTHS = [6, 9, 12];
+  function coreRigSupported(sceneId) { return fpExplorerMode(sceneId) === 'mine'; }
+  function coreRigAngleDegrees(angleId) { return CORE_RIG_ANGLES[angleId] || CORE_RIG_ANGLES.vertical; }
+  function coreRigPath(origin, yaw, angleId, depth, bounds) {
+    origin = origin || { x: 0, y: 0, z: 0 };
+    bounds = bounds || {};
+    var wanted = Math.max(1, Math.round(Number(depth) || CORE_RIG_DEPTHS[1]));
+    var angle = coreRigAngleDegrees(angleId) * Math.PI / 180;
+    var horizontal = Math.cos(angle), downward = Math.sin(angle);
+    var minX = bounds.minX == null ? 0 : bounds.minX, maxX = bounds.maxX == null ? NX - 1 : bounds.maxX;
+    var minY = bounds.minY == null ? 0 : bounds.minY, maxY = bounds.maxY == null ? NY - 1 : bounds.maxY;
+    var minZ = bounds.minZ == null ? 0 : bounds.minZ, maxZ = bounds.maxZ == null ? NZ - 1 : bounds.maxZ;
+    var cells = [], seen = {}, travelLimit = wanted * 4 + 4;
+    for (var distance = 1; distance <= travelLimit && cells.length < wanted; distance++) {
+      var cell = {
+        x: Math.round(origin.x - Math.sin(Number(yaw) || 0) * horizontal * distance),
+        y: Math.round(origin.y + downward * distance),
+        z: Math.round(origin.z - Math.cos(Number(yaw) || 0) * horizontal * distance),
+        distance: distance
+      };
+      var id = cell.x + ',' + cell.y + ',' + cell.z;
+      if (seen[id]) continue;
+      seen[id] = 1;
+      if (cell.x < minX || cell.x > maxX || cell.y < minY || cell.y > maxY || cell.z < minZ || cell.z > maxZ) break;
+      cell.depth = cells.length + 1;
+      cells.push(cell);
+    }
+    return cells;
+  }
+  function coreRigStopReason(key, type) {
+    if (!key || key === 'void') return 'blocked';
+    var physics = fpMaterialPhysics(key);
+    if (physics.kind === 'hazard' || type === 'Molten') return 'hazard';
+    if (physics.kind === 'fluid') return 'fluid';
+    return null;
+  }
+  function coreRigDrillDuration(key, type) {
+    var profile = fpMiningProfile(key, type);
+    return profile.mineable ? Math.max(180, Math.round(profile.ms * 0.72 + 110)) : 0;
+  }
+  function coreRigReportSummary(report) {
+    var samples = report && Array.isArray(report.samples) ? report.samples : [];
+    var unique = {}, deepest = 0;
+    samples.forEach(function (sample) {
+      unique[sample.key || sample.name || 'unknown'] = 1;
+      deepest = Math.max(deepest, Number(sample.depth) || 0);
+    });
+    return {
+      sampleCount: samples.length,
+      uniqueMaterials: Object.keys(unique).length,
+      deepest: deepest,
+      stopReason: report && report.stopReason ? report.stopReason : null
+    };
+  }
+  function coreRigGradeForScore(score) {
+    var value = Math.max(0, Math.min(200, Math.floor(Number(score) || 0)));
+    return value >= 175 ? 'S' : (value >= 135 ? 'A' : (value >= 100 ? 'B' : (value >= 65 ? 'C' : 'D')));
+  }
+  function coreRigEvaluation(report) {
+    var summary = coreRigReportSummary(report);
+    var targetDepth = Math.max(1, Number(report && report.targetDepth) || summary.sampleCount || 1);
+    var recoveryRatio = Math.min(1, summary.sampleCount / targetDepth);
+    var fullCore = !!(summary.sampleCount && !summary.stopReason && recoveryRatio >= 1);
+    var safeBoundary = !!(summary.sampleCount && (summary.stopReason === 'fluid' || summary.stopReason === 'hazard'));
+    var score = Math.min(200, summary.sampleCount * 7 + summary.uniqueMaterials * 14 + summary.deepest * 3 + (fullCore ? 24 : 0) + (safeBoundary ? 16 : 0));
+    var grade = coreRigGradeForScore(score);
+    var label = grade === 'S' ? 'Exceptional column' : (grade === 'A' ? 'Research-grade core' : (grade === 'B' ? 'Strong recovery' : (grade === 'C' ? 'Usable core' : 'Partial recovery')));
+    return { score: score, grade: grade, label: label, fullCore: fullCore, safeBoundary: safeBoundary, recoveryRatio: recoveryRatio };
+  }
+  function coreRigResearchReward(previousBest, nextScore) {
+    var previous = Math.max(0, Math.min(200, Math.floor(Number(previousBest) || 0)));
+    var next = Math.max(0, Math.min(200, Math.floor(Number(nextScore) || 0)));
+    return next > previous ? Math.max(0, Math.ceil(next / 2) - Math.ceil(previous / 2)) : 0;
+  }
+  function advanceCoreRigResearch(previousEntry, evaluation, completedAt, reportId) {
+    previousEntry = previousEntry && typeof previousEntry === 'object' ? previousEntry : {};
+    evaluation = evaluation && typeof evaluation === 'object' ? evaluation : { score: 0 };
+    var previousBest = Math.max(0, Math.min(200, Math.floor(Number(previousEntry.bestScore) || 0)));
+    var score = Math.max(0, Math.min(200, Math.floor(Number(evaluation.score) || 0)));
+    var previousIds = Array.isArray(previousEntry.reportIds) ? previousEntry.reportIds.map(String).slice(-12) : [];
+    var stableId = String(reportId || completedAt || '');
+    var duplicate = !!(stableId && previousIds.indexOf(stableId) >= 0);
+    if (duplicate) {
+      return { entry: Object.assign({}, previousEntry, { bestScore: previousBest, bestGrade: coreRigGradeForScore(previousBest), reportIds: previousIds }), researchReward: 0, newBest: false, duplicate: true };
+    }
+    var newBest = score > previousBest, bestScore = newBest ? score : previousBest;
+    var reportIds = stableId ? previousIds.concat([stableId]).slice(-12) : previousIds;
+    return {
+      entry: {
+        bestScore: bestScore, bestGrade: coreRigGradeForScore(bestScore),
+        totalBores: Math.max(0, Math.floor(Number(previousEntry.totalBores) || 0)) + 1,
+        lastScore: score, lastGrade: coreRigGradeForScore(score),
+        lastCompletedAt: Math.max(0, Number(completedAt) || 0), reportIds: reportIds
+      },
+      researchReward: newBest ? coreRigResearchReward(previousBest, score) : 0,
+      newBest: newBest, duplicate: false
+    };
+  }
+  function coreRigStopLabel(reason) {
+    return reason === 'fluid' ? 'water boundary'
+      : (reason === 'hazard' ? 'thermal boundary'
+      : (reason === 'blocked' ? 'rock boundary'
+      : (reason === 'spent' ? 'existing bore'
+      : (reason === 'cancelled' ? 'operator-requested stop' : 'target depth'))));
+  }
+  function excavationWorldKey(sceneId, detail) { return String(sceneId || 'crust') + '@' + String(detail || 'standard'); }
+  function fpSeedPose(sceneId) {                              // grounded eye-point for surfaces; radial midpoint for Deep Earth flight
     if (sceneId === 'deepEarth') return { pos: { x: 0, y: 0, z: WORLD.d * 0.46 }, yaw: 0, pitch: 0 };
-    if (sceneId === 'geode') return { pos: { x: 0, y: 0, z: WORLD.d * 0.42 }, yaw: 0, pitch: 0 };
-    if (sceneId === 'subduction') return { pos: { x: 0, y: WORLD.h * 0.28, z: WORLD.d * 0.40 }, yaw: 0, pitch: -0.1 };   // above the margin, looking across the section
-    return { pos: { x: 0, y: WORLD.h * 0.5 - 1.5, z: WORLD.d * 0.34 }, yaw: 0, pitch: -0.12 };
+    if (sceneId === 'geode') return { pos: { x: 0, y: 0, z: 0 }, yaw: 0, pitch: -0.18 };   // begin in the hollow; gravity settles you on its crystal floor
+    return { pos: { x: 0, y: WORLD.h * 0.5 + VOXEL * 1.58, z: WORLD.d * 0.28 }, yaw: 0, pitch: -0.42 };
   }
   function fpBob(time, moving, reduced, amp) { return (reduced || !moving) ? 0 : Math.sin(time * 9) * amp; }   // reduced-motion / idle → no bob
   function layerChanged(prev, next) { return next != null && next !== prev; }
@@ -659,6 +795,126 @@
       blurb: 'Intraplate volcanism (schematic — not to scale): volcanoes far from ANY plate boundary. A plume of solid-but-extra-hot mantle rises from deep below and partially melts near the top; the melt burns through the moving plate to build a SHIELD volcano of runny basalt — broad and gentle, nothing like a steep arc stratovolcano. The plume stays ~fixed while the PLATE slides past, so each volcano is carried off its magma supply, goes extinct, erodes, and sinks: active island over the plume, extinct island downstream, drowned seamount beyond. Age increasing down the chain is textbook evidence that plates move — Hawaii’s chain continues 6,000 km as the Emperor Seamounts.'
     }
   };
+
+  // Optional, low-pressure gameplay loop: ordered field contracts turn free digging
+  // into repeatable evidence-gathering runs without restricting ordinary excavation.
+  var FIELD_EXPEDITIONS = {
+    crust: [
+      { id: 'strata', label: 'Read the strata', targets: ['sandstone', 'shale', 'limestone'], reward: 130, brief: 'Collect the sedimentary stack from younger layers toward older layers.' },
+      { id: 'contact', label: 'Map the contact zone', targets: ['hornfels', 'marble', 'intrusion'], reward: 150, brief: 'Trace heat-altered rock into the younger igneous intrusion.' }
+    ],
+    geode: [
+      { id: 'growth', label: 'Follow crystal growth', targets: ['chalcedony', 'agate', 'quartz'], reward: 140, brief: 'Follow the mineral lining inward through three growth stages.' },
+      { id: 'host', label: 'Cavity to host rock', targets: ['amethyst', 'quartz', 'limestone'], reward: 140, brief: 'Work outward from the youngest crystal tips to the older host rock.' }
+    ],
+    deepEarth: [
+      { id: 'mantle', label: 'Cross the solid mantle', targets: ['crust', 'upperMantle', 'lowerMantle'], reward: 150, brief: 'Build a virtual transect from the crust through both solid mantle layers.' },
+      { id: 'core', label: 'Virtual core transect', targets: ['lowerMantle', 'innerCore', 'upperMantle'], reward: 170, brief: 'Compare deep solid layers while remembering that this model is schematic.' }
+    ],
+    subduction: [
+      { id: 'descending', label: 'Track the descending plate', targets: ['oceanCrust', 'slab', 'wedge'], reward: 150, brief: 'Follow the incoming plate to the water-fluxed mantle wedge.' },
+      { id: 'overriding', label: 'Read the overriding plate', targets: ['contCrust', 'lithMantle', 'asthenosphere'], reward: 150, brief: 'Compare buoyant crust, rigid mantle, and ductile mantle below.' }
+    ],
+    ridge: [
+      { id: 'ophiolite', label: 'Build the ophiolite stack', targets: ['basaltN', 'dikes', 'gabbro'], reward: 150, brief: 'Collect the classic upper-to-lower oceanic-crust sequence.' },
+      { id: 'spreading', label: 'Read spreading evidence', targets: ['sediment', 'basaltR', 'vent'], reward: 150, brief: 'Link crustal age, magnetic polarity, and hydrothermal circulation.' }
+    ],
+    hotspot: [
+      { id: 'plate', label: 'Follow the moving plate', targets: ['oldIsland', 'oceanCrust', 'lithMantle'], reward: 150, brief: 'Trace an extinct volcano into the plate carrying it away.' },
+      { id: 'trail', label: 'Trace the hotspot trail', targets: ['seamount', 'plume', 'asthenosphere'], reward: 160, brief: 'Connect the oldest volcano shown to its mantle reference frame.' }
+    ]
+  };
+  function fieldExpeditionFor(sceneId, index) {
+    var list = FIELD_EXPEDITIONS[sceneId] || [];
+    if (!list.length) return null;
+    var safeIndex = Math.max(0, Math.floor(Number(index) || 0)) % list.length;
+    var item = list[safeIndex];
+    return Object.assign({}, item, { targets: item.targets.slice(), index: safeIndex });
+  }
+  function beginFieldRun(entry, sceneId, requestedIndex) {
+    var previous = (entry && typeof entry === 'object') ? entry : {};
+    var completed = Math.max(0, Math.floor(Number(previous.completed) || 0));
+    var contract = fieldExpeditionFor(sceneId, requestedIndex == null ? completed : requestedIndex);
+    if (!contract) return null;
+    return { active: true, completed: completed, contractIndex: contract.index, collected: [], ready: false };
+  }
+  function retireFieldRunEntry(entry) {
+    var previous = (entry && typeof entry === 'object') ? entry : {};
+    return { active: false, completed: Math.max(0, Math.floor(Number(previous.completed) || 0)), contractIndex: Math.max(0, Math.floor(Number(previous.contractIndex) || 0)), collected: [], ready: false };
+  }
+  function advanceFieldRun(entry, contract, removedKey) {
+    var current = (entry && typeof entry === 'object') ? entry : {};
+    var collected = Array.isArray(current.collected) ? current.collected.slice() : [];
+    var nextEntry = Object.assign({}, current, { collected: collected });
+    var expectedKey = contract && contract.targets ? contract.targets[collected.length] : null;
+    if (!current.active || current.ready || !expectedKey || removedKey !== expectedKey) {
+      return { entry: nextEntry, matched: false, ready: !!current.ready, expectedKey: expectedKey };
+    }
+    collected.push(removedKey);
+    nextEntry.collected = collected;
+    nextEntry.ready = collected.length >= contract.targets.length;
+    return { entry: nextEntry, matched: true, ready: nextEntry.ready, expectedKey: nextEntry.ready ? null : contract.targets[collected.length] };
+  }
+  function fieldRunReward(contract) {
+    return Math.max(1, Math.floor(Number(contract && contract.reward) || 100));
+  }
+  function fieldRankForXp(xp) {
+    var value = Math.max(0, Math.floor(Number(xp) || 0));
+    var ranks = [
+      { label: 'Trail Scout', threshold: 0 },
+      { label: 'Field Geologist', threshold: 300 },
+      { label: 'Senior Geologist', threshold: 750 },
+      { label: 'Expedition Lead', threshold: 1500 }
+    ];
+    var index = 0;
+    for (var i = 1; i < ranks.length; i++) if (value >= ranks[i].threshold) index = i;
+    var current = ranks[index], next = ranks[index + 1] || null;
+    return { label: current.label, threshold: current.threshold, nextLabel: next ? next.label : null, nextThreshold: next ? next.threshold : null, remaining: next ? next.threshold - value : 0 };
+  }
+  function fieldSpecimenName(sceneId, key) {
+    var sceneDef = SCENES[sceneId];
+    var item = sceneDef && sceneDef.palette ? sceneDef.palette[key] : null;
+    return item && item.name ? item.name : String(key || 'specimen');
+  }
+  function fieldCollectibleKeys(sceneId) {
+    var sceneDef = SCENES[sceneId];
+    if (!sceneDef) return [];
+    return sceneDef.voxelKeys.filter(function (key) {
+      var item = sceneDef.palette[key] || {};
+      return fpMiningProfile(key, item.type).mineable;
+    });
+  }
+  function recordFieldDiscovery(discoveredByScene, sceneId, key) {
+    var source = (discoveredByScene && typeof discoveredByScene === 'object') ? discoveredByScene : {};
+    var current = Array.isArray(source[sceneId]) ? source[sceneId].slice() : [];
+    var valid = fieldCollectibleKeys(sceneId);
+    var added = valid.indexOf(key) >= 0 && current.indexOf(key) < 0;
+    if (added) current.push(key);
+    var next = Object.assign({}, source); next[sceneId] = current;
+    return { discoveredByScene: next, keys: current.slice(), added: added };
+  }
+  function fieldDiscoveryProgress(sceneId, discoveredByScene) {
+    var available = fieldCollectibleKeys(sceneId);
+    var saved = discoveredByScene && Array.isArray(discoveredByScene[sceneId]) ? discoveredByScene[sceneId] : [];
+    var found = available.filter(function (key) { return saved.indexOf(key) >= 0; }).length;
+    return { found: found, total: available.length, percent: available.length ? Math.round(found / available.length * 100) : 0, complete: available.length > 0 && found === available.length };
+  }
+  function fieldJournalEntries(sceneId, discoveredByScene) {
+    var sceneDef = SCENES[sceneId], saved = discoveredByScene && Array.isArray(discoveredByScene[sceneId]) ? discoveredByScene[sceneId] : [];
+    if (!sceneDef) return [];
+    return fieldCollectibleKeys(sceneId).map(function (key) {
+      var item = sceneDef.palette[key] || {};
+      return { key: key, name: fieldSpecimenName(sceneId, key), type: item.type || 'Material', color: item.color, discovered: saved.indexOf(key) >= 0 };
+    });
+  }
+  function fieldJournalSummary(discoveredByScene) {
+    var found = 0, total = 0, scenesComplete = 0;
+    Object.keys(SCENES).forEach(function (sceneId) {
+      var progress = fieldDiscoveryProgress(sceneId, discoveredByScene);
+      found += progress.found; total += progress.total; if (progress.complete) scenesComplete += 1;
+    });
+    return { found: found, total: total, percent: total ? Math.round(found / total * 100) : 0, scenesComplete: scenesComplete, sceneTotal: Object.keys(SCENES).length };
+  }
 
   var GEODE_MEASUREMENTS = {
     limestone: { zone: 'Host rock outside the cavity', order: 'Predates the mineral lining' },
@@ -1431,6 +1687,7 @@
     cnv.dataset.geologyProcessRendering = SCENE.id + '-science-process-tracers';
     cnv.dataset.geologyProcessGuideRendering = 'directional-ribbons-and-arrowheads';
     cnv.dataset.geologyExcavationRendering = 'rock-colored-dust-chips-and-exposure-flash';
+    cnv.dataset.geologyMiningRendering = 'pickaxe-and-powered-drill-with-heat-and-staged-surface-cracks';
     cnv.dataset.geologyCutawayRendering = 'camera-facing-front-section';
     cnv.dataset.geologySurfaceRendering = SCENE.id === 'crust' ? 'field-landmarks' : 'scene-native-topography';
     container.appendChild(cnv);
@@ -1576,7 +1833,7 @@
     camera.lookAt(TARGET); // aim at the block immediately — keeps it CENTRED even if OrbitControls never loads
     var controls = null, orbitTried = false;
     // first-person explorer state (default off; drives the SAME camera, never OrbitControls)
-    var fp = { active: false, intro: null, pos: { x: 0, y: 0, z: 0 }, yaw: 0, pitch: 0, input: { fwd: 0, strafe: 0, vert: 0, sprint: false }, turn: { yaw: 0, pitch: 0 }, reduced: false, savedPos: null, savedTgt: null, savedEnabled: true, lastHud: 0, lastKey: '__none', speed: WORLD.h * 0.5 };
+    var fp = { active: false, intro: null, mode: 'mine', pos: { x: 0, y: 0, z: 0 }, yaw: 0, pitch: 0, input: { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }, turn: { yaw: 0, pitch: 0 }, reduced: false, savedPos: null, savedTgt: null, savedEnabled: true, lastHud: 0, lastKey: '__none', speed: WORLD.h * 0.5, velocity: { x: 0, y: 0, z: 0 }, onGround: false, jumpLatch: false, target: null, targetKey: '__none', lastMineAt: 0, lastHazardAt: 0, medium: 'air', mining: null, tool: 'pick', drillHeat: 0, drillOverheated: false, drillHeld: false, drillHudAt: 0, drillNextAt: 0, safePose: null, lastSafeAt: 0, hazardNearby: false, blockedUntil: 0, statusKey: '__none' };
     var fpPrev = null;   // last pointer point for drag-look (separate from `down` so taps still pick)
     function ensureControls() {
       if (controls) return;
@@ -1624,7 +1881,18 @@
     function vkey(v) { return v.x + ',' + v.y + ',' + v.z; }
     var voxelByKey = {};
     for (var vi = 0; vi < voxels.length; vi++) voxelByKey[vkey(voxels[vi])] = voxels[vi];
-    var removed = {}, excavationHistory = [];
+    var removed = {}, excavationHistory = [], excavationRedo = [];
+    var initialExcavation = opts.initialExcavation || {};
+    var initialHistory = Array.isArray(initialExcavation) ? initialExcavation : (Array.isArray(initialExcavation.history) ? initialExcavation.history : []);
+    var initialRedo = Array.isArray(initialExcavation.redo) ? initialExcavation.redo : [];
+    initialHistory.forEach(function (id) {
+      var voxel = voxelByKey[id];
+      if (voxel && voxel.key !== 'void' && !removed[id]) { removed[id] = 1; excavationHistory.push(id); }
+    });
+    initialRedo.forEach(function (id) {
+      var voxel = voxelByKey[id];
+      if (voxel && voxel.key !== 'void' && !removed[id] && excavationRedo.indexOf(id) < 0) excavationRedo.push(id);
+    });
     function worldPos(v) { return [(v.x - (NX - 1) / 2) * VOXEL, ((NY - 1) / 2 - v.y) * VOXEL, (v.z - (NZ - 1) / 2) * VOXEL]; }
 
     var geo = new THREE.BoxGeometry(VOXEL, VOXEL, VOXEL);
@@ -2545,6 +2813,113 @@
     var hoverSourceGeo = new THREE.BoxGeometry(VOXEL * 1.04, VOXEL * 1.04, VOXEL * 1.04);
     var hoverBox = new THREE.LineSegments(new THREE.EdgesGeometry(hoverSourceGeo), new THREE.LineBasicMaterial({ color: 0xfff0c0, transparent: true, opacity: 0.85 }));
     hoverBox.visible = false; hoverBox.renderOrder = 2; scene.add(hoverBox);
+    // Deployable directional core rig: an amber-and-cyan A-frame with a live
+    // bore hologram, moving drill string, sample lights, and an illuminated trail.
+    var coreRigGeometries3d = [], coreRigMaterials3d = [];
+    function coreRigGeometry3d(geometry) { coreRigGeometries3d.push(geometry); return geometry; }
+    function coreRigMaterial3d(material) { coreRigMaterials3d.push(material); return material; }
+    function coreRigMesh3d(geometry, material, x, y, z, parent) {
+      var mesh3d = new THREE.Mesh(coreRigGeometry3d(geometry), material);
+      mesh3d.position.set(x || 0, y || 0, z || 0);
+      mesh3d.castShadow = geologyHighDetail3d; mesh3d.receiveShadow = geologyHighDetail3d;
+      (parent || coreRigGroup3d).add(mesh3d);
+      return mesh3d;
+    }
+    function coreRigBeam3d(from3d, to3d, radius3d, material3d, parent3d) {
+      var direction3d = new THREE.Vector3().subVectors(to3d, from3d);
+      var beam3d = coreRigMesh3d(new THREE.CylinderGeometry(radius3d, radius3d, direction3d.length(), 8), material3d, 0, 0, 0, parent3d);
+      beam3d.position.copy(from3d).add(to3d).multiplyScalar(0.5);
+      beam3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction3d.clone().normalize());
+      return beam3d;
+    }
+    var coreRigMetalMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0x172234, roughness: 0.3, metalness: 0.88 }));
+    var coreRigSteelMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0xb9c5d5, roughness: 0.2, metalness: 0.92 }));
+    var coreRigAmberMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0x7c2d12, emissiveIntensity: 0.42, roughness: 0.28, metalness: 0.72 }));
+    var coreRigCyanMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.84, blending: THREE.AdditiveBlending, depthWrite: false }));
+    var coreRigBoreMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+    var coreRigGuideMat3d = coreRigMaterial3d(new THREE.LineDashedMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.8, dashSize: VOXEL * 0.28, gapSize: VOXEL * 0.2, depthTest: false, depthWrite: false }));
+    var coreRigGroup3d = new THREE.Group(), coreRigAssembly3d = new THREE.Group(), coreRigBoreGroup3d = new THREE.Group();
+    var coreRigState3d = {
+      deployed: false, running: false, stage: 'packed', angle: 'vertical', depth: CORE_RIG_DEPTHS[1],
+      origin: null, yaw: 0, path: [], cursor: 0, samples: [], heat: 0, progress: 0,
+      currentCell: null, currentVoxel: null, currentElapsed: 0, currentDuration: 0,
+      stopReason: null, plannedStop: null, status: 'Pack ready', lastHudAt: 0, evaluation: null,
+      deployedAt: 0, celebrateUntil: 0
+    };
+    coreRigGroup3d.name = 'directional-core-rig';
+    coreRigGroup3d.visible = false;
+    coreRigGroup3d.add(coreRigAssembly3d); coreRigGroup3d.add(coreRigBoreGroup3d);
+    scene.add(coreRigGroup3d);
+    var rigUnit3d = Math.max(0.72, VOXEL * 0.78);
+    // broad skids and four amber stabilizers make the deployed footprint legible.
+    coreRigMesh3d(new THREE.BoxGeometry(rigUnit3d * 3.25, rigUnit3d * 0.2, rigUnit3d * 0.22), coreRigMetalMat3d, 0, rigUnit3d * 0.1, rigUnit3d * 1.08);
+    coreRigMesh3d(new THREE.BoxGeometry(rigUnit3d * 3.25, rigUnit3d * 0.2, rigUnit3d * 0.22), coreRigMetalMat3d, 0, rigUnit3d * 0.1, -rigUnit3d * 1.08);
+    coreRigMesh3d(new THREE.BoxGeometry(rigUnit3d * 2.55, rigUnit3d * 0.18, rigUnit3d * 1.82), coreRigSteelMat3d, 0, rigUnit3d * 0.25, 0);
+    [[-1.38,-1.12],[1.38,-1.12],[-1.38,1.12],[1.38,1.12]].forEach(function (foot3d) {
+      coreRigMesh3d(new THREE.CylinderGeometry(rigUnit3d * 0.22, rigUnit3d * 0.29, rigUnit3d * 0.32, 10), coreRigAmberMat3d, foot3d[0] * rigUnit3d, rigUnit3d * 0.18, foot3d[1] * rigUnit3d);
+    });
+    var mastLeftBottom3d = new THREE.Vector3(-rigUnit3d * 0.92, rigUnit3d * 0.38, rigUnit3d * 0.44);
+    var mastRightBottom3d = new THREE.Vector3(rigUnit3d * 0.92, rigUnit3d * 0.38, rigUnit3d * 0.44);
+    var mastTopLeft3d = new THREE.Vector3(-rigUnit3d * 0.28, rigUnit3d * 3.55, 0);
+    var mastTopRight3d = new THREE.Vector3(rigUnit3d * 0.28, rigUnit3d * 3.55, 0);
+    coreRigBeam3d(mastLeftBottom3d, mastTopLeft3d, rigUnit3d * 0.105, coreRigAmberMat3d, coreRigGroup3d);
+    coreRigBeam3d(mastRightBottom3d, mastTopRight3d, rigUnit3d * 0.105, coreRigAmberMat3d, coreRigGroup3d);
+    coreRigBeam3d(new THREE.Vector3(-rigUnit3d * 0.92, rigUnit3d * 0.38, -rigUnit3d * 0.44), mastTopLeft3d, rigUnit3d * 0.075, coreRigMetalMat3d, coreRigGroup3d);
+    coreRigBeam3d(new THREE.Vector3(rigUnit3d * 0.92, rigUnit3d * 0.38, -rigUnit3d * 0.44), mastTopRight3d, rigUnit3d * 0.075, coreRigMetalMat3d, coreRigGroup3d);
+    coreRigBeam3d(mastTopLeft3d, mastTopRight3d, rigUnit3d * 0.09, coreRigSteelMat3d, coreRigGroup3d);
+    var coreRigMotor3d = coreRigMesh3d(new THREE.CylinderGeometry(rigUnit3d * 0.34, rigUnit3d * 0.42, rigUnit3d * 0.76, 12), coreRigAmberMat3d, 0, 0, 0, coreRigAssembly3d);
+    coreRigMotor3d.rotation.z = Math.PI * 0.5;
+    var coreRigRotor3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * 0.47, rigUnit3d * 0.07, 6, 18), coreRigCyanMat3d, 0, 0, 0, coreRigAssembly3d);
+    coreRigRotor3d.rotation.y = Math.PI * 0.5;
+    var coreRigShaft3d = coreRigMesh3d(new THREE.CylinderGeometry(rigUnit3d * 0.095, rigUnit3d * 0.095, rigUnit3d * 2.6, 10), coreRigSteelMat3d, 0, -rigUnit3d * 1.45, 0, coreRigAssembly3d);
+    var coreRigBit3d = coreRigMesh3d(new THREE.ConeGeometry(rigUnit3d * 0.24, rigUnit3d * 0.58, 10), coreRigAmberMat3d, 0, -rigUnit3d * 3.04, 0, coreRigAssembly3d);
+    coreRigBit3d.rotation.z = Math.PI;
+    coreRigAssembly3d.position.set(0, rigUnit3d * 3.0, 0);
+    var coreRigGuideGeo3d = coreRigGeometry3d(new THREE.BufferGeometry());
+    var coreRigGuide3d = new THREE.Line(coreRigGuideGeo3d, coreRigGuideMat3d);
+    coreRigGuide3d.renderOrder = 8; coreRigGroup3d.add(coreRigGuide3d);
+    var coreRigTargetMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+    var coreRigTarget3d = coreRigMesh3d(new THREE.IcosahedronGeometry(rigUnit3d * 0.26, 1), coreRigTargetMat3d, 0, 0, 0);
+    coreRigTarget3d.castShadow = false; coreRigTarget3d.receiveShadow = false; coreRigTarget3d.renderOrder = 9;
+    var coreRigGuideStart3d = new THREE.Vector3(0, rigUnit3d * 0.34, 0), coreRigGuideEnd3d = coreRigGuideStart3d.clone();
+    var coreRigFeedGlow3d = coreRigMesh3d(new THREE.SphereGeometry(rigUnit3d * 0.18, 10, 8), coreRigTargetMat3d, 0, 0, 0);
+    coreRigFeedGlow3d.castShadow = false; coreRigFeedGlow3d.receiveShadow = false; coreRigFeedGlow3d.renderOrder = 10; coreRigFeedGlow3d.visible = false;
+    var coreRigPulseRings3d = [];
+    for (var rigRingIndex3d = 0; rigRingIndex3d < 3; rigRingIndex3d++) {
+      var pulseRing3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * (0.46 + rigRingIndex3d * 0.16), rigUnit3d * 0.025, 5, 24), coreRigCyanMat3d, 0, rigUnit3d * 0.38, 0);
+      pulseRing3d.rotation.x = Math.PI * 0.5; pulseRing3d.renderOrder = 8; coreRigPulseRings3d.push(pulseRing3d);
+    }
+    var coreRigLight3d = new THREE.PointLight(0x22d3ee, 1.35, rigUnit3d * 7.5);
+    coreRigLight3d.position.set(0, rigUnit3d * 2.8, 0); coreRigGroup3d.add(coreRigLight3d);
+    try { renderer.domElement.dataset.geologyCoreRigRendering = 'animated-a-frame-directional-drill-and-core-trail'; } catch (coreRigDatasetError3d) {}
+    // The optional Field Run survey pulse briefly reveals one nearby requested
+    // specimen through overburden. It is a direction cue, not permanent x-ray vision.
+    var surveySourceGeo = new THREE.BoxGeometry(VOXEL * 1.22, VOXEL * 1.22, VOXEL * 1.22);
+    var surveyBox = new THREE.LineSegments(new THREE.EdgesGeometry(surveySourceGeo), new THREE.LineBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false }));
+    var surveyUntil = 0, surveyVoxelKey = null, surveyLastAt = 0;
+    surveyBox.visible = false; surveyBox.renderOrder = 5; scene.add(surveyBox);
+    // A real block-face crack overlay gives progressive mining a spatial cue instead
+    // of relying on the HUD bar alone. The same deterministic motif is stamped on
+    // all six faces; drawRange reveals one stage at a time.
+    var miningCrackPattern = [[-0.3,-0.08,-0.11,0.02],[-0.11,0.02,0.08,0.14],[0.08,0.14,0.29,0.04],[-0.11,0.02,-0.2,0.26],[-0.11,0.02,-0.02,-0.23],[-0.02,-0.23,0.19,-0.32],[0.08,0.14,0.18,0.32],[0.08,0.14,0.32,0.24]];
+    var miningCrackFaces = [['x',1],['x',-1],['y',1],['y',-1],['z',1],['z',-1]], miningCrackPositions = [];
+    function pushMiningCrackPoint(face, u, v) {
+      var edge = VOXEL * 0.526, a = u * VOXEL, b = v * VOXEL;
+      if (face[0] === 'x') miningCrackPositions.push(face[1] * edge, a, b);
+      else if (face[0] === 'y') miningCrackPositions.push(a, face[1] * edge, b);
+      else miningCrackPositions.push(a, b, face[1] * edge);
+    }
+    miningCrackPattern.forEach(function (segment) {
+      miningCrackFaces.forEach(function (face) {
+        pushMiningCrackPoint(face, segment[0], segment[1]); pushMiningCrackPoint(face, segment[2], segment[3]);
+      });
+    });
+    var miningCrackGeometry = new THREE.BufferGeometry();
+    miningCrackGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(miningCrackPositions), 3));
+    miningCrackGeometry.setDrawRange(0, 0);
+    var miningCrackMaterial = new THREE.LineBasicMaterial({ color: 0x2a160d, transparent: true, opacity: 0.82, depthTest: true, depthWrite: false });
+    var miningCrackBox = new THREE.LineSegments(miningCrackGeometry, miningCrackMaterial);
+    miningCrackBox.visible = false; miningCrackBox.renderOrder = 4; scene.add(miningCrackBox);
     var undoPreviewSourceGeo = new THREE.BoxGeometry(VOXEL * 1.1, VOXEL * 1.1, VOXEL * 1.1);
     var undoPreviewBox = new THREE.LineSegments(new THREE.EdgesGeometry(undoPreviewSourceGeo), new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false }));
     var undoPreviewRequested = false, undoPreviewKey = null;
@@ -3471,8 +3846,737 @@
     })();
 
     var raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(), down = null;
+    var FP_EYE_HEIGHT = VOXEL * 1.55, FP_BODY_HEIGHT = VOXEL * 1.78, FP_RADIUS = VOXEL * 0.27;
+    var FP_GRAVITY = VOXEL * 18, FP_JUMP_SPEED = VOXEL * 6.2, FP_REACH = VOXEL * 6;
+    function fpVoxelAtWorld(wx, wy, wz) {
+      if (wx < -WORLD.w * 0.5 || wx > WORLD.w * 0.5 || wy < -WORLD.h * 0.5 || wy > WORLD.h * 0.5 || wz < -WORLD.d * 0.5 || wz > WORLD.d * 0.5) return null;
+      var v = fpWorldToVoxel(wx, wy, wz), voxel = voxelByKey[v.x + ',' + v.y + ',' + v.z];
+      return (voxel && visible(voxel)) ? voxel : null;
+    }
+    function fpPointSolid(wx, wy, wz) {
+      var voxel = fpVoxelAtWorld(wx, wy, wz);
+      return !!(voxel && fpMaterialPhysics(voxel.key).kind === 'solid');
+    }
+    function fpMediumAt(wx, eyeY, wz) {
+      var samples = [eyeY - FP_EYE_HEIGHT * 0.72, eyeY - FP_EYE_HEIGHT * 0.28, eyeY];
+      var fluid = null;
+      for (var si = 0; si < samples.length; si++) {
+        var voxel = fpVoxelAtWorld(wx, samples[si], wz); if (!voxel) continue;
+        var physics = fpMaterialPhysics(voxel.key);
+        if (physics.kind === 'hazard') return { kind: 'hazard', voxel: voxel, physics: physics };
+        if (physics.kind === 'fluid') fluid = { kind: 'fluid', voxel: voxel, physics: physics };
+      }
+      return fluid || { kind: 'air', voxel: null, physics: { speed: 1, gravity: 1, buoyancy: 0 } };
+    }
+    function fpSetMedium(kind) {
+      if (fp.medium === kind) return;
+      fp.medium = kind; cnv.dataset.geologyPlayerMedium = kind; fp.statusKey = '__refresh';
+    }
+    function fpHazardNearby(wx, eyeY, wz) {
+      var centre = fpWorldToVoxel(wx, eyeY - FP_EYE_HEIGHT * 0.55, wz);
+      for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) for (var dz = -1; dz <= 1; dz++) {
+        var voxel = voxelByKey[(centre.x + dx) + ',' + (centre.y + dy) + ',' + (centre.z + dz)];
+        if (voxel && visible(voxel) && fpMaterialPhysics(voxel.key).kind === 'hazard') return true;
+      }
+      return false;
+    }
+    function fpMarkBlocked() {
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      fp.blockedUntil = now + 650; fp.statusKey = '__refresh';
+    }
+    function fpUpdatePlayerStatus() {
+      if (!fp.active) return;
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      var state = 'grounded', text = fp.mode === 'fly' ? 'Free flight' : (fp.onGround ? 'Grounded' : 'Falling');
+      if (fp.mining) {
+        var pct = fp.mining.duration ? Math.round(fp.mining.elapsed / fp.mining.duration * 100) : 100;
+        state = 'mining'; text = (fp.mining.tool === 'drill' ? 'Drilling ' : 'Mining ') + fp.mining.profile.label.toLowerCase() + ' rock · ' + Math.min(100, pct) + '%';
+      } else if (fp.hazardNearby) { state = 'hazard'; text = 'Heat warning · molten rock nearby'; }
+      else if (fp.drillOverheated) { state = 'overheated'; text = 'Drill overheated · cooling down'; }
+      else if (fp.medium === 'fluid') { state = 'swimming'; text = 'Swimming · Space rises'; }
+      else if (now < fp.blockedUntil) { state = 'blocked'; text = 'Blocked · dig or jump to clear a path'; }
+      var key = state + ':' + text; if (fp.statusKey === key) return; fp.statusKey = key;
+      var root = container.parentNode, node = null;
+      try { node = root && root.querySelector ? root.querySelector('[data-geology-player-status]') : null; } catch (e) {}
+      if (!node) return;
+      node.setAttribute('data-state', state); node.textContent = text;
+      var color = (state === 'hazard' || state === 'overheated') ? '#fca5a5' : (state === 'swimming' ? '#7dd3fc' : (state === 'blocked' ? '#fcd34d' : (state === 'mining' ? '#fdba74' : '#a7f3d0')));
+      node.style.color = color; node.style.borderColor = color;
+    }
+    function fpUpdateDrillHud(force) {
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (!force && now - fp.drillHudAt < 45) return; fp.drillHudAt = now;
+      var root = container.parentNode, bar = null, readout = null, panel = null;
+      try {
+        bar = root && root.querySelector ? root.querySelector('[data-geology-drill-heat]') : null;
+        readout = root && root.querySelector ? root.querySelector('[data-geology-drill-readout]') : null;
+        panel = root && root.querySelector ? root.querySelector('[data-geology-drill-meter]') : null;
+      } catch (e) {}
+      if (bar) { bar.style.width = Math.round(fp.drillHeat * 100) + '%'; bar.style.background = fp.drillHeat > 0.82 ? '#ef4444' : (fp.drillHeat > 0.55 ? '#f59e0b' : '#38bdf8'); }
+      if (readout) readout.textContent = fp.drillOverheated ? 'Cooling…' : (Math.round(fp.drillHeat * 100) + '% heat');
+      if (panel) { panel.setAttribute('data-overheated', fp.drillOverheated ? 'true' : 'false'); panel.setAttribute('data-active-tool', fp.tool); }
+    }
+    function fpSetTool(tool) {
+      var next = tool === 'drill' ? 'drill' : 'pick';
+      if (fp.tool === next) { fpUpdateDrillHud(true); return next; }
+      fpCancelMining(); fp.drillHeld = false; fp.tool = next; fp.statusKey = '__refresh'; fp.targetKey = '__refresh';
+      var root = container.parentNode, label = null;
+      try { label = root && root.querySelector ? root.querySelector('[data-geology-mining-target]') : null; } catch (e) {}
+      if (label) label.setAttribute('data-target-key', '__refresh');
+      fpUpdateTargetLabel(fp.target); fpUpdateDrillHud(true);
+      return next;
+    }
+    function fpSetMiningHeld(on) {
+      fp.drillHeld = !!on && fp.tool === 'drill' && !fp.drillOverheated;
+      if (!fp.drillHeld && fp.tool === 'drill' && fp.mining) fpCancelMining();
+      return fp.drillHeld;
+    }
+    function fpUpdateDrill(dt) {
+      if (fp.tool === 'drill' && fp.mining) fp.drillHeat = Math.min(1, fp.drillHeat + Math.max(0, dt) * fpDrillHeatRate(fp.mining.profile));
+      else fp.drillHeat = Math.max(0, fp.drillHeat - Math.max(0, dt) * (fp.drillOverheated ? 0.38 : 0.22));
+      if (!fp.drillOverheated && fp.drillHeat >= 1) {
+        fp.drillOverheated = true; fp.drillHeld = false; fpCancelMining(); fp.statusKey = '__refresh';
+        if (opts.onFlash) opts.onFlash('The drill overheated. Release the trigger and let it cool.');
+        if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
+      } else if (fp.drillOverheated && fp.drillHeat <= 0.3) {
+        fp.drillOverheated = false; fp.statusKey = '__refresh';
+      }
+      fpUpdateDrillHud(false);
+      var chainNow = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (fp.tool === 'drill' && fp.drillHeld && !fp.drillOverheated && !fp.mining && chainNow >= fp.drillNextAt) fpMineAtCrosshair(false, true);
+    }
+    function fpBodyBlocked(wx, eyeY, wz) {
+      var feet = eyeY - FP_EYE_HEIGHT + VOXEL * 0.08;
+      var head = eyeY + (FP_BODY_HEIGHT - FP_EYE_HEIGHT) - VOXEL * 0.08;
+      var ys = [feet, (feet + head) * 0.5, head];
+      var offsets = [[0, 0], [FP_RADIUS, 0], [-FP_RADIUS, 0], [0, FP_RADIUS], [0, -FP_RADIUS]];
+      for (var yi = 0; yi < ys.length; yi++) for (var oi = 0; oi < offsets.length; oi++) {
+        if (fpPointSolid(wx + offsets[oi][0], ys[yi], wz + offsets[oi][1])) return true;
+      }
+      return false;
+    }
+    function fpGroundEyeY(wx, wz, maxFeetY) {
+      var best = null, offsets = [[0, 0], [FP_RADIUS, 0], [-FP_RADIUS, 0], [0, FP_RADIUS], [0, -FP_RADIUS]];
+      for (var oi = 0; oi < offsets.length; oi++) {
+        var sx = wx + offsets[oi][0], sz = wz + offsets[oi][1];
+        if (sx < -WORLD.w * 0.5 || sx > WORLD.w * 0.5 || sz < -WORLD.d * 0.5 || sz > WORLD.d * 0.5) continue;
+        var col = fpWorldToVoxel(sx, 0, sz);
+        for (var vy = 0; vy < NY; vy++) {
+          var voxel = voxelByKey[col.x + ',' + vy + ',' + col.z];
+          if (!voxel || !visible(voxel) || fpMaterialPhysics(voxel.key).kind !== 'solid') continue;
+          var top = worldPos(voxel)[1] + VOXEL * 0.5;
+          if (top <= maxFeetY + VOXEL * 0.2 && (best == null || top > best)) best = top;
+        }
+      }
+      return best == null ? null : best + FP_EYE_HEIGHT;
+    }
+    function fpHazardRespawn() {
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      var canWarn = !fp.lastHazardAt || now - fp.lastHazardAt > 900;
+      fp.lastHazardAt = now; fpRespawn(); fpSetMedium('air');
+      if (canWarn && opts.onFlash) opts.onFlash('That material is molten. You returned to the last safe dig-in point.');
+      if (window._alloHaptic) { try { window._alloHaptic('error'); } catch (e) {} }
+    }
+    function fpWalkStep(dt, fwd) {
+      var medium = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
+      if (medium.kind === 'hazard') { fpHazardRespawn(); return; }
+      fpSetMedium(medium.kind);
+      var inFluid = medium.kind === 'fluid';
+      var flatLen = Math.sqrt(fwd.x * fwd.x + fwd.z * fwd.z) || 1;
+      var fx = fwd.x / flatLen, fz = fwd.z / flatLen, rx = -fz, rz = fx;
+      var ix = fx * fp.input.fwd + rx * fp.input.strafe, iz = fz * fp.input.fwd + rz * fp.input.strafe;
+      var il = Math.sqrt(ix * ix + iz * iz); if (il > 1) { ix /= il; iz /= il; }
+      var targetSpeed = fp.speed * (fp.input.sprint ? 1.55 : 1) * (inFluid ? medium.physics.speed : 1);
+      var blend = 1 - Math.exp(-(il ? (inFluid ? 7 : 14) : 10) * dt);
+      fp.velocity.x += (ix * targetSpeed - fp.velocity.x) * blend;
+      fp.velocity.z += (iz * targetSpeed - fp.velocity.z) * blend;
+      if (inFluid) {
+        fp.onGround = false; fp.jumpLatch = false;
+        fp.velocity.y += (fp.input.jump ? FP_JUMP_SPEED * 1.45 : FP_GRAVITY * medium.physics.buoyancy) * dt;
+        fp.velocity.y *= Math.exp(-4.2 * dt);
+      } else {
+        if (fp.input.jump && fp.onGround && !fp.jumpLatch) { fp.velocity.y = FP_JUMP_SPEED; fp.onGround = false; fp.jumpLatch = true; }
+        if (!fp.input.jump) fp.jumpLatch = false;
+      }
+      var minX = -WORLD.w * 0.5 + FP_RADIUS, maxX = WORLD.w * 0.5 - FP_RADIUS;
+      var minZ = -WORLD.d * 0.5 + FP_RADIUS, maxZ = WORLD.d * 0.5 - FP_RADIUS;
+      var nx = fpClampN(fp.pos.x + fp.velocity.x * dt, minX, maxX);
+      if (!fpBodyBlocked(nx, fp.pos.y, fp.pos.z)) fp.pos.x = nx; else { fp.velocity.x = 0; if (Math.abs(ix) > 0.05) fpMarkBlocked(); }
+      var nz = fpClampN(fp.pos.z + fp.velocity.z * dt, minZ, maxZ);
+      if (!fpBodyBlocked(fp.pos.x, fp.pos.y, nz)) fp.pos.z = nz; else { fp.velocity.z = 0; if (Math.abs(iz) > 0.05) fpMarkBlocked(); }
+      if (!inFluid) fp.velocity.y -= FP_GRAVITY * dt;
+      var nextEyeY = fp.pos.y + fp.velocity.y * dt;
+      if (fp.velocity.y > 0 && fpBodyBlocked(fp.pos.x, nextEyeY, fp.pos.z)) {
+        fp.velocity.y = 0; fpMarkBlocked();
+      } else {
+        var floorEyeY = fpGroundEyeY(fp.pos.x, fp.pos.z, fp.pos.y - FP_EYE_HEIGHT);
+        if (fp.velocity.y <= 0 && floorEyeY != null && nextEyeY <= floorEyeY) {
+          fp.pos.y = floorEyeY; fp.velocity.y = 0; fp.onGround = true;
+        } else {
+          fp.pos.y = nextEyeY; fp.onGround = false;
+        }
+      }
+      var after = fpMediumAt(fp.pos.x, fp.pos.y, fp.pos.z);
+      if (after.kind === 'hazard') { fpHazardRespawn(); return; }
+      fpSetMedium(after.kind); fp.hazardNearby = fpHazardNearby(fp.pos.x, fp.pos.y, fp.pos.z);
+      var safeNow = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (fp.onGround && fp.medium === 'air' && !fp.hazardNearby && safeNow - fp.lastSafeAt > 650) {
+        fp.lastSafeAt = safeNow; fp.safePose = { pos: { x: fp.pos.x, y: fp.pos.y, z: fp.pos.z }, yaw: fp.yaw, pitch: fp.pitch };
+      }
+      if (fp.pos.y < -WORLD.h * 0.5 - VOXEL * 3) {
+        fpRespawn(false); fpSetMedium('air');
+        if (opts.onFlash) opts.onFlash('You slipped out of the model, so the explorer returned you to the last safe foothold.');
+      }
+    }
+    function fpRespawn(home) {
+      var seed = (!home && fp.safePose) ? fp.safePose : fpSeedPose(SCENE.id);
+      fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
+      fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.mining = null; fpSetMiningProgress(0, false);
+      return { mode: fp.mode, sceneId: SCENE.id };
+    }
+    function fpMiningProgressNode() {
+      var root = container.parentNode;
+      try { return root && root.querySelector ? root.querySelector('[data-geology-mining-progress]') : null; } catch (e) { return null; }
+    }
+    function fpSetMiningProgress(progress, active) {
+      var bar = fpMiningProgressNode(), p = fpClampN(Number(progress) || 0, 0, 1);
+      if (bar) {
+        bar.style.width = Math.round(p * 100) + '%'; bar.style.background = fp.tool === 'drill' ? '#38bdf8' : '#fbbf24';
+        if (bar.parentNode && bar.parentNode.setAttribute) {
+          bar.parentNode.setAttribute('data-active', active ? 'true' : 'false');
+          bar.parentNode.style.opacity = active ? '1' : '0.4';
+        }
+      }
+      hoverBox.scale.setScalar(active ? 1 + p * 0.035 : 1); hoverBox.material.opacity = active ? 0.72 + p * 0.25 : 0.85;
+      miningCrackBox.visible = !!(active && !fp.reduced && fp.mining);
+      if (miningCrackBox.visible) {
+        var wp = worldPos(fp.mining.voxel), stage = Math.max(1, fpMiningStage(p, miningCrackPattern.length));
+        miningCrackBox.position.set(wp[0], wp[1], wp[2]);
+        miningCrackGeometry.setDrawRange(0, stage * miningCrackFaces.length * 2);
+        miningCrackMaterial.opacity = 0.54 + p * 0.4;
+      } else miningCrackGeometry.setDrawRange(0, 0);
+      fp.statusKey = '__refresh';
+    }
+    function fpCancelMining() { fp.mining = null; fpSetMiningProgress(0, false); }
+    function fpUpdateTargetLabel(v) {
+      var key = v ? vkey(v) : '__none';
+      fp.targetKey = key;
+      var root = container.parentNode, label = null;
+      try { label = root && root.querySelector ? root.querySelector('[data-geology-mining-target]') : null; } catch (e) {}
+      if (!label || label.getAttribute('data-target-key') === key) return;
+      label.setAttribute('data-target-key', key);
+      if (!v) { label.textContent = 'Aim at an exposed block'; label.setAttribute('data-target-ready', 'false'); return; }
+      var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
+      var profile = fpMiningProfile(v.key, material.type);
+      label.textContent = material.name + ' · ' + profile.label + (profile.mineable ? (fp.tool === 'drill' ? ' · hold X to drill' : ' · click or X to dig') : ' · cannot excavate');
+      label.setAttribute('data-target-ready', profile.mineable ? 'true' : 'false');
+    }
+    function fpTargetVoxel() {
+      if (!fp.active) return null;
+      var oldFar = raycaster.far; raycaster.far = FP_REACH;
+      pointer.set(0, 0); camera.updateMatrixWorld();
+      raycaster.setFromCamera(pointer, camera);
+      var hits = raycaster.intersectObject(mesh, false), v = null;
+      raycaster.far = oldFar;
+      for (var hi = 0; hi < hits.length; hi++) {
+        var candidate = instanceToVoxel[hits[hi].instanceId];
+        if (candidate && fpMaterialPhysics(candidate.key).kind !== 'fluid') { v = candidate; break; }
+      }
+      fp.target = v || null; fpUpdateTargetLabel(v);
+      if (v) { var p = worldPos(v); hoverBox.position.set(p[0], p[1], p[2]); hoverBox.visible = true; }
+      else hoverBox.visible = false;
+      return v;
+    }
+    function fpSurveyMaterial(key) {
+      if (!fp.active || !key || !SCENE.voxelKeys || SCENE.voxelKeys.indexOf(key) < 0) return null;
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (surveyLastAt && now - surveyLastAt < 1200) return { cooldown: true, remainingMs: Math.ceil(1200 - (now - surveyLastAt)) };
+      surveyLastAt = now;
+      var nearest = null, nearestWorld = null, nearestDistanceSq = Infinity;
+      for (var si = 0; si < voxels.length; si++) {
+        var candidate = voxels[si], formedAt = FORMED_AT[candidate.key]; if (formedAt == null) formedAt = 0;
+        if (candidate.key !== key || removed[vkey(candidate)] || candidate.z >= NZ - sliceZ || formedAt > showStage) continue;
+        var wp = worldPos(candidate), dx = wp[0] - fp.pos.x, dy = wp[1] - fp.pos.y, dz = wp[2] - fp.pos.z;
+        var distanceSq = dx * dx + dy * dy + dz * dz;
+        if (distanceSq < nearestDistanceSq) { nearest = candidate; nearestWorld = wp; nearestDistanceSq = distanceSq; }
+      }
+      if (!nearest || !nearestWorld) { surveyBox.visible = false; surveyVoxelKey = null; return { key: key, found: false }; }
+      surveyVoxelKey = vkey(nearest); surveyUntil = now + 5200;
+      surveyBox.position.set(nearestWorld[0], nearestWorld[1], nearestWorld[2]); surveyBox.scale.setScalar(1); surveyBox.visible = true;
+      var deltaX = nearestWorld[0] - fp.pos.x, deltaY = nearestWorld[1] - fp.pos.y, deltaZ = nearestWorld[2] - fp.pos.z;
+      var direction = Math.abs(deltaX) > Math.abs(deltaZ) ? (deltaX >= 0 ? 'east' : 'west') : (deltaZ >= 0 ? 'south' : 'north');
+      var vertical = Math.abs(deltaY) < VOXEL * 1.25 ? 'near your level' : (deltaY > 0 ? 'above you' : 'below you');
+      var material = SCENE.palette[key] || ROCKS[key] || { name: key };
+      if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (e) {} }
+      return { key: key, name: material.name, found: true, distanceBlocks: Math.max(1, Math.round(Math.sqrt(nearestDistanceSq) / VOXEL)), direction: direction, vertical: vertical };
+    }
+    function updateSurveyMarker3d() {
+      if (!surveyBox.visible) return;
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (now >= surveyUntil || (surveyVoxelKey && removed[surveyVoxelKey])) { surveyBox.visible = false; surveyVoxelKey = null; return; }
+      var pulse = reducedMotion3d ? 1 : 1 + Math.sin(t * 7) * 0.08;
+      surveyBox.scale.setScalar(pulse);
+      surveyBox.material.opacity = reducedMotion3d ? 0.95 : 0.72 + Math.sin(t * 7) * 0.22;
+    }
+    function coreRigSnapshot3d() {
+      return {
+        deployed: !!coreRigState3d.deployed, running: !!coreRigState3d.running, stage: coreRigState3d.stage,
+        angle: coreRigState3d.angle, angleDegrees: coreRigAngleDegrees(coreRigState3d.angle), depth: coreRigState3d.depth,
+        progress: fpClampN(coreRigState3d.progress, 0, 1), heat: fpClampN(coreRigState3d.heat, 0, 1),
+        cursor: coreRigState3d.cursor, plannedCount: coreRigState3d.path.length,
+        sampleCount: coreRigState3d.samples.length, samples: coreRigState3d.samples.map(function (sample3d) {
+          return { key: sample3d.key, name: sample3d.name, type: sample3d.type, color: sample3d.color, depth: sample3d.depth };
+        }),
+        stopReason: coreRigState3d.stopReason, plannedStop: coreRigState3d.plannedStop || null,
+        evaluation: coreRigState3d.evaluation ? Object.assign({}, coreRigState3d.evaluation) : null,
+        status: coreRigState3d.status
+      };
+    }
+    function updateCoreRigHudDom3d() {
+      var root3d = container.parentNode, progress3d = null, heat3d = null, status3d = null, console3d = null;
+      var progressValue3d = null, heatValue3d = null;
+      try {
+        progress3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-progress]') : null;
+        heat3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-heat]') : null;
+        progressValue3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-progress-value]') : null;
+        heatValue3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-heat-value]') : null;
+        status3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-status]') : null;
+        console3d = root3d && root3d.querySelector ? root3d.querySelector('[data-geology-core-rig-console]') : null;
+      } catch (coreRigDomError3d) {}
+      var progressPercent3d = Math.round(fpClampN(coreRigState3d.progress, 0, 1) * 100);
+      var heatPercent3d = Math.round(fpClampN(coreRigState3d.heat, 0, 1) * 100);
+      if (progress3d) {
+        progress3d.style.width = progressPercent3d + '%';
+        if (progress3d.parentNode) progress3d.parentNode.setAttribute('aria-valuenow', progressPercent3d);
+      }
+      if (heat3d) {
+        heat3d.style.width = heatPercent3d + '%';
+        heat3d.style.background = coreRigState3d.heat > 0.74 ? '#fb7185' : '#22d3ee';
+        if (heat3d.parentNode) heat3d.parentNode.setAttribute('aria-valuenow', heatPercent3d);
+      }
+      if (progressValue3d) progressValue3d.textContent = progressPercent3d + '%';
+      if (heatValue3d) heatValue3d.textContent = heatPercent3d + '%';
+      if (status3d) status3d.textContent = coreRigState3d.status;
+      if (console3d) {
+        console3d.setAttribute('data-stage', coreRigState3d.stage);
+        console3d.setAttribute('data-running', coreRigState3d.running ? 'true' : 'false');
+      }
+    }
+    function notifyCoreRigState3d(force3d) {
+      if (!force3d && !coreRigState3d.running) return;
+      updateCoreRigHudDom3d();
+      var now3d = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (!force3d && now3d - coreRigState3d.lastHudAt < 190) return;
+      coreRigState3d.lastHudAt = now3d;
+      if (opts.onCoreRigState) opts.onCoreRigState(coreRigSnapshot3d());
+    }
+    function clearCoreRigBoreMarkers3d() {
+      while (coreRigBoreGroup3d.children.length) {
+        var markerRoot3d = coreRigBoreGroup3d.children[0];
+        markerRoot3d.traverse(function (part3d) {
+          if (part3d.userData && part3d.userData.coreRigDynamicGeometry && part3d.geometry) { part3d.geometry.dispose(); var geometryIndex3d = coreRigGeometries3d.indexOf(part3d.geometry); if (geometryIndex3d >= 0) coreRigGeometries3d.splice(geometryIndex3d, 1); }
+          if (part3d.userData && part3d.userData.coreRigDynamicMaterial && part3d.material) { part3d.material.dispose(); var materialIndex3d = coreRigMaterials3d.indexOf(part3d.material); if (materialIndex3d >= 0) coreRigMaterials3d.splice(materialIndex3d, 1); }
+        });
+        coreRigBoreGroup3d.remove(markerRoot3d);
+      }
+    }
+    function coreRigLocalDirection3d() {
+      var radians3d = coreRigAngleDegrees(coreRigState3d.angle) * Math.PI / 180;
+      return new THREE.Vector3(0, -Math.sin(radians3d), -Math.cos(radians3d)).normalize();
+    }
+    function updateCoreRigGuide3d() {
+      var direction3d = coreRigLocalDirection3d();
+      coreRigGuideStart3d.set(0, rigUnit3d * 0.34, 0);
+      coreRigGuideEnd3d.copy(coreRigGuideStart3d).addScaledVector(direction3d, VOXEL);
+      if (coreRigState3d.path.length) {
+        var endpointCell3d = coreRigState3d.path[coreRigState3d.path.length - 1];
+        var endpointVoxel3d = voxelByKey[endpointCell3d.x + ',' + endpointCell3d.y + ',' + endpointCell3d.z];
+        if (endpointVoxel3d) {
+          var endpointWorld3d = worldPos(endpointVoxel3d);
+          coreRigGuideEnd3d.copy(coreRigGroup3d.worldToLocal(new THREE.Vector3(endpointWorld3d[0], endpointWorld3d[1], endpointWorld3d[2])));
+        }
+      }
+      var guideVector3d = coreRigGuideEnd3d.clone().sub(coreRigGuideStart3d);
+      var guideLength3d = Math.max(VOXEL * 0.25, guideVector3d.length());
+      if (guideVector3d.lengthSq() > 0.0001) direction3d.copy(guideVector3d).normalize();
+      coreRigGuideGeo3d.setFromPoints([coreRigGuideStart3d, coreRigGuideEnd3d]);
+      coreRigGuide3d.computeLineDistances();
+      coreRigTarget3d.position.copy(coreRigGuideEnd3d);
+      coreRigTarget3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), direction3d);
+      var targetTone3d = coreRigState3d.plannedStop === 'hazard' ? 0xfb7185
+        : (coreRigState3d.plannedStop === 'fluid' ? 0x38bdf8
+        : (coreRigState3d.plannedStop ? 0xfbbf24 : 0x22d3ee));
+      coreRigTargetMat3d.color.setHex(targetTone3d);
+      coreRigPulseRings3d.forEach(function (ring3d, index3d) {
+        ring3d.position.copy(coreRigGuideStart3d).addScaledVector(direction3d, guideLength3d * ((index3d + 1) / 4));
+        ring3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), direction3d);
+      });
+      coreRigAssembly3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), direction3d);
+      coreRigAssembly3d.position.copy(coreRigGuideStart3d).addScaledVector(direction3d, -rigUnit3d * 3.33);
+      coreRigFeedGlow3d.position.copy(coreRigGuideStart3d);
+    }
+    function planCoreRigPath3d() {
+      if (!coreRigState3d.origin) { coreRigState3d.path = []; return []; }
+      var rawPath3d = coreRigPath(coreRigState3d.origin, coreRigState3d.yaw, coreRigState3d.angle, coreRigState3d.depth, { minX: 0, maxX: NX - 1, minY: 0, maxY: NY - 1, minZ: 0, maxZ: NZ - 1 });
+      var planned3d = [], plannedStop3d = null, skippedCavities3d = 0;
+      for (var pathIndex3d = 0; pathIndex3d < rawPath3d.length; pathIndex3d++) {
+        var cell3d = rawPath3d[pathIndex3d];
+        var voxel3d = voxelByKey[cell3d.x + ',' + cell3d.y + ',' + cell3d.z];
+        if (voxel3d && removed[vkey(voxel3d)]) { skippedCavities3d += 1; continue; }
+        var material3d = voxel3d ? (SCENE.palette[voxel3d.key] || ROCKS[voxel3d.key] || { name: voxel3d.key || 'Rock', type: '' }) : null;
+        var stop3d = coreRigStopReason(voxel3d && voxel3d.key, material3d && material3d.type);
+        if (stop3d) { plannedStop3d = stop3d; break; }
+        planned3d.push({ x: cell3d.x, y: cell3d.y, z: cell3d.z, distance: cell3d.distance, depth: cell3d.depth });
+      }
+      if (!plannedStop3d && rawPath3d.length < coreRigState3d.depth) plannedStop3d = 'blocked';
+      if (!plannedStop3d && skippedCavities3d) plannedStop3d = 'spent';
+      coreRigState3d.path = planned3d; coreRigState3d.plannedStop = plannedStop3d;
+      return planned3d;
+    }
+    function coreRigError3d(message3d, reason3d) {
+      if (opts.onFlash) opts.onFlash(message3d);
+      return { ok: false, reason: reason3d || 'unavailable', message: message3d };
+    }
+    function coreRigSupportTop3d(wx3d, wz3d, maxTop3d) {
+      if (wx3d < -WORLD.w * 0.5 || wx3d > WORLD.w * 0.5 || wz3d < -WORLD.d * 0.5 || wz3d > WORLD.d * 0.5) return null;
+      var column3d = fpWorldToVoxel(wx3d, 0, wz3d), supportTop3d = null;
+      for (var supportY3d = 0; supportY3d < NY; supportY3d++) {
+        var supportVoxel3d = voxelByKey[column3d.x + ',' + supportY3d + ',' + column3d.z];
+        if (!supportVoxel3d || removed[vkey(supportVoxel3d)] || !visible(supportVoxel3d) || fpMaterialPhysics(supportVoxel3d.key).kind !== 'solid') continue;
+        var top3d = worldPos(supportVoxel3d)[1] + VOXEL * 0.5;
+        if (top3d <= maxTop3d + VOXEL * 0.2 && (supportTop3d == null || top3d > supportTop3d)) supportTop3d = top3d;
+      }
+      return supportTop3d;
+    }
+    function coreRigStablePad3d(cx3d, cz3d, maxTop3d, yaw3d) {
+      var footX3d = rigUnit3d * 1.38, footZ3d = rigUnit3d * 1.12;
+      var localProbes3d = [[0, 0], [-footX3d, -footZ3d], [footX3d, -footZ3d], [-footX3d, footZ3d], [footX3d, footZ3d]];
+      var sinYaw3d = Math.sin(Number(yaw3d) || 0), cosYaw3d = Math.cos(Number(yaw3d) || 0);
+      var tops3d = [];
+      for (var probeIndex3d = 0; probeIndex3d < localProbes3d.length; probeIndex3d++) {
+        var localProbe3d = localProbes3d[probeIndex3d];
+        var probeX3d = cx3d + localProbe3d[0] * cosYaw3d + localProbe3d[1] * sinYaw3d;
+        var probeZ3d = cz3d - localProbe3d[0] * sinYaw3d + localProbe3d[1] * cosYaw3d;
+        var probeTop3d = coreRigSupportTop3d(probeX3d, probeZ3d, maxTop3d);
+        if (probeTop3d == null) return null;
+        tops3d.push(probeTop3d);
+      }
+      var lowTop3d = Math.min.apply(Math, tops3d), highTop3d = Math.max.apply(Math, tops3d);
+      if (highTop3d - lowTop3d > VOXEL * 0.35 || fpBodyBlocked(cx3d, highTop3d + FP_EYE_HEIGHT, cz3d)) return null;
+      var origin3d = fpWorldToVoxel(cx3d, tops3d[0] - VOXEL * 0.18, cz3d);
+      var centreSupport3d = voxelByKey[origin3d.x + ',' + origin3d.y + ',' + origin3d.z];
+      if (!centreSupport3d || removed[vkey(centreSupport3d)] || !visible(centreSupport3d) || fpMaterialPhysics(centreSupport3d.key).kind !== 'solid') return null;
+      return { origin: origin3d, groundTopY: tops3d[0] };
+    }
+    function deployCoreRig3d(config3d) {
+      config3d = config3d || {};
+      if (!coreRigSupported(SCENE.id) || fp.mode !== 'mine') return coreRigError3d('Directional core rigs need a stable surface. Deep Earth remains a handheld flight expedition.', 'unsupported');
+      if (!fp.active) return coreRigError3d('Enter Walk & Dig before deploying the core rig.', 'inactive');
+      if (coreRigState3d.deployed) {
+        configureCoreRig3d(config3d);
+        return { ok: true, state: coreRigSnapshot3d() };
+      }
+      if (!fp.onGround || fp.medium !== 'air' || fp.hazardNearby) return coreRigError3d('Find stable, cool ground before deploying the core rig.', 'unstable');
+      var forwardX3d = -Math.sin(fp.yaw), forwardZ3d = -Math.cos(fp.yaw);
+      var rightX3d = -forwardZ3d, rightZ3d = forwardX3d;
+      var padOffsets3d = [[forwardX3d, forwardZ3d], [rightX3d, rightZ3d], [-rightX3d, -rightZ3d], [-forwardX3d, -forwardZ3d]];
+      var pad3d = null;
+      for (var padIndex3d = 0; padIndex3d < padOffsets3d.length; padIndex3d++) {
+        var candidateX3d = fp.pos.x + padOffsets3d[padIndex3d][0] * VOXEL * 3.0;
+        var candidateZ3d = fp.pos.z + padOffsets3d[padIndex3d][1] * VOXEL * 3.0;
+        if (candidateX3d < -WORLD.w * 0.5 + VOXEL || candidateX3d > WORLD.w * 0.5 - VOXEL || candidateZ3d < -WORLD.d * 0.5 + VOXEL || candidateZ3d > WORLD.d * 0.5 - VOXEL) continue;
+        var stablePad3d = coreRigStablePad3d(candidateX3d, candidateZ3d, fp.pos.y - FP_EYE_HEIGHT + VOXEL * 1.4, fp.yaw);
+        if (!stablePad3d) continue;
+        pad3d = stablePad3d; break;
+      }
+      if (!pad3d) return coreRigError3d('No level drilling pad is clear nearby. Move to a broader ledge and try again.', 'no-pad');
+      coreRigState3d.deployed = true; coreRigState3d.running = false;
+      coreRigState3d.stage = reducedMotion3d ? 'preview' : 'deploying';
+      coreRigState3d.angle = CORE_RIG_ANGLES[config3d.angle] ? config3d.angle : coreRigState3d.angle;
+      coreRigState3d.depth = CORE_RIG_DEPTHS.indexOf(Number(config3d.depth)) >= 0 ? Number(config3d.depth) : coreRigState3d.depth;
+      coreRigState3d.origin = pad3d.origin; coreRigState3d.yaw = fp.yaw; coreRigState3d.cursor = 0;
+      coreRigState3d.samples = []; coreRigState3d.heat = 0; coreRigState3d.progress = 0; coreRigState3d.stopReason = null;
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigState3d.deployedAt = Date.now();
+      clearCoreRigBoreMarkers3d();
+      var rigOriginWorld3d = worldPos(pad3d.origin);
+      coreRigGroup3d.position.set(rigOriginWorld3d[0], pad3d.groundTopY, rigOriginWorld3d[2]);
+      coreRigGroup3d.rotation.y = fp.yaw; coreRigGroup3d.visible = true;
+      coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.updateMatrixWorld(true);
+      planCoreRigPath3d(); updateCoreRigGuide3d();
+      coreRigGroup3d.scale.setScalar(reducedMotion3d ? 1 : 0.04); coreRigGroup3d.updateMatrixWorld(true);
+      coreRigState3d.status = reducedMotion3d
+        ? (coreRigState3d.path.length ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals') : 'No safe rock on this trajectory')
+        : 'Locking stabilizers · trajectory scan ready';
+      notifyCoreRigState3d(true);
+      if (opts.onFlash) opts.onFlash('Core rig deployed. Choose an angle and depth, then start the bore.');
+      if (window._alloHaptic) { try { window._alloHaptic('success'); } catch (coreRigHapticError3d) {} }
+      return { ok: true, state: coreRigSnapshot3d() };
+    }
+    function configureCoreRig3d(config3d) {
+      config3d = config3d || {};
+      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the core rig before configuring a bore.', 'packed');
+      if (coreRigState3d.running || coreRigState3d.stage === 'deploying') return coreRigError3d('Wait for the stabilizers before redirecting the bore.', 'running');
+      if (CORE_RIG_ANGLES[config3d.angle]) coreRigState3d.angle = config3d.angle;
+      if (CORE_RIG_DEPTHS.indexOf(Number(config3d.depth)) >= 0) coreRigState3d.depth = Number(config3d.depth);
+      coreRigState3d.stage = 'preview'; coreRigState3d.cursor = 0; coreRigState3d.samples = [];
+      coreRigState3d.heat = 0; coreRigState3d.progress = 0; coreRigState3d.stopReason = null;
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigFeedGlow3d.visible = false;
+      clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
+      coreRigState3d.status = coreRigState3d.path.length
+        ? ('Trajectory ready · ' + coreRigState3d.path.length + ' recoverable intervals')
+        : (coreRigState3d.plannedStop === 'spent' ? 'Existing bore detected · choose another trajectory' : 'Trajectory meets a boundary immediately');
+      notifyCoreRigState3d(true);
+      return { ok: true, state: coreRigSnapshot3d() };
+    }
+    function finishCoreRig3d(reason3d) {
+      if (!coreRigState3d.deployed) return null;
+      reason3d = reason3d || 'complete';
+      coreRigState3d.running = false; coreRigState3d.stopReason = reason3d === 'complete' ? null : reason3d;
+      coreRigState3d.stage = reason3d === 'complete' ? 'complete' : (reason3d === 'cancelled' ? 'paused' : 'stopped');
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null;
+      coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0; coreRigFeedGlow3d.visible = false;
+      var completedAt3d = Date.now();
+      var report3d = {
+        sceneId: SCENE.id, angle: coreRigState3d.angle, angleDegrees: coreRigAngleDegrees(coreRigState3d.angle),
+        targetDepth: coreRigState3d.depth, stopReason: coreRigState3d.stopReason,
+        samples: coreRigSnapshot3d().samples, completedAt: completedAt3d
+      };
+      var summary3d = coreRigReportSummary(report3d);
+      var evaluation3d = coreRigEvaluation(report3d);
+      report3d.evaluation = Object.assign({}, evaluation3d);
+      coreRigState3d.evaluation = Object.assign({}, evaluation3d);
+      coreRigState3d.celebrateUntil = summary3d.sampleCount ? completedAt3d + (reducedMotion3d ? 250 : 2400) : 0;
+      var resultLabel3d = 'Grade ' + evaluation3d.grade + ' · ' + evaluation3d.label;
+      var message3d = !summary3d.sampleCount
+        ? (reason3d === 'spent' ? 'Existing bore detected — relocate or change trajectory.'
+        : (reason3d === 'cancelled' ? 'Bore ended before a sample interval was recovered.'
+        : 'No recoverable core on this trajectory.'))
+        : (reason3d === 'fluid' ? 'Water-boundary stop sealed safely · ' + resultLabel3d
+        : (reason3d === 'hazard' ? 'Thermal-boundary stop protected the sample · ' + resultLabel3d
+        : (reason3d === 'blocked' ? 'Rock boundary reached · ' + resultLabel3d
+        : (reason3d === 'spent' ? 'Existing bore intersected · ' + resultLabel3d
+        : (reason3d === 'cancelled' ? 'Operator ended early · ' + resultLabel3d
+        : 'Core recovered · ' + resultLabel3d)))));
+      coreRigState3d.status = message3d;
+      notifyCoreRigState3d(true);
+      if (opts.onFlash) opts.onFlash(message3d);
+      if (report3d.samples.length && opts.onCoreRigComplete) opts.onCoreRigComplete(report3d);
+      if (window._alloHaptic) { try { window._alloHaptic(report3d.samples.length ? 'success' : 'warning'); } catch (coreRigFinishHapticError3d) {} }
+      return report3d;
+    }
+    function prepareCoreRigStep3d() {
+      while (coreRigState3d.cursor < coreRigState3d.path.length) {
+        var cell3d = coreRigState3d.path[coreRigState3d.cursor];
+        var voxel3d = voxelByKey[cell3d.x + ',' + cell3d.y + ',' + cell3d.z];
+        if (voxel3d && removed[vkey(voxel3d)]) { coreRigState3d.cursor += 1; continue; }
+        var material3d = voxel3d ? (SCENE.palette[voxel3d.key] || ROCKS[voxel3d.key] || { name: voxel3d.key || 'Rock', type: '' }) : null;
+        var stop3d = coreRigStopReason(voxel3d && voxel3d.key, material3d && material3d.type);
+        if (stop3d) { finishCoreRig3d(stop3d); return false; }
+        var duration3d = coreRigDrillDuration(voxel3d.key, material3d.type);
+        if (!duration3d) { finishCoreRig3d('blocked'); return false; }
+        coreRigState3d.currentCell = cell3d; coreRigState3d.currentVoxel = voxel3d;
+        coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = reducedMotion3d ? 90 : duration3d;
+        coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Cutting ' + material3d.name + ' · core ' + (coreRigState3d.cursor + 1) + '/' + coreRigState3d.path.length;
+        return true;
+      }
+      finishCoreRig3d(coreRigState3d.plannedStop || 'complete'); return false;
+    }
+    function startCoreRig3d() {
+      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before starting a bore.', 'packed');
+      if (coreRigState3d.stage === 'deploying') return coreRigError3d('The stabilizers are still locking. Start the bore when the trajectory is ready.', 'deploying');
+      if (coreRigState3d.running) return { ok: true, state: coreRigSnapshot3d() };
+      coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.heat = 0;
+      coreRigState3d.progress = 0; coreRigState3d.stopReason = null; coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0;
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
+      if (!coreRigState3d.path.length) return finishCoreRig3d(coreRigState3d.plannedStop || 'blocked');
+      coreRigState3d.running = true; coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Spin-up · locking the drill string';
+      prepareCoreRigStep3d(); notifyCoreRigState3d(true);
+      if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (coreRigStartHapticError3d) {} }
+      return { ok: true, state: coreRigSnapshot3d() };
+    }
+    function addCoreRigSampleMarker3d(sample3d, voxel3d) {
+      var materialColor3d = new THREE.Color(sample3d.color || 0xcbd5e1);
+      var markerMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: materialColor3d, emissive: materialColor3d, emissiveIntensity: 0.48, roughness: 0.36, metalness: 0.18, transparent: true, opacity: 0.9 }));
+      var marker3d = coreRigMesh3d(new THREE.CylinderGeometry(VOXEL * 0.12, VOXEL * 0.12, VOXEL * 0.54, 10), markerMat3d, 0, 0, 0, coreRigBoreGroup3d);
+      marker3d.userData.coreRigDynamicGeometry = true; marker3d.userData.coreRigDynamicMaterial = true;
+      var halo3d = coreRigMesh3d(new THREE.SphereGeometry(VOXEL * 0.2, 8, 6), coreRigBoreMat3d, 0, 0, 0, marker3d);
+      halo3d.userData.coreRigDynamicGeometry = true; halo3d.castShadow = false; halo3d.receiveShadow = false;
+      halo3d.scale.set(1, 0.36, 1); halo3d.renderOrder = 7;
+      coreRigGroup3d.updateMatrixWorld(true);
+      var voxelWorld3d = worldPos(voxel3d);
+      marker3d.position.copy(coreRigGroup3d.worldToLocal(new THREE.Vector3(voxelWorld3d[0], voxelWorld3d[1], voxelWorld3d[2])));
+      marker3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), coreRigLocalDirection3d().clone().negate());
+      marker3d.renderOrder = 6;
+    }
+    function updateCoreRig3d(dt3d) {
+      if (!coreRigState3d.deployed) return;
+      var motion3d = reducedMotion3d ? 0 : 1;
+      var coreRigNow3d = Date.now();
+      if (coreRigState3d.stage === 'deploying') {
+        var deployProgress3d = fpClampN((coreRigNow3d - coreRigState3d.deployedAt) / 520, 0, 1);
+        var deployEase3d = 1 - Math.pow(1 - deployProgress3d, 3);
+        coreRigGroup3d.scale.setScalar(0.04 + deployEase3d * 0.96);
+        coreRigGroup3d.updateMatrixWorld(true);
+        coreRigLight3d.intensity = 0.5 + deployEase3d * 1.1;
+        if (deployProgress3d >= 1) {
+          coreRigState3d.stage = 'preview';
+          coreRigState3d.status = coreRigState3d.path.length
+            ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals')
+            : (coreRigState3d.plannedStop === 'spent' ? 'Existing bore detected · choose another trajectory' : 'No safe rock on this trajectory');
+          notifyCoreRigState3d(true);
+        }
+      }
+      var gradeTone3d = { S: 0xc084fc, A: 0x22d3ee, B: 0x34d399, C: 0xfbbf24, D: 0xfb7185 };
+      var celebrating3d = !!(coreRigState3d.evaluation && coreRigNow3d < coreRigState3d.celebrateUntil);
+      var baseTone3d = coreRigState3d.plannedStop === 'hazard' ? 0xfb7185
+        : (coreRigState3d.plannedStop === 'fluid' ? 0x38bdf8
+        : (coreRigState3d.plannedStop ? 0xfbbf24 : 0x22d3ee));
+      var activeTone3d = celebrating3d ? (gradeTone3d[coreRigState3d.evaluation.grade] || baseTone3d) : baseTone3d;
+      coreRigTargetMat3d.color.setHex(activeTone3d); coreRigLight3d.color.setHex(activeTone3d);
+      coreRigGuideMat3d.opacity = 0.62 + (motion3d ? (Math.sin(t * 5.4) + 1) * 0.11 : 0.1);
+      coreRigRotor3d.rotation.x += dt3d * (coreRigState3d.running ? 10 : 1.4) * motion3d;
+      coreRigBit3d.rotation.y += dt3d * (coreRigState3d.running ? 22 : 0.8) * motion3d;
+      coreRigTarget3d.rotation.y += dt3d * 1.2 * motion3d;
+      coreRigTarget3d.scale.setScalar(celebrating3d && motion3d ? 1.08 + Math.sin(t * 11) * 0.16 : 1);
+      coreRigLight3d.intensity = 0.9 + (coreRigState3d.running ? 0.8 : 0.25) + (celebrating3d ? 0.75 : 0) + Math.sin(t * 5) * 0.12 * motion3d;
+      coreRigPulseRings3d.forEach(function (ring3d, index3d) {
+        var pulse3d = motion3d ? 0.88 + ((t * (celebrating3d ? 1.35 : 0.7) + index3d * 0.28) % 1) * (celebrating3d ? 0.52 : 0.34) : 1;
+        ring3d.scale.setScalar(pulse3d);
+      });
+      var assemblyDirection3d = coreRigGuideEnd3d.clone().sub(coreRigGuideStart3d);
+      if (assemblyDirection3d.lengthSq() < 0.0001) assemblyDirection3d.copy(coreRigLocalDirection3d());
+      else assemblyDirection3d.normalize();
+      coreRigAssembly3d.position.copy(coreRigGuideStart3d).addScaledVector(assemblyDirection3d, -rigUnit3d * 3.33);
+      if (coreRigState3d.running && motion3d) coreRigAssembly3d.position.x += Math.sin(t * 44) * rigUnit3d * 0.018;
+      coreRigFeedGlow3d.visible = !!coreRigState3d.running;
+      if (coreRigFeedGlow3d.visible) {
+        coreRigFeedGlow3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, fpClampN(coreRigState3d.progress, 0, 1));
+        var feedPulse3d = motion3d ? 0.8 + (Math.sin(t * 18) + 1) * 0.22 : 1;
+        coreRigFeedGlow3d.scale.setScalar(feedPulse3d);
+      }
+      if (!coreRigState3d.running) {
+        if (coreRigState3d.heat > 0) {
+          coreRigState3d.heat = Math.max(0, coreRigState3d.heat - dt3d * 0.22);
+          updateCoreRigHudDom3d();
+        }
+        return;
+      }
+      if (coreRigState3d.stage === 'cooling') {
+        coreRigState3d.heat = Math.max(0, coreRigState3d.heat - dt3d * 0.4);
+        coreRigState3d.status = 'Auto-cooling drill head · ' + Math.round(coreRigState3d.heat * 100) + '%';
+        if (coreRigState3d.heat <= 0.38) { coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Cooling complete · resuming the protected core'; }
+        notifyCoreRigState3d(false); return;
+      }
+      if (!coreRigState3d.currentVoxel && !prepareCoreRigStep3d()) return;
+      coreRigState3d.currentElapsed += Math.max(0, dt3d * 1000);
+      coreRigState3d.heat = Math.min(1, coreRigState3d.heat + dt3d * (0.11 + coreRigState3d.currentDuration / 5200));
+      var stepProgress3d = coreRigState3d.currentDuration ? fpClampN(coreRigState3d.currentElapsed / coreRigState3d.currentDuration, 0, 1) : 1;
+      coreRigState3d.progress = coreRigState3d.path.length ? (coreRigState3d.cursor + stepProgress3d) / coreRigState3d.path.length : 1;
+      coreRigFeedGlow3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, fpClampN(coreRigState3d.progress, 0, 1));
+      if (coreRigState3d.heat >= 0.82 && stepProgress3d < 1) {
+        coreRigState3d.stage = 'cooling'; coreRigState3d.status = 'Thermal pause · protecting the recovered core';
+        notifyCoreRigState3d(true); return;
+      }
+      if (stepProgress3d >= 1) {
+        var drilledVoxel3d = coreRigState3d.currentVoxel, drilledCell3d = coreRigState3d.currentCell;
+        var drilledMaterial3d = SCENE.palette[drilledVoxel3d.key] || ROCKS[drilledVoxel3d.key] || { name: drilledVoxel3d.key || 'Rock', type: '', color: 0xcbd5e1 };
+        var result3d = excavateVoxel(drilledVoxel3d, 'core-rig');
+        if (result3d) {
+          var sample3d = { key: drilledVoxel3d.key, name: drilledMaterial3d.name, type: drilledMaterial3d.type || 'Rock', color: drilledMaterial3d.color || 0xcbd5e1, depth: drilledCell3d.depth };
+          coreRigState3d.samples.push(sample3d); addCoreRigSampleMarker3d(sample3d, drilledVoxel3d);
+          if (window._alloHaptic) { try { window._alloHaptic('break'); } catch (coreRigSampleHapticError3d) {} }
+        }
+        coreRigState3d.cursor += 1; coreRigState3d.currentVoxel = null; coreRigState3d.currentCell = null;
+        coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+        coreRigState3d.progress = coreRigState3d.path.length ? coreRigState3d.cursor / coreRigState3d.path.length : 1;
+        if (!prepareCoreRigStep3d()) return;
+      }
+      notifyCoreRigState3d(false);
+    }
+    function cancelCoreRig3d() {
+      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before ending a bore.', 'packed');
+      if (!coreRigState3d.running) return { ok: true, state: coreRigSnapshot3d() };
+      var report3d = finishCoreRig3d('cancelled');
+      return { ok: true, report: report3d, state: coreRigSnapshot3d() };
+    }
+    function packCoreRig3d() {
+      if (!coreRigState3d.deployed) return { ok: true, state: coreRigSnapshot3d() };
+      if (coreRigState3d.running) return coreRigError3d('The rig is actively drilling. End the bore safely before packing it.', 'running');
+      coreRigState3d.deployed = false; coreRigState3d.running = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
+      coreRigState3d.origin = null; coreRigState3d.path = []; coreRigState3d.samples = []; coreRigState3d.cursor = 0;
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      coreRigState3d.progress = 0; coreRigState3d.heat = 0; coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null;
+      coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0;
+      clearCoreRigBoreMarkers3d(); coreRigFeedGlow3d.visible = false; coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.visible = false; notifyCoreRigState3d(true);
+      return { ok: true, state: coreRigSnapshot3d() };
+    }
+    function fpCompleteMining() {
+      var mining = fp.mining; if (!mining) return null;
+      fp.mining = null; fpSetMiningProgress(0, false);
+      if (mining.tool === 'drill' && mining.duration === 0) {
+        fp.drillHeat = Math.min(1, fp.drillHeat + fpDrillHeatRate(mining.profile) * fpToolMiningDuration(mining.profile, 'drill') / 1000);
+      }
+      var result = excavateVoxel(mining.voxel);
+      if (result && window._alloHaptic) { try { window._alloHaptic('break'); } catch (e) {} }
+      fp.targetKey = '__refresh'; fpTargetVoxel();
+      return result;
+    }
+    function fpUpdateMining(dt) {
+      if (!fp.mining) return;
+      if (!fp.target || vkey(fp.target) !== fp.mining.id) { fpCancelMining(); return; }
+      fp.mining.elapsed += Math.max(0, dt * 1000);
+      var progress = fp.mining.duration > 0 ? fp.mining.elapsed / fp.mining.duration : 1;
+      fpSetMiningProgress(progress, true);
+      if (progress >= 1) fpCompleteMining();
+    }
+    function fpMineAtCrosshair(instant, chained) {
+      if (coreRigState3d.deployed) {
+        fp.drillHeld = false;
+        return chained ? null : coreRigError3d('Pack the directional core rig before hand mining.', coreRigState3d.running ? 'rig-running' : 'rig-deployed');
+      }
+      var now = (window.performance && performance.now) ? performance.now() : Date.now();
+      if (fp.mining) return { pending: true, progress: fp.mining.duration ? fp.mining.elapsed / fp.mining.duration : 1 };
+      if (fp.tool === 'drill' && fp.drillOverheated && !instant) { if (!chained && opts.onFlash) opts.onFlash('The drill is cooling. Switch to the pickaxe or wait for the heat meter.'); return null; }
+      if (!chained && fp.lastMineAt && now - fp.lastMineAt < 140) return null;
+      fp.lastMineAt = now;
+      var v = fpTargetVoxel();
+      if (!v) { if (!chained && opts.onFlash) opts.onFlash('Move closer and aim the reticle at an exposed block.'); return null; }
+      var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'Rock', type: '' };
+      var profile = fpMiningProfile(v.key, material.type);
+      if (!profile.mineable) { fp.drillHeld = false; if (!chained && opts.onFlash) opts.onFlash(profile.reason); return null; }
+      var duration = fpToolMiningDuration(profile, fp.tool);
+      fp.drillNextAt = now + Math.max(90, duration);
+      fp.mining = { id: vkey(v), voxel: v, elapsed: 0, duration: (instant || fp.reduced) ? 0 : duration, profile: profile, tool: fp.tool };
+      fpSetMiningProgress(0, true);
+      if (!fp.mining.duration) return fpCompleteMining();
+      if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (e) {} }
+      return { pending: true, duration: fp.mining.duration, hardness: profile.label, tool: fp.tool };
+    }
+    function fpUndoMine() {
+      if (coreRigState3d.running) return coreRigError3d('The active bore must finish before excavation can be undone.', 'rig-running');
+      if (coreRigState3d.deployed) return coreRigError3d('Pack the directional core rig before undoing excavation.', 'rig-deployed');
+      fpCancelMining();
+      var restored = undoExcavation();
+      if (!restored) { if (opts.onFlash) opts.onFlash('There is no excavation to undo yet.'); return null; }
+      if (opts.onFlash) opts.onFlash('Restored ' + restored.name + '. ' + restored.remaining + ' excavated block' + (restored.remaining === 1 ? '' : 's') + ' remain.');
+      fp.targetKey = '__refresh'; fpTargetVoxel();
+      return restored;
+    }
+    function fpRedoMine() {
+      if (coreRigState3d.running) return coreRigError3d('The active bore must finish before excavation can be redone.', 'rig-running');
+      if (coreRigState3d.deployed) return coreRigError3d('Pack the directional core rig before redoing excavation.', 'rig-deployed');
+      fpCancelMining();
+      var redone = redoExcavation();
+      if (!redone) { if (opts.onFlash) opts.onFlash('There is no excavation to redo yet.'); return null; }
+      if (opts.onFlash) opts.onFlash('Re-excavated ' + redone.name + '.');
+      fp.targetKey = '__refresh'; fpTargetVoxel();
+      return redone;
+    }
     function notifyExcavationChange() {
-      if (opts.onExcavateChange) opts.onExcavateChange(excavationHistory.length);
+      if (opts.onExcavateChange) opts.onExcavateChange(excavationHistory.length, { history: excavationHistory.slice(), redo: excavationRedo.slice() });
     }
     function updateUndoPreview() {
       var target = undoPreviewRequested && !fp.active ? undoPreviewTarget(excavationHistory, voxelByKey, removed, sliceZ, focusLens, showStage, FORMED_AT, NZ) : null;
@@ -3482,28 +4586,41 @@
       return undoPreviewBox.visible;
     }
     function shallowest(x, z) { return firstSolidVoxelY(voxelByKey, removed, x, z, NY); }
-    function excavateVoxel(v) {
+    function excavateVoxel(v, method) {
       if (!v || v.key === 'void') return null;
       var id = vkey(v); if (removed[id]) return null;
       spawnExcavationBurst3d(v);
-      removed[id] = 1; excavationHistory.push(id); rebuild(); notifyExcavationChange();
+      removed[id] = 1; excavationHistory.push(id); excavationRedo = []; rebuild(); notifyExcavationChange();
       if (opts.onUncover && SED_FOSSIL[v.key] && hasFossilAt(v.x, v.y, v.z)) opts.onUncover(v.key);
       var below = shallowest(v.x, v.z);
       var belowVoxel = below == null ? null : voxelByKey[v.x + ',' + below + ',' + v.z];
-      if (belowVoxel && opts.onSelect) opts.onSelect(rockFacts(belowVoxel.key, belowVoxel.y));
+      if (belowVoxel && opts.onSelect && method !== 'core-rig') opts.onSelect(rockFacts(belowVoxel.key, belowVoxel.y));
       var material = SCENE.palette[v.key] || ROCKS[v.key] || { name: v.key || 'material' };
-      if (opts.onFlash) opts.onFlash('Excavated ' + material.name + '. ' + (belowVoxel ? 'The layer beneath is now exposed.' : 'That column is now fully excavated.'));
-      return { removedKey: v.key, removedY: v.y, exposedKey: belowVoxel ? belowVoxel.key : null, count: excavationHistory.length };
+      if (surveyVoxelKey === id) { surveyBox.visible = false; surveyVoxelKey = null; }
+      if (opts.onFlash && method !== 'core-rig') opts.onFlash('Excavated ' + material.name + '. ' + (belowVoxel ? 'The layer beneath is now exposed.' : 'That column is now fully excavated.'));
+      var result = { removedKey: v.key, removedY: v.y, name: material.name, exposedKey: belowVoxel ? belowVoxel.key : null, count: excavationHistory.length, firstPerson: !!fp.active, method: method || 'hand' };
+      if (opts.onExcavate) opts.onExcavate(result);
+      return result;
     }
     function undoExcavation() {
       while (excavationHistory.length) {
         var id = excavationHistory.pop();
         if (!removed[id]) continue;
-        delete removed[id];
+        delete removed[id]; excavationRedo.push(id);
         var restored = voxelByKey[id]; rebuild(); notifyExcavationChange();
         if (!restored) return null;
         var material = SCENE.palette[restored.key] || ROCKS[restored.key] || { name: restored.key || 'material' };
-        return { key: restored.key, y: restored.y, name: material.name, remaining: excavationHistory.length };
+        return { key: restored.key, y: restored.y, name: material.name, remaining: excavationHistory.length, redoCount: excavationRedo.length };
+      }
+      notifyExcavationChange(); return null;
+    }
+    function redoExcavation() {
+      while (excavationRedo.length) {
+        var id = excavationRedo.pop(), voxel = voxelByKey[id];
+        if (!voxel || voxel.key === 'void' || removed[id]) continue;
+        spawnExcavationBurst3d(voxel); removed[id] = 1; excavationHistory.push(id); rebuild(); notifyExcavationChange();
+        var material = SCENE.palette[voxel.key] || ROCKS[voxel.key] || { name: voxel.key || 'material' };
+        return { key: voxel.key, y: voxel.y, name: material.name, count: excavationHistory.length, redoCount: excavationRedo.length };
       }
       notifyExcavationChange(); return null;
     }
@@ -3524,7 +4641,7 @@
       }
     }
     function onDown(e) { down = { x: e.clientX, y: e.clientY }; if (fp.active) fpPrev = { x: e.clientX, y: e.clientY }; }
-    function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; fpPrev = null; if (moved < 6 && !fp.active) pick(e); }   // no tap-pick from inside the rock during FP
+    function onUp(e) { if (!down) return; var moved = Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y); down = null; fpPrev = null; if (moved < 6) { if (fp.active) fpMineAtCrosshair(); else pick(e); } }
     cnv.addEventListener('pointerdown', onDown); cnv.addEventListener('pointerup', onUp);
     // drag-to-look while FP is active (no Pointer Lock); uses fpPrev so `down` stays intact for tap-to-identify
     function fpLookMove(e) {
@@ -3559,18 +4676,27 @@
       fp.savedEnabled = controls ? controls.enabled : true;
       if (controls) controls.enabled = false;                // hand the camera to FP
       var seed = fpSeedPose(SCENE.id);
+      fp.mode = fpExplorerMode(SCENE.id);
       fp.pos = { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }; fp.yaw = seed.yaw; fp.pitch = seed.pitch;
-      fp.input = { fwd: 0, strafe: 0, vert: 0, sprint: false }; fp.turn = { yaw: 0, pitch: 0 }; fp.lastKey = '__none'; fp.lastHud = 0;
+      fp.input = { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
+      fp.velocity = { x: 0, y: 0, z: 0 }; fp.onGround = false; fp.jumpLatch = false; fp.target = null; fp.targetKey = '__none'; fp.lastMineAt = 0; fp.lastKey = '__none'; fp.lastHud = 0; fp.medium = 'air'; fp.mining = null; fp.tool = (o && o.tool === 'drill') ? 'drill' : 'pick'; fp.drillHeat = 0; fp.drillOverheated = false; fp.drillHeld = false; fp.drillHudAt = 0; fp.drillNextAt = 0; fp.safePose = { pos: { x: seed.pos.x, y: seed.pos.y, z: seed.pos.z }, yaw: seed.yaw, pitch: seed.pitch }; fp.lastSafeAt = 0; fp.hazardNearby = false; fp.blockedUntil = 0; fp.statusKey = '__refresh'; cnv.dataset.geologyPlayerMedium = 'air'; fpSetMiningProgress(0, false);
+      cnv.dataset.geologyFirstPersonInteraction = fp.mode === 'mine' ? 'grounded-collision-jump-and-reticle-mining' : 'radial-flight-and-reticle-mining';
       fp.intro = fp.reduced ? null : { t: 0, from: camera.position.clone(), dur: 0.7 };   // eased "drop in"
       hoverBox.visible = false;
       cnv.addEventListener('pointermove', fpLookMove);
       if (fp.reduced) applyFP(0);                            // snap to the eye-point immediately
     }
-    function exitFP() {
+    function exitFP(silentRigAbort3d) {
       if (!fp.active) return;
-      fp.active = false; fp.intro = null;
+      if (coreRigState3d.deployed) {
+        if (coreRigState3d.running && !silentRigAbort3d) finishCoreRig3d('cancelled');
+        else if (coreRigState3d.running) coreRigState3d.running = false;
+        packCoreRig3d();
+      }
+      fp.active = false; fp.intro = null; fp.drillHeld = false; fpCancelMining();
       cnv.removeEventListener('pointermove', fpLookMove); fpPrev = null;
-      fp.input = { fwd: 0, strafe: 0, vert: 0, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
+      fp.input = { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }; fp.turn = { yaw: 0, pitch: 0 };
+      fp.velocity = { x: 0, y: 0, z: 0 }; fp.target = null; fpUpdateTargetLabel(null); hoverBox.visible = false; surveyBox.visible = false; surveyVoxelKey = null;
       if (fp.savedPos) camera.position.copy(fp.savedPos);
       if (controls) { if (fp.savedTgt) controls.target.copy(fp.savedTgt); controls.enabled = fp.savedEnabled; controls.update(); }
       else if (fp.savedTgt) camera.lookAt(fp.savedTgt);
@@ -3589,11 +4715,13 @@
       if (fp.turn.yaw || fp.turn.pitch) { fp.yaw += fp.turn.yaw * 1.7 * dt; fp.pitch = fpClampPitch(fp.pitch + fp.turn.pitch * 1.7 * dt); }   // keyboard look (drag-look writes fp.yaw/pitch directly)
       var fwd = fpForward(fp.yaw, fp.pitch);
       var spd = fp.speed * (fp.input.sprint ? 2 : 1);
-      fp.pos = fpStep(fp.pos, fwd, fp.input, dt, spd, fpBounds());
-      var moving = !!(fp.input.fwd || fp.input.strafe || fp.input.vert);
-      var bob = fpBob(t, moving, fp.reduced, 0.05);
+      if (fp.mode === 'mine') fpWalkStep(dt, fwd);
+      else fp.pos = fpStep(fp.pos, fwd, fp.input, dt, spd, fpBounds());
+      var moving = !!(fp.input.fwd || fp.input.strafe || (fp.mode === 'fly' && fp.input.vert));
+      var bob = fpBob(t, moving && (fp.mode === 'fly' || fp.onGround), fp.reduced, fp.mode === 'mine' ? 0.035 : 0.05);
       camera.position.set(fp.pos.x, fp.pos.y + bob, fp.pos.z);
       camera.lookAt(fp.pos.x + fwd.x, fp.pos.y + fwd.y, fp.pos.z + fwd.z);
+      fpTargetVoxel();
       var now = (window.performance && performance.now) ? performance.now() : 0;
       if (now - fp.lastHud > 110) {                           // ~9Hz HUD sample; only push on a layer change
         fp.lastHud = now;
@@ -3608,9 +4736,12 @@
     var ro = null; try { ro = new ResizeObserver(resize); ro.observe(container); } catch (e) {}
     eng.resize = function () { if (!eng.disposed) resize(); };
 
-    var t = 0, raf = null;
+    var t = 0, raf = null, fpLastFrameAt = 0;
     function loop() {
       if (eng.disposed) return; raf = requestAnimationFrame(loop); t += 0.016;
+      var fpFrameAt = (window.performance && performance.now) ? performance.now() : 0;
+      var fpDt = (fpFrameAt && fpLastFrameAt) ? Math.min(0.05, Math.max(0.001, (fpFrameAt - fpLastFrameAt) / 1000)) : 0.016;
+      fpLastFrameAt = fpFrameAt;
       if (container.clientWidth > 0 && (container.clientWidth !== lastW || container.clientHeight !== lastH)) resize(); // keep the canvas fitted to its container (robust in sandboxed iframes / late layout)
       var geologyMotionTime3d = reducedMotion3d ? 0.86 : t;
       magmaGlow.intensity = geologyHeatLightConfig3d.intensity + Math.sin(geologyMotionTime3d * 2) * geologyHeatLightConfig3d.flicker;
@@ -3623,6 +4754,8 @@
       updateGeologySurfaceEffects3d(geologyMotionTime3d);
       updateGeologyHydrothermalField3d(geologyMotionTime3d);
       updateGeologyVolcanicAtmosphere3d(geologyMotionTime3d);
+      updateSurveyMarker3d();
+      updateCoreRig3d(fpDt);
       for (var atmosphereUpdateIndex3d = 0; atmosphereUpdateIndex3d < atmosphereMoteCount3d; atmosphereUpdateIndex3d++) {
         var atmosphereUpdatePhase3d = atmosphereMotePhases3d[atmosphereUpdateIndex3d];
         atmosphereMotePositions3d[atmosphereUpdateIndex3d * 3] = atmosphereMoteBase3d[atmosphereUpdateIndex3d * 3] +
@@ -3648,7 +4781,7 @@
       updateExcavationEffects3d();
       try { updateEruption(); } catch (e) {}
       if (!controls) ensureControls();   // OrbitControls may load a moment after the engine starts
-      if (fp.active) { try { applyFP(0.016); } catch (e) {} } else if (controls) controls.update();
+      if (fp.active) { try { applyFP(fpDt); fpUpdateMining(fpDt); fpUpdateDrill(fpDt); fpUpdatePlayerStatus(); } catch (e) {} } else if (controls) controls.update();
       renderer.render(scene, camera);
     }
     loop();
@@ -3731,31 +4864,52 @@
       return !voxel || formedAt > showStage ? null : excavateVoxel(voxel);
     };
     eng.undoExcavate = function () { return undoExcavation(); };
+    eng.redoExcavate = function () { return redoExcavation(); };
     eng.setUndoPreview = function (b) { undoPreviewRequested = !!b; return updateUndoPreview(); };
     eng.setWaterTable = function (b) { waterTableOn = !!b; waterMesh.visible = waterTableOn && !focusLens; };
     eng.erupt = function () { startEruption(); };
     eng.setHighlight = function (k) { highlightKey = (k && SCENE.voxelKeys && SCENE.voxelKeys.indexOf(k) >= 0) ? k : null; hoverBox.visible = false; rebuild(); };
     eng.setFocusLens = function (b) { focusLens = !!b; if (focusLens) { excavate = false; undoPreviewRequested = false; } hoverBox.visible = false; rebuild(); };
     eng.setScienceStage = function (n) { geologyScienceStage3d = Math.max(0, Math.min(2, Math.round(Number(n) || 0))); rebuild(); return geologyScienceStage3d; };
-    eng.getVisualState = function () { return { focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
+    eng.getVisualState = function () { return { coreRigDeployed: coreRigState3d.deployed, coreRigStage: coreRigState3d.stage, coreRigSampleCount: coreRigState3d.samples.length, surveyActive: surveyBox.visible, focusLens: focusLens, highlightKey: highlightKey, visibleVoxels: mesh.count, sliceZ: sliceZ, excavate: excavate, excavatedCount: excavationHistory.length, redoCount: excavationRedo.length, undoPreview: undoPreviewBox.visible, undoPreviewKey: undoPreviewKey, scienceStage: geologyScienceStage3d, processGuideCount: geologyProcessGuideGroup3d.children.length, coreElementCount: SCENE.id === 'deepEarth' ? geologyDeepEarthCoreGroup3d.children.length + geologyDeepEarthDynamoGroup3d.children.length : 0, magneticFieldCount: geologyDeepEarthFieldGroup3d.children.length, pWaveRayCount: geologySeismicPCurves3d.length, sWaveRayCount: geologySeismicSCurves3d.length, seismicReceiverCount: geologySeismicShadowReceivers3d.length, landformCount: geologyLandformMeshes3d.length, bathymetryCount: geologyBathymetryMeshes3d.length, hydrothermalChimneyCount: geologyHydrothermalMeshes3d.length, hydrothermalPlumeCount: geologyHydrothermalPlumePhases3d ? geologyHydrothermalPlumePhases3d.length : 0, surfaceEffectCount: geologyFoamMeshes3d.length + (oceanCausticMesh3d ? 1 : 0), volcanicAtmosphereCount: geologyVolcanicSteamSprites3d.length, oceanWaveVertexCount: oceanSurfaceGeometry3d ? oceanSurfaceGeometry3d.attributes.position.count : 0 }; };
     eng.setStage = function (n) { showStage = (n == null) ? 99 : n; rebuild(); };
     eng.reset = function () {
-      removed = {}; excavationHistory = []; undoPreviewRequested = false; undoPreviewKey = null; sliceZ = 0;
+      removed = {}; excavationHistory = []; excavationRedo = []; fpCancelMining(); undoPreviewRequested = false; undoPreviewKey = null; surveyBox.visible = false; surveyVoxelKey = null; sliceZ = 0;
+      coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
+      coreRigState3d.angle = 'vertical'; coreRigState3d.depth = CORE_RIG_DEPTHS[1]; coreRigState3d.origin = null; coreRigState3d.yaw = 0;
+      coreRigState3d.path = []; coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.progress = 0; coreRigState3d.heat = 0;
+      coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null; coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0; coreRigState3d.lastHudAt = 0;
+      clearCoreRigBoreMarkers3d(); coreRigFeedGlow3d.visible = false; coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.visible = false; notifyCoreRigState3d(true);
       waterMesh.scale.y = 1; waterMesh.position.z = 0;
       if (oceanSurfaceMesh3d) { oceanSurfaceMesh3d.scale.y = 1; oceanSurfaceMesh3d.position.z = 0; }
       if (oceanCausticMesh3d) { oceanCausticMesh3d.scale.y = 1; oceanCausticMesh3d.position.z = 0; }
       excavationBurstLife3d = 0; excavationDustPoints3d.visible = false;
       excavationChipPoints3d.visible = false; excavationFlashBox3d.visible = false;
-      rebuild(); notifyExcavationChange();
+      rebuild(); notifyExcavationChange(); notifyCoreRigState3d(true);
     };
     eng.setFirstPerson = function (on, o) { if (on) enterFP(o || {}); else exitFP(); };
     eng.fpInput = function (cmd, v) { if (cmd === 'move' && v) fp.input = Object.assign(fp.input, v); else if (cmd === 'look' && v) fp.turn = Object.assign(fp.turn, v); };
+    eng.fpMine = fpMineAtCrosshair;
+    eng.fpSetTool = fpSetTool;
+    eng.fpMiningHeld = fpSetMiningHeld;
+    eng.fpSurvey = fpSurveyMaterial;
+    eng.coreRigDeploy = deployCoreRig3d;
+    eng.coreRigConfigure = configureCoreRig3d;
+    eng.coreRigStart = startCoreRig3d;
+    eng.coreRigCancel = cancelCoreRig3d;
+    eng.coreRigPack = packCoreRig3d;
+    eng.coreRigState = coreRigSnapshot3d;
+    eng.fpToolState = function () { return { tool: fp.tool, heat: fp.drillHeat, overheated: fp.drillOverheated, held: fp.drillHeld }; };
+    eng.fpUndoMine = fpUndoMine;
+    eng.fpRedoMine = fpRedoMine;
+    eng.fpRespawn = function () { if (coreRigState3d.running) return coreRigError3d('The rig is drilling. Let the bore finish before returning home.', 'running'); if (coreRigState3d.deployed) packCoreRig3d(); var result = fpRespawn(true); if (opts.onFlash) opts.onFlash(fp.mode === 'mine' ? 'Returned to the dig-in point.' : 'Returned to the Deep Earth starting point.'); if (opts.onFpHome) opts.onFpHome(); return result; };
     eng.fpActive = function () { return !!fp.active; };
     eng._fpExit = exitFP;
     eng.dispose = function () {
       try { if (_geoVRBtnOff) _geoVRBtnOff(); } catch (e) {}
       try { if (_geoVR && _geoVR.destroy) _geoVR.destroy(); _geoVR = null; } catch (e) {}
-      try { exitFP(); } catch (e) {}   // tear down FP listeners first so nothing leaks across re-init
+      try { exitFP(true); } catch (e) {}   // tear down FP listeners first so nothing leaks across re-init
       eng.disposed = true; if (raf) cancelAnimationFrame(raf);
       cnv.removeEventListener('pointerdown', onDown); cnv.removeEventListener('pointerup', onUp); cnv.removeEventListener('webglcontextlost', onLost);
       cnv.removeEventListener('pointermove', onMoveHover); cnv.removeEventListener('pointerleave', onLeaveHover);
@@ -3764,7 +4918,11 @@
       if (ro) try { ro.disconnect(); } catch (e) {}
       try {
         geo.dispose(); mat.dispose(); renderer.dispose();
+        coreRigGeometries3d.forEach(function (rigGeometry3d) { rigGeometry3d.dispose(); });
+        coreRigMaterials3d.forEach(function (rigMaterial3d) { rigMaterial3d.dispose(); });
         hoverSourceGeo.dispose(); hoverBox.geometry.dispose(); hoverBox.material.dispose();
+        surveySourceGeo.dispose(); surveyBox.geometry.dispose(); surveyBox.material.dispose();
+        miningCrackGeometry.dispose(); miningCrackMaterial.dispose();
         undoPreviewSourceGeo.dispose(); undoPreviewBox.geometry.dispose(); undoPreviewBox.material.dispose();
         waterMesh.geometry.dispose(); waterMesh.material.dispose();
         if (oceanSurfaceMesh3d) { oceanSurfaceMesh3d.geometry.dispose(); oceanSurfaceMesh3d.material.dispose(); }
@@ -3815,8 +4973,10 @@
     window.__alloGeologyPure = {
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
-      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
-      fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
+      fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
+      coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); },
+      fieldExpeditions: function () { return FIELD_EXPEDITIONS; }, sceneVoxelKeys: function (sceneId) { return SCENES[sceneId] ? SCENES[sceneId].voxelKeys.slice() : []; }, fieldExpeditionFor: fieldExpeditionFor, beginFieldRun: beginFieldRun, retireFieldRunEntry: retireFieldRunEntry, advanceFieldRun: advanceFieldRun, fieldRunReward: fieldRunReward, fieldRankForXp: fieldRankForXp, fieldSpecimenName: fieldSpecimenName, fieldCollectibleKeys: fieldCollectibleKeys, recordFieldDiscovery: recordFieldDiscovery, fieldDiscoveryProgress: fieldDiscoveryProgress, fieldJournalEntries: fieldJournalEntries, fieldJournalSummary: fieldJournalSummary,
+      fpExplorerMode: fpExplorerMode, fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
       scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, schematicInfo: sceneSchematicInfo, schematicState: sceneSchematicState, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneResumeState: sceneResumeState, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneTimeline: sceneTimelineFor, focusLensIncludes: focusLensIncludes, cutawayReadout: cutawayReadout, firstSolidVoxelY: firstSolidVoxelY, undoPreviewTarget: undoPreviewTarget, restoreEnginePresentation: restoreEnginePresentation, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
@@ -3866,6 +5026,8 @@
       var slc = React.useState(0); var slice = slc[0], setSlice = slc[1];
       var exc = React.useState(false); var excavate = exc[0], setExcavate = exc[1];
       var dgc = React.useState(0); var digCount = dgc[0], setDigCount = dgc[1];
+      var rdc = React.useState(0); var redoCount = rdc[0], setRedoCount = rdc[1];
+      var excavationByWorldRef = React.useRef((d.excavationByWorld && typeof d.excavationByWorld === 'object') ? d.excavationByWorld : {});
       var undoPreviewIntentRef = React.useRef({ hover: false, focus: false });
       var cph = React.useState([]); var cyclePath = cph[0], setCyclePath = cph[1];
       var hst = React.useState(-1); var histStage = hst[0], setHistStage = hst[1];
@@ -3925,6 +5087,25 @@
       var identifiedBySceneRef = React.useRef((d.identifiedByScene && typeof d.identifiedByScene === 'object') ? d.identifiedByScene : {});
       identifiedBySceneRef.current = (d.identifiedByScene && typeof d.identifiedByScene === 'object') ? d.identifiedByScene : identifiedBySceneRef.current;
       var fpp = React.useState(false); var fpOn = fpp[0], setFpOn = fpp[1];          // first-person explorer (default off)
+      var fpt = React.useState(d.fpTool === 'drill' ? 'drill' : 'pick'); var fpTool = fpt[0], setFpTool = fpt[1];
+      var fpDrillPointerRef = React.useRef(false);
+      var cra = React.useState(CORE_RIG_ANGLES[d.coreRigAngle] ? d.coreRigAngle : 'vertical'); var coreRigAngle = cra[0], setCoreRigAngle = cra[1];
+      var crd = React.useState(CORE_RIG_DEPTHS.indexOf(Number(d.coreRigDepth)) >= 0 ? Number(d.coreRigDepth) : CORE_RIG_DEPTHS[1]); var coreRigDepth = crd[0], setCoreRigDepth = crd[1];
+      var crh = React.useState(null); var coreRigHud = crh[0], setCoreRigHud = crh[1];
+      var coreRigConfigRef = React.useRef({ angle: coreRigAngle, depth: coreRigDepth });
+      coreRigConfigRef.current = { angle: coreRigAngle, depth: coreRigDepth };
+      var initialFieldRuns = (d.fieldRuns && typeof d.fieldRuns === 'object') ? d.fieldRuns : {};
+      var fieldBookSeed = {
+        xp: Math.max(0, Math.floor(Number(initialFieldRuns.xp) || 0)),
+        total: Math.max(0, Math.floor(Number(initialFieldRuns.total) || 0)),
+        discoveredByScene: (initialFieldRuns.discoveredByScene && typeof initialFieldRuns.discoveredByScene === 'object') ? initialFieldRuns.discoveredByScene : {},
+        byScene: (initialFieldRuns.byScene && typeof initialFieldRuns.byScene === 'object') ? initialFieldRuns.byScene : {},
+        coreLogsByScene: (initialFieldRuns.coreLogsByScene && typeof initialFieldRuns.coreLogsByScene === 'object') ? initialFieldRuns.coreLogsByScene : {},
+        coreResearchByScene: (initialFieldRuns.coreResearchByScene && typeof initialFieldRuns.coreResearchByScene === 'object') ? initialFieldRuns.coreResearchByScene : {}
+      };
+      var fbr = React.useState(fieldBookSeed); var fieldBook = fbr[0], setFieldBook = fbr[1];
+      var fieldBookRef = React.useRef(fieldBook); fieldBookRef.current = fieldBook;
+      var fjp = React.useState(!!d.fieldJournalOpen); var fieldJournalOpen = fjp[0], setFieldJournalOpen = fjp[1];
       var fph = React.useState(null); var fpHud = fph[0], setFpHud = fph[1];          // live "you are here" readout
       var fpToggleRef = React.useRef(null); var fpPrevFocusRef = React.useRef(null); var fpAnnAtRef = React.useRef(0);   // SR announce debounce clock
       setScene(scene); setGrid(res);   // sync active scene + module grid (NX/NY/NZ/VOXEL/KM_PER_VOXEL) before render + effects read them
@@ -3932,6 +5113,195 @@
       var cutaway = cutawayReadout(slice, NZ);
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
+      function saveFieldBook(next) {
+        fieldBookRef.current = next;
+        setFieldBook(next);
+        upd('fieldRuns', next);
+      }
+      function saveCoreRigReport(sceneId, report) {
+        if (!report || !Array.isArray(report.samples) || !report.samples.length) return false;
+        sceneId = SCENES[sceneId] ? sceneId : SCENE.id;
+        var cleanAngle = CORE_RIG_ANGLES[report.angle] ? report.angle : 'vertical';
+        var cleanStop = ['fluid', 'hazard', 'blocked', 'spent', 'cancelled'].indexOf(report.stopReason) >= 0 ? report.stopReason : null;
+        var cleanReport = {
+          sceneId: sceneId, angle: cleanAngle, angleDegrees: coreRigAngleDegrees(cleanAngle),
+          targetDepth: Math.max(1, Number(report.targetDepth) || 1),
+          stopReason: cleanStop, completedAt: Math.max(1, Number(report.completedAt) || Date.now()),
+          samples: report.samples.slice(0, 24).filter(function (sample) { return sample && sample.key; }).map(function (sample) {
+            return {
+              key: String(sample.key), name: String(sample.name || fieldSpecimenName(sceneId, sample.key)),
+              type: String(sample.type || 'Rock'), color: sample.color, depth: Math.max(1, Number(sample.depth) || 1)
+            };
+          })
+        };
+        if (!cleanReport.samples.length) return false;
+        var reportId = sceneId + '@' + cleanReport.completedAt + '@' + cleanReport.angle + '@' + cleanReport.targetDepth;
+        cleanReport.id = reportId;
+        var evaluation = coreRigEvaluation(cleanReport);
+        cleanReport.evaluation = Object.assign({}, evaluation);
+        var book = fieldBookRef.current || {};
+        var logsByScene = Object.assign({}, book.coreLogsByScene || {});
+        var researchByScene = Object.assign({}, book.coreResearchByScene || {});
+        var transition = advanceCoreRigResearch(researchByScene[sceneId], evaluation, cleanReport.completedAt, reportId);
+        cleanReport.researchReward = transition.researchReward;
+        cleanReport.newBest = transition.newBest;
+        if (transition.duplicate) {
+          cleanReport.duplicate = true;
+          return cleanReport;
+        }
+        var logs = Array.isArray(logsByScene[sceneId]) ? logsByScene[sceneId].slice(-5) : [];
+        logs.push(cleanReport); logsByScene[sceneId] = logs; researchByScene[sceneId] = transition.entry;
+        var oldXp = Math.max(0, Math.floor(Number(book.xp) || 0));
+        var nextXp = oldXp + transition.researchReward;
+        saveFieldBook(Object.assign({}, book, { xp: nextXp, coreLogsByScene: logsByScene, coreResearchByScene: researchByScene }));
+        setCoreRigHud(function (previousHud) {
+          return previousHud ? Object.assign({}, previousHud, {
+            evaluation: Object.assign({}, evaluation), researchReward: transition.researchReward, newBest: transition.newBest
+          }) : previousHud;
+        });
+        var summary = coreRigReportSummary(cleanReport);
+        var sequence = cleanReport.samples.map(function (sample) { return sample.name; }).join(' → ');
+        var boundary = cleanReport.stopReason ? (' Stop: ' + coreRigStopLabel(cleanReport.stopReason) + '.') : ' Target depth recovered.';
+        addNotebookEvidence(
+          'core-rig',
+          'Directional core · ' + cleanReport.angleDegrees + '° / ' + cleanReport.targetDepth + ' intervals · Grade ' + evaluation.grade + ' (' + evaluation.score + ')',
+          sequence + '.' + boundary,
+          'core-rig-' + reportId
+        );
+        var oldRank = fieldRankForXp(oldXp), nextRank = fieldRankForXp(nextXp);
+        var toastMessage = (transition.newBest ? 'New personal best! ' : '') + 'Grade ' + evaluation.grade + ' · ' + evaluation.score + '/200.';
+        toastMessage += transition.researchReward ? (' +' + transition.researchReward + ' research XP.') : ' Match or beat your best score to earn more research XP.';
+        if (nextRank.label !== oldRank.label) toastMessage += ' Rank up: ' + nextRank.label + '!';
+        addToast(toastMessage, transition.newBest ? 'success' : 'info');
+        announce('Core log saved. Grade ' + evaluation.grade + ', ' + evaluation.score + ' points. ' + summary.sampleCount + ' samples across ' + summary.uniqueMaterials + ' materials. ' + (transition.researchReward ? transition.researchReward + ' research experience earned.' : 'Personal best unchanged.'));
+        return cleanReport;
+      }
+      function startFieldRun(sceneId, requestedIndex) {
+        var book = fieldBookRef.current || { xp: 0, total: 0, byScene: {} };
+        var oldEntry = (book.byScene && book.byScene[sceneId]) || {};
+        var entry = beginFieldRun(oldEntry, sceneId, requestedIndex);
+        if (!entry) return false;
+        var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
+        var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = entry;
+        saveFieldBook(Object.assign({}, book, { byScene: byScene }));
+        addToast('Field run started: ' + contract.label + '. First specimen: ' + fieldSpecimenName(sceneId, contract.targets[0]) + '.', 'info');
+        announce('Field run started. ' + contract.brief + ' First specimen: ' + fieldSpecimenName(sceneId, contract.targets[0]) + '.');
+        return true;
+      }
+      function retireFieldRun(sceneId) {
+        var book = fieldBookRef.current || {}, entry = book.byScene && book.byScene[sceneId];
+        if (!entry || !entry.active || entry.ready) return false;
+        var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
+        var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = retireFieldRunEntry(entry);
+        saveFieldBook(Object.assign({}, book, { byScene: byScene }));
+        addToast('Assignment retired. Journal discoveries and Field XP were kept.', 'info');
+        announce((contract ? contract.label + ' retired. ' : 'Assignment retired. ') + 'Your specimen journal and Field XP are unchanged.');
+        return true;
+      }
+      function collectFieldSample(sceneId, sample) {
+        if (!sample || !sample.firstPerson) return false;
+        var book = fieldBookRef.current || {};
+        var discovery = recordFieldDiscovery(book.discoveredByScene, sceneId, sample.removedKey);
+        var nextBook = Object.assign({ xp: 0, total: 0, byScene: {} }, book, { discoveredByScene: discovery.discoveredByScene });
+        var securedName = fieldSpecimenName(sceneId, sample.removedKey);
+        if (discovery.added) {
+          var specimenFacts = rockFacts(sample.removedKey, sample.removedY);
+          var specimenDetail = specimenFacts && specimenFacts.R ? specimenFacts.R.formation + ' ' + specimenFacts.R.age : 'Collected during first-person fieldwork.';
+          addNotebookEvidence('specimen', securedName, specimenDetail, sample.removedKey);
+        }
+        var entry = book.byScene && book.byScene[sceneId];
+        if (!entry || !entry.active) {
+          if (discovery.added) {
+            saveFieldBook(nextBook);
+            var freeProgress = fieldDiscoveryProgress(sceneId, discovery.discoveredByScene);
+            addToast('New specimen logged: ' + securedName + ' · ' + freeProgress.found + '/' + freeProgress.total + ' in this scene.', 'success');
+            announce('New field journal specimen: ' + securedName + '. ' + freeProgress.found + ' of ' + freeProgress.total + ' mineable materials logged in this scene.');
+          }
+          return discovery.added;
+        }
+        var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
+        var advanced = advanceFieldRun(entry, contract, sample.removedKey);
+        if (!advanced.matched) {
+          if (discovery.added) {
+            saveFieldBook(nextBook);
+            addToast('New specimen logged: ' + securedName + ' · contract target unchanged.', 'success');
+            announce('New field journal specimen: ' + securedName + '. Your current contract target is still ' + fieldSpecimenName(sceneId, advanced.expectedKey) + '.');
+          }
+          return discovery.added;
+        }
+        var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = advanced.entry;
+        nextBook.byScene = byScene; saveFieldBook(nextBook);
+        var journalNote = discovery.added ? ' New specimen logged.' : '';
+        if (advanced.ready) {
+          addToast('Field set complete.' + journalNote + ' Return to the entry point to bank ' + fieldRunReward(contract) + ' XP.', 'success');
+          announce('Sample secured: ' + securedName + '.' + journalNote + ' Field set complete. Return to the entry point to bank your field XP.');
+        } else {
+          var nextName = fieldSpecimenName(sceneId, advanced.expectedKey);
+          addToast('Sample secured: ' + securedName + '.' + journalNote + ' Next: ' + nextName + '.', 'success');
+          announce('Sample secured: ' + securedName + '.' + journalNote + ' Next specimen: ' + nextName + '.');
+        }
+        return true;
+      }
+      function surveyFieldTarget(sceneId) {
+        var book = fieldBookRef.current || {}, entry = book.byScene && book.byScene[sceneId];
+        if (!entry || !entry.active) { announce('Start a Field Run before using the specimen survey.'); return null; }
+        if (entry.ready) { announce('The specimen set is complete. Return to the entry point to bank it.'); return null; }
+        var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
+        var targetKey = contract && contract.targets ? contract.targets[(entry.collected || []).length] : null;
+        var E = window[ENGINE_KEY], result = E && E.fpSurvey ? E.fpSurvey(targetKey) : null;
+        if (!result) { announce('The specimen survey is available while exploring in first person.'); return null; }
+        if (result.cooldown) { announce('The survey pulse is recharging.'); return result; }
+        if (!result.found) {
+          addToast('Survey could not find an unexcavated ' + fieldSpecimenName(sceneId, targetKey) + ' specimen in this cutaway.', 'info');
+          announce('No unexcavated ' + fieldSpecimenName(sceneId, targetKey) + ' specimen was found in this cutaway.');
+          return result;
+        }
+        var reading = result.name + ' is about ' + result.distanceBlocks + ' block' + (result.distanceBlocks === 1 ? '' : 's') + ' ' + result.direction + ', ' + result.vertical + '.';
+        addToast('Survey pulse: ' + reading, 'info'); announce('Survey pulse. ' + reading);
+        return result;
+      }
+      function coreRigAction(action, value) {
+        var engine = window[ENGINE_KEY];
+        if (!engine || !coreRigSupported(scene)) { announce('The directional core rig is available in surface Walk and Dig expeditions.'); return null; }
+        var state = engine.coreRigState ? engine.coreRigState() : (coreRigHud || { deployed: false, running: false });
+        var result = null;
+        if (action === 'toggle') {
+          if (state.deployed) {
+            if (state.running) {
+              result = engine.coreRigCancel ? engine.coreRigCancel() : null;
+            } else result = engine.coreRigPack ? engine.coreRigPack() : null;
+          } else result = engine.coreRigDeploy ? engine.coreRigDeploy(coreRigConfigRef.current) : null;
+        } else if (action === 'start') result = engine.coreRigStart ? engine.coreRigStart() : null;
+        else if (action === 'pack') result = engine.coreRigPack ? engine.coreRigPack() : null;
+        else if (action === 'angle' && CORE_RIG_ANGLES[value]) {
+          setCoreRigAngle(value); coreRigConfigRef.current = { angle: value, depth: coreRigConfigRef.current.depth }; upd('coreRigAngle', value);
+          result = state.deployed && engine.coreRigConfigure ? engine.coreRigConfigure(coreRigConfigRef.current) : { ok: true, state: state };
+        } else if (action === 'depth' && CORE_RIG_DEPTHS.indexOf(Number(value)) >= 0) {
+          var nextDepth = Number(value); setCoreRigDepth(nextDepth); coreRigConfigRef.current = { angle: coreRigConfigRef.current.angle, depth: nextDepth }; upd('coreRigDepth', nextDepth);
+          result = state.deployed && engine.coreRigConfigure ? engine.coreRigConfigure(coreRigConfigRef.current) : { ok: true, state: state };
+        }
+        if (result && result.state) setCoreRigHud(result.state);
+        return result;
+      }
+      function finishFieldRun(sceneId) {
+        var book = fieldBookRef.current || {};
+        var entry = book.byScene && book.byScene[sceneId];
+        if (!entry || !entry.active || !entry.ready) return false;
+        var contract = fieldExpeditionFor(sceneId, entry.contractIndex);
+        var reward = fieldRunReward(contract);
+        var oldRank = fieldRankForXp(book.xp), newRank = fieldRankForXp((Number(book.xp) || 0) + reward);
+        var completed = Math.max(0, Math.floor(Number(entry.completed) || 0)) + 1;
+        var nextEntry = { active: false, completed: completed, contractIndex: completed % ((FIELD_EXPEDITIONS[sceneId] || [1]).length), collected: [], ready: false };
+        var byScene = Object.assign({}, book.byScene || {}); byScene[sceneId] = nextEntry;
+        var nextBook = Object.assign({}, book, { xp: Math.max(0, Math.floor(Number(book.xp) || 0)) + reward, total: Math.max(0, Math.floor(Number(book.total) || 0)) + 1, byScene: byScene });
+        saveFieldBook(nextBook);
+        addNotebookEvidence('field-run', contract.label, contract.brief + ' Collected in order: ' + contract.targets.map(function (key) { return fieldSpecimenName(sceneId, key); }).join(' → ') + '.', 'field-run-' + contract.id);
+        var nextContract = fieldExpeditionFor(sceneId, completed);
+        var rankUp = oldRank.label !== newRank.label ? ' Rank up: ' + newRank.label + '!' : '';
+        addToast('Field run banked: +' + reward + ' XP.' + rankUp + ' Next: ' + (nextContract ? nextContract.label : 'new contract') + '.', 'success');
+        announce('Field run complete. You earned ' + reward + ' field XP.' + rankUp);
+        return true;
+      }
       function routeTargetClass(target) { return routeTarget === target ? ' ring-2 ring-amber-400 ring-offset-2 ' : ''; }
       function stopReadAloud() {
         ttsSessionRef.current += 1;
@@ -4237,16 +5607,31 @@
         setScene(scene); setGrid(res);   // build the chosen scene at the chosen detail level
         if (window[ENGINE_KEY]) { try { window[ENGINE_KEY].dispose(); } catch (e) {} window[ENGINE_KEY] = null; }   // rebuild on scene/detail change
         var mountedEngine = null;
+        var excavationKey = excavationWorldKey(scene, res);
         try {
           mountedEngine = initEngine(containerRef.current, {
+            initialExcavation: excavationByWorldRef.current[excavationKey] || { history: [], redo: [] },
             onSelect: function (facts) { selectRock(facts); },
             onUncover: function (k) { uncoverFossil(k); },
             onFlash: function (m) { addToast(m, 'info'); },
-            onExcavateChange: function (count) { if (!count) undoPreviewIntentRef.current = { hover: false, focus: false }; setDigCount(count); },
+            onExcavateChange: function (count, state) {
+              state = state || { history: [], redo: [] };
+              if (!count) undoPreviewIntentRef.current = { hover: false, focus: false };
+              setDigCount(count); setRedoCount((state.redo || []).length);
+              var next = Object.assign({}, excavationByWorldRef.current);
+              if (!(state.history || []).length && !(state.redo || []).length) delete next[excavationKey];
+              else next[excavationKey] = { history: (state.history || []).slice(), redo: (state.redo || []).slice() };
+              excavationByWorldRef.current = next; upd('excavationByWorld', next);
+            },
+            onExcavate: function (sample) { collectFieldSample(scene, sample); },
+            onCoreRigState: function (state) { setCoreRigHud(state); },
+            onCoreRigComplete: function (report) { saveCoreRigReport(scene, report); },
+            onFpHome: function () { finishFieldRun(scene); },
             onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
-            onContextLost: function () { setWebglError(true); setDigCount(0); try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} }
+            onContextLost: function () { setWebglError(true); setDigCount(0); setRedoCount(0); try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} }
           });
           window[ENGINE_KEY] = mountedEngine;
+          if (mountedEngine && mountedEngine.coreRigState) setCoreRigHud(mountedEngine.coreRigState());
           restoreEnginePresentation(window[ENGINE_KEY], selectedKeyRef.current, focusLensRef.current, cameraViewRef.current);
         } catch (e) { setWebglError(true); }
         return function () { try { if (mountedEngine) mountedEngine.dispose(); if (window[ENGINE_KEY] === mountedEngine) window[ENGINE_KEY] = null; } catch (e) {} };
@@ -4263,7 +5648,7 @@
         if (!threeReady || webglError) return;
         var E = window[ENGINE_KEY]; if (!E || !E.setFirstPerson) return;
         var reduced = false; try { reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
-        try { E.setFirstPerson(fpOn, { reduced: reduced }); } catch (e) {}
+        try { E.setFirstPerson(fpOn, { reduced: reduced, tool: fpTool }); } catch (e) {}
         return function () { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].setFirstPerson(false); } catch (e) {} };
       }, [fpOn, threeReady, webglError, res, scene]);
 
@@ -4273,7 +5658,10 @@
           fpAnnAtRef.current = 0;   // let the first layer announce immediately on entry
           try { fpPrevFocusRef.current = document.activeElement; } catch (e) {}
           setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
-          announce(t('stem.geology.fp_on', 'First-person mode on. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.'));
+          var fpInstructions = fpExplorerMode(scene) === 'mine'
+            ? 'Mine mode on. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, R deploys the directional core rig, G surveys a Field Run target, Z undoes, Y redoes, and H returns home. Escape exits.'
+            : 'Deep Earth flight on. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks. Press 1 for the pickaxe or 2 for the powered drill. Hold X to drill continuously, Enter excavates instantly, Z undoes, Y redoes, and H returns home. Escape exits.';
+          announce(t('stem.geology.fp_on', fpInstructions));
         } else {
           setFpHud(null);
           try { var pf = fpPrevFocusRef.current; if (pf && pf.focus) pf.focus(); else if (fpToggleRef.current) fpToggleRef.current.focus(); } catch (e) {}
@@ -4284,21 +5672,70 @@
       React.useEffect(function () {
         if (!fpOn) return;
         var el = containerRef.current; if (!el) return;
-        var ax = { fwd: 0, strafe: 0, vert: 0, sprint: false }, lk = { yaw: 0, pitch: 0 };
-        var MOVE = { w: 'fwd+', arrowup: 'fwd+', s: 'fwd-', arrowdown: 'fwd-', a: 'strafe-', arrowleft: 'strafe-', d: 'strafe+', arrowright: 'strafe+', e: 'vert+', q: 'vert-' };
+        var ax = { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }, lk = { yaw: 0, pitch: 0 };
+        var MOVE = fpExplorerMode(scene) === 'mine'
+          ? { w: 'fwd+', arrowup: 'fwd+', s: 'fwd-', arrowdown: 'fwd-', a: 'strafe-', arrowleft: 'strafe-', d: 'strafe+', arrowright: 'strafe+', ' ': 'jump+' }
+          : { w: 'fwd+', arrowup: 'fwd+', s: 'fwd-', arrowdown: 'fwd-', a: 'strafe-', arrowleft: 'strafe-', d: 'strafe+', arrowright: 'strafe+', e: 'vert+', q: 'vert-' };
         var LOOK = { j: 'yaw+', l: 'yaw-', i: 'pitch+', k: 'pitch-' };   // keyboard turn (WCAG: look must be keyboard-operable, not drag-only)
-        function pushMove() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', { fwd: ax.fwd, strafe: ax.strafe, vert: ax.vert, sprint: ax.sprint }); } catch (e) {} }
+        function pushMove() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', { fwd: ax.fwd, strafe: ax.strafe, vert: ax.vert, jump: ax.jump, sprint: ax.sprint }); } catch (e) {} }
         function pushLook() { try { if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('look', { yaw: lk.yaw, pitch: lk.pitch }); } catch (e) {} }
         function set(e, on) {
           var key = (e.key || '').toLowerCase();
           if (key === 'escape') { if (on) { try { e.preventDefault(); e.stopPropagation(); } catch (x) {} setFpOn(false); } return; }   // exit FP only — don't also collapse fullscreen
+          if (key === 'x') {
+            e.preventDefault();
+            try {
+              var drillEngine = window[ENGINE_KEY];
+              if (drillEngine && drillEngine.fpMiningHeld) drillEngine.fpMiningHeld(on);
+              if (on && !e.repeat && drillEngine && drillEngine.fpMine) drillEngine.fpMine(false);
+            } catch (x) {}
+            return;
+          }
+          if (on && key === 'enter') {
+            e.preventDefault(); if (e.repeat) return;
+            try { if (window[ENGINE_KEY] && window[ENGINE_KEY].fpMine) window[ENGINE_KEY].fpMine(true); } catch (x) {}
+            return;
+          }
+          if (on && (key === '1' || key === '2')) {
+            e.preventDefault(); if (e.repeat) return;
+            var nextTool = key === '2' ? 'drill' : 'pick';
+            setFpTool(nextTool); upd('fpTool', nextTool);
+            try { if (window[ENGINE_KEY] && window[ENGINE_KEY].fpSetTool) window[ENGINE_KEY].fpSetTool(nextTool); } catch (x) {}
+            announce((nextTool === 'drill' ? 'Powered drill' : 'Pickaxe') + ' selected.');
+            return;
+          }
+          if (on && key === 'z') {
+            e.preventDefault(); if (e.repeat) return;
+            try { if (window[ENGINE_KEY] && window[ENGINE_KEY].fpUndoMine) window[ENGINE_KEY].fpUndoMine(); } catch (x) {}
+            return;
+          }
+          if (on && key === 'y') {
+            e.preventDefault(); if (e.repeat) return;
+            try { if (window[ENGINE_KEY] && window[ENGINE_KEY].fpRedoMine) window[ENGINE_KEY].fpRedoMine(); } catch (x) {}
+            return;
+          }
+          if (on && key === 'g') {
+            e.preventDefault(); if (e.repeat) return;
+            surveyFieldTarget(scene);
+            return;
+          }
+          if (on && key === 'r' && coreRigSupported(scene)) {
+            e.preventDefault(); if (e.repeat) return;
+            coreRigAction('toggle');
+            return;
+          }
+          if (on && key === 'h') {
+            e.preventDefault(); if (e.repeat) return;
+            try { if (window[ENGINE_KEY] && window[ENGINE_KEY].fpRespawn) window[ENGINE_KEY].fpRespawn(); } catch (x) {}
+            return;
+          }
           if (key === 'shift') { ax.sprint = on; pushMove(); return; }
           var m = MOVE[key]; if (m) { e.preventDefault(); ax[m.slice(0, -1)] = on ? (m.slice(-1) === '+' ? 1 : -1) : 0; pushMove(); return; }
           var lo = LOOK[key]; if (lo) { e.preventDefault(); lk[lo.slice(0, -1)] = on ? (lo.slice(-1) === '+' ? 1 : -1) : 0; pushLook(); return; }
         }
         function kd(e) { set(e, true); } function ku(e) { set(e, false); }
         el.addEventListener('keydown', kd); el.addEventListener('keyup', ku);
-        return function () { el.removeEventListener('keydown', kd); el.removeEventListener('keyup', ku); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].fpInput('move', { fwd: 0, strafe: 0, vert: 0, sprint: false }); window[ENGINE_KEY].fpInput('look', { yaw: 0, pitch: 0 }); } } catch (e) {} };
+        return function () { el.removeEventListener('keydown', kd); el.removeEventListener('keyup', ku); try { if (window[ENGINE_KEY]) { window[ENGINE_KEY].fpInput('move', { fwd: 0, strafe: 0, vert: 0, jump: false, sprint: false }); window[ENGINE_KEY].fpInput('look', { yaw: 0, pitch: 0 }); if (window[ENGINE_KEY].fpMiningHeld) window[ENGINE_KEY].fpMiningHeld(false); } } catch (e) {} };
       }, [fpOn, threeReady, webglError, res, scene]);
 
       // ── styling helpers ──
@@ -4341,6 +5778,15 @@
         if (!restored) { announce('There is no excavation to undo.'); return; }
         var facts = rockFacts(restored.key, restored.y);
         selectRock(facts, false, 'Restored ' + restored.name + '. ' + (restored.remaining ? restored.remaining + ' excavated blocks remain.' : 'The outcrop is back to its original surface.'));
+      }
+      function redoLastExcavation() {
+        var engine = window[ENGINE_KEY];
+        clearUndoPreviewIntent();
+        if (!engine || !engine.redoExcavate) return;
+        var redone = engine.redoExcavate();
+        if (!redone) { announce('There is no excavation to redo.'); return; }
+        var facts = rockFacts(redone.key, redone.y);
+        selectRock(facts, false, 'Re-excavated ' + redone.name + '. ' + redone.count + (redone.count === 1 ? ' block is' : ' blocks are') + ' now removed.');
       }
       function infoPanel() {
         if (!selected) return h('div', { className: 'text-xs ' + muted + ' p-3 rounded-xl border ' + cardBg }, t('stem.geology.pick_hint', 'Pick a material — in the 3D model or the list below — to see its scene-specific position, scale, conditions, formation, and age relationship.'));
@@ -5390,6 +6836,142 @@
           h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, 'This map follows the formation timeline and the existing material list.')
         ]);
       }
+      function fieldJournalPanel() {
+        var discoveredByScene = fieldBook.discoveredByScene || {};
+        var entries = fieldJournalEntries(SCENE.id, discoveredByScene);
+        var progress = fieldDiscoveryProgress(SCENE.id, discoveredByScene);
+        var totalProgress = fieldJournalSummary(discoveredByScene);
+        var runEntry = (fieldBook.byScene && fieldBook.byScene[SCENE.id]) || {};
+        var sceneCoreLogs = (fieldBook.coreLogsByScene && Array.isArray(fieldBook.coreLogsByScene[SCENE.id])) ? fieldBook.coreLogsByScene[SCENE.id] : [];
+        var latestCoreLog = sceneCoreLogs.length ? sceneCoreLogs[sceneCoreLogs.length - 1] : null;
+        var latestCoreSummary = coreRigReportSummary(latestCoreLog || {});
+        var latestCoreEvaluation = latestCoreLog ? (latestCoreLog.evaluation || coreRigEvaluation(latestCoreLog)) : null;
+        var sceneCoreResearch = (fieldBook.coreResearchByScene && fieldBook.coreResearchByScene[SCENE.id]) || {};
+        var coreMasteryScore = Math.max(0, Math.min(200, Math.floor(Number(sceneCoreResearch.bestScore) || (latestCoreEvaluation && latestCoreEvaluation.score) || 0)));
+        var coreMasteryGrade = coreRigGradeForScore(coreMasteryScore);
+        var latestCoreGrade = latestCoreEvaluation ? latestCoreEvaluation.grade : null;
+        var coreGradeClass = latestCoreGrade === 'S'
+          ? ('border-violet-300 bg-violet-400/20 ' + (isDark ? 'text-violet-100' : 'text-violet-800'))
+          : (latestCoreGrade === 'A' ? ('border-cyan-300 bg-cyan-400/20 ' + (isDark ? 'text-cyan-100' : 'text-cyan-800'))
+          : (latestCoreGrade === 'B' ? ('border-emerald-300 bg-emerald-400/20 ' + (isDark ? 'text-emerald-100' : 'text-emerald-800'))
+          : (latestCoreGrade === 'C' ? ('border-amber-300 bg-amber-400/20 ' + (isDark ? 'text-amber-100' : 'text-amber-800'))
+          : ('border-rose-300 bg-rose-400/20 ' + (isDark ? 'text-rose-100' : 'text-rose-800')))));
+        var activeAssignment = runEntry.active ? fieldExpeditionFor(SCENE.id, runEntry.contractIndex) : null;
+        var assignmentChoices = FIELD_EXPEDITIONS[SCENE.id] || [];
+        var panelId = 'geology-field-journal-' + SCENE.id;
+        function toggleJournal() {
+          var next = !fieldJournalOpen; setFieldJournalOpen(next); upd('fieldJournalOpen', next);
+          announce(next ? 'Specimen journal expanded.' : 'Specimen journal collapsed.');
+        }
+        return h('section', { className: 'rounded-xl border ' + cardBg, role: 'region', 'aria-label': 'Specimen field journal', 'data-geology-specimen-journal': SCENE.id }, [
+          h('div', { key: 'head', className: 'flex items-center gap-2 p-2.5' }, [
+            h('button', { key: 'toggle', type: 'button', onClick: toggleJournal, 'aria-expanded': fieldJournalOpen ? 'true' : 'false', 'aria-controls': panelId, className: 'flex min-h-10 min-w-0 flex-1 items-center justify-between gap-2 rounded-lg px-1.5 text-left focus:outline-none focus:ring-2 focus:ring-cyan-400' }, [
+              h('span', { key: 'title', className: 'min-w-0' }, [
+                h('span', { key: 'eyebrow', className: 'block text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, '📓 Specimen journal'),
+                h('span', { key: 'world', className: 'mt-0.5 block truncate text-[11px] font-extrabold ' + ink }, SCENE.label)
+              ]),
+              h('span', { key: 'count', className: 'shrink-0 text-right text-[10px] font-bold ' + (progress.complete ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, progress.found + '/' + progress.total + (fieldJournalOpen ? ' ▲' : ' ▼'))
+            ])
+          ]),
+          h('div', { key: 'progress', className: 'mx-3 mb-2 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-700' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Specimen journal completion for ' + SCENE.label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress.percent },
+            h('span', { className: 'block h-full rounded-full ' + (progress.complete ? 'bg-emerald-500' : 'bg-cyan-500'), style: { width: progress.percent + '%' } })),
+          fieldJournalOpen ? h('div', { key: 'body', id: panelId, className: 'border-t p-3 ' + (isDark ? 'border-slate-700' : 'border-slate-200') }, [
+            h('div', { key: 'summary', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+              h('p', { key: 'copy', className: 'max-w-sm text-[10.5px] leading-relaxed ' + muted }, 'Mine a material in first person to log it. Logged cards reveal their category and can refocus the 3D model.'),
+              h('span', { key: 'all', className: 'rounded-full border px-2 py-1 text-[10px] font-bold ' + (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600'), 'data-geology-journal-total': totalProgress.found + '/' + totalProgress.total }, totalProgress.found + '/' + totalProgress.total + ' across worlds')
+            ]),
+            h('section', { key: 'assignments', className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-500/40 bg-violet-950/20' : 'border-violet-200 bg-violet-50'), role: 'region', 'aria-label': 'Field assignments', 'data-geology-assignment-board': SCENE.id }, [
+              h('div', { key: 'assignment-head', className: 'flex items-center justify-between gap-2' }, [
+                h('span', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-violet-300' : 'text-violet-700') }, '🧭 Field assignments'),
+                activeAssignment ? h('span', { key: 'status', className: 'text-[10px] font-bold ' + (runEntry.ready ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : muted) }, runEntry.ready ? 'Ready to bank' : (runEntry.collected || []).length + '/3 secured') : null
+              ]),
+              activeAssignment
+                ? h('div', { key: 'active', className: 'mt-1.5', 'data-geology-assignment': activeAssignment.id, 'data-state': runEntry.ready ? 'ready' : 'active' }, [
+                    h('div', { key: 'title', className: 'flex items-start justify-between gap-2' }, [
+                      h('span', { key: 'name', className: 'text-[11px] font-extrabold ' + ink }, activeAssignment.label),
+                      h('span', { key: 'reward', className: 'shrink-0 text-[10px] font-bold text-emerald-500' }, '+' + fieldRunReward(activeAssignment) + ' XP')
+                    ]),
+                    h('p', { key: 'brief', className: 'mt-0.5 text-[10px] leading-snug ' + muted }, activeAssignment.brief),
+                    runEntry.ready
+                      ? h('button', { key: 'bank', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-400/60 bg-emerald-500/10 px-2 text-[10px] font-extrabold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), 'data-geology-assignment-bank': 'true' }, 'Enter 3D and return home to bank')
+                      : h('button', { key: 'retire', type: 'button', onClick: function () { retireFieldRun(SCENE.id); }, className: 'mt-2 min-h-10 w-full rounded-md border border-slate-400/50 px-2 text-[10px] font-bold ' + btnIdle, 'data-geology-retire-assignment': 'true', 'aria-label': 'Retire ' + activeAssignment.label + '. Ordered contract progress will reset; journal discoveries and XP will be kept.' }, 'Retire assignment')
+                  ])
+                : h('div', { key: 'choices', className: 'mt-1.5 grid gap-1.5 sm:grid-cols-2', role: 'group', 'aria-label': 'Choose a field assignment' }, assignmentChoices.map(function (assignment, assignmentIndex) {
+                    return h('button', { key: assignment.id, type: 'button', onClick: function () { startFieldRun(SCENE.id, assignmentIndex); }, className: 'min-h-12 rounded-lg border p-2 text-left transition hover:border-violet-400 ' + btnIdle, 'data-geology-assignment': assignment.id, 'data-state': 'available', 'aria-label': 'Start ' + assignment.label + ' for ' + fieldRunReward(assignment) + ' field XP' }, [
+                      h('span', { key: 'row', className: 'flex items-start justify-between gap-2 text-[10.5px] font-extrabold' }, [h('span', { key: 'name' }, assignment.label), h('span', { key: 'xp', className: 'shrink-0 text-emerald-500' }, '+' + fieldRunReward(assignment))]),
+                      h('span', { key: 'brief', className: 'mt-1 block text-[10px] font-normal leading-snug ' + muted }, assignment.brief)
+                    ]);
+                  }))
+            ]),
+            coreRigSupported(SCENE.id) ? h('section', { key: 'core-log', 'data-geology-core-log': SCENE.id, className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-cyan-400/40 bg-gradient-to-br from-slate-950/70 via-cyan-950/35 to-amber-950/25' : 'border-cyan-200 bg-gradient-to-br from-cyan-50 to-amber-50'), role: 'region', 'aria-label': 'Directional core research' }, [
+              h('div', { key: 'accent', className: 'h-1 bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500', 'aria-hidden': 'true' }),
+              h('div', { key: 'body', className: 'p-2.5' }, [
+                h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+                  h('div', { key: 'title' }, [
+                    h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, '◉ Directional core research'),
+                    h('p', { key: 'sub', className: 'mt-0.5 text-[10px] ' + muted }, latestCoreLog ? (latestCoreLog.angleDegrees + '° bore · ' + latestCoreLog.targetDepth + '-interval target · log ' + sceneCoreLogs.length) : 'No bore logged in this scene yet.')
+                  ]),
+                  latestCoreEvaluation ? h('div', { key: 'grade', className: 'flex items-center gap-1.5' }, [
+                    latestCoreLog && latestCoreLog.newBest ? h('span', { key: 'best', className: 'rounded-full border border-amber-300/60 bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'New best') : null,
+                    h('span', { key: 'badge', 'data-geology-core-grade': latestCoreEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + coreGradeClass }, 'Grade ' + latestCoreEvaluation.grade),
+                    h('span', { key: 'score', 'data-geology-core-score': latestCoreEvaluation.score, className: 'text-[10px] font-black tabular-nums ' + ink }, latestCoreEvaluation.score + '/200')
+                  ]) : null
+                ]),
+                h('section', { key: 'mastery', 'data-geology-core-mastery': coreMasteryScore, className: 'mt-2 rounded-lg border px-2 py-1.5 ' + (isDark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-white/65'), 'aria-label': 'Core research mastery' }, [
+                  h('div', { key: 'labels', className: 'flex items-center justify-between gap-2 text-[10px] font-bold' }, [
+                    h('span', { key: 'label', className: ink }, 'Research mastery'),
+                    h('span', { key: 'best', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, coreMasteryScore ? ('Best grade ' + coreMasteryGrade + ' · ' + coreMasteryScore + '/200') : 'Awaiting first core')
+                  ]),
+                  h('div', { key: 'track', className: 'mt-1 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Best directional core score', 'aria-valuemin': 0, 'aria-valuemax': 200, 'aria-valuenow': coreMasteryScore }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500 transition-[width] duration-300 motion-reduce:transition-none', style: { width: (coreMasteryScore / 2) + '%' } })),
+                  h('div', { key: 'meta', className: 'mt-1 flex flex-wrap justify-between gap-1 text-[10px] font-semibold ' + muted }, [
+                    h('span', { key: 'bores' }, Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) + ' scored bore' + (Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) === 1 ? '' : 's')),
+                    h('span', { key: 'reward', 'data-geology-core-research-reward': latestCoreLog ? (latestCoreLog.researchReward || 0) : 0 }, latestCoreLog && latestCoreLog.researchReward ? ('Latest +' + latestCoreLog.researchReward + ' research XP') : 'Improve the best score to earn XP')
+                  ])
+                ]),
+                latestCoreLog ? h('div', { key: 'tube', className: 'mt-2 flex h-8 overflow-x-auto overflow-y-hidden rounded-lg border border-slate-500/50 bg-slate-900/80 p-0.5 shadow-inner', role: 'group', 'aria-label': 'Core samples from shallowest to deepest' }, latestCoreLog.samples.map(function (sample, sampleIndex) {
+                  var sampleRock = SCENE.palette[sample.key] || ROCKS[sample.key] || {};
+                  var rawColor = sample.color != null ? sample.color : sampleRock.color;
+                  var sampleTone = typeof rawColor === 'string' ? (rawColor.charAt(0) === '#' ? rawColor : '#' + rawColor) : hex(rawColor == null ? 0x94a3b8 : rawColor);
+                  return h('button', { key: sampleIndex + ':' + sample.key, type: 'button', className: 'relative min-w-6 flex-1 border-r border-black/30 last:border-r-0 focus:z-10 focus:outline-none focus:ring-2 focus:ring-cyan-300', style: { background: sampleTone }, title: sample.name + ' · interval ' + sample.depth, 'aria-label': 'Core interval ' + sample.depth + ': ' + sample.name, onClick: function () { selectRock(rockFacts(sample.key, DEPTH_GUESS[sample.key] || sample.depth)); } }, h('span', { className: 'sr-only' }, sample.name));
+                })) : h('div', { key: 'empty', className: 'mt-2 rounded-md border border-dashed p-2 text-[10px] font-semibold ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, 'Drop into Walk & Dig, find level ground, then press R to deploy the core rig.'),
+                latestCoreLog ? h('div', { key: 'summary', className: 'mt-2 grid gap-1 text-[10px] font-bold sm:grid-cols-[auto_1fr] ' + muted }, [
+                  h('div', { key: 'facts', className: 'flex flex-wrap gap-x-3 gap-y-1' }, [
+                    h('span', { key: 'samples' }, latestCoreSummary.sampleCount + ' samples'),
+                    h('span', { key: 'materials' }, latestCoreSummary.uniqueMaterials + ' materials'),
+                    h('span', { key: 'deepest' }, 'Interval ' + latestCoreSummary.deepest + ' deepest'),
+                    h('span', { key: 'stop', className: latestCoreLog.stopReason ? (isDark ? 'text-amber-200' : 'text-amber-800') : (isDark ? 'text-emerald-200' : 'text-emerald-800') }, latestCoreLog.stopReason ? ('Stop · ' + coreRigStopLabel(latestCoreLog.stopReason)) : 'Target depth recovered')
+                  ]),
+                  h('span', { key: 'sequence', className: 'min-w-0 truncate sm:text-right', title: latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → ') }, latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → '))
+                ]) : null,
+                sceneCoreLogs.length > 1 ? h('div', { key: 'recent', className: 'mt-2 flex flex-wrap items-center gap-1', 'aria-label': 'Recent scored bores' }, [
+                  h('span', { key: 'label', className: 'mr-1 text-[10px] font-black uppercase tracking-wide ' + muted }, 'Recent'),
+                  sceneCoreLogs.slice().reverse().map(function (coreLog, coreLogIndex) {
+                    var logEvaluation = coreLog.evaluation || coreRigEvaluation(coreLog);
+                    return h('span', { key: coreLog.id || coreLog.completedAt || coreLogIndex, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-extrabold ' + (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-200' : 'border-slate-300 bg-white/70 text-slate-700'), title: coreRigStopLabel(coreLog.stopReason) }, logEvaluation.grade + ' · ' + logEvaluation.score);
+                  })
+                ]) : null
+              ])
+            ]) : null,
+            h('div', { key: 'entries', className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': 'Scene specimen entries' }, entries.map(function (entry) {
+              var tone = entry.discovered ? hex(entry.color) : (isDark ? '#475569' : '#cbd5e1');
+              var body = [
+                h('span', { key: 'swatch', 'aria-hidden': 'true', className: 'h-5 w-5 shrink-0 rounded-md border border-white/20', style: { background: tone, boxShadow: entry.discovered ? 'inset 0 0 0 1px rgba(255,255,255,.18)' : 'none' } }),
+                h('span', { key: 'copy', className: 'min-w-0' }, [
+                  h('span', { key: 'name', className: 'block truncate text-[10.5px] font-extrabold' }, (entry.discovered ? '✓ ' : '🔒 ') + entry.name),
+                  h('span', { key: 'type', className: 'block truncate text-[10px] ' + muted }, entry.discovered ? entry.type : 'Mine to reveal field notes')
+                ])
+              ];
+              return entry.discovered
+                ? h('button', { key: entry.key, type: 'button', 'data-geology-journal-entry': entry.key, 'data-state': 'logged', onClick: function () { selectRock(rockFacts(entry.key, DEPTH_GUESS[entry.key] || 4)); }, className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border p-2 text-left transition hover:border-cyan-400 ' + cardBg + ' ' + ink, 'aria-label': 'Review logged specimen ' + entry.name + ' in the 3D model' }, body)
+                : h('div', { key: entry.key, 'data-geology-journal-entry': entry.key, 'data-state': 'unlogged', className: 'flex min-h-12 min-w-0 items-center gap-2 rounded-lg border border-dashed p-2 opacity-70 ' + (isDark ? 'border-slate-600' : 'border-slate-300') }, body);
+            })),
+            progress.complete
+              ? h('p', { key: 'complete', className: 'mt-2 rounded-lg border border-emerald-400/50 bg-emerald-500/10 p-2 text-[10.5px] font-bold ' + (isDark ? 'text-emerald-200' : 'text-emerald-800'), role: 'status' }, '✓ Scene journal complete — every safely mineable material is logged.')
+              : null,
+            h('button', { key: 'drop-in', type: 'button', onClick: function () { setFpOn(true); setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0); }, className: 'mt-2 min-h-10 w-full rounded-lg border border-cyan-400/60 bg-cyan-500/10 px-2 text-[10.5px] font-extrabold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800'), 'data-geology-journal-drop-in': 'true' }, fpOn ? 'Return to the 3D view for fieldwork' : (progress.complete ? '⛏ Drop in for another Field Run' : '⛏ Drop in and log specimens'))
+          ]) : null
+        ]);
+      }
       function strataList() {
         return h('div', { role: 'group', 'aria-label': 'Rock types ? select to learn more', tabIndex: -1, 'data-geology-target': 'materials', className: 'grid grid-cols-2 gap-1.5' + routeTargetClass('materials') },
           SCENE.order.map(function (k) {
@@ -5423,7 +7005,7 @@
       function switchScene(sid) {
         if (sid === scene || !SCENES[sid]) return;
         var restored = sceneResumeState(sid, d);
-        setSceneState(sid); upd('scene', sid);
+        setSceneState(sid); upd('scene', sid); setCoreRigHud(null);
         setCompareSceneId(defaultComparisonScene(sid));
         setModeState('explore'); upd('mode', 'explore');
         setHintShown(false); setVocabularyOpen(false);
@@ -5431,7 +7013,7 @@
         setSceneJourneyStep(restored.index); setSignalStep(restored.index); setSceneResumeNotice(restored.hasSavedProgress ? restored : null);
         setCompareStage(0); setActiveBeaconId(null); setBeaconTourOn(false); setBeaconTourStep(restored.index);
         setCameraViewState('iso'); setFocusLensOn(false); setRouteTarget(null);
-        setSlice(0); setExcavate(false); setDigCount(0); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null);
+        setSlice(0); setExcavate(false); setDigCount(0); setRedoCount(0); setSelected(null); setCompareList([]); setCore(null); setWaterOn(false); setQuizI(0); setQuizAns(null);
       }
 
       function formationTimelinePanel() {
@@ -5521,7 +7103,7 @@
           h('div', { key: 'title', className: 'flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-200' }, [h('span', { key: 'pulse', className: 'h-2 w-2 rounded-full bg-amber-300 ring-2 ring-amber-300/30', 'aria-hidden': 'true' }), cue.title]),
           h('div', { key: 'step', className: 'mt-1 text-[11px] font-bold' }, 'Stage ' + (index + 1) + ': ' + step.label),
           h('p', { key: 'detail', className: 'mt-0.5 text-[10.5px] leading-snug text-slate-200' }, step.detail),
-          deepEarthLegend3d != null ? h('div', { key: 'core-key', className: 'mt-1.5 border-t border-white/10 pt-1.5 text-[9.5px] leading-snug text-slate-100', 'data-geology-deep-earth-legend': deepEarthLegendState3d }, deepEarthLegend3d) : null
+          deepEarthLegend3d != null ? h('div', { key: 'core-key', className: 'mt-1.5 border-t border-white/10 pt-1.5 text-[10px] leading-snug text-slate-100', 'data-geology-deep-earth-legend': deepEarthLegendState3d }, deepEarthLegend3d) : null
         ]);
       }
       function processCuePanel() {
@@ -5659,6 +7241,167 @@
               h('div', { className: 'text-2xl mb-2 animate-pulse motion-reduce:animate-none' }, '🔷'),
               h('div', { className: 'text-sm ' + muted }, t('stem.geology.loading3d', 'Loading the 3D engine…'))));
         }
+        var fpWalkScene = fpExplorerMode(scene) === 'mine';
+        var rigDeployed = !!(fpOn && fpWalkScene && coreRigHud && coreRigHud.deployed);
+        function fpAction(name) {
+          var result = null;
+          try {
+            var E = window[ENGINE_KEY]; if (!E) return null;
+            if (name === 'mine' && E.fpMine) result = E.fpMine(false);
+            else if (name === 'mine-start') { if (E.fpMiningHeld) E.fpMiningHeld(true); if (E.fpMine) result = E.fpMine(false); }
+            else if (name === 'mine-stop' && E.fpMiningHeld) result = E.fpMiningHeld(false);
+            else if (name === 'tool-pick' || name === 'tool-drill') {
+              var nextTool = name === 'tool-drill' ? 'drill' : 'pick';
+              if (E.fpSetTool) result = E.fpSetTool(nextTool);
+              setFpTool(nextTool); upd('fpTool', nextTool); announce((nextTool === 'drill' ? 'Powered drill' : 'Pickaxe') + ' selected.');
+            }
+            else if (name === 'undo' && E.fpUndoMine) result = E.fpUndoMine();
+            else if (name === 'redo' && E.fpRedoMine) result = E.fpRedoMine();
+            else if (name === 'survey') result = surveyFieldTarget(scene);
+            else if (name === 'rig-toggle') result = coreRigAction('toggle');
+            else if (name === 'rig-start') result = coreRigAction('start');
+            else if (name === 'rig-stop' && E.coreRigCancel) result = E.coreRigCancel();
+            else if (name === 'rig-pack') result = coreRigAction('pack');
+            else if (name === 'home' && E.fpRespawn) result = E.fpRespawn();
+          } catch (e) {}
+          setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
+          return result;
+        }
+        function fieldRunPanel() {
+          if (!fpOn || rigDeployed) return null;
+          var book = fieldBook || { xp: 0, total: 0, byScene: {} };
+          var entry = (book.byScene && book.byScene[scene]) || {};
+          var contract = fieldExpeditionFor(scene, entry.active ? entry.contractIndex : (entry.completed || 0));
+          if (!contract) return null;
+          var collected = Array.isArray(entry.collected) ? entry.collected : [];
+          var heading = entry.active ? contract.label : 'Field Run';
+          var rank = fieldRankForXp(book.xp), rankRange = rank.nextThreshold == null ? 1 : Math.max(1, rank.nextThreshold - rank.threshold);
+          var rankProgress = rank.nextThreshold == null ? 100 : Math.max(0, Math.min(100, Math.round(((Number(book.xp) || 0) - rank.threshold) / rankRange * 100)));
+          var discoveryProgress = fieldDiscoveryProgress(scene, book.discoveredByScene);
+          var content = entry.active
+            ? [
+                h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, contract.brief),
+                h('ol', { key: 'targets', className: 'mt-1.5 grid gap-0.5', 'aria-label': 'Specimens in collection order' }, contract.targets.map(function (key, index) {
+                  var done = index < collected.length;
+                  var current = index === collected.length && !entry.ready;
+                  return h('li', { key: key, className: 'flex items-center gap-1 text-[10px] font-semibold ' + (done ? 'text-emerald-300' : (current ? 'text-amber-200' : 'text-slate-400')), 'aria-current': current ? 'step' : undefined }, [
+                    h('span', { key: 'mark', 'aria-hidden': 'true', className: 'w-3 text-center' }, done ? '✓' : (current ? '→' : '○')),
+                    h('span', { key: 'name' }, fieldSpecimenName(scene, key))
+                  ]);
+                })),
+                entry.ready
+                  ? h('button', { key: 'bank', type: 'button', onClick: function () { fpAction('home'); }, className: 'mt-2 min-h-10 w-full rounded-md border border-emerald-300 bg-emerald-500 px-2 text-[10px] font-extrabold text-emerald-950 shadow', 'aria-label': 'Return to the entry point and bank ' + fieldRunReward(contract) + ' field XP' }, '⌂ Bank +' + fieldRunReward(contract) + ' XP')
+                  : h('div', { key: 'guide', className: 'mt-1.5 grid gap-1.5' }, [
+                      h('p', { key: 'instruction', className: 'text-[10px] font-bold text-amber-100' }, 'Excavate the arrowed specimen next.'),
+                      h('button', { key: 'survey', type: 'button', 'data-geology-field-survey': 'true', onClick: function () { fpAction('survey'); }, className: 'min-h-10 w-full rounded-md border border-cyan-300/70 bg-cyan-950/80 px-2 text-[10px] font-extrabold text-cyan-100', 'aria-label': 'Survey for nearest ' + fieldSpecimenName(scene, contract.targets[collected.length]) }, '◎ Survey pulse (G)')
+                    ])
+              ]
+            : [
+                h('p', { key: 'brief', className: 'mt-1 text-[10px] leading-snug text-slate-300' }, 'Next: ' + contract.label + ' · ' + contract.brief),
+                h('button', { key: 'start', type: 'button', onClick: function () { startFieldRun(scene); }, className: 'mt-2 min-h-10 w-full rounded-md border border-amber-300 bg-amber-500 px-2 text-[10px] font-extrabold text-amber-950 shadow', 'aria-label': 'Start field run: ' + contract.label }, 'Start 3-specimen run')
+              ];
+          return h('section', { 'data-geology-field-run': 'true', 'data-state': entry.ready ? 'ready' : (entry.active ? 'active' : 'available'), className: 'absolute left-2 top-28 z-10 rounded-lg border border-amber-300/50 bg-slate-950/90 p-2 text-white shadow-xl ' + (coreRigHud && coreRigHud.deployed ? 'hidden md:block' : ''), style: { width: 'min(220px, calc(100% - 5.5rem))' }, role: 'region', 'aria-label': 'Field run contract' }, [
+            h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+              h('h3', { key: 'title', className: 'truncate text-[11px] font-extrabold text-amber-200' }, '🧭 ' + heading),
+              h('span', { key: 'xp', className: 'shrink-0 text-[10px] font-bold text-emerald-300', title: (book.total || 0) + ' field runs completed' }, (book.xp || 0) + ' XP')
+            ]),
+            h('div', { key: 'rank', className: 'mt-1', 'data-geology-field-rank': rank.label }, [
+              h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[10px] font-semibold text-slate-300' }, [h('span', { key: 'current' }, rank.label), h('span', { key: 'next' }, rank.nextLabel ? rank.remaining + ' XP to ' + rank.nextLabel : 'Top rank')]),
+              h('div', { key: 'track', className: 'mt-0.5 h-1 overflow-hidden rounded-full bg-slate-700', role: 'progressbar', 'aria-label': 'Field rank progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rankProgress }, h('span', { className: 'block h-full rounded-full bg-emerald-400', style: { width: rankProgress + '%' } })),
+              h('div', { key: 'journal', 'data-geology-field-journal': 'true', className: 'mt-1 flex items-center justify-between gap-2 text-[10px] font-semibold ' + (discoveryProgress.complete ? 'text-emerald-300' : 'text-cyan-200') }, [h('span', { key: 'label' }, '📓 Scene specimens'), h('span', { key: 'count' }, discoveryProgress.found + '/' + discoveryProgress.total + (discoveryProgress.complete ? ' complete' : ' logged'))])
+            ])
+          ].concat(content));
+        }
+        function coreRigConsole() {
+          if (!fpOn || !fpWalkScene || !coreRigHud || !coreRigHud.deployed) return null;
+          var rigRunning = !!coreRigHud.running, rigStage = coreRigHud.stage || 'preview';
+          var rigLocked = rigRunning || rigStage === 'deploying';
+          var rigProgress = Math.max(0, Math.min(100, Math.round((Number(coreRigHud.progress) || 0) * 100)));
+          var rigHeat = Math.max(0, Math.min(100, Math.round((Number(coreRigHud.heat) || 0) * 100)));
+          var rigSamples = Array.isArray(coreRigHud.samples) ? coreRigHud.samples : [];
+          var rigEvaluation = coreRigHud.evaluation || null;
+          var stageLabel = rigStage === 'deploying' ? 'STABILIZING' : (rigStage === 'drilling' ? 'LIVE BORE' : (rigStage === 'cooling' ? 'AUTO COOL' : (rigStage === 'complete' ? 'CORE READY' : (rigStage === 'stopped' ? 'BORE STOP' : (rigStage === 'paused' ? 'EARLY STOP' : 'TRAJECTORY')))));
+          var rigRunEntry = (fieldBook.byScene && fieldBook.byScene[SCENE.id]) || {};
+          var rigAssignment = rigRunEntry.active ? fieldExpeditionFor(SCENE.id, rigRunEntry.contractIndex) : null;
+          var rigCollected = Array.isArray(rigRunEntry.collected) ? rigRunEntry.collected.length : 0;
+          var rigTarget = rigAssignment ? (rigRunEntry.ready ? 'Return home to bank the field run' : fieldSpecimenName(SCENE.id, rigAssignment.targets[rigCollected])) : null;
+          var rigGradeClass = !rigEvaluation ? '' : (rigEvaluation.grade === 'S' ? 'border-violet-300 bg-violet-400/20 text-violet-100' : (rigEvaluation.grade === 'A' ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : (rigEvaluation.grade === 'B' ? 'border-emerald-300 bg-emerald-400/20 text-emerald-100' : (rigEvaluation.grade === 'C' ? 'border-amber-300 bg-amber-400/20 text-amber-100' : 'border-rose-300 bg-rose-400/20 text-rose-100'))));
+          function sampleColor(sample) {
+            var raw = sample && sample.color;
+            if (typeof raw === 'number') return '#' + ('000000' + raw.toString(16)).slice(-6);
+            if (typeof raw === 'string' && raw) return raw.charAt(0) === '#' ? raw : ('#' + raw);
+            var rock = sample && (SCENE.palette[sample.key] || ROCKS[sample.key]);
+            return rock && rock.color ? ('#' + ('000000' + Number(rock.color).toString(16)).slice(-6)) : '#94a3b8';
+          }
+          return h('section', {
+            'data-geology-core-rig-console': 'true', 'data-stage': rigStage, 'data-running': rigRunning ? 'true' : 'false',
+            className: 'absolute left-1/2 top-14 z-20 -translate-x-1/2 overflow-y-auto overscroll-contain rounded-xl border border-cyan-300/60 bg-gradient-to-br from-slate-950/95 via-cyan-950/95 to-amber-950/90 text-white shadow-[0_0_34px_rgba(34,211,238,.32)] backdrop-blur-md md:left-auto md:right-14 md:translate-x-0',
+            style: { width: 'min(340px, calc(100% - 6.5rem))', maxHeight: 'calc(100% - 4rem)' }, role: 'region', 'aria-label': 'Directional core rig command console'
+          }, [
+            h('div', { key: 'accent', className: 'sticky top-0 z-10 h-1 bg-gradient-to-r from-amber-400 via-cyan-300 to-violet-500', 'aria-hidden': 'true' }),
+            h('div', { key: 'body', className: 'p-2' }, [
+              h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+                h('div', { key: 'title', className: 'flex min-w-0 items-center gap-1.5' }, [
+                  h('span', { key: 'icon', className: 'grid h-7 w-7 shrink-0 place-items-center rounded-md border border-amber-300/50 bg-amber-400/15 text-base shadow-[0_0_12px_rgba(251,191,36,.3)]', 'aria-hidden': 'true' }, '🏗'),
+                  h('div', { key: 'words', className: 'min-w-0' }, [
+                    h('h3', { key: 'name', className: 'truncate text-[11px] font-black tracking-wide text-cyan-100' }, 'STRATA CORE RIG'),
+                    h('p', { key: 'stage', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-extrabold tracking-[.14em] ' + (rigStage === 'cooling' || rigStage === 'stopped' || rigStage === 'paused' ? 'text-amber-300' : 'text-emerald-300') }, stageLabel)
+                  ])
+                ]),
+                h('span', { key: 'count', className: 'shrink-0 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold text-cyan-100' }, rigSamples.length + ' sample' + (rigSamples.length === 1 ? '' : 's'))
+              ]),
+              rigTarget ? h('div', { key: 'target', className: 'mt-1.5 flex items-center gap-1.5 rounded-md border border-violet-300/25 bg-violet-400/10 px-2 py-1 text-[10px] font-semibold text-violet-100', 'data-geology-core-field-target': 'true' }, [
+                h('span', { key: 'icon', 'aria-hidden': 'true' }, '🧭'),
+                h('span', { key: 'copy', className: 'min-w-0 truncate', title: rigTarget }, 'Field Run target · ' + rigTarget)
+              ]) : null,
+              rigEvaluation ? h('div', { key: 'evaluation', className: 'mt-1.5 flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-2 py-1.5' }, [
+                h('span', { key: 'grade', 'data-geology-core-grade': rigEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + rigGradeClass }, 'Grade ' + rigEvaluation.grade),
+                h('div', { key: 'copy', className: 'min-w-0 flex-1' }, [
+                  h('p', { key: 'label', className: 'truncate text-[10px] font-extrabold text-white' }, rigEvaluation.label),
+                  h('p', { key: 'detail', className: 'text-[10px] font-semibold text-slate-300' }, [
+                    h('span', { key: 'score', 'data-geology-core-score': rigEvaluation.score }, rigEvaluation.score + '/200'),
+                    coreRigHud.newBest ? h('span', { key: 'best', className: 'ml-1.5 text-amber-300' }, '★ New best') : null,
+                    coreRigHud.researchReward ? h('span', { key: 'xp', 'data-geology-core-research-reward': coreRigHud.researchReward, className: 'ml-1.5 text-emerald-300' }, '+' + coreRigHud.researchReward + ' XP') : null
+                  ])
+                ])
+              ]) : null,
+              h('div', { key: 'config', className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]' }, [
+                h('div', { key: 'angles', role: 'group', 'aria-label': 'Bore angle', className: 'grid grid-cols-3 gap-1' }, [
+                  ['vertical', '↧', '90°'], ['slant', '⤡', '60°'], ['shallow', '↘', '35°']
+                ].map(function (angleOption) {
+                  var angleActive = coreRigHud.angle === angleOption[0];
+                  return h('button', { key: angleOption[0], type: 'button', disabled: rigLocked, 'data-geology-core-rig-angle': angleOption[0], 'aria-pressed': angleActive ? 'true' : 'false', 'aria-label': angleOption[2] + ' ' + angleOption[0] + ' bore', onClick: function () { coreRigAction('angle', angleOption[0]); }, className: 'min-h-9 rounded-md border px-1 text-[10px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (angleActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500') }, angleOption[1] + ' ' + angleOption[2]);
+                })),
+                h('div', { key: 'depths', role: 'group', 'aria-label': 'Target core depth', className: 'grid grid-cols-3 gap-1' }, CORE_RIG_DEPTHS.map(function (depthOption) {
+                  var depthActive = Number(coreRigHud.depth) === depthOption;
+                  return h('button', { key: depthOption, type: 'button', disabled: rigLocked, 'data-geology-core-rig-depth': depthOption, 'aria-pressed': depthActive ? 'true' : 'false', 'aria-label': depthOption + ' interval target depth', onClick: function () { coreRigAction('depth', depthOption); }, className: 'min-h-9 min-w-8 rounded-md border px-1 text-[10px] font-extrabold disabled:cursor-not-allowed disabled:opacity-45 ' + (depthActive ? 'border-amber-300 bg-amber-400/25 text-amber-100' : 'border-slate-600 bg-slate-900/70 text-slate-300') }, String(depthOption));
+                }))
+              ]),
+              h('div', { key: 'meters', className: 'mt-2 grid grid-cols-2 gap-2' }, [
+                h('div', { key: 'progress' }, [
+                  h('div', { key: 'labels', className: 'flex justify-between text-[10px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Bore'), h('span', { key: 'b', 'data-geology-core-rig-progress-value': 'true' }, rigProgress + '%')]),
+                  h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': 'Core bore progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigProgress }, h('span', { 'data-geology-core-rig-progress': 'true', className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 to-cyan-300 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigProgress + '%' } }))
+                ]),
+                h('div', { key: 'heat' }, [
+                  h('div', { key: 'labels', className: 'flex justify-between text-[10px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Head temp'), h('span', { key: 'b', 'data-geology-core-rig-heat-value': 'true' }, rigHeat + '%')]),
+                  h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': 'Core rig heat', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigHeat }, h('span', { 'data-geology-core-rig-heat': 'true', className: 'block h-full rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigHeat + '%' } }))
+                ])
+              ]),
+              h('div', { key: 'core', className: 'mt-2 flex items-center gap-2' }, [
+                h('div', { key: 'segments', className: 'flex h-5 min-w-0 flex-1 overflow-hidden rounded-md border border-slate-600 bg-slate-900/80', role: 'list', 'aria-label': rigSamples.length ? 'Recovered core sample sequence' : 'No core samples recovered yet' },
+                  rigSamples.length ? rigSamples.map(function (sample, sampleIndex) {
+                    return h('span', { key: sampleIndex + ':' + sample.key, role: 'listitem', className: 'min-w-[13px] flex-1 border-r border-black/25 last:border-r-0', style: { background: sampleColor(sample) }, title: sample.name + ' · interval ' + sample.depth, 'aria-label': sample.name + ', interval ' + sample.depth });
+                  }) : h('span', { className: 'm-auto text-[10px] font-semibold text-slate-500' }, 'awaiting core')),
+                h('span', { key: 'planned', className: 'shrink-0 text-[10px] font-bold text-slate-300' }, (coreRigHud.plannedCount || 0) + ' intervals')
+              ]),
+              h('p', { key: 'status', 'data-geology-core-rig-status': 'true', className: 'mt-2 text-[10px] font-semibold leading-snug text-cyan-100', title: coreRigHud.status }, coreRigHud.status || 'Trajectory ready'),
+              h('div', { key: 'footer', className: 'mt-2 grid grid-cols-2 gap-2' }, [
+                h('button', { key: 'start', type: 'button', disabled: rigLocked || rigStage !== 'preview' || !coreRigHud.plannedCount, onClick: function () { fpAction('rig-start'); }, className: 'min-h-9 rounded-md border border-amber-200 bg-amber-400 px-2 text-[10px] font-black text-amber-950 shadow-[0_0_12px_rgba(251,191,36,.25)] disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-400', 'aria-label': rigRunning ? 'Core rig drilling in progress' : 'Start directional core bore' }, rigRunning ? (rigStage === 'cooling' ? 'Cooling…' : 'Drilling…') : (rigStage === 'deploying' ? 'Stabilizing…' : (rigStage === 'preview' ? 'Start bore' : 'Adjust trajectory'))),
+                h('button', { key: 'pack', type: 'button', disabled: rigStage === 'deploying', onClick: function () { fpAction(rigRunning ? 'rig-stop' : 'rig-pack'); }, className: 'min-h-9 rounded-md border border-slate-500 bg-slate-900 px-2 text-[10px] font-bold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': rigRunning ? 'End the active bore and log recovered samples' : 'Pack and relocate directional core rig' }, rigRunning ? 'End bore' : (rigStage === 'complete' || rigStage === 'stopped' || rigStage === 'paused' ? 'Relocate' : 'Pack'))
+              ])
+            ])
+          ]);
+        }
         function fpSet(axis, val) { try { var o = {}; o[axis] = val; if (window[ENGINE_KEY]) window[ENGINE_KEY].fpInput('move', o); } catch (e) {} }
         function padBtn(label, axis, val, aria) {
           return h('button', { key: aria, type: 'button', 'aria-label': aria,
@@ -5672,28 +7415,58 @@
           sceneBeaconOverlay(),
           processCueOverlay(),
           cameraCompassOverlay(),
-          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: 320, background: '#060913', cursor: fpOn ? 'move' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? 'First-person geology explorer. W A S D or arrow keys to fly, Q and E for up and down, I J K L or drag to look, Escape to exit.' : 'Interactive 3D voxel model of ' + SCENE.label + '. Use the ' + (feat.crossSection ? 'cross-section' : '2D evidence map') + ' and material list below for an accessible alternative.' }),
+          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: isFs ? 0 : (rigDeployed ? 400 : 320), background: '#060913', cursor: fpOn ? 'crosshair' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? (rigDeployed ? 'Directional core rig control station. Choose a bore angle and depth, start the bore, monitor heat and recovery, then relocate the rig. R ends an active bore or packs an idle rig, and H returns home.' : (fpWalkScene ? 'First-person geology mining explorer. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, R deploys the directional core rig, G surveys for the active specimen, click or tap digs one block, Enter digs instantly, Z undoes, Y redoes, and H returns. Escape exits.' : 'First-person Deep Earth flight. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, G surveys for the active specimen, click or tap excavates one block, Enter excavates instantly, Z undoes, Y redoes, and H returns. Escape exits.')) : 'Interactive 3D voxel model of ' + SCENE.label + '. Use the ' + (feat.crossSection ? 'cross-section' : '2D evidence map') + ' and material list below for an accessible alternative.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
               var activeView = cameraViewState === vw[0];
               return h('button', { key: vw[0], type: 'button', disabled: fpOn, 'aria-pressed': activeView ? 'true' : 'false', 'data-geology-camera-view': vw[0], onClick: function () { setCameraView(vw[0]); }, 'aria-label': 'Camera view: ' + vw[1], className: 'min-h-9 transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'opacity-40 cursor-not-allowed ' : '') + (activeView ? 'border-sky-500 bg-sky-700 text-white' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, vw[1]);
             }).concat([
-              h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : 'Drop into the world — first-person explorer', onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ('🚶 ' + t('stem.geology.fp_enter', 'Drop in')))
+              h('button', { key: 'fp', ref: fpToggleRef, type: 'button', 'aria-pressed': fpOn ? 'true' : 'false', 'aria-label': fpOn ? 'Exit first-person explorer' : (fpWalkScene ? 'Drop in and dig — grounded first-person explorer' : 'Fly through Deep Earth — first-person explorer'), onClick: function () { setFpOn(function (v) { return !v; }); }, className: 'transition-colors active:scale-[0.97] text-[10px] font-bold px-2 py-1 rounded-md border ' + (fpOn ? 'bg-emerald-500 border-emerald-400 text-emerald-950' : (isDark ? 'bg-slate-900/75 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/80 border-slate-300 text-slate-700 hover:bg-white')) }, fpOn ? ('🚪 ' + t('stem.geology.fp_exit', 'Exit')) : ((fpWalkScene ? '⛏️ ' : '🛰️ ') + t('stem.geology.fp_enter', fpWalkScene ? 'Drop in & dig' : 'Fly inside')))
             ])),
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-first-person-mode': fpWalkScene ? 'mine' : 'fly', className: 'absolute left-2 top-12 z-10 rounded-full border px-2 py-1 text-[10px] font-extrabold ' + (fpWalkScene ? 'border-amber-300/70 bg-amber-950/80 text-amber-100' : 'border-sky-300/70 bg-sky-950/80 text-sky-100'), 'aria-hidden': 'true' }, (fpWalkScene ? '⛏ Mine mode' : '🛰 Deep Earth flight') + ' · ' + digCount + ' dug') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-player-status': 'true', 'data-state': fpWalkScene ? 'grounded' : 'flight', className: 'pointer-events-none absolute left-2 top-20 z-10 rounded-full border border-emerald-300/60 bg-slate-950/80 px-2 py-1 text-[10px] font-bold text-emerald-200 shadow-lg', 'aria-hidden': 'true' }, fpWalkScene ? 'Finding safe ground…' : 'Free flight') : null,
+          fieldRunPanel(),
+          coreRigConsole(),
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-tool-selector': 'true', className: 'absolute right-14 top-2 z-10 rounded-lg border border-slate-500/60 bg-slate-950/85 p-1 shadow-lg', role: 'group', 'aria-label': 'Excavation tool' },
+            h('div', { className: 'flex gap-1' },
+              h('button', { type: 'button', 'data-geology-tool': 'pick', 'aria-pressed': fpTool === 'pick' ? 'true' : 'false', onClick: function () { fpAction('tool-pick'); }, className: 'min-h-8 rounded px-2 text-[10px] font-bold ' + (fpTool === 'pick' ? 'bg-amber-500 text-amber-950' : 'bg-slate-800 text-slate-200'), title: 'Select pickaxe (1)' }, '1 ⛏ Pick'),
+              h('button', { type: 'button', 'data-geology-tool': 'drill', 'aria-pressed': fpTool === 'drill' ? 'true' : 'false', onClick: function () { fpAction('tool-drill'); }, className: 'min-h-8 rounded px-2 text-[10px] font-bold ' + (fpTool === 'drill' ? 'bg-sky-500 text-sky-950' : 'bg-slate-800 text-slate-200'), title: 'Select powered drill (2)' }, '2 ⚙ Drill')),
+            fpTool === 'drill' ? h('div', { 'data-geology-drill-meter': 'true', 'data-overheated': 'false', 'data-active-tool': fpTool, className: 'mt-1 min-w-[126px]', 'aria-hidden': 'true' },
+              h('div', { className: 'h-1.5 overflow-hidden rounded-full bg-slate-700' }, h('span', { 'data-geology-drill-heat': 'true', className: 'block h-full rounded-full bg-sky-400', style: { width: '0%' } })),
+              h('div', { 'data-geology-drill-readout': 'true', className: 'mt-0.5 text-right text-[10px] font-bold text-sky-200' }, '0% heat')) : null) : null,
           h('button', { ref: fsToggleRef, type: 'button', 'data-geology-fullscreen-toggle': 'true', onClick: toggleFullscreen, title: isFs ? t('stem.geology.exit_fullscreen', 'Exit fullscreen') : t('stem.geology.fullscreen', 'Fullscreen'), 'aria-label': isFs ? 'Exit fullscreen 3D view' : 'Fullscreen 3D view', className: 'absolute top-2 right-2 z-10 min-h-11 min-w-11 transition-colors active:scale-[0.97] text-base leading-none px-2 py-1.5 rounded-lg border ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100 hover:bg-slate-800' : 'bg-white/85 border-slate-300 text-slate-700 hover:bg-white') }, isFs ? '✕' : '⛶'),
-          fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); setDigCount(0); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
+          fpOn ? null : h('select', { value: res, 'aria-label': t('stem.geology.detail', 'Voxel detail level'), title: t('stem.geology.detail_tip', 'Higher detail = smaller, sharper voxels (heavier on weak devices)'), onChange: function (e) { var v = e.target.value; setRes(v); upd('res', v); setSlice(0); setExcavate(false); setDigCount(0); setRedoCount(0); }, className: 'absolute bottom-2 left-2 z-10 text-[10px] font-bold px-1.5 py-1 rounded-md border cursor-pointer ' + (isDark ? 'bg-slate-900/80 border-slate-600 text-slate-100' : 'bg-white/85 border-slate-300 text-slate-700') },
             h('option', { value: 'low' }, t('stem.geology.detail_low', 'Detail: Low')),
             h('option', { value: 'standard' }, t('stem.geology.detail_std', 'Detail: Standard')),
             h('option', { value: 'high' }, t('stem.geology.detail_high', 'Detail: High'))),
-          // first-person touch move-pad (forward/back/strafe + up/down) — tablets; keyboard does the same
-          fpOn ? h('div', { className: 'absolute bottom-2 left-2 z-10 grid gap-1', style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': 'First-person move controls' },
+          // first-person touch pad: walk + jump on surface scenes, six-axis movement in Deep Earth
+          (fpOn && !rigDeployed) ? h('div', { className: 'absolute bottom-2 left-2 z-10 grid gap-1', style: { gridTemplateColumns: 'repeat(3, auto)' }, role: 'group', 'aria-label': fpWalkScene ? 'First-person walk and jump controls' : 'First-person flight controls' },
             emptyCell('a'), padBtn('▲', 'fwd', 1, 'Move forward'), emptyCell('b'),
             padBtn('◀', 'strafe', -1, 'Move left'), padBtn('▼', 'fwd', -1, 'Move back'), padBtn('▶', 'strafe', 1, 'Move right'),
-            padBtn('⤒', 'vert', 1, 'Move up'), emptyCell('c'), padBtn('⤓', 'vert', -1, 'Move down')) : null,
+            fpWalkScene ? emptyCell('walk-a') : padBtn('⤒', 'vert', 1, 'Move up'),
+            fpWalkScene ? padBtn('⇧', 'jump', 1, 'Jump') : emptyCell('c'),
+            fpWalkScene ? emptyCell('walk-b') : padBtn('⤓', 'vert', -1, 'Move down')) : null,
           // on-screen key legend (visual; SR gets layer announcements via the live region)
-          fpOn ? h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 z-10 text-[10px] px-2 py-1 rounded-md whitespace-nowrap ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', 'WASD / arrows fly · Q E up·down · IJKL / drag look · Esc exit')) : null,
+          (fpOn && !rigDeployed) ? h('div', { className: 'absolute bottom-2 left-1/2 z-10 hidden max-w-[58%] -translate-x-1/2 rounded-md px-2 py-1 text-center text-[10px] sm:block ' + (isDark ? 'bg-slate-900/70 text-slate-300' : 'bg-white/80 text-slate-600'), 'aria-hidden': 'true' }, t('stem.geology.fp_keys', fpWalkScene ? 'WASD walk · 1 pick · 2 drill · hold X dig · R core rig · G survey · Z/Y undo/redo · H home' : 'WASD fly · 1 pick · 2 drill · hold X dig · G survey · Z/Y undo/redo · H home')) : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-reticle': 'true', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded border border-white/55 bg-black/15 text-xl font-light leading-none text-white shadow-[0_1px_6px_rgba(0,0,0,.8)]', 'aria-hidden': 'true' }, '+') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-target': 'true', 'data-target-ready': 'false', 'data-target-key': '__none', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 mt-6 -translate-x-1/2 rounded-full border border-white/20 bg-slate-950/75 px-2.5 py-1 text-[10px] font-bold text-slate-100 shadow-lg', 'aria-hidden': 'true' }, 'Aim at an exposed block') : null,
+          (fpOn && !rigDeployed) ? h('div', { 'data-geology-mining-progress-shell': 'true', 'data-active': 'false', className: 'pointer-events-none absolute left-1/2 top-1/2 z-10 mt-14 h-1.5 w-28 -translate-x-1/2 overflow-hidden rounded-full border border-white/20 bg-slate-950/70 opacity-40 data-[active=true]:opacity-100', 'aria-hidden': 'true' },
+            h('span', { 'data-geology-mining-progress': 'true', className: 'block h-full rounded-full bg-amber-400', style: { width: '0%' } })) : null,
+          fpOn ? h('div', { className: 'absolute right-2 top-14 z-10 flex flex-col gap-1', role: 'group', 'aria-label': rigDeployed ? 'Core rig actions' : 'Mining actions' },
+            !rigDeployed ? h('button', { type: 'button',
+              onPointerDown: function (e) { if (fpTool !== 'drill') return; fpDrillPointerRef.current = true; try { e.preventDefault(); } catch (x) {} fpAction('mine-start'); },
+              onPointerUp: function () { if (fpTool === 'drill') fpAction('mine-stop'); },
+              onPointerCancel: function () { fpDrillPointerRef.current = false; if (fpTool === 'drill') fpAction('mine-stop'); },
+              onPointerLeave: function () { fpDrillPointerRef.current = false; if (fpTool === 'drill') fpAction('mine-stop'); },
+              onClick: function () { if (fpTool === 'drill' && fpDrillPointerRef.current) { fpDrillPointerRef.current = false; return; } fpAction('mine'); },
+              className: 'min-h-10 min-w-10 rounded-lg border px-2 text-sm shadow-lg ' + (fpTool === 'drill' ? 'border-sky-300/60 bg-sky-950/85 text-sky-100' : 'border-amber-300/50 bg-amber-950/85 text-amber-100'),
+              'aria-label': fpTool === 'drill' ? 'Hold to drill continuously' : 'Dig targeted block', title: fpTool === 'drill' ? 'Hold to drill continuously (X)' : 'Dig targeted block (X; Enter is instant)' }, fpTool === 'drill' ? '⚙' : '⛏') : null,
+            !rigDeployed ? h('button', { type: 'button', disabled: digCount <= 0, onClick: function () { fpAction('undo'); }, className: 'min-h-10 min-w-10 rounded-lg border border-slate-400/40 bg-slate-950/80 px-2 text-sm text-slate-100 shadow-lg disabled:opacity-40', 'aria-label': 'Undo last excavation', title: 'Undo last excavation (Z)' }, '↶') : null,
+            !rigDeployed ? h('button', { type: 'button', disabled: redoCount <= 0, onClick: function () { fpAction('redo'); }, className: 'min-h-10 min-w-10 rounded-lg border border-slate-400/40 bg-slate-950/80 px-2 text-sm text-slate-100 shadow-lg disabled:opacity-40', 'aria-label': 'Redo last excavation', title: 'Redo last excavation (Y)' }, '↷') : null,
+            fpWalkScene ? h('button', { type: 'button', 'data-geology-core-rig-toggle': 'true', disabled: !!(rigDeployed && (coreRigHud.running || coreRigHud.stage === 'deploying')), 'aria-pressed': rigDeployed ? 'true' : 'false', onClick: function () { fpAction('rig-toggle'); }, className: 'min-h-10 min-w-10 rounded-lg border border-amber-300/60 bg-gradient-to-br from-amber-950/90 to-cyan-950/90 px-2 text-sm text-amber-100 shadow-[0_0_14px_rgba(34,211,238,.18)] disabled:cursor-not-allowed disabled:opacity-45', 'aria-label': rigDeployed ? 'Pack directional core rig' : 'Deploy directional core rig', title: rigDeployed ? 'Pack directional core rig (R)' : 'Deploy directional core rig (R)' }, '🏗') : null,
+            h('button', { type: 'button', disabled: !!(rigDeployed && coreRigHud.running), onClick: function () { fpAction('home'); }, className: 'min-h-10 min-w-10 rounded-lg border border-sky-300/40 bg-sky-950/80 px-2 text-sm text-sky-100 shadow-lg disabled:cursor-not-allowed disabled:opacity-45', 'aria-label': 'Return to starting point', title: 'Return to starting point (H)' }, '⌂')) : null,
           // live "you are here" science HUD (announced separately via the polite live region)
-          (fpOn && fpHud) ? h('div', { className: 'absolute bottom-2 right-2 z-10 max-w-[220px] p-2.5 rounded-xl border ' + (isDark ? 'bg-slate-900/85 border-slate-600 text-slate-100' : 'bg-white/90 border-slate-300 text-slate-800'), role: 'status', 'aria-hidden': 'true' },
+          (fpOn && fpHud && !rigDeployed) ? h('div', { className: 'absolute bottom-2 right-2 z-10 max-w-[220px] p-2.5 rounded-xl border ' + (isDark ? 'bg-slate-900/85 border-slate-600 text-slate-100' : 'bg-white/90 border-slate-300 text-slate-800'), role: 'status', 'aria-hidden': 'true' },
             h('div', { className: 'text-[12px] font-extrabold' }, '📍 ' + fpHud.layerName),
             fpHud.type ? h('span', { className: 'inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full mt-0.5 mb-1', style: { color: (TYPE_COLOR[fpHud.type] || '#64748b'), background: (TYPE_COLOR[fpHud.type] || '#64748b') + '22' } }, fpHud.type) : null,
             h('div', { className: 'grid gap-0.5 text-[11px]', style: { gridTemplateColumns: 'auto minmax(0, 1fr)' } },
@@ -5839,7 +7612,8 @@
                 h('span', { 'data-geology-cutaway-readout': 'true', 'aria-hidden': 'true', className: 'min-w-[7rem] text-[11px] font-semibold tabular-nums ' + muted }, cutaway.label)),
               inInvestigation && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, title: focusLensOn ? 'Turn off the Focus lens before excavating hidden layers' : 'Click a top block to remove it and expose the material below', onClick: function () { if (focusLensOn) return; var nv = !excavate; setExcavate(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setExcavate(nv); }, 'aria-pressed': excavate ? 'true' : 'false', className: btn + (excavate ? 'bg-amber-500 border-amber-400 text-amber-950' : btnIdle) }, '⛏️ ' + t('stem.geology.excavate', 'Excavate') + ': ' + (excavate ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               inInvestigation && digCount > 0 && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, 'data-geology-undo-excavation': 'true', 'data-geology-undo-preview-control': 'true', 'aria-label': 'Undo last excavation. ' + digCount + (digCount === 1 ? ' block removed.' : ' blocks removed.'), title: focusLensOn ? 'Turn off the Focus lens to restore the last block' : 'Hover or focus to preview the block; activate to restore it', onMouseEnter: function () { setUndoPreviewIntent('hover', true); }, onMouseLeave: function () { setUndoPreviewIntent('hover', false); }, onFocus: function () { setUndoPreviewIntent('focus', true); }, onBlur: function () { setUndoPreviewIntent('focus', false); }, onClick: undoLastExcavation, className: btn + (isDark ? 'border-amber-500/70 bg-amber-950/40 text-amber-100 hover:bg-amber-900/60' : 'border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100') }, '↶ Undo dig (' + digCount + ')'),
-              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); setDigCount(0); setFocusLensOn(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
+              inInvestigation && redoCount > 0 && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError || focusLensOn, 'data-geology-redo-excavation': 'true', 'aria-label': 'Redo last excavation. ' + redoCount + (redoCount === 1 ? ' block available.' : ' blocks available.'), title: 'Reapply the most recently undone excavation', onClick: redoLastExcavation, className: btn + (isDark ? 'border-sky-500/70 bg-sky-950/40 text-sky-100 hover:bg-sky-900/60' : 'border-sky-300 bg-sky-50 text-sky-900 hover:bg-sky-100') }, '↷ Redo dig (' + redoCount + ')'),
+              h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { setSlice(0); setExcavate(false); setDigCount(0); setRedoCount(0); setFocusLensOn(false); if (window[ENGINE_KEY]) { window[ENGINE_KEY].reset(); window[ENGINE_KEY].setExcavate(false); if (window[ENGINE_KEY].setFocusLens) window[ENGINE_KEY].setFocusLens(false); } }, className: btn + btnIdle }, '↺ ' + t('stem.geology.reset', 'Reset')),
               inInvestigation && feat.history && h('button', { type: 'button', disabled: eruptStage >= 0, onClick: function () { if (histStage >= 0) { stopHistory(); } else { playHistory(); } }, 'aria-pressed': histStage >= 0 ? 'true' : 'false', title: t('stem.geology.play_history_tip', 'Watch the cross-section build in the order it formed'), className: btn + (histStage >= 0 ? 'bg-violet-600 border-violet-700 text-violet-50' : btnIdle) }, histStage >= 0 ? '■ ' + t('stem.geology.stop', 'Stop') : '▶ ' + t('stem.geology.play_history', 'Play history')),
               inInvestigation && feat.water && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0, onClick: function () { var nv = !waterOn; setWaterOn(nv); if (window[ENGINE_KEY]) window[ENGINE_KEY].setWaterTable(nv); if (nv) announce('Water table on. Rain soaks through permeable rock like sandstone and is trapped by the impermeable shale; the water table is the top of the saturated zone. Use the cutaway or read the cross-section to see it.'); }, 'aria-pressed': waterOn ? 'true' : 'false', title: t('stem.geology.water_tip', 'Show the water table and which layers hold groundwater'), className: btn + (waterOn ? 'bg-blue-700 border-blue-800 text-blue-50' : btnIdle) }, '💧 ' + t('stem.geology.water', 'Water table') + ': ' + (waterOn ? t('stem.on', 'ON') : t('stem.off', 'OFF'))),
               inInvestigation && feat.volcano && h('button', { type: 'button', disabled: histStage >= 0 || eruptStage >= 0 || !threeReady || webglError, onClick: function () { playEruption(); }, title: t('stem.geology.erupt_tip', 'Watch a volcano erupt — magma reaches the surface and cools fast into basalt'), className: btn + (eruptStage >= 0 ? 'bg-orange-700 border-orange-800 text-orange-50' : btnIdle) }, eruptStage >= 0 ? '🌋 ' + t('stem.geology.erupting_short', 'Erupting…') : '🌋 ' + t('stem.geology.erupt', 'Erupt')),
@@ -5865,6 +7639,7 @@
             inInvestigation ? sceneSequencePanel() : null,
             h('div', { className: 'text-[11px] font-bold ' + muted }, feat.crossSection ? t('stem.geology.rocks', 'Rock types') : ((SCENE.id === 'deepEarth' || SCENE.id === 'subduction') ? t('stem.geology.layers', 'Layers') : t('stem.geology.minerals', 'Minerals'))),
             strataList(),
+            fieldJournalPanel(),
             feat.fossils ? fossilStrip() : null,
             inInvestigation && feat.cores ? h('div', { className: 'space-y-1.5' + routeTargetClass('core'), tabIndex: -1, 'data-geology-target': 'core' },
               h('div', { className: 'text-[11px] font-bold ' + muted }, '🪛 ' + t('stem.geology.core_title', 'Drill a core sample')),

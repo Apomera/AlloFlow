@@ -2584,7 +2584,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         })[state];
         return h('div', { style: { padding: 14, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 14, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.schoolbehaviortoolkit.behavior_plan_inquiry_is_this_plan_rea', '🧪 Behavior Plan Inquiry — Is This Plan Ready to Pilot?')),
-          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, environment stability. Predict whether the plan is ready to implement. No score, no reveal.')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, and environment stability, then observe how modeled plan readiness changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
           h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },

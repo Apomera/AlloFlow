@@ -105,7 +105,10 @@ test.describe('STEM tools — are the idle repaints doing anything?', () => {
             });
           } as any;
         });
-        await page.evaluate(() => (window as any).__mount({}));
+        const initialToolData = id === 'artStudio'
+          ? { artStudio: { tab: 'colorWheel', studioHome: false } }
+          : {};
+        await page.evaluate((toolData) => (window as any).__mount(toolData), initialToolData);
         await page.evaluate(() => {
           const w = document.getElementById('wrap')!;
           w.style.display = 'block'; w.style.height = 'auto';

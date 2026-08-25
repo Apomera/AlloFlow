@@ -4,7 +4,9 @@
       "type": "stdio",
       "command": "node",
       "args": ["desktop/mcp/alloflow-remediation-mcp-stdio.cjs"],
-      "env": {}
+      "env": {
+        "ALLOFLOW_MCP_NO_KEY_FILES": "1"
+      }
     },
     "alloflow": {
       "type": "stdio",

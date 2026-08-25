@@ -161,6 +161,52 @@ describe('Teacher student-activity ledger', () => {
     expect(JSON.stringify(rows)).not.toContain('viewingResourceAt');
   });
 
+  it('prefers the universal content-free progress receipt without carrying activity content', () => {
+    const now = 5000;
+    const receipt = LivePolling.normalizeLiveActivityProgressReceipt({
+      version: 1,
+      activityId: 'resource:concept-sort-1',
+      kind: 'resource',
+      status: 'working',
+      completed: 3,
+      total: 5,
+      at: now,
+      answer: 'must be rejected',
+    });
+    expect(receipt).toBeNull();
+    expect(LivePolling.normalizeLiveActivityProgressReceipt({
+      version: 1,
+      activityId: 'resource:concept-sort-1',
+      kind: 'resource',
+      status: 'working',
+      completed: 1,
+      total: 0,
+      at: now,
+    })).toBeNull();
+    expect(LivePolling.normalizeLiveActivityProgressReceipt({
+      version: 1,
+      activityId: 'resource:concept-sort-1',
+      kind: 'resource',
+      status: 'working',
+      completed: '1',
+      total: 5,
+      at: now,
+    })).toBeNull();
+
+    const rows = LivePolling.buildLiveStudentActivityRows({
+      roster: {
+        u1: {
+          name: 'Ari', resourceId: 'resource:concept-sort-1', resourceAt: 4000,
+          activityProgress: { version: 1, activityId: 'resource:concept-sort-1', kind: 'resource', status: 'working', completed: 3, total: 5, at: now },
+        },
+      },
+      resources: [{ id: 'resource:concept-sort-1', title: 'Concept Sort' }],
+      now,
+    });
+    expect(rows[0]).toMatchObject({ activity: 'Concept Sort', status: 'working', progressDetail: '3/5', progressPercent: 60 });
+    expect(JSON.stringify(rows)).not.toContain('answer');
+  });
+
   it('uses provider-neutral heartbeats for live presence and engagement without requiring a direct channel', () => {
     const now = 1000000;
     const rows = LivePolling.buildLiveStudentActivityRows({
@@ -216,10 +262,10 @@ describe('Teacher student-activity ledger', () => {
 
   it('summarizes and filters the privacy-safe roster by progress, connection, activity, and group', () => {
     const rows = [
-      { uid: 'u1', name: 'Ari', groupId: 'g1', connected: true, activity: 'Evidence Sort', status: 'working', supportStatus: 'help', progressDetail: '' },
-      { uid: 'u2', name: 'Bo', groupId: '', connected: true, activity: 'Word Sounds', status: 'complete', progressDetail: '8/8' },
-      { uid: 'u3', name: 'Cy', groupId: '', connected: true, activity: 'Map Lab', status: 'failed', progressDetail: '' },
-      { uid: 'u4', name: 'Dee', groupId: '', connected: false, activity: 'Assigned resource', status: 'waiting', progressDetail: '' },
+      { uid: 'u1', name: 'Ari', groupId: 'g1', connected: true, signalStatus: 'active', activity: 'Evidence Sort', status: 'working', supportStatus: 'help', progressDetail: '' },
+      { uid: 'u2', name: 'Bo', groupId: '', connected: true, signalStatus: 'recent', activity: 'Word Sounds', status: 'complete', progressDetail: '8/8' },
+      { uid: 'u3', name: 'Cy', groupId: '', connected: true, signalStatus: 'quiet', activity: 'Map Lab', status: 'failed', progressDetail: '' },
+      { uid: 'u4', name: 'Dee', groupId: '', connected: false, signalStatus: 'offline', activity: 'Assigned resource', status: 'waiting', progressDetail: '' },
     ];
 
     expect(LivePolling.summarizeLiveStudentActivityRows(rows)).toEqual({
@@ -228,15 +274,45 @@ describe('Teacher student-activity ledger', () => {
       'in-progress': 1,
       finished: 1,
       attention: 3,
+      active: 1,
+      recent: 1,
+      quiet: 1,
       offline: 1,
+      unknown: 0,
     });
     expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'help' }).map((row) => row.uid)).toEqual(['u1']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'finished' }).map((row) => row.uid)).toEqual(['u2']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'attention' }).map((row) => row.uid)).toEqual(['u1', 'u3', 'u4']);
+    expect(LivePolling.filterLiveStudentActivityRows(rows, { filter: 'quiet' }).map((row) => row.uid)).toEqual(['u3']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { query: 'blue pod', groups: { g1: { name: 'Blue Pod' } } }).map((row) => row.uid)).toEqual(['u1']);
     expect(LivePolling.filterLiveStudentActivityRows(rows, { sort: 'attention' }).map((row) => row.uid)).toEqual(['u1', 'u4', 'u3', 'u2']);
     expect(LivePolling.LIVE_STUDENT_ACTIVITY_SORTS).toEqual(['attention', 'name']);
     expect(JSON.stringify(LivePolling.filterLiveStudentActivityRows(rows, { query: 'map lab' }))).not.toContain('response');
+  });
+
+  it('recovers only bounded content-free command-center state for the same browser session', () => {
+    const storage = new Map();
+    const adapter = {
+      getItem: (key) => storage.get(key) || null,
+      setItem: (key, value) => storage.set(key, value),
+      removeItem: (key) => storage.delete(key),
+    };
+    const now = 10_000;
+    expect(LivePolling.writeLiveCommandCenterRecovery('ROOM1', {
+      activitySnapshots: [{
+        activityId: 'poll:1', family: 'polling', kind: 'free_text', phase: 'review',
+        audienceUids: ['u1'], participantStatus: { u1: 'working' }, counts: { connected: 1 },
+        startedAt: 9000, updatedAt: 9500, prompt: 'private prompt', response: 'private answer', screen: 'pixels',
+      }],
+      ui: { studentActivityFilter: 'quiet', studentActivitySort: 'name', studentActivityExpanded: false, composerExpanded: false, wrapUpExpanded: true },
+    }, adapter, now)).toBe(true);
+    const recovered = LivePolling.readLiveCommandCenterRecovery('ROOM1', adapter, now + 100);
+    expect(recovered.ui).toEqual({ studentActivityFilter: 'quiet', studentActivitySort: 'name', studentActivityExpanded: false, composerExpanded: true, wrapUpExpanded: true });
+    expect(recovered.activitySnapshots[0]).toMatchObject({ activityId: 'poll:1', phase: 'review', participantStatus: { u1: 'working' } });
+    expect(JSON.stringify(recovered)).not.toContain('private prompt');
+    expect(JSON.stringify(recovered)).not.toContain('private answer');
+    expect(JSON.stringify(recovered)).not.toContain('pixels');
+    expect(LivePolling.readLiveCommandCenterRecovery('ROOM1', adapter, now + LivePolling.LIVE_COMMAND_CENTER_RECOVERY_MAX_AGE_MS + 1).activitySnapshots).toEqual([]);
   });
 
   it('prioritizes a privacy-safe teacher action queue and supports local review', () => {

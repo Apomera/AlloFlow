@@ -151,6 +151,38 @@ describe('Educator Evaluation Apps Script concurrency and append-only records', 
     expect(harness.invoke('bootstrap').revision).toBe(current.revision);
   });
 
+  it('fails closed when the primary workspace commit is not confirmed and surfaces recovery health', () => {
+    const harness = repositoryFixture();
+    harness.setActiveEmail(EVALUATOR);
+    const before = harness.invoke('bootstrap');
+    before.workspace.walkthroughs.find(item => item.id === 'walk-t1-private').evidence = 'Journaled evidence awaiting primary commit recovery.';
+
+    const workspaceFile = harness.driveFiles.get(harness.properties.get('EE_WORKSPACE_FILE_ID'));
+    const originalSetContent = workspaceFile.setContent;
+    workspaceFile.setContent = () => { throw new Error('Injected primary workspace commit failure'); };
+
+    const failure = harness.invokeError('saveWorkspace', {
+      expectedVersion: before.revision,
+      workspace: before.workspace,
+      mutation: { teacherId: 't1', event: 'DRAFT_SAVED', entityType: 'walkthrough', entityId: 'walk-t1-private', version: 1 },
+    });
+    expect(failure.code).toBe('commit_recovery_required');
+    expect(String(failure.message || failure)).toContain('primary evaluation record was not confirmed');
+    expect(harness.properties.get('EE_COMMIT_RECOVERY_REQUIRED')).toBe('1');
+
+    harness.setActiveEmail(ADMIN);
+    const health = harness.invoke('getPortalSetupHealth');
+    expect(health.checks.workspaceCommitRecoveryRequired).toBe(true);
+    expect(health.checks.workspaceMetadataIntact).toBe(false);
+
+    workspaceFile.setContent = originalSetContent;
+    harness.setActiveEmail(EVALUATOR);
+    const recovered = harness.invoke('bootstrap');
+    expect(recovered.revision).toBe(before.revision + 1);
+    expect(recovered.workspace.walkthroughs.find(item => item.id === 'walk-t1-private').evidence).toBe('Journaled evidence awaiting primary commit recovery.');
+    expect(harness.properties.has('EE_COMMIT_RECOVERY_REQUIRED')).toBe(false);
+  });
+
   it('server-stamps message and audit actor/time and prevents edits', () => {
     const harness = repositoryFixture();
     harness.setActiveEmail(TEACHER_ONE);
@@ -529,10 +561,14 @@ describe('Educator Evaluation Apps Script evidence ownership and projections', (
     let boot = harness.invoke('bootstrap');
     let profile = boot.workspace.teachers.find(item => item.id === 't1');
     profile.ratings = { domains: { d1: 2, d2: 2, d3: 2, d4: 2 }, building: 2, teacher: 2, lea: 2 };
+    profile.annualRationales = { d1: 'Annual rationale 1', d2: 'Annual rationale 2', d3: 'Annual rationale 3', d4: 'Annual rationale 4' };
+    profile.annualEvidenceRefs = { d1: ['walkthrough:walk-t1'], d2: ['walkthrough:walk-t1'], d3: ['walkthrough:walk-t1'], d4: ['walkthrough:walk-t1'] };
     harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { event: 'RATING_UPDATED' } });
     harness.setActiveEmail(TEACHER_ONE);
     profile = harness.invoke('bootstrap').workspace.teachers.find(item => item.id === 't1');
     expect(profile.ratings.domains).toEqual({ d1: null, d2: null, d3: null, d4: null });
+    expect(profile.annualRationales).toEqual({ d1: '', d2: '', d3: '', d4: '' });
+    expect(profile.annualEvidenceRefs).toEqual({ d1: [], d2: [], d3: [], d4: [] });
     expect(profile.finalScore).toBeNull();
     expect(profile.weightSnapshot).toBeNull();
     harness.setActiveEmail(EVALUATOR);
@@ -724,9 +760,14 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
   it('ignores client snapshots, weights, timestamps, and scores when releasing a cycle', () => {
     const harness = repositoryFixture();
     harness.setActiveEmail(EVALUATOR);
-    const boot = harness.invoke('bootstrap');
+    let boot = harness.invoke('bootstrap');
+    boot.workspace.walkthroughs.push({ id: 'annual-evidence-peer-01', teacherId: 'peer-01', date: '2026-08-12', evidence: 'Published annual-review evidence.', privacyChecked: true, publishedAt: '2000-01-01T00:00:00.000Z' });
+    harness.invoke('saveWorkspace', { expectedVersion: boot.revision, workspace: boot.workspace, mutation: { teacherId: 'peer-01', event: 'EVIDENCE_PUBLISHED', entityType: 'walkthrough', entityId: 'annual-evidence-peer-01', version: 1 } });
+    boot = harness.invoke('bootstrap');
     const peer = boot.workspace.teachers.find(item => item.id === 'peer-01');
     peer.ratings = { domains: { d1: 2, d2: 2, d3: 2, d4: 2 }, building: 2, teacher: 2, lea: 2 };
+    peer.annualRationales = { d1: 'Annual rationale 1', d2: 'Annual rationale 2', d3: 'Annual rationale 3', d4: 'Annual rationale 4' };
+    peer.annualEvidenceRefs = { d1: ['walkthrough:annual-evidence-peer-01'], d2: ['walkthrough:annual-evidence-peer-01'], d3: ['walkthrough:annual-evidence-peer-01'], d4: ['walkthrough:annual-evidence-peer-01'] };
     peer.weightSnapshot = [{ id: 'observation', label: 'Forged', short: 'X', weight: 100, color: '#000000' }];
     peer.cycleLockedAt = '2000-01-01T00:00:00.000Z';
     peer.finalizedAt = '2000-01-01T00:00:00.000Z';

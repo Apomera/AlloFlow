@@ -659,12 +659,22 @@ const _resolveBlueprintInstructionalContext = (blueprint, settingsSnapshot, less
         return instructionalModule.normalizeInstructionalContext(rawContext, {
             instructionalGrade: grade,
             standardsContext,
+            standardsInput: bp.standards || (lessonDNA && lessonDNA.standard) || '',
         });
     }
+    const constraints = standardsContext && standardsContext.instructionalConstraints || {};
+    const prohibited = constraints.textAccessExpectation === 'adaptation-prohibited'
+        && (constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl));
+    const explicitAdapted = ['include', 'omit', 'prohibited'].includes(rawContext.adaptedTextPolicy)
+        ? rawContext.adaptedTextPolicy : '';
     return {
         schemaVersion: 1,
         instructionalGrade: String(grade || ''),
         primaryTextPolicy: rawContext.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary',
+        primaryTextAccess: constraints.textAccessExpectation === 'preserve-primary' || prohibited ? 'required' : 'available',
+        adaptedTextPolicy: prohibited ? 'prohibited' : (explicitAdapted || 'include'),
+        adaptedTextPolicySource: prohibited ? 'standard' : (explicitAdapted ? 'educator' : 'workflow-default'),
+        textAccessReason: prohibited ? 'sourced-adaptation-prohibition' : (explicitAdapted ? 'educator-choice' : 'default-access-companion'),
         standardsContext: standardsContext || null,
         standardsFingerprint: String(rawContext.standardsFingerprint || ''),
     };
@@ -698,9 +708,17 @@ const _resolveBlueprintInstructionalText = (type, raw, instructionalContext, lan
 
 const getBlueprintResourcePlan = (blueprint) => {
     const toolDirectives = (blueprint && blueprint.toolDirectives) || {};
-    const rawPlan = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
+    const plannedRows = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
         ? blueprint.resourcePlan
         : ((blueprint && blueprint.recommendedResources) || []);
+    const adaptedPolicy = blueprint && blueprint.instructionalContext
+        && blueprint.instructionalContext.adaptedTextPolicy;
+    const rawPlan = adaptedPolicy === 'omit' || adaptedPolicy === 'prohibited'
+        ? plannedRows.filter(item => {
+            const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
+            return type !== 'simplified';
+        })
+        : plannedRows;
     return rawPlan.map((item, idx) => {
         const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
         if (!type) return null;

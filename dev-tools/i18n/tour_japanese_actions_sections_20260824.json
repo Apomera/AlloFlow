@@ -1,0 +1,6 @@
+{
+  "japanese": {
+    "actionsSuffix": "### 教育者向けツール (🎓 Tools)\n• **Symbol Studio**: AACスタイルのシンボル支援と視覚的なスケジュールを作成します。\n• **BehaviorLens**: 構造化された行動観察と分析。\n• **Report Writer**: 評価レポートと進捗レポートの下書きを作成します。\n• **Document Remediation**: アクセシビリティのパイプラインを通じてPDFフォルダーを一括処理します。\n### 学習ツール (🧠 Learn)\n• **STEAM Lab**: 生徒が操作できる、科学・数学・工学のインタラクティブなシミュレーション。\n• **StoryForge**: 協働的で、選択によって展開するストーリー作成。\n• **SEL Hub**: 社会性と情動の学習活動および状態確認。\n• **Research Hub**: ガイド付き探究と情報源の評価活動。",
+    "brainstormInsert": ""
+  }
+}

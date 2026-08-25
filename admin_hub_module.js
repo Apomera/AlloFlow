@@ -241,6 +241,33 @@ function AdminHubPanel(props) {
     }
     return fallback;
   }, [t]);
+  const openHubTool = React.useCallback((toolId) => {
+    if (toolId !== "rewards") {
+      openTool(toolId);
+      return;
+    }
+    let portalUrl = "";
+    try {
+      const candidate = new URL(String(window.localStorage.getItem("allo_school_rewards_portal_url_v1") || "").trim());
+      if (candidate.protocol === "https:" && candidate.hostname === "script.google.com" && !candidate.port && !candidate.username && !candidate.password && !candidate.search && !candidate.hash && /^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(candidate.pathname)) portalUrl = candidate.origin + candidate.pathname;
+    } catch (_) {
+    }
+    if (!portalUrl) {
+      addToast(tt("adminhub.rewards_connect_first", "Connect School Rewards in Project Settings first."), "info");
+      return;
+    }
+    try {
+      const popup = window.open(portalUrl, "_blank", "noopener,noreferrer");
+      if (!popup) {
+        addToast(tt("adminhub.rewards_popup_blocked", "School Rewards was blocked. Allow pop-ups and try again."), "error");
+        return;
+      }
+      popup.opener = null;
+      onClose();
+    } catch (_) {
+      addToast(tt("adminhub.rewards_open_failed", "School Rewards could not open."), "error");
+    }
+  }, [addToast, onClose, openTool, tt]);
   const dialogRef = React.useRef(null);
   React.useEffect(() => {
     const dialog = dialogRef.current;
@@ -320,6 +347,15 @@ function AdminHubPanel(props) {
       descCls: "text-blue-800"
     },
     {
+      id: "rewards",
+      icon: "🎟️",
+      title: tt("adminhub.rewards_title", "School Rewards & Store"),
+      desc: tt("adminhub.rewards_desc", "Open the connected Google Education rewards ledger for staff recognition, private student balance emails, prize previews, and locked trimester store checkout."),
+      accent: "from-emerald-50 to-teal-50 border-emerald-700",
+      titleCls: "text-emerald-900",
+      descCls: "text-emerald-800"
+    },
+    {
       id: "walkthrough",
       icon: "🚪",
       title: tt("adminhub.walkthrough_title", "UDL Walkthrough"),
@@ -380,7 +416,7 @@ function AdminHubPanel(props) {
       key: tool.id,
       type: "button",
       "data-help-key": "adminhub_tool_card",
-      onClick: () => openTool(tool.id),
+      onClick: () => openHubTool(tool.id),
       className: "flex items-start gap-3 p-4 bg-gradient-to-br border rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left " + tool.accent
     },
     /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, tool.icon),

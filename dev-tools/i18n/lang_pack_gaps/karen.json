@@ -1,10 +1,10 @@
 {
   "langName": "karen",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
-  "totalEnglishKeys": 1427,
-  "translatedKeys": 1410,
+  "totalEnglishKeys": 1430,
+  "translatedKeys": 1414,
   "missingKeys": 0,
-  "passthroughKeys": 17,
-  "coveragePct": 98.8,
+  "passthroughKeys": 16,
+  "coveragePct": 98.9,
   "missing": {}
 }

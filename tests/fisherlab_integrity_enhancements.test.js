@@ -170,12 +170,18 @@ describe('Fisher Lab achievement and journal integrity', () => {
     });
 
     expect(deriveCoreAchievements({
+      journal: [{ speciesId: 'cod', identificationCorrect: false, action: 'retain', ruleCorrect: true }],
+      coreTrips: 1,
+      regsViolations: 0
+    })).not.toMatchObject({ 'first-keeper': true });
+
+    expect(deriveCoreAchievements({
       cleanCoreTrips: 1,
       regsViolations: 2
     })).toMatchObject({ 'sustainable-fisher': true });
   });
 
-  it('logs correctly identified retained and released observations exactly once', () => {
+  it('logs retained, released, and review-needed observations exactly once', () => {
     const { appendCoreJournalObservation } = window.__FisherLabCore;
     const released = {
       observationId: 'cod-001',
@@ -213,12 +219,21 @@ describe('Fisher Lab achievement and journal integrity', () => {
     expect(afterRetain[1]).toMatchObject({ observationId: 'mackerel-001', action: 'retain' });
 
     expect(appendCoreJournalObservation(afterRetain, { ...released, action: 'retain' })).toEqual(afterRetain);
-    expect(appendCoreJournalObservation(afterRetain, {
+    const afterReview = appendCoreJournalObservation(afterRetain, {
       observationId: 'unknown-001',
       speciesId: 'cod',
       action: 'release',
-      identificationCorrect: false
-    })).toEqual(afterRetain);
+      identificationCorrect: false,
+      evidence: 'Selected the wrong diagnostic field marks'
+    });
+    expect(afterReview).toHaveLength(3);
+    expect(afterReview[2]).toMatchObject({
+      observationId: 'unknown-001',
+      speciesId: 'cod',
+      action: 'release',
+      identificationCorrect: false,
+      evidence: 'Selected the wrong diagnostic field marks'
+    });
   });
 });
 

@@ -394,7 +394,7 @@ describe('Nuclear lab renders', () => {
   it('keeps the topic index in the same order as the sections it links to', () => {
     const registry = [...SRC.matchAll(/\{ id: '([a-z0-9]+)', grp: '[a-z]+', icon:/g)].map((m) => m[1]);
     const dom = [...SRC.matchAll(/^        sec\('([a-z0-9]+)'/gm)].map((m) => m[1]).filter((id) => id !== 'next');
-    expect(registry.length).toBe(20);
+    expect(registry.length).toBe(21);
     // Not a set comparison — order IS the contract, because the index prints
     // each topic's position as its section number.
     expect(dom).toEqual(registry);
@@ -1297,12 +1297,13 @@ describe('Taking a route', () => {
   it('narrows the index to that route, in its order', () => {
     const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
     const steps = [...html.matchAll(/Step (\d+) — ([^<(]+)/g)].map((m) => m[2].trim());
-    expect(steps.length).toBe(3);
+    expect(steps.length).toBe(4);
     // 'know' is detect -> dating -> chain, which is NOT document order
     // (dating is section 2, detect is section 12). Order is the point.
     expect(steps[0]).toMatch(/Measure it/);
     expect(steps[1]).toMatch(/Carbon dating/);
-    expect(html).toContain('route: 3 steps');
+    expect(steps[3]).toMatch(/Evidence challenge/);
+    expect(html).toContain('route: 4 steps');
   });
 
   it('still shows the section numbers, so a step is locatable in the document', () => {

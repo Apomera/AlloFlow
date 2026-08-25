@@ -93,6 +93,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       audience: '',
       responses: {},      // letterId -> string
       script: '',         // assembled script (auto-built from responses)
+      buildMode: 'guided',
+      activeStep: 0,
       practiceCount: 0,
       lastUpdated: null
     };
@@ -116,13 +118,13 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var _deT = (ctx && ctx.theme) || {};
       var _deHC = !!_deT.isContrast, _deL = !_deHC && !_deT.isDark;
       var _de_BGL = {'#0f172a':'#f8fafc','#1e293b':'#ffffff'}, _de_BGH = {'#0f172a':'#000000','#1e293b':'#000000','#fff':'#000000','#dbeafe':'#000000'};
-      var _de_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#bfdbfe':'#1e40af','#fcd34d':'#78350f','#fde68a':'#92400e'}, _de_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bfdbfe':'#ffff00','#dbeafe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _de_FGL = {'#cbd5e1':'#334155','#93c5fd':'#1e3a8a','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#bfdbfe':'#1e40af','#fcd34d':'#78350f','#fde68a':'#92400e'}, _de_FGH = {'#cbd5e1':'#ffff00','#93c5fd':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#fff':'#ffff00','#bfdbfe':'#ffff00','#dbeafe':'#ffff00','#0f172a':'#ffff00','#64748b':'#ffff00','#475569':'#ffff00','#22c55e':'#ffff00','#a855f7':'#ffff00','#6366f1':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _de_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _de_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#3b82f6':'#ffff00','#475569':'#ffff00','#cbd5e1':'#ffff00','#2563eb':'#ffff00','#f59e0b':'#ffff00'};
       var _deBg = function(h){ return _deHC ? (_de_BGH[h]||h) : (_deL ? (_de_BGL[h]||h) : h); };
       // Dark-mode foreground remap. The tool shell is always dark, so these
       // mid-tone accents were rendering below 4.5:1 as TEXT. Each maps to a
       // lighter shade of the SAME hue; backgrounds and borders are untouched.
-      var _de_FGD = {'#6366f1':'#818cf8'};
+      var _de_FGD = {'#0ea5e9':'#38bdf8','#a855f7':'#d8b4fe','#ec4899':'#f9a8d4','#6366f1':'#a5b4fc'};
       var _deFg = function(h){ return _deHC ? (_de_FGH[h]||h) : (_deL ? (_de_FGL[h]||h) : (_de_FGD[h]||h)); };
       var _deBd = function(h){ return _deHC ? (_de_BDH[h]||h) : (_deL ? (_de_BDL[h]||h) : h); };
       var React = ctx.React;
@@ -143,6 +145,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         });
       }
       var view = d.view || 'home';
+      var buildMode = d.buildMode === 'all' ? 'all' : 'guided';
+      var activeStep = Math.min(LETTERS.length - 1, Math.max(0, Number(d.activeStep) || 0));
       var draftedSteps = LETTERS.filter(function(L) {
         var response = (d.responses || {})[L.id];
         return response && response.trim();
@@ -151,6 +155,24 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         ? 'No DEAR MAN steps drafted yet. Start with Describe.'
         : draftedSteps + ' of ' + LETTERS.length + ' DEAR MAN steps drafted.';
       function goto(v) { setDM({ view: v }); }
+      function focusStepField(index, attempt) {
+        window.setTimeout(function() {
+          var field = document.getElementById('dm-' + LETTERS[index].id);
+          if (field) field.focus();
+          else if ((attempt || 0) < 2) focusStepField(index, (attempt || 0) + 1);
+        }, 0);
+      }
+      function goToBuildStep(index) {
+        var nextIndex = Math.min(LETTERS.length - 1, Math.max(0, index));
+        setDM({ activeStep: nextIndex, buildMode: 'guided' });
+        focusStepField(nextIndex);
+      }
+      function setBuildMode(mode) {
+        setDM({ buildMode: mode });
+        if (announceToSR) announceToSR(mode === 'guided'
+          ? 'Guided drafting mode. One DEAR MAN step is shown at a time.'
+          : 'All steps mode. All seven DEAR MAN steps are shown.');
+      }
       function printNow() { try { window.print(); } catch (e) {} }
 
       function header() {
@@ -256,8 +278,58 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             )
           ),
 
-          // 7 prompt cards
-          LETTERS.map(function(L, idx) {
+          h('div', { className: 'no-print', style: { marginBottom: 12, padding: 12, borderRadius: 10, background: _deBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' } },
+              h('div', { style: { flex: '1 1 260px' } },
+                h('div', { style: { color: _deFg('#e2e8f0'), fontSize: 13, fontWeight: 800, marginBottom: 3 } }, 'Choose how you want to build'),
+                h('div', { style: { color: _deFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } },
+                  buildMode === 'guided'
+                    ? 'Focus on one part at a time. You can skip ahead or come back whenever you need.'
+                    : 'Review or edit all seven parts together on one page.')
+              ),
+              h('div', { role: 'group', 'aria-label': 'Drafting layout', style: { display: 'inline-flex', padding: 3, borderRadius: 9, background: _deBg('#1e293b'), border: '1px solid #334155' } },
+                ['guided', 'all'].map(function(mode) {
+                  var selected = buildMode === mode;
+                  return h('button', {
+                    key: mode,
+                    type: 'button',
+                    'data-dearman-build-mode': mode,
+                    'aria-pressed': selected,
+                    onClick: function() { setBuildMode(mode); },
+                    style: { padding: '7px 10px', borderRadius: 7, border: 'none', cursor: 'pointer', background: selected ? '#2563eb' : 'transparent', color: selected ? '#fff' : _deFg('#cbd5e1'), fontSize: 11, fontWeight: 800 }
+                  }, mode === 'guided' ? 'Guided steps' : 'All steps');
+                })
+              )
+            ),
+            buildMode === 'guided' ? h('div', { 'data-dearman-step-navigator': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: 6, marginTop: 12 } },
+              LETTERS.map(function(L, idx) {
+                var response = (d.responses || {})[L.id];
+                var isDrafted = !!(response && response.trim());
+                var isCurrent = activeStep === idx;
+                var stepState = isCurrent ? 'current' : (isDrafted ? 'complete' : 'upcoming');
+                return h('button', {
+                  key: L.id,
+                  type: 'button',
+                  'data-dearman-step-index': idx,
+                  'data-dearman-step-state': stepState,
+                  'aria-current': isCurrent ? 'step' : undefined,
+                  'aria-label': 'Step ' + (idx + 1) + ': ' + L.label + '. ' + (isDrafted ? 'Drafted' : 'Not drafted') + (isCurrent ? '. Current step.' : '.'),
+                  onClick: function() { goToBuildStep(idx); },
+                  style: { display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, padding: '7px 8px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: '1px solid ' + (isCurrent ? L.color : (isDrafted ? 'rgba(34,197,94,0.55)' : '#334155')), background: isCurrent ? 'rgba(59,130,246,0.16)' : _deBg('#1e293b'), color: _deFg('#e2e8f0') }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { width: 24, height: 24, flex: '0 0 24px', borderRadius: 7, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: isDrafted && !isCurrent ? 'rgba(34,197,94,0.18)' : 'rgba(255,255,255,0.06)', color: isDrafted && !isCurrent ? _deFg('#22c55e') : _deFg(L.color), fontWeight: 900, fontSize: 12 } }, isDrafted && !isCurrent ? '\u2713' : L.letter),
+                  h('span', { style: { minWidth: 0 } },
+                    h('span', { style: { display: 'block', fontSize: 9, color: _deFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.3 } }, 'Step ' + (idx + 1)),
+                    h('span', { style: { display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 10.5, fontWeight: isCurrent ? 800 : 700 } }, L.label)
+                  )
+                );
+              })
+            ) : null
+          ),
+
+          // Step prompt cards
+          (buildMode === 'guided' ? [LETTERS[activeStep]] : LETTERS).map(function(L) {
+            var idx = LETTERS.indexOf(L);
             var v = (d.responses || {})[L.id] || '';
             return h('div', { key: L.id, style: { padding: 14, borderRadius: 10, background: _deBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid ' + L.color, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
@@ -278,6 +350,21 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             );
           }),
 
+          buildMode === 'guided' ? h('div', { className: 'no-print', 'data-dearman-guided-controls': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(110px, 1fr) auto minmax(110px, 1fr)', alignItems: 'center', gap: 8, marginTop: 4, marginBottom: 12 } },
+            h('button', {
+              type: 'button',
+              disabled: activeStep === 0,
+              onClick: function() { goToBuildStep(activeStep - 1); },
+              style: { justifySelf: 'start', padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: activeStep === 0 ? 'not-allowed' : 'pointer', opacity: activeStep === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 }
+            }, '\u2190 Previous'),
+            h('span', { style: { color: _deFg('#94a3b8'), fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' } }, 'Step ' + (activeStep + 1) + ' of ' + LETTERS.length),
+            h('button', {
+              type: 'button',
+              onClick: function() { activeStep === LETTERS.length - 1 ? goto('script') : goToBuildStep(activeStep + 1); },
+              style: { justifySelf: 'end', padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+            }, activeStep === LETTERS.length - 1 ? 'Review my script \u2192' : 'Next: ' + LETTERS[activeStep + 1].label + ' \u2192')
+          ) : null,
+
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
             h('button', { onClick: function() { goto('script'); }, 'aria-label': 'See my full script',
               style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 14 } },
@@ -294,13 +381,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       function renderScript() {
         var script = buildScript();
         var hasAny = LETTERS.some(function(L) { var v = (d.responses || {})[L.id]; return v && v.trim(); });
+        var missingSteps = LETTERS.filter(function(L) { var v = (d.responses || {})[L.id]; return !v || !v.trim(); });
+        var reviewCount = LETTERS.length - missingSteps.length;
 
         if (!hasAny) {
           return h('div', null,
             h('div', { style: { padding: 20, borderRadius: 12, background: _deBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📜'),
               h('div', { style: { color: _deFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No script yet'),
-              h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12 } }, 'Fill in the seven steps and your script will assemble here.'),
+              h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12 } }, 'Draft any DEAR MAN step and your script will assemble here. Every step is optional.'),
               h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Build script',
                 style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Build a script')
             )
@@ -312,6 +401,37 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           if (addToast) addToast('Practice logged. Try it again — it gets easier.', 'success');
         }
 
+        function editReviewStep(index) {
+          setDM({ view: 'home', buildMode: 'guided', activeStep: index });
+          focusStepField(index);
+        }
+        function copyScriptToClipboard() {
+          function copied() {
+            if (addToast) addToast('Script copied to your clipboard.', 'success');
+            if (announceToSR) announceToSR('DEAR MAN script copied to clipboard.');
+          }
+          function fallbackCopy() {
+            try {
+              var copyField = document.createElement('textarea');
+              copyField.value = script;
+              copyField.setAttribute('readonly', '');
+              copyField.style.position = 'fixed';
+              copyField.style.opacity = '0';
+              document.body.appendChild(copyField);
+              copyField.select();
+              var didCopy = document.execCommand('copy');
+              document.body.removeChild(copyField);
+              if (didCopy) copied();
+              else if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
+            } catch (e) {
+              if (addToast) addToast('Copy is unavailable. Select the script text instead.', 'info');
+            }
+          }
+          if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+            window.navigator.clipboard.writeText(script).then(copied).catch(fallbackCopy);
+          } else fallbackCopy();
+        }
+
         return h('div', null,
           // Context
           h('div', { style: { padding: 10, borderRadius: 8, background: _deBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12, fontSize: 12, color: _deFg('#cbd5e1'), lineHeight: 1.6 } },
@@ -319,23 +439,47 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             d.ask ? h('div', null, h('strong', { style: { color: _deFg('#93c5fd') } }, 'The ask: '), d.ask) : null
           ),
 
+          h('div', { 'data-dearman-review-summary': reviewCount, style: { padding: 12, borderRadius: 10, background: reviewCount === LETTERS.length ? 'rgba(34,197,94,0.10)' : 'rgba(245,158,11,0.09)', border: '1px solid ' + (reviewCount === LETTERS.length ? 'rgba(34,197,94,0.35)' : 'rgba(245,158,11,0.32)'), marginBottom: 12 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { color: _deFg('#e2e8f0'), fontSize: 12.5, fontWeight: 800, marginBottom: 2 } }, reviewCount === LETTERS.length ? 'All seven parts are drafted' : reviewCount + ' of ' + LETTERS.length + ' parts drafted'),
+                h('div', { style: { color: _deFg('#94a3b8'), fontSize: 11, lineHeight: 1.5 } }, reviewCount === LETTERS.length
+                  ? 'Keep only the language that sounds natural and useful to you.'
+                  : 'Undrafted parts are shown below. They are optional, and you can add only what helps your ask.')
+              ),
+              missingSteps.length ? h('button', {
+                type: 'button',
+                onClick: function() { editReviewStep(LETTERS.indexOf(missingSteps[0])); },
+                'aria-label': 'Add next undrafted step: ' + missingSteps[0].label,
+                style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.12)', color: _deFg('#fcd34d'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+              }, 'Add next: ' + missingSteps[0].label) : null
+            )
+          ),
+
           // Full script
           h('div', { style: { padding: 18, borderRadius: 12, background: 'linear-gradient(135deg, rgba(59,130,246,0.10) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(59,130,246,0.4)', marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: _deFg('#93c5fd'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 } }, '📜 Your full script'),
-            h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 15, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, script)
+            h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 15, lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, script),
+            h('button', { type: 'button', 'data-dearman-copy-script': 'true', onClick: copyScriptToClipboard, 'aria-label': 'Copy full DEAR MAN script',
+              style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.12)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 10.5, fontWeight: 800 } }, 'Copy script')
           ),
 
           // Step-by-step view
           h('div', { style: { fontSize: 11, color: _deFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 } }, 'Step-by-step'),
-          LETTERS.map(function(L) {
+          LETTERS.map(function(L, index) {
             var v = (d.responses || {})[L.id];
-            if (!v || !v.trim()) return null;
-            return h('div', { key: L.id, style: { padding: 10, borderRadius: 8, background: _deBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + L.color, marginBottom: 6 } },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+            var isDrafted = !!(v && v.trim());
+            return h('div', { key: L.id, 'data-dearman-review-step': L.id, 'data-dearman-review-step-state': isDrafted ? 'drafted' : 'optional', style: { padding: 10, borderRadius: 8, background: isDrafted ? _deBg('#0f172a') : 'rgba(15,23,42,0.32)', borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + (isDrafted ? L.color : '#475569'), marginBottom: 6 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                 h('span', { style: { fontSize: 16, fontWeight: 900, color: _deFg(L.color), fontFamily: 'ui-monospace, monospace', minWidth: 22 } }, L.letter),
-                h('span', { style: { fontSize: 11, color: _deFg(L.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label)
+                h('span', { style: { fontSize: 11, color: _deFg(L.color), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, L.label),
+                h('span', { style: { marginLeft: 'auto', color: isDrafted ? _deFg('#22c55e') : _deFg('#94a3b8'), fontSize: 10, fontWeight: 800 } }, isDrafted ? 'Drafted' : 'Optional'),
+                h('button', { type: 'button', onClick: function() { editReviewStep(index); }, 'aria-label': (isDrafted ? 'Edit ' : 'Add ') + L.label + ' step',
+                  style: { padding: '4px 8px', borderRadius: 6, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, isDrafted ? 'Edit' : 'Add')
               ),
-              h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, v)
+              isDrafted
+                ? h('p', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 13, lineHeight: 1.65 } }, v)
+                : h('p', { style: { margin: 0, color: _deFg('#94a3b8'), fontSize: 11.5, lineHeight: 1.55, fontStyle: 'italic' } }, 'Not drafted. Add this only if it helps your conversation.')
             );
           }),
 
@@ -528,7 +672,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         header(),
         navTabs(),
         h('div', { id: 'dearman-panel-' + view, role: 'tabpanel', 'aria-labelledby': 'dearman-tab-' + view, tabIndex: 0 },
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'DEAR MAN progress', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.22)', color: _deFg('#bfdbfe'), fontSize: 11, lineHeight: 1.5 } }, dearManProgressText),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-label': 'DEAR MAN progress', style: { marginBottom: 12, padding: '8px 12px', borderRadius: 8, background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.22)', color: _deFg('#bfdbfe'), fontSize: 11, lineHeight: 1.5 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center' } },
+              h('span', null, dearManProgressText),
+              h('span', { 'aria-hidden': 'true', style: { color: _deFg('#94a3b8'), fontWeight: 800, whiteSpace: 'nowrap' } }, draftedSteps + ' / ' + LETTERS.length)
+            ),
+            h('div', { role: 'progressbar', 'aria-label': 'Drafting progress', 'aria-valuemin': 0, 'aria-valuemax': LETTERS.length, 'aria-valuenow': draftedSteps, 'aria-valuetext': dearManProgressText, 'data-dearman-progress': draftedSteps,
+              style: { height: 5, borderRadius: 999, background: 'rgba(148,163,184,0.18)', overflow: 'hidden', marginTop: 7 } },
+              h('div', { 'aria-hidden': 'true', style: { width: ((draftedSteps / LETTERS.length) * 100) + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #2563eb 0%, #22c55e 100%)', transition: 'width 180ms ease' } })
+            )
+          ),
           body
         )
       );

@@ -57,6 +57,10 @@ describe('wave — equation-editor a11y', () => {
     expect(html).toContain('focus:ring-4');
     expect(html).toContain('focus:ring-cyan-300');
     expect(html).toContain('Live wave');
+    expect(html).toContain('data-wave-live-summary="true"');
+    expect(html).toContain('Live measurements');
+    expect(html).toContain('Wavelength');
+    expect(html).toContain('Medium speed');
     expect(html).not.toContain('outline: none');
   });  it('amplitude input announces what it controls', () => {
     const html = renderWave({ matchTarget: { amp: 60, freq: 3 } });

@@ -1025,7 +1025,10 @@ describe('Document Builder export recommendations', () => {
 
   it('persists margins in versioned presets and refreshes live document statistics', () => {
     expect(host).toContain("pageMargin: '1in'");
-    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 3');
+    expect(host).toContain("vennExportMode: 'completed'");
+    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 5');
+    expect(source).toContain("name=\"vennExportMode\"");
+    expect(source).toContain('Concept sort: interactive tap/select sorting');
     expect(source).toContain("setExportConfigAndRefresh(p => ({ ...p, pageMargin: m.val }))");
     expect(source).toContain('refreshDocumentStats();');
     expect(compiled).toContain('wordCount.toLocaleString()');

@@ -529,7 +529,7 @@
         check: function (d) { return !!(d && d.materialsTried && d.materialsTried.length >= 3); } },
       { id: 'heat_insulation', label: 'Keep the mug above 65 °C for an hour', icon: '🧣',
         check: function (d) { return !!(d && d.insulationWin); } },
-      { id: 'heat_calorimetry', label: 'Predict a mixing temperature within 2 °C', icon: '⚖️',
+      { id: 'heat_calorimetry', label: 'Estimate a mixing temperature within 2 °C', icon: '⚖️',
         check: function (d) { return !!(d && (d.mixWins || 0) >= 1); } },
       { id: 'heat_curve', label: 'Take water all the way from ice to steam', icon: '♨️',
         check: function (d) { return !!(d && d.curveComplete); } },
@@ -585,9 +585,13 @@
       var curveRef = React.useRef(null);
       var entropyRef = React.useRef(null);
       var hpRef = React.useRef(null);
-      var stPredict = React.useState('');
+      var initialHeatLabState = (ctx.toolData && ctx.toolData._heatLab) || {};
+      var initialMixEstimate = initialHeatLabState.mixEstimateResult && typeof initialHeatLabState.mixEstimateResult.estimated === 'number'
+        ? initialHeatLabState.mixEstimateResult
+        : null;
+      var stPredict = React.useState(initialMixEstimate ? String(initialMixEstimate.estimated) : '');
       var predictText = stPredict[0], setPredictText = stPredict[1];
-      var stReveal = React.useState(false);
+      var stReveal = React.useState(!!initialMixEstimate);
       var revealed = stReveal[0], setRevealed = stReveal[1];
       var st3d = React.useState(HEAT_VIEWER.status ? HEAT_VIEWER.status() : 'idle');
       var view3dStatus = st3d[0], setView3dStatus = st3d[1];
@@ -598,7 +602,7 @@
       var prefersReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-      var d = (ctx.toolData && ctx.toolData._heatLab) || {};
+      var d = initialHeatLabState;
 
       function upd(patch) {
         setToolData(function (prev) {
@@ -607,6 +611,16 @@
           next._heatLab = cur;
           return next;
         });
+      }
+      function resetMixEstimate(patch) {
+        upd(Object.assign({}, patch || {}, {
+          mixEstimateResult: null,
+          mixEstimateRevision: '',
+          mixEstimateReflection: '',
+          mixEstimateReflectionComplete: false
+        }));
+        setPredictText('');
+        setRevealed(false);
       }
       function pushOnce(key, value) {
         var list = d[key] || [];
@@ -1405,6 +1419,11 @@
       var t2 = typeof d.t2 === 'number' ? d.t2 : 90;
       var finalT = heatMixTemperature(sub1, m1, t1, sub2, m2, t2);
       var mixExplanation = heatMixExplanation(sub1, m1, t1, sub2, m2, t2);
+      var mixEstimateResult = d.mixEstimateResult && typeof d.mixEstimateResult.estimated === 'number' ? d.mixEstimateResult : null;
+      var mixEstimateRevision = ['supported', 'revised', 'uncertain'].indexOf(d.mixEstimateRevision) !== -1 ? d.mixEstimateRevision : '';
+      var mixEstimateReflection = typeof d.mixEstimateReflection === 'string' ? d.mixEstimateReflection : '';
+      var parsedMixEstimate = parseFloat(predictText);
+      var mixEstimateReady = predictText !== '' && isFinite(parsedMixEstimate) && parsedMixEstimate >= 0 && parsedMixEstimate <= 100;
 
       // ── Module 4: heating curve ──────────────────────────────────────
       var energyIn = typeof d.energyIn === 'number' ? d.energyIn : 0;   // kJ per kg
@@ -2257,9 +2276,9 @@
 
         // ── 3. calorimetry ──
         sec('mixing', '#38bdf8',
-          heading('#38bdf8', '⚖️ 5. Mix two things: what temperature do you get?'),
-          h('p', { className: 'text-[11px] mb-2', style: { color: isDark ? '#cbd5e1' : '#475569' } },
-            'Energy lost by the hot one equals energy gained by the cold one. Predict the final temperature before you reveal it.'),
+          heading('#38bdf8', '⚖️ 5. Calorimetry estimation challenge'),
+          h('p', { className: 'text-[11px] mb-2', 'data-heat-estimation-challenge': 'true', style: { color: isDark ? '#cbd5e1' : '#475569' } },
+            'Estimate the final temperature, compare it with the energy model, then revise your thinking. Closeness can earn estimation XP; reflection credit never depends on matching the model.'),
           h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
             [[1, sub1, m1, t1, 'sub1', 'm1', 't1'], [2, sub2, m2, t2, 'sub2', 'm2', 't2']].map(function (row) {
               var n = row[0], sub = row[1];
@@ -2268,53 +2287,102 @@
                 h('div', { className: 'flex flex-wrap gap-1 mb-1' },
                   SUBSTANCES.map(function (s) {
                     return pill(sub.id === s.id, s.colour, s.name, function () {
-                      var patch = {}; patch[row[4]] = s.id; patch.reveal = false;
-                      upd(patch); setRevealed(false);
+                      var patch = {}; patch[row[4]] = s.id;
+                      resetMixEstimate(patch);
                     }, 'Set sample ' + n + ' to ' + s.name);
                   })
                 ),
                 slider('heat-mass-' + n, 'Mass', 0.1, 2, 0.1, row[2],
-                  function (e) { var p = {}; p[row[5]] = parseFloat(e.target.value); upd(p); setRevealed(false); }, row[2].toFixed(1) + ' kg'),
+                  function (e) { var p = {}; p[row[5]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[2].toFixed(1) + ' kg'),
                 slider('heat-temp-' + n, 'Start temp', 0, 100, 1, row[3],
-                  function (e) { var p = {}; p[row[6]] = parseFloat(e.target.value); upd(p); setRevealed(false); }, row[3] + ' °C'),
+                  function (e) { var p = {}; p[row[6]] = parseFloat(e.target.value); resetMixEstimate(p); }, row[3] + ' °C'),
                 h('p', { className: 'text-[10px] mt-1 font-mono', style: { color: isDark ? '#94a3b8' : '#475569' } }, 'c = ' + sub.c + ' J/kg·K'));
             })
           ),
           h('div', { className: 'flex flex-wrap items-end gap-2 mt-2' },
             h('div', { className: 'flex-1 min-w-[160px]' },
-              h('label', { htmlFor: 'heat-predict', className: 'block text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your prediction (°C)'),
+              h('label', { htmlFor: 'heat-predict', className: 'block text-[11px] font-bold mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Your temperature estimate (°C)'),
               h('input', {
-                id: 'heat-predict', type: 'number', value: predictText,
+                id: 'heat-predict', type: 'number', min: 0, max: 100, value: predictText,
                 placeholder: 'e.g. 45',
-                onChange: function (e) { setPredictText(e.target.value); },
+                'aria-describedby': 'heat-estimate-help',
+                onChange: function (e) {
+                  setPredictText(e.target.value);
+                  setRevealed(false);
+                  upd({ mixEstimateResult: null, mixEstimateRevision: '', mixEstimateReflection: '', mixEstimateReflectionComplete: false });
+                },
                 className: 'w-full min-h-11 px-3 py-2 rounded-lg text-[11px]',
                 style: { border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.32)' : 'rgba(100,116,139,0.3)'), background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' }
-              })),
+              }),
+              h('p', { id: 'heat-estimate-help', className: 'mt-1 text-[10px]', style: { color: isDark ? '#94a3b8' : '#64748b' } }, 'Enter a number before comparing. A reasonable estimate can be above or below the model result.')),
             h('button', {
               type: 'button',
-              'aria-label': 'Reveal the final mixing temperature',
+              disabled: !mixEstimateReady || revealed,
+              'aria-disabled': mixEstimateReady && !revealed ? 'false' : 'true',
+              'aria-label': 'Compare your temperature estimate with the calorimetry model',
               onClick: function () {
-                setRevealed(true);
+                if (!mixEstimateReady || revealed) return;
                 var guess = parseFloat(predictText);
-                if (!isNaN(guess) && Math.abs(guess - finalT) <= 2) {
-                  upd({ mixWins: (d.mixWins || 0) + 1 });
+                var absoluteError = Math.abs(guess - finalT);
+                var percentError = finalT === 0 ? 0 : (absoluteError / Math.abs(finalT)) * 100;
+                var withinTwo = absoluteError <= 2;
+                setRevealed(true);
+                upd({
+                  mixEstimateResult: { estimated: guess, actual: finalT, absoluteError: absoluteError, percentError: percentError, withinTwo: withinTwo },
+                  mixEstimateRevision: '',
+                  mixEstimateReflection: '',
+                  mixEstimateReflectionComplete: false,
+                  mixWins: withinTwo ? (d.mixWins || 0) + 1 : (d.mixWins || 0)
+                });
+                if (withinTwo) {
                   if (typeof celebrate === 'function') celebrate();
-                  if (typeof awardXP === 'function') awardXP('heatlab_mix', 10, 'Predicted a mixing temperature');
-                  if (typeof announceToSR === 'function') announceToSR('Within two degrees. The answer is ' + finalT.toFixed(1) + ' degrees Celsius.');
+                  if (typeof awardXP === 'function') awardXP('heatlab_mix_estimate', 10, 'Mixing estimate within two degrees');
+                  if (typeof announceToSR === 'function') announceToSR('Your estimate is within two degrees of the model result. The model gives ' + finalT.toFixed(1) + ' degrees Celsius.');
                 } else if (typeof announceToSR === 'function') {
-                  announceToSR('The final temperature is ' + finalT.toFixed(1) + ' degrees Celsius.');
+                  announceToSR('The model gives ' + finalT.toFixed(1) + ' degrees Celsius. Your estimate differs by ' + absoluteError.toFixed(1) + ' degrees.');
                 }
               },
-              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white',
+              className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45',
               style: { background: '#0369a1', border: '1px solid #0369a1' }
-            }, revealed ? 'Recalculate' : 'Reveal')
+            }, revealed ? 'Estimate compared' : 'Compare estimate with model')
           ),
-          revealed ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(240,249,255,0.9)' } },
-            h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } }, 'Final temperature: ' + finalT.toFixed(1) + ' °C'),
+          revealed && mixEstimateResult ? h('div', { role: 'status', className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(15,23,42,0.7)' : 'rgba(240,249,255,0.9)' } },
+            h('p', { className: 'text-sm font-black', style: { color: ink('#0284c7') } }, 'Estimate: ' + mixEstimateResult.estimated.toFixed(1) + ' °C · Model: ' + mixEstimateResult.actual.toFixed(1) + ' °C'),
+            h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: mixEstimateResult.withinTwo ? ink('#15803d') : (isDark ? '#fcd34d' : '#92400e') } },
+              mixEstimateResult.withinTwo ? 'Within 2 °C — estimation XP earned.' : 'Difference: ' + mixEstimateResult.absoluteError.toFixed(1) + ' °C (' + mixEstimateResult.percentError.toFixed(0) + '% error). Reflection credit is still fully available.'),
             h('p', { className: 'text-[11px] mt-1 font-mono', style: { color: isDark ? '#cbd5e1' : '#475569' } },
               'Tf = (m₁c₁T₁ + m₂c₂T₂) / (m₁c₁ + m₂c₂)'),
             h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
               mixExplanation)
+          ) : null,
+          revealed && mixEstimateResult ? h('section', { className: 'mt-2 rounded-lg border p-2.5', 'data-heat-estimation-reflection': 'true', 'aria-label': 'Calorimetry estimation reflection', style: { borderColor: 'rgba(56,189,248,0.5)', background: isDark ? 'rgba(8,47,73,0.45)' : 'rgba(240,249,255,0.9)' } },
+            h('h4', { className: 'text-[11px] font-black uppercase tracking-wide', style: { color: ink('#0284c7') } }, 'Revise from evidence'),
+            h('p', { className: 'mt-1 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Choose how the comparison changed your thinking, then cite the measured difference or the energy model. This completion credit is independent of accuracy.'),
+            h('fieldset', { className: 'mt-2' },
+              h('legend', { className: 'text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'What does the evidence suggest?'),
+              h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3' },
+                [
+                  { id: 'supported', label: 'My reasoning was supported' },
+                  { id: 'revised', label: 'I would revise my reasoning' },
+                  { id: 'uncertain', label: 'I need another trial' }
+                ].map(function (option) {
+                  return h('label', { key: option.id, className: 'flex cursor-pointer items-start gap-2 rounded-lg border p-2 text-[10px]', style: { borderColor: mixEstimateRevision === option.id ? '#0284c7' : 'rgba(56,189,248,0.3)', background: mixEstimateRevision === option.id ? (isDark ? 'rgba(14,116,144,0.3)' : '#e0f2fe') : 'transparent', color: isDark ? '#e2e8f0' : '#334155' } },
+                    h('input', { type: 'radio', name: 'heat-estimation-revision', value: option.id, checked: mixEstimateRevision === option.id, onChange: function () { upd({ mixEstimateRevision: option.id, mixEstimateReflectionComplete: false }); }, className: 'mt-0.5 h-4 w-4 accent-sky-700' }),
+                    h('span', null, option.label));
+                })
+              )
+            ),
+            h('label', { htmlFor: 'heat-estimation-reflection', className: 'mt-2 block text-[11px] font-bold', style: { color: isDark ? '#e2e8f0' : '#334155' } }, 'Evidence note'),
+            h('textarea', { id: 'heat-estimation-reflection', rows: 2, maxLength: 400, value: mixEstimateReflection, onChange: function (e) { upd({ mixEstimateReflection: e.target.value.slice(0, 400), mixEstimateReflectionComplete: false }); }, placeholder: 'The model result and temperature difference show... Next time I would...', className: 'mt-1 w-full rounded-lg border p-2 text-[11px]', style: { borderColor: 'rgba(56,189,248,0.4)', background: isDark ? 'rgba(15,23,42,0.8)' : '#fff', color: isDark ? '#e2e8f0' : '#0f172a' } }),
+            h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+              h('button', { type: 'button', disabled: !mixEstimateRevision || mixEstimateReflection.trim().length < 12 || !!d.mixEstimateReflectionComplete, 'aria-disabled': mixEstimateRevision && mixEstimateReflection.trim().length >= 12 && !d.mixEstimateReflectionComplete ? 'false' : 'true', onClick: function () {
+                if (!mixEstimateRevision || mixEstimateReflection.trim().length < 12 || d.mixEstimateReflectionComplete) return;
+                upd({ mixEstimateReflectionComplete: true });
+                if (typeof awardXP === 'function') awardXP('heatlab_mix_reflection', 5, 'Completed a calorimetry evidence reflection');
+                if (typeof announceToSR === 'function') announceToSR('Calorimetry estimation reflection saved.');
+              }, className: 'min-h-10 rounded-lg bg-sky-700 px-3 py-2 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, d.mixEstimateReflectionComplete ? 'Reflection saved' : 'Save evidence reflection'),
+              h('button', { type: 'button', onClick: function () { resetMixEstimate({}); }, className: 'min-h-10 rounded-lg border px-3 py-2 text-[10px] font-black', style: { borderColor: 'rgba(56,189,248,0.5)', color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Try another estimate')
+            )
           ) : null
         ),
 
@@ -2350,7 +2418,7 @@
               ),
               h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(14,165,233,0.08)' : 'rgba(255,255,255,0.62)' } },
                 h('div', { className: 'text-[10px] font-black uppercase tracking-wide', style: { color: isDark ? '#7dd3fc' : '#0369a1' } }, 'Causal direction'),
-                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Heat in â†’ rise â†’ cool â†’ sink'),
+                h('div', { className: 'mt-0.5 text-[11px] font-black', style: { color: isDark ? '#f8fafc' : '#0f172a' } }, 'Heat in → rise → cool → sink'),
                 h('div', { className: 'mt-0.5 text-[10px] leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'Buoyancy closes the loop.')
               ),
               h('div', { className: 'rounded-lg border p-2', style: { borderColor: isDark ? 'rgba(251,146,60,0.25)' : 'rgba(251,146,60,0.28)', background: isDark ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.62)' } },

@@ -45,6 +45,20 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var runLaunchTransition = function (work, event) {
+    // Keep the pre-rendered workspace concealed for this input frame. The
+    // host effect reveals it when the transition commits, allowing the button
+    // press to paint before the large workspace layout is exposed.
+    var button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      button.style.opacity = "0.72";
+    }
+    setTimeout(function () {
+      if (typeof React.startTransition === 'function') React.startTransition(work);else work();
+    }, 40);
+  };
   var launchPadRef = React.useRef(null);
   // Resolve language before the voice setup hooks: model readiness is
   // profile-specific, so changing Spanish -> English must re-check the cache.
@@ -998,10 +1012,10 @@
     "data-pathway": "guided",
     "aria-labelledby": "launch-pad-guided-title",
     "aria-describedby": "launch-pad-guided-badge launch-pad-guided-desc",
-    onClick: () => {
+    onClick: event => runLaunchTransition(() => {
       setHasSelectedMode(true);
       setGuidedMode(true);
-    }
+    }, event)
   }, /*#__PURE__*/React.createElement("span", {
     id: "launch-pad-guided-badge",
     className: "lp-mode-badge"
@@ -1024,10 +1038,10 @@
     "data-pathway": "full",
     "aria-labelledby": "launch-pad-full-title",
     "aria-describedby": "launch-pad-full-desc",
-    onClick: () => {
+    onClick: event => runLaunchTransition(() => {
       setHasSelectedMode(true);
       setGuidedMode(false);
-    }
+    }, event)
   }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
     className: "lp-card-icon",
     name: "Layout",
@@ -1058,13 +1072,13 @@
     "data-pathway": "learning",
     "aria-labelledby": "launch-pad-learning-title",
     "aria-describedby": "launch-pad-learning-desc",
-    onClick: () => {
+    onClick: event => runLaunchTransition(() => {
       setShowLearningHub(true);
       setIsTeacherMode(false);
       setShowWizard(false);
       setHasSelectedRole(true);
       setHasSelectedMode(true);
-    }
+    }, event)
   }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
     className: "lp-card-icon",
     name: "Backpack",
@@ -1083,7 +1097,7 @@
     "data-pathway": "educator",
     "aria-labelledby": "launch-pad-educator-title",
     "aria-describedby": "launch-pad-educator-desc",
-    onClick: () => {
+    onClick: event => runLaunchTransition(() => {
       setHasSelectedMode(true);
       setHasSelectedRole(true);
       setShowWizard(false);
@@ -1094,7 +1108,7 @@
         setIsTeacherMode(true);
         setShowEducatorHub(true);
       }
-    }
+    }, event)
   }, /*#__PURE__*/React.createElement(LaunchPadIcon, {
     className: "lp-card-icon",
     name: "GraduationCap",

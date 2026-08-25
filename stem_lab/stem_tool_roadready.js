@@ -89,6 +89,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (document.head) document.head.appendChild(st);
   })();
 
+  // Responsive driving layout. Fixed-position overlays used to pile into the
+  // mirror row on phones and short landscape windows; the dock now contracts
+  // below the windshield and secondary controls remain scroll-safe.
+  (function() {
+    if (document.getElementById('allo-rr-layout-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-rr-layout-css';
+    st.textContent =
+      '[data-rr-view="menu"] button,[data-rr-view="scenarioSelect"] button,[data-rr-view="scenarioBriefing"] button{line-height:1.35}' +
+      '.rr-drive-dock button{touch-action:manipulation}' +
+      '#roadready-certificate{box-sizing:border-box}' +
+      '@media(max-width:720px){.rr-drive-shell{height:calc(100dvh - 56px)!important;min-height:340px!important;border-radius:0!important}.rr-drive-dock{width:calc(100% - 12px);justify-content:center;bottom:calc(98px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-dock button{flex:1 1 auto;padding-left:5px!important;padding-right:5px!important}.rr-drive-more{right:6px!important;bottom:calc(144px + env(safe-area-inset-bottom, 0px))!important}.touch-controls{transform:scale(.84)}.rr-touch-pedals{transform-origin:bottom right}.rr-touch-secondary{transform-origin:bottom left}.rr-world-controls{max-height:42vh;overflow:auto}#roadready-certificate{padding:34px 18px 24px!important}}' +
+      '@media(max-width:420px){.rr-ridealong-state{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);min-height:26px!important;padding:0 7px!important}.rr-ridealong-state.rr-more-open{display:none!important}}' +
+      '@media(max-height:560px){.rr-drive-shell{height:calc(100dvh - 42px)!important;min-height:320px!important}.rr-drive-dock{bottom:calc(96px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-more{bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;max-height:150px;overflow:auto}.rr-world-controls{max-height:150px;overflow:auto}}';
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // ── Live-region announcer with rapid-fire protection (WCAG 4.1.3) ──
   // Setting textContent twice within ~60ms can drop the first announcement
   // before the SR engine picks it up. We clear → wait one tick → set, so
@@ -107,6 +124,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       lr.textContent = String(text || '');
       _rrAnnounceTimer = null;
     }, 25);
+  }
+
+  // Driving feedback is intentionally a single, prioritized stream. The host
+  // application can also show toasts, but duplicating the same event in both the
+  // host layer and the driving canvas creates two competing cards and (often)
+  // two live-region announcements. These helpers let the simulator keep the
+  // most important active message and give every message a coherent visual tone.
+  function driveAlertPriority(message, type) {
+    var text = String(message || '').toLowerCase();
+    if (type === 'error' || /collision|crash|struck|fender bender|high.speed impact|brake.check|rear-ended|wrong way|wrong side|oncoming|illegal pass|failure to yield|train collision|red light violation|rolling stop|hit a child/.test(text)) return 3;
+    if (/⚠|warning|hydroplan|rumble strip|off the road|ease off|must stop|pedestrian|cyclist|approaching|too close|yield/.test(text)) return 2;
+    if (/^✓|good|correct|complete|achievement|full stop/.test(text)) return 1;
+    return 0;
+  }
+
+  function mergeDriveAlert(current, next, nowSeconds) {
+    if (!next || !next.msg) return current || { msg: null, until: 0 };
+    var now = Number(nowSeconds) || 0;
+    var candidate = Object.assign({}, next);
+    candidate.priority = candidate.priority == null
+      ? driveAlertPriority(candidate.msg, candidate.type) : candidate.priority;
+    candidate.until = Math.max(now + 0.25, Number(candidate.until) || now + 3);
+    var active = current && current.msg && Number(current.until) > now;
+    if (active) {
+      var currentPriority = current.priority == null
+        ? driveAlertPriority(current.msg, current.type) : current.priority;
+      if (String(current.msg).trim() === String(candidate.msg).trim()) {
+        if (candidate.until <= Number(current.until)) return current;
+        return Object.assign({}, current, { until: candidate.until,
+          priority: Math.max(currentPriority, candidate.priority) });
+      }
+      if (currentPriority > candidate.priority) return current;
+    }
+    candidate._fadeStart = now;
+    return candidate;
+  }
+
+  function driveAlertAppearance(message, explicitTone) {
+    var tone = explicitTone;
+    if (!tone) {
+      var priority = driveAlertPriority(message);
+      tone = priority >= 3 ? 'critical' : priority === 2 ? 'caution' :
+        priority === 1 ? 'success' : 'info';
+    }
+    if (tone === 'critical') return { tone: tone, background: 'rgba(69,10,10,0.94)', border: '#f87171', text: '#fff' };
+    if (tone === 'caution') return { tone: tone, background: 'rgba(69,42,8,0.94)', border: '#fbbf24', text: '#fff7ed' };
+    if (tone === 'success') return { tone: tone, background: 'rgba(5,46,22,0.94)', border: '#4ade80', text: '#f0fdf4' };
+    return { tone: 'info', background: 'rgba(8,47,73,0.94)', border: '#38bdf8', text: '#f0f9ff' };
+  }
+
+  function canvasMessageLines(context, message, maxWidth, maxLines) {
+    var text = String(message || '').trim();
+    if (!text) return [];
+    var limit = Math.max(1, Number(maxLines) || 1);
+    var width = Math.max(20, Number(maxWidth) || 20);
+    var measure = context && typeof context.measureText === 'function'
+      ? function(value) { return context.measureText(value).width; }
+      : function(value) { return String(value).length * 7; };
+    var words = text.split(/\s+/);
+    var lines = [];
+    var line = '';
+    for (var i = 0; i < words.length; i++) {
+      var candidate = line ? line + ' ' + words[i] : words[i];
+      if (line && measure(candidate) > width) {
+        lines.push(line);
+        line = words[i];
+        if (lines.length === limit - 1 && i < words.length - 1) {
+          var remainder = [line].concat(words.slice(i + 1)).join(' ');
+          while (remainder.length > 1 && measure(remainder + '…') > width) {
+            remainder = remainder.slice(0, -1).trimEnd();
+          }
+          lines.push(remainder + (i < words.length - 1 ? '…' : ''));
+          return lines;
+        }
+      } else {
+        line = candidate;
+      }
+    }
+    if (line && lines.length < limit) lines.push(line);
+    if (lines.length === 1 && measure(lines[0]) > width) {
+      var clipped = lines[0];
+      while (clipped.length > 1 && measure(clipped + '…') > width) clipped = clipped.slice(0, -1);
+      lines[0] = clipped + '…';
+    }
+    return lines;
   }
 
 
@@ -691,7 +793,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (!sR) return;
     if (!sR.driveEvents) sR.driveEvents = [];
     if (!sR._lastEvent)  sR._lastEvent  = {};
-    var now = (Date.now() - (sR.startTime || Date.now())) / 1000;
+    // Prefer simulation time so pausing the drive cannot age the event
+    // cooldown or create a gap in the debrief timeline. Keep the wall-clock
+    // fallback for callers/tests that provide older stats objects.
+    var now = isFinite(sR.simTime) && sR.simTime >= 0
+      ? sR.simTime
+      : (Date.now() - (sR.startTime || Date.now())) / 1000;
     var lastT = sR._lastEvent[type];
     if (lastT !== undefined && now - lastT < 1.5) return;
     sR._lastEvent[type] = now;
@@ -1181,6 +1288,166 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'dawn', name: 'Dawn / Dusk', icon: '🌅', speedLimit: 45, weather: 'clear', time: 'night', traffic: 'medium', difficulty: 3, desc: 'Low-angle sun glare. The most dangerous time for moose + deer. Visibility is tricky.' }
   ];
 
+  // A scenario is a short, observable practice mission rather than an
+  // open-ended score chase. These definitions drive the briefing, live
+  // progress card, and debrief from one source of truth. Free Explore and
+  // formal Road Tests deliberately keep their own completion rules.
+  var RR_SCENARIO_MISSIONS = {
+    residential: { skill: 'Low-speed scanning', durationSec: 60, distanceMeters: 300, habit: 'stops', habitTarget: 1, habitLabel: 'Make one complete stop' },
+    suburban: { skill: 'Signals and lane position', durationSec: 70, distanceMeters: 400, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled lane change' },
+    highway: { skill: 'Merge with space', durationSec: 75, distanceMeters: 700, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled merge or lane change' },
+    roundabout: { skill: 'Yield, enter, and exit', durationSec: 65, distanceMeters: 320, habit: 'distance', habitTarget: 320, habitLabel: 'Travel through the roundabout course' },
+    rural: { skill: 'Curve and hazard scanning', durationSec: 70, distanceMeters: 500, habit: 'distance', habitTarget: 500, habitLabel: 'Scan through a full rural-road segment' },
+    parking: { skill: 'Slow-space control', durationSec: 55, distanceMeters: 80, habit: 'distance', habitTarget: 80, habitLabel: 'Complete the maneuver area at walking speed' },
+    night: { skill: 'Drive within headlight range', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid sustained skids or hard inputs' },
+    fog: { skill: 'Visibility-speed choice', durationSec: 70, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitLabel: 'Use smooth inputs in limited visibility' },
+    rain: { skill: 'Wet-road space and grip', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid hydroplaning and sustained skids' },
+    snow: { skill: 'Gentle winter inputs', durationSec: 75, distanceMeters: 350, habit: 'smooth', habitTarget: 1, habitLabel: 'Avoid sustained skids and hard inputs' },
+    construction: { skill: 'Early work-zone response', durationSec: 65, distanceMeters: 350, habit: 'speed', habitTarget: 1, habitLabel: 'Stay at or below the work-zone limit' },
+    school_zone: { skill: 'Protect vulnerable road users', durationSec: 65, distanceMeters: 300, habit: 'speed', habitTarget: 1, habitLabel: 'Hold the active 15 mph limit' },
+    downtown: { skill: 'Space, signals, and patience', durationSec: 70, distanceMeters: 350, habit: 'laneChanges', habitTarget: 1, habitLabel: 'Complete one signaled lane change' },
+    dawn: { skill: 'Low-visibility hazard scanning', durationSec: 70, distanceMeters: 400, habit: 'smooth', habitTarget: 1, habitLabel: 'Use smooth inputs through the low-light segment' }
+  };
+
+  function rrScenarioMission(scenarioId) {
+    var scenario = SCENARIOS.find(function(item) { return item.id === scenarioId; }) || SCENARIOS[0];
+    var authored = RR_SCENARIO_MISSIONS[scenario.id] || {};
+    return {
+      scenarioId: scenario.id,
+      title: authored.skill || 'Safe, controlled driving',
+      durationSec: authored.durationSec || 60,
+      distanceMeters: authored.distanceMeters || 300,
+      habit: authored.habit || 'distance',
+      habitTarget: authored.habitTarget || authored.distanceMeters || 300,
+      criteria: [
+        { id: 'pace', label: 'Complete the practice segment' },
+        { id: 'speed', label: 'Stay within the posted limit' },
+        { id: 'space', label: 'Keep a safe following gap' },
+        { id: 'habit', label: authored.habitLabel || 'Use smooth, predictable control' },
+        { id: 'safety', label: 'Finish without a collision or major violation' }
+      ],
+      controls: 'W/S or arrows: accelerate/brake · A/D: steer · E/V: signals · Z/X: shoulder check'
+    };
+  }
+
+  function rrScenarioMissionStatus(stats, elapsedSec, scenarioId) {
+    stats = stats || {};
+    var mission = rrScenarioMission(scenarioId);
+    var elapsed = Math.max(0, Number(elapsedSec) || 0);
+    var distance = Math.max(0, Number(stats.distance) || 0);
+    var laneChanges = Math.max(0, Number(stats.laneChanges) || 0);
+    var unsignaled = Math.max(0, Number(stats.unsignaledLaneChanges) || 0);
+    var paceDone = elapsed >= mission.durationSec && distance >= mission.distanceMeters;
+    var habitDone = true;
+    if (mission.habit === 'laneChanges') habitDone = laneChanges >= mission.habitTarget && unsignaled === 0;
+    else if (mission.habit === 'stops') habitDone = (Number(stats.stops) || 0) >= mission.habitTarget;
+    else if (mission.habit === 'speed') habitDone = (Number(stats.secondsOverLimit) || 0) <= 2;
+    else if (mission.habit === 'smooth') {
+      habitDone = (Number(stats.skidSeconds) || 0) < 2 &&
+        (Number(stats.hydroplaneSeconds) || 0) < 1 &&
+        (Number(stats.hardBrakes) || 0) <= 2;
+    } else habitDone = distance >= mission.habitTarget;
+    var checks = {
+      pace: paceDone,
+      speed: (Number(stats.secondsOverLimit) || 0) <= 2,
+      space: (Number(stats.closeFollows) || 0) <= 2,
+      habit: habitDone,
+      safety: (Number(stats.crashes) || 0) === 0 &&
+        (Number(stats.majorViolations) || 0) === 0 &&
+        (Number(stats.childStrike) || 0) === 0
+    };
+    var criteria = mission.criteria.map(function(item) {
+      return Object.assign({}, item, { met: !!checks[item.id] });
+    });
+    var timeProgress = Math.min(1, elapsed / mission.durationSec);
+    var distanceProgress = Math.min(1, distance / mission.distanceMeters);
+    return {
+      mission: mission,
+      ready: paceDone,
+      passed: paceDone && criteria.every(function(item) { return item.met; }),
+      percent: Math.round(Math.min(timeProgress, distanceProgress) * 100),
+      elapsedSec: elapsed,
+      distanceMeters: distance,
+      criteria: criteria
+    };
+  }
+
+  function rrSessionEvidence(stats, elapsedSec, options) {
+    stats = stats || {};
+    options = options || {};
+    var durationSec = Math.max(0, Number(elapsedSec) || 0);
+    var distanceMeters = Math.max(0, Number(stats.distance) || 0);
+    var qualifying = durationSec >= 60 && distanceMeters >= 300;
+    if (options.missionReady) qualifying = true;
+    var missionEvaluated = typeof options.missionPassed === 'boolean';
+    return {
+      durationSec: durationSec,
+      distanceMeters: distanceMeters,
+      meaningful: durationSec >= 30 && distanceMeters >= 100,
+      qualifying: qualifying,
+      fullSession: durationSec >= 90 && distanceMeters >= 500,
+      laneChangeOpportunities: Math.max(0, Number(stats.laneChanges) || 0),
+      missionEvaluated: missionEvaluated,
+      missionPassed: missionEvaluated ? options.missionPassed : null,
+      reason: qualifying ? 'Qualifying practice session' :
+        'Drive for at least 60 seconds and 0.19 mi before this attempt counts toward mastery.'
+    };
+  }
+
+  // Safety owns the result. Efficiency can improve a safe drive, but it cannot
+  // offset a crash, vulnerable-road-user strike, or other major violation.
+  function rrDriveOutcome(stats, evidence) {
+    stats = stats || {};
+    evidence = evidence || rrSessionEvidence(stats, 0);
+    var safety = Math.max(0, Math.min(100, Number(stats.safetyScore) || 0));
+    var eco = Math.max(0, Math.min(100, Number(stats.efficiencyScore) || 0));
+    var weighted = Math.round(safety * 0.8 + eco * 0.2);
+    var crashes = Math.max(0, Number(stats.crashes) || 0);
+    var major = Math.max(0, Number(stats.majorViolations) || 0);
+    var vulnerableStrike = Math.max(0, Number(stats.childStrike) || 0);
+    var critical = crashes > 0 || major > 0 || vulnerableStrike > 0;
+    if (critical) weighted = Math.min(weighted, vulnerableStrike > 0 ? 49 : 64);
+    if (!evidence.qualifying) {
+      if (critical) {
+        return { grade: '—', score: null, label: 'Safety review needed', detail: evidence.reason + ' This sample also includes a critical safety event; review it before restarting.', passed: false, qualifying: false, tone: 'critical' };
+      }
+      return { grade: '—', score: null, label: 'Practice sample', detail: evidence.reason, passed: false, qualifying: false, tone: 'sample' };
+    }
+    if (critical) {
+      return { grade: rrGradeLetter(weighted), score: weighted, label: 'Needs safety review', detail: 'A critical safety event caps the result; eco points cannot cancel it.', passed: false, qualifying: true, tone: 'critical' };
+    }
+    if (evidence.missionEvaluated && !evidence.missionPassed) {
+      return { grade: rrGradeLetter(weighted), score: weighted, label: 'Practice again', detail: 'The route is complete, but one or more mission success checks still need practice.', passed: false, qualifying: true, tone: 'review' };
+    }
+    if (safety < 70 || weighted < 70) {
+      return { grade: rrGradeLetter(weighted), score: weighted, label: 'Practice again', detail: 'Build a wider safety margin before progressing.', passed: false, qualifying: true, tone: 'review' };
+    }
+    return { grade: rrGradeLetter(weighted), score: weighted, label: 'Mission complete', detail: 'Safety is weighted 80%; efficiency supports the result.', passed: true, qualifying: true, tone: 'pass' };
+  }
+
+  function rrDriveAchievementIds(stats, context) {
+    stats = stats || {};
+    context = context || {};
+    var evidence = context.evidence || rrSessionEvidence(stats, context.elapsedSec || 0);
+    if (!evidence.qualifying) return [];
+    var outcome = rrDriveOutcome(stats, evidence);
+    var safety = Math.max(0, Math.round(Number(stats.safetyScore) || 0));
+    var eco = Math.max(0, Math.round(Number(stats.efficiencyScore) || 0));
+    var ids = ['first_drive'];
+    if ((Number(stats.crashes) || 0) === 0 && (Number(stats.majorViolations) || 0) === 0) ids.push('no_crash');
+    if (eco >= 90 && outcome.passed) ids.push('eco_warrior');
+    if (safety >= 95 && outcome.passed) ids.push('safety_star');
+    if (outcome.grade === 'A+' && outcome.passed) ids.push('a_plus');
+    if (context.time === 'night' && safety >= 80 && outcome.passed) ids.push('night_owl');
+    if (context.scenarioId === 'snow' && safety >= 70 && outcome.passed) ids.push('winter_warrior');
+    if ((Number(context.avgMPG) || 0) > (Number(context.cityMPG) || Infinity) && outcome.passed) ids.push('hypermiler');
+    if ((Number(stats.stops) || 0) >= 3 && outcome.passed) ids.push('full_stop');
+    if ((Number(stats.laneChanges) || 0) >= 2 && (Number(stats.unsignaledLaneChanges) || 0) === 0 && outcome.passed) ids.push('signal_perfect');
+    if ((Number(stats.speedViolations) || 0) === 0 && (Number(stats.secondsOverLimit) || 0) <= 0.5 && outcome.passed) ids.push('speed_discipline');
+    if ((context.time === 'night' || context.scenarioId === 'dawn') && outcome.passed) ids.push('night_drive');
+    return ids;
+  }
+
   // Maine §2074 defaults for unposted/open-world zones. Named scenarios may
   // still use posted practice limits, but biome-generated signs and enforcement
   // should not drift from current Maine default speed law.
@@ -1205,10 +1472,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // distances, collision geometry, and rule checks all agree.
   var METERS_PER_WORLD_UNIT = 1;
   var FEET_PER_WORLD_UNIT = FT_PER_M * METERS_PER_WORLD_UNIT;
+  // Automatic transmissions should only move between P/R/D when the vehicle
+  // is effectively stopped. The old touch control allowed a 2 m/s shift
+  // (about 4.5 mph), and the keyboard's Park check forgot Math.abs(), allowing
+  // Park while reversing at any speed.
+  var GEAR_SHIFT_MAX_SPEED_MPS = 0.35;
 
   function worldUnitsToMeters(units) { return units * METERS_PER_WORLD_UNIT; }
   function worldUnitsToFeet(units) { return worldUnitsToMeters(units) * FT_PER_M; }
   function metersToWorldUnits(meters) { return meters / METERS_PER_WORLD_UNIT; }
+  function canShiftDriveGear(speedMps) {
+    return typeof speedMps === 'number' && isFinite(speedMps) &&
+      Math.abs(speedMps) <= GEAR_SHIFT_MAX_SPEED_MPS;
+  }
+  function evaluationElapsedSeconds(state, simTime) {
+    if (!state || typeof state.startedAtSim !== 'number' || !isFinite(state.startedAtSim)) return 0;
+    var liveSimTime = Number(simTime);
+    if (!isFinite(liveSimTime)) return 0;
+    return Math.max(0, liveSimTime - state.startedAtSim);
+  }
+  function shouldHoldStartupWorld(seatbeltFastened, simTime, graceUntil, gear) {
+    var liveSimTime = Number(simTime);
+    var scanEndsAt = Number(graceUntil);
+    var startupActive = !seatbeltFastened ||
+      (isFinite(liveSimTime) && isFinite(scanEndsAt) && liveSimTime < scanEndsAt);
+    return startupActive && gear === 'P';
+  }
   function followingGapSeconds(distanceWorldUnits, speedMps) {
     if (!(speedMps > 0)) return Infinity;
     return worldUnitsToMeters(Math.max(0, distanceWorldUnits)) / speedMps;
@@ -1264,6 +1553,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (centerDistance >= aRadius + bRadius) return false;
     }
     return true;
+  }
+  // Exact circle-vs-oriented-rectangle contact for pedestrians and other
+  // point-like road users. This catches hood/door contact without the false
+  // positives caused by a single center-to-center radius.
+  function pointOverlapsVehicle(vehicle, vehicleSize, point, pointRadius) {
+    if (!vehicle || !vehicleSize || !point) return false;
+    var heading = Number(vehicle.heading) || 0;
+    var dx = Number(point.x) - Number(vehicle.x);
+    var dy = Number(point.y) - Number(vehicle.y);
+    if (![dx, dy].every(isFinite)) return false;
+    var forward = dx * Math.cos(heading) + dy * Math.sin(heading);
+    var lateral = -dx * Math.sin(heading) + dy * Math.cos(heading);
+    var halfLength = Math.max(0, Number(vehicleSize.length) || 0) * 0.5;
+    var halfWidth = Math.max(0, Number(vehicleSize.width) || 0) * 0.5;
+    var outsideForward = Math.max(0, Math.abs(forward) - halfLength);
+    var outsideLateral = Math.max(0, Math.abs(lateral) - halfWidth);
+    var radius = Math.max(0, Number(pointRadius) || 0);
+    return outsideForward * outsideForward + outsideLateral * outsideLateral <= radius * radius;
+  }
+
+  // Small road users still have oriented footprints. A bicycle's wheelbase and
+  // a motorcycle's body can contact the hood before either rider's center point
+  // reaches the car, so treating both as a single tiny circle misses real hits.
+  function vulnerableRoadUserFootprint(actor) {
+    return actor && actor.type === 'motorcycle'
+      ? { length: 2.15, width: 0.82 }
+      : { length: 1.85, width: 0.68 };
+  }
+
+  // Edge-to-edge clearance measured on the observer's lateral axis. Maine's
+  // three-foot rule is distance between the motor vehicle and bicycle/rider,
+  // not distance between their centerlines.
+  function vehicleSideClearance(observer, observerSize, target, targetSize) {
+    if (!observer || !observerSize || !target || !targetSize) return Infinity;
+    var observerHeading = Number(observer.heading) || 0;
+    var targetHeading = Number(target.heading) || 0;
+    var sideX = -Math.sin(observerHeading);
+    var sideY = Math.cos(observerHeading);
+    var centerDistance = Math.abs(
+      (Number(target.x) - Number(observer.x)) * sideX +
+      (Number(target.y) - Number(observer.y)) * sideY);
+    if (!isFinite(centerDistance)) return Infinity;
+    var targetForwardProjection = Math.abs(
+      Math.cos(targetHeading) * sideX + Math.sin(targetHeading) * sideY);
+    var targetSideProjection = Math.abs(
+      -Math.sin(targetHeading) * sideX + Math.cos(targetHeading) * sideY);
+    var targetRadius = targetForwardProjection * Math.max(0, Number(targetSize.length) || 0) * 0.5 +
+      targetSideProjection * Math.max(0, Number(targetSize.width) || 0) * 0.5;
+    var observerRadius = Math.max(0, Number(observerSize.width) || 0) * 0.5;
+    return Math.max(0, centerDistance - observerRadius - targetRadius);
+  }
+
+  function wildlifeCollisionRadius(actor) {
+    if (!actor) return 0.3;
+    if (actor.kind === 'child') return 0.24;
+    if (actor.kind === 'pedestrian') return 0.28;
+    if (actor.kind === 'ball') return 0.22;
+    if (actor.mass === 'massive') return 1.0;
+    if (actor.mass === 'medium') return 0.55;
+    return 0.3;
+  }
+
+  // Visual dimensions share the simulation's metre scale with collision OBBs.
+  // Keeping them in one profile prevents an invisible oversized hitbox.
+  function landmarkVehicleAppearance(kind) {
+    if (kind === 'schoolbus_arm') return { label: 'school bus', length: 10, width: 2.5,
+      bodyLength: 10, bodyWidth: 2.5, bodyHeight: 2.6,
+      color: 0xf5b800, accent: 0x111111, stopArm: true, emergency: false };
+    if (kind === 'ambulance') return { label: 'ambulance', length: 5, width: 2,
+      bodyLength: 5, bodyWidth: 2, bodyHeight: 1.7,
+      color: 0xf8fafc, accent: 0xef4444, emergency: true };
+    if (kind === 'firetruck') return { label: 'fire truck', length: 7.5, width: 2.4,
+      bodyLength: 7.5, bodyWidth: 2.4, bodyHeight: 2.3,
+      color: 0xc81e1e, accent: 0xffd166, emergency: true };
+    if (kind === 'cruiser') return { label: 'police cruiser', length: 4.8, width: 1.9,
+      bodyLength: 4.8, bodyWidth: 1.9, bodyHeight: 0.75,
+      color: 0x172554, accent: 0x60a5fa, emergency: true };
+    if (kind === 'tractor') return { label: 'tractor', length: 5, width: 2.2,
+      bodyLength: 5, bodyWidth: 2.2, bodyHeight: 1.35,
+      color: 0xf97316, accent: 0x1f2937, emergency: false };
+    return null;
+  }
+
+  function hazardActorCategory(actor) {
+    if (!actor) return 'unknown';
+    if (actor.kind === 'child') return 'child';
+    if (actor.kind === 'pedestrian') return 'pedestrian';
+    if (actor.kind === 'ball') return 'ball';
+    var vehicle = landmarkVehicleAppearance(actor.kind);
+    if (vehicle) return vehicle.stopArm ? 'school_bus'
+      : (vehicle.emergency ? 'emergency_vehicle' : 'vehicle');
+    return 'wildlife';
+  }
+
+  function emergencyVehicleFootprintType(kind) {
+    if (kind === 'firetruck') return 'truck';
+    if (kind === 'ambulance') return 'van';
+    return 'car';
   }
   function isStaticObstacleCell(cell) {
     return cell === 1 || cell === 5 || cell === 6 || cell === 7 || cell === 8 || cell === 9;
@@ -1803,6 +2190,183 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       observer: observerLocal, target: targetLocal };
   }
 
+  function roadAwareRelativePosition(world, observer, target) {
+    if (!observer || !target) return { ahead: Infinity, lat: Infinity, dist: Infinity, frame: 'none' };
+    var dx = Number(target.x) - Number(observer.x);
+    var dy = Number(target.y) - Number(observer.y);
+    var heading = Number(observer.heading) || 0;
+    var fallback = { ahead: Math.cos(heading) * dx + Math.sin(heading) * dy,
+      lat: -Math.sin(heading) * dx + Math.cos(heading) * dy,
+      dist: Math.hypot(dx, dy), frame: 'heading' };
+    if (!world || !world.spline || ![dx, dy].every(isFinite)) return fallback;
+    var corridor = crossStreetCorridorAt(world, observer.x, observer.y, 0.75);
+    if (corridor) {
+      var crossAlignment = Math.abs(Math.cos(heading + corridor.pose.heading));
+      var mainAlignment = Math.abs(Math.sin(heading + corridor.pose.heading));
+      var crossDirection = crossStreetTravelDirection(corridor.pose, heading);
+      if (crossDirection && crossAlignment > mainAlignment) {
+        var crossTarget = crossStreetLocalPoint(corridor.pose, target.x, target.y);
+        var crossAhead = (crossTarget.longitudinal - corridor.local.longitudinal) * crossDirection;
+        var crossLat = (crossTarget.lateral - corridor.local.lateral) * crossDirection;
+        return { ahead: crossAhead, lat: crossLat, dist: Math.hypot(crossAhead, crossLat),
+          frame: 'cross', observer: corridor.local, target: crossTarget, travelSign: crossDirection };
+      }
+    }
+    var relation = roadRelativeTarget(world, observer, target);
+    var roadLat = -relation.lateralDifference * relation.travelSign;
+    return { ahead: relation.ahead, lat: roadLat, dist: Math.hypot(relation.ahead, roadLat),
+      frame: 'main', observer: relation.observer, target: relation.target,
+      travelSign: relation.travelSign };
+  }
+
+  function mainRoadTravelSign(world, actor) {
+    if (!actor) return 1;
+    var heading = Number(actor.heading) || 0;
+    var roadHeading = world && world.spline
+      ? mainRoadLocalPoint(world, actor.x, actor.y).heading : 0;
+    var alignment = Math.cos(heading) * Math.sin(roadHeading) +
+      Math.sin(heading) * Math.cos(roadHeading);
+    return alignment < 0 ? -1 : 1;
+  }
+
+  // Signed steering error relative to the local road tangent. Following a bend
+  // should remain near zero; raw world headings mislabel curve-following as a swerve.
+  function roadRelativeHeadingError(world, actor, travelSign) {
+    if (!actor) return Infinity;
+    var sign = Number(travelSign) < 0 ? -1 :
+      Number(travelSign) > 0 ? 1 : mainRoadTravelSign(world, actor);
+    var roadHeading = world && world.spline
+      ? mainRoadLocalPoint(world, actor.x, actor.y).heading : 0;
+    var expectedHeading = sign > 0
+      ? Math.PI / 2 - roadHeading : -Math.PI / 2 - roadHeading;
+    return normalizeSignedAngle((Number(actor.heading) || 0) - expectedHeading);
+  }
+
+  function separatePedestrianAfterImpact(world, vehicle, pedestrian, separation) {
+    if (!vehicle || !pedestrian) return false;
+    var distance = Math.max(0.5, Number(separation) || 1.4);
+    if (world && world.spline && pedestrian._curvedRoadFrame && !pedestrian.crossStreet) {
+      var vehicleFrame = mainRoadLocalPoint(world, vehicle.x, vehicle.y);
+      var pedestrianFrame = mainRoadLocalPoint(world, pedestrian.x, pedestrian.y);
+      var lateralDelta = pedestrianFrame.lateral - vehicleFrame.lateral;
+      var preferredLateral = typeof pedestrian._sidewalkLateral === 'number'
+        ? pedestrian._sidewalkLateral - vehicleFrame.lateral : lateralDelta;
+      var side = Math.abs(lateralDelta) > 0.05 ? Math.sign(lateralDelta)
+        : (Math.abs(preferredLateral) > 0.05 ? Math.sign(preferredLateral) : 1);
+      var targetLateral = pedestrianFrame.lateral + side * distance;
+      var targetPoint = mainRoadWorldPoint(world, pedestrianFrame.longitudinal, targetLateral);
+      pedestrian.x = targetPoint.x;
+      pedestrian.y = targetPoint.y;
+      pedestrian._roadStation = pedestrianFrame.longitudinal;
+      pedestrian._sidewalkLateral = targetLateral;
+      if (pedestrian.homeX !== undefined) pedestrian.homeX = targetPoint.x;
+      if (pedestrian.homeY !== undefined) pedestrian.homeY = targetPoint.y;
+      return true;
+    }
+    var sideX = -Math.sin(Number(vehicle.heading) || 0);
+    var sideY = Math.cos(Number(vehicle.heading) || 0);
+    var sideDot = (pedestrian.x - vehicle.x) * sideX +
+      (pedestrian.y - vehicle.y) * sideY;
+    var fallbackSide = Math.abs(sideDot) > 0.05 ? Math.sign(sideDot) : 1;
+    pedestrian.x += sideX * fallbackSide * distance;
+    pedestrian.y += sideY * fallbackSide * distance;
+    if (pedestrian.homeX !== undefined) pedestrian.homeX = pedestrian.x;
+    if (pedestrian.homeY !== undefined) pedestrian.homeY = pedestrian.y;
+    return true;
+  }
+
+  // Keep an impacted cyclist/animal visible while moving it clear of the
+  // vehicle footprint. The displacement follows whichever authored road frame
+  // the actor belongs to, so aftermath does not jump across a curved road.
+  function separateRoadUserAfterImpact(world, vehicle, actor, separation) {
+    if (!vehicle || !actor) return false;
+    var distance = Math.max(0.5, Number(separation) || 1.2);
+    var settleActor = function(side) {
+      actor.speed = 0;
+      actor.vx = 0;
+      actor.vy = 0;
+      actor._impactSide = side || 1;
+      actor._impactPose = true;
+      return true;
+    };
+    if (actor.crossStreet && actor._crossPose) {
+      var crossVehicleFrame = crossStreetLocalPoint(
+        actor._crossPose, vehicle.x, vehicle.y);
+      var crossActorFrame = crossStreetLocalPoint(
+        actor._crossPose, actor.x, actor.y);
+      var crossDelta = crossActorFrame.lateral - crossVehicleFrame.lateral;
+      var crossPreferred = typeof actor._roadSide === 'number'
+        ? actor._roadSide : crossDelta;
+      var crossSide = Math.abs(crossDelta) > 0.05 ? Math.sign(crossDelta)
+        : (Math.abs(crossPreferred) > 0.05 ? Math.sign(crossPreferred) : 1);
+      var crossPoint = crossStreetWorldPoint(actor._crossPose,
+        crossActorFrame.longitudinal,
+        crossActorFrame.lateral + crossSide * distance);
+      actor.x = crossPoint.x;
+      actor.y = crossPoint.y;
+      actor._crossStation = crossActorFrame.longitudinal;
+      actor._roadSide = crossSide;
+      return settleActor(crossSide);
+    }
+    if (world && world.spline && !actor.crossStreet) {
+      var vehicleFrame = mainRoadLocalPoint(world, vehicle.x, vehicle.y);
+      var actorFrame = mainRoadLocalPoint(world, actor.x, actor.y);
+      var lateralDelta = actorFrame.lateral - vehicleFrame.lateral;
+      var preferredLateral = typeof actor._bikeLane === 'number'
+        ? actor._bikeLane - vehicleFrame.lateral
+        : (typeof actor._roadSide === 'number' ? actor._roadSide : lateralDelta);
+      var side = Math.abs(lateralDelta) > 0.05 ? Math.sign(lateralDelta)
+        : (Math.abs(preferredLateral) > 0.05 ? Math.sign(preferredLateral) : 1);
+      var targetLateral = actorFrame.lateral + side * distance;
+      var targetPoint = mainRoadWorldPoint(
+        world, actorFrame.longitudinal, targetLateral);
+      actor.x = targetPoint.x;
+      actor.y = targetPoint.y;
+      actor._roadStation = actorFrame.longitudinal;
+      actor._roadSide = side;
+      if (typeof actor._bikeLane === 'number') actor._bikeLane = targetLateral;
+      return settleActor(side);
+    }
+    var sideX = -Math.sin(Number(vehicle.heading) || 0);
+    var sideY = Math.cos(Number(vehicle.heading) || 0);
+    var sideDot = (Number(actor.x) - Number(vehicle.x)) * sideX +
+      (Number(actor.y) - Number(vehicle.y)) * sideY;
+    var fallbackSide = Math.abs(sideDot) > 0.05 ? Math.sign(sideDot)
+      : (typeof actor._roadSide === 'number' ? Math.sign(actor._roadSide) || 1 : 1);
+    actor.x += sideX * fallbackSide * distance;
+    actor.y += sideY * fallbackSide * distance;
+    actor._roadSide = fallbackSide;
+    return settleActor(fallbackSide);
+  }
+
+  function separateVehicleAfterImpact(world, vehicle, other, separation) {
+    if (!vehicle || !other) return false;
+    var distance = Math.max(0.25, Number(separation) || 0.6);
+    if (world && world.spline && !vehicle.crossStreet && !other.crossStreet) {
+      var vehicleFrame = mainRoadLocalPoint(world, vehicle.x, vehicle.y);
+      var otherFrame = mainRoadLocalPoint(world, other.x, other.y);
+      var stationDelta = vehicleFrame.longitudinal - otherFrame.longitudinal;
+      var side = Math.abs(stationDelta) > 0.05 ? Math.sign(stationDelta) :
+        (Math.cos(vehicle.heading || 0) * (vehicle.x - other.x) +
+          Math.sin(vehicle.heading || 0) * (vehicle.y - other.y) >= 0 ? 1 : -1);
+      var targetPoint = mainRoadWorldPoint(world,
+        vehicleFrame.longitudinal + side * distance, vehicleFrame.lateral);
+      vehicle.x = targetPoint.x;
+      vehicle.y = targetPoint.y;
+      return true;
+    }
+    var pushX = vehicle.x - other.x, pushY = vehicle.y - other.y;
+    var magnitude = Math.hypot(pushX, pushY);
+    if (magnitude < 0.001) {
+      pushX = -Math.cos(Number(vehicle.heading) || 0);
+      pushY = -Math.sin(Number(vehicle.heading) || 0);
+      magnitude = 1;
+    }
+    vehicle.x += pushX / magnitude * distance;
+    vehicle.y += pushY / magnitude * distance;
+    return true;
+  }
+
   function assessRoadLanePosition(profileOrChunk, lateralOffset, travelSign) {
     var source = profileOrChunk || {};
     var lateral = Number(lateralOffset) || 0;
@@ -1869,6 +2433,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function crossStreetTravelHeading(pose, direction) {
     return Number(direction) < 0 ? Math.PI - pose.heading : -pose.heading;
+  }
+
+  function moveCrossStreetActorToSafeApproach(world, actor, playerStation, radius) {
+    if (!world || !world.spline || !actor || !actor.crossStreet || !actor._crossPose) return false;
+    var pose = actor._crossPose;
+    var intersectionFrame = mainRoadLocalPoint(world, pose.x, pose.y);
+    if (Math.abs(intersectionFrame.longitudinal - Number(playerStation || 0)) >=
+        Math.max(1, Number(radius) || 15)) return false;
+    var local = crossStreetLocalPoint(pose, actor.x, actor.y);
+    var direction = actor._crossDirection || crossStreetTravelDirection(
+      pose, Number(actor.heading) || 0) || 1;
+    // Put inbound traffic back at its authored approach edge, preserving its
+    // lane on rotated intersections.
+    var approachSide = direction > 0 ? -1 : 1;
+    var approachDistance = Math.max(8, (Number(pose.length) || MAP_SIZE) * 0.5 - 3);
+    var laneLateral = typeof actor.laneOffset === 'number' ? actor.laneOffset : local.lateral;
+    var target = crossStreetWorldPoint(pose, approachSide * approachDistance, laneLateral);
+    actor.x = target.x;
+    actor.y = target.y;
+    actor.heading = crossStreetTravelHeading(pose, direction);
+    actor._crossDirection = direction;
+    return true;
   }
 
   function createIntersectionTurnPath(startX, startY, startHeading, crossPose, crossDirection, turnIntent) {
@@ -2613,6 +3199,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
   function scenarioUsesContinuousWorld(scenarioId) {
     return !!getContinuousScenarioProfile(scenarioId);
+  }
+
+  // Ride-Along follows the streamed road spline. Bounded maneuver courses
+  // (parallel parking and the roundabout) intentionally remain hands-on: a
+  // straight-line fallback would advertise self-driving while steering the
+  // learner off the authored course.
+  function rideAlongSupportsScenario(scenarioId, freeExplore) {
+    var id = String(scenarioId || '');
+    if (scenarioUsesContinuousWorld(id)) return true;
+    return !!freeExplore && id !== 'roundabout' && id !== 'parking';
+  }
+
+  // Maximum comfortable approach speed for the usable distance remaining.
+  // This is the braking-energy relationship v=sqrt(2*mu*g*d), with a 28%
+  // teaching margin so the controller settles instead of arriving at the
+  // exact physical limit. Distances are world units (meters in Road Ready).
+  function rideAlongApproachSpeedMph(distanceWorldUnits, weather, clearanceWorldUnits) {
+    var usableMeters = worldUnitsToMeters(Math.max(0,
+      (Number(distanceWorldUnits) || 0) - Math.max(0, Number(clearanceWorldUnits) || 0)));
+    if (!(usableMeters > 0)) return 0;
+    var physicalMps = Math.sqrt(2 * frictionCoef(weather || 'clear') * 9.81 * usableMeters);
+    return physicalMps * MS_TO_MPH * 0.72;
   }
 
   function scenarioChunkHasIntersection(profile, chunkIndex) {
@@ -3479,6 +4087,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return true;
   }
 
+  function mainRoadCoordinateDistance(world, a, b) {
+    if (!world || !world.spline || !a || !b || a.crossStreet || b.crossStreet) return Infinity;
+    var aFrame = mainRoadLocalPoint(world, a.x, a.y);
+    var bFrame = mainRoadLocalPoint(world, b.x, b.y);
+    var aStation = typeof a._roadStation === 'number' ? a._roadStation : aFrame.longitudinal;
+    var bStation = typeof b._roadStation === 'number' ? b._roadStation : bFrame.longitudinal;
+    return Math.hypot(aStation - bStation, aFrame.lateral - bFrame.lateral);
+  }
+
+  function hasMainRoadTrafficGap(world, list, candidate, minGap, ignoreIndex) {
+    if (!world || !world.spline || !candidate) return false;
+    var gap = Math.max(0, Number(minGap) || 0);
+    for (var gi = 0; gi < (list || []).length; gi++) {
+      if (ignoreIndex != null && gi === ignoreIndex) continue;
+      var other = list[gi];
+      if (!other || other.crossStreet) continue;
+      if (mainRoadCoordinateDistance(world, candidate, other) < gap) return false;
+    }
+    return true;
+  }
+
   function leftTurnGapState(traffic, self, signal, playerCar) {
     var result = { clear: true, minTimeToConflict: Infinity, blockerId: null };
     if (!self || !signal) return result;
@@ -3723,10 +4352,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     (traffic || []).forEach(function(vehicle) {
       if (!vehicle || vehicle.crossStreet) return;
       var direction = Math.sin(Number(vehicle.heading) || 0) >= 0 ? 1 : -1;
-      var profile = roadProfileAt(world, vehicle.y, null);
+      var station = typeof vehicle._roadStation === 'number'
+        ? vehicle._roadStation : vehicle.y;
+      var profile = roadProfileAt(world, station, null);
       vehicle.laneOffset = nearestAuthoredTrafficLaneOffset(
         profile, direction, vehicle.laneOffset);
-      var station = vehicle.y;
       var roadPoint = mainRoadWorldPoint(world, station, vehicle.laneOffset);
       vehicle.x = roadPoint.x;
       vehicle.y = roadPoint.y;
@@ -3747,9 +4377,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     (cyclists || []).forEach(function(cyclist) {
       if (!cyclist || cyclist.crossStreet) return;
       var direction = Math.sin(Number(cyclist.heading) || 0) >= 0 ? 1 : -1;
-      var profile = roadProfileAt(world, cyclist.y, null);
+      var station = typeof cyclist._roadStation === 'number'
+        ? cyclist._roadStation : cyclist.y;
+      var profile = roadProfileAt(world, station, null);
       cyclist._bikeLane = bicycleLaneOffsetFor(profile, direction);
-      var station = cyclist.y;
       var roadPoint = mainRoadWorldPoint(world, station, cyclist._bikeLane);
       cyclist.x = roadPoint.x;
       cyclist.y = roadPoint.y;
@@ -3773,15 +4404,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var desired = trafficCountForLevel(level);
     var rng = typeof randomFn === 'function' ? randomFn : Math.random;
     var ambient = traffic.filter(function(t) { return t && !t.crossStreet && !t._roundaboutState; });
+    var playerFrame = mainRoadLocalPoint(world, playerCar.x, playerCar.y);
+    var playerStation = typeof playerCar._roadStation === 'number'
+      ? playerCar._roadStation : playerFrame.longitudinal;
 
     if (ambient.length > desired) {
-      // Retire the farthest cars first. Existing nearby traffic retains its
-      // position, speed, intent, and stop-control state.
+      // Retire the farthest cars first in authored road coordinates. Existing
+      // nearby traffic retains its position, speed, intent, and control state.
       var removeCount = ambient.length - desired;
       var farthest = ambient.slice().sort(function(a, b) {
-        var adx = a.x - playerCar.x, ady = a.y - playerCar.y;
-        var bdx = b.x - playerCar.x, bdy = b.y - playerCar.y;
-        return (bdx * bdx + bdy * bdy) - (adx * adx + ady * ady);
+        return mainRoadCoordinateDistance(world, b, playerCar) -
+          mainRoadCoordinateDistance(world, a, playerCar);
       }).slice(0, removeCount);
       return traffic.filter(function(t) { return farthest.indexOf(t) === -1; });
     }
@@ -3797,14 +4430,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // concentrating all newly requested traffic in one direction.
         for (var attempt = 0; attempt < 18; attempt++) {
           var side = (i + attempt) % 2 === 0 ? 1 : -1;
-          candidate.y = playerCar.y + side * (24 + i * 8 + attempt * 5 + rng() * 4);
+          var candidateStation = playerStation + side *
+            (24 + i * 8 + attempt * 5 + rng() * 4);
+          candidate._roadStation = candidateStation;
+          candidate.y = candidateStation;
           var direction = (i + attempt) % 3 === 0 ? -1 : 1;
           candidate.heading = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
           alignTrafficToStreamedWorld(world, [candidate]);
+          if (mainRoadCoordinateDistance(world, candidate, playerCar) < 24) continue;
           var pdx = candidate.x - playerCar.x, pdy = candidate.y - playerCar.y;
           if (pdx * pdx + pdy * pdy < 24 * 24) continue;
-          if (!hasTrafficGap(traffic, candidate.x, candidate.y, null,
-            RR_MIN_TRAFFIC_SPAWN_GAP, 'main')) continue;
+          if (!hasMainRoadTrafficGap(world, traffic, candidate,
+            RR_MIN_TRAFFIC_SPAWN_GAP, null)) continue;
           traffic.push(candidate);
           accepted = true;
           break;
@@ -4145,10 +4782,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { id: 'winter_warrior', icon: '❄️', name: 'Winter Warrior', desc: 'Complete the Snow scenario with safety 70+.' },
     { id: 'hypermiler', icon: '⛽', name: 'Hypermiler', desc: 'Beat the EPA city MPG rating in a drive.' },
     { id: 'full_stop', icon: '🛑', name: 'Full Stop', desc: 'Make 3+ full stops at stop signs in one drive.' },
-    { id: 'signal_perfect', icon: '◄►', name: 'Signal Perfect', desc: 'Complete a drive with zero unsignaled lane changes.' },
+    { id: 'signal_perfect', icon: '◄►', name: 'Signal Perfect', desc: 'Complete 2+ lane changes in a qualifying drive and signal every one.' },
     { id: 'park_master', icon: '🅿️', name: 'Park Master', desc: 'Parallel park with score 80+.' },
     { id: 'three_point', icon: '↩️', name: 'K-Turn Pro', desc: 'Complete 3-point turn with score 80+.' },
-    { id: 'speed_demon', icon: '🏎️', name: 'Speed Demon', desc: 'Hit 80+ mph (not recommended in real life!).' },
+    { id: 'speed_discipline', icon: '🧭', name: 'Speed Discipline', desc: 'Complete a qualifying drive without a speed-limit violation.' },
     { id: 'moose_dodge', icon: '🫎', name: 'Moose Dodge', desc: 'Encounter a moose and NOT hit it.' },
     { id: 'five_scenarios', icon: '🗺️', name: 'Explorer', desc: 'Drive in 5 different scenarios.' },
     { id: 'emergency_yield', icon: '🚑', name: 'First Responder', desc: 'Correctly yield to an emergency vehicle (pull right + stop).' },
@@ -5771,6 +6408,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var _hydratedRef = useRef(false);
       if (!_hydratedRef.current) {
         _hydratedRef.current = true;
+        // Retire the old badge that rewarded reaching 80+ mph. Keeping it in
+        // imported/local state would preserve an unsafe incentive and inflate
+        // the achievement total even though it is no longer in the catalog.
+        if (d.badges && d.badges.speed_demon) {
+          var migratedBadges = Object.assign({}, d.badges);
+          delete migratedBadges.speed_demon;
+          upd('badges', migratedBadges);
+        }
         var savedPermitStats = lsGet('roadReady.permitStats.v1', null);
         if (savedPermitStats && d.permitStats === undefined) {
           upd('permitStats', savedPermitStats);
@@ -5797,6 +6442,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var _rrCeleb = React.useState(null);
       var rrCeleb = _rrCeleb[0];
       var setRrCeleb = _rrCeleb[1];
+      var rrCelebTimerRef = React.useRef(null);
+      React.useEffect(function() {
+        return function() {
+          if (rrCelebTimerRef.current) clearTimeout(rrCelebTimerRef.current);
+          rrCelebTimerRef.current = null;
+        };
+      }, []);
 
       // WebGL Try-catch fallback boundary state
       var _webglErrState = React.useState(false);
@@ -5835,7 +6487,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // typeof-guarded at its call site, so this never threw — it just meant the
       // "landmark ahead" callout was never announced to screen readers at all.
       var announceToSR = ctx.announceToSR || function () {};
-      var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
+      var hostAddToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
+      var addToast = function(msg, type) {
+        // Keep live driving feedback in one canvas card. Menu/setup feedback
+        // still uses the host application's toast layer.
+        if (typeof drivingRef !== 'undefined' && drivingRef && drivingRef.current &&
+            typeof showDriveAlert === 'function') {
+          var alertPriority = driveAlertPriority(msg, type);
+          showDriveAlert(msg, alertPriority >= 3 ? 5 : alertPriority === 2 ? 3.5 : 3,
+            alertPriority, null, true);
+          return;
+        }
+        return hostAddToast(msg, type);
+      };
       // Surface localStorage write failures (private mode / quota / disabled storage)
       // with a one-shot toast so students aren't silently losing progress. Listens
       // for the event lsSet dispatches; also runs an initial check in case the
@@ -5871,8 +6535,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       //     'hazard', 'radio', 'coach'). Different categories use different debounce
       //     windows so chatty triggers (radio, navigation) don't mute critical ones
       //     (hazards). Defaults to a per-text bucket if omitted.
-      //   priority: 'critical' bypasses both global and per-category cooldowns
-      //     (used for crash, wrong-way, emergency vehicle). Default = normal.
+      //   priority: 'critical' bypasses category cooldowns but still respects
+      //     duplicate and rapid-fire protection. Default = normal.
       // Layered rate limit:
       //   - Identical text within 2s: skip (existing protection against duplicate sub-events)
       //   - ANY speech within 1.6s of the last: skip (prevents pile-on of distinct phrases)
@@ -5883,11 +6547,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var now = Date.now();
         var last = _lastSpokenRef.current;
         var isCritical = priority === 'critical';
-        if (!isCritical) {
-          if (last.text === text && (now - last.at) < 2000) return;
-          if ((now - last.anyAt) < 1600) return;
+        var calmSpeech = typeof calmDriveRef !== 'undefined' && calmDriveRef && calmDriveRef.current;
+        if (last.text === text && (now - last.at) < 2000) return;
+        if (isCritical) {
+          if ((now - last.anyAt) < 350) return;
+        } else {
+          if ((now - last.anyAt) < (calmSpeech ? 3200 : 1600)) return;
           if (category) {
             var win = CAT_WINDOW[category] || CAT_WINDOW._default;
+            if (calmSpeech) win *= 1.5;
             var catLast = last.byCategory[category] || 0;
             if ((now - catLast) < win) return;
           }
@@ -5977,13 +6645,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             '[data-rr-tile] { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }' +
             '[data-rr-tile]:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); filter: brightness(1.08); }' +
             '[data-rr-tile]:active { transform: translateY(-1px) scale(0.99); }' +
-            'button:not(:disabled) { transition: transform 0.12s ease, filter 0.12s ease; }' +
-            'button:not(:disabled):active { transform: scale(0.97); }' +
-            'button:not(:disabled):hover { filter: brightness(1.12); }' +
+            '[data-rr-view] button:not(:disabled) { transition: transform 0.12s ease, filter 0.12s ease; }' +
+            '[data-rr-view] button:not(:disabled):active { transform: scale(0.97); }' +
+            '[data-rr-view] button:not(:disabled):hover { filter: brightness(1.12); }' +
             '.rr-shimmer { background: linear-gradient(90deg, rgba(30,41,59,0.6) 0%, rgba(71,85,105,0.8) 50%, rgba(30,41,59,0.6) 100%); background-size: 800px 100%; animation: rr-shimmer 1.6s infinite linear; border-radius: 4px; }' +
             '.rr-cta-pulse { animation: rr-pulse-glow 2.4s ease-in-out infinite; }' +
-            'input[type="range"] { accent-color: #22d3ee; }' +
-            '/* Smoother scrollbars in dark mode */ ::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-track { background: #0f172a; } ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } ::-webkit-scrollbar-thumb:hover { background: #64748b; }';
+            'html.rr-roadready-reduced-motion [data-rr-view],html.rr-roadready-reduced-motion [data-rr-view] * { animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;scroll-behavior:auto!important; }' +
+            '[data-rr-view] input[type="range"] { accent-color: #22d3ee; }' +
+            '/* Smoother scrollbars, scoped so RoadReady cannot repaint the host app. */ [data-rr-view]::-webkit-scrollbar,[data-rr-view] *::-webkit-scrollbar { width: 8px; height: 8px; } [data-rr-view]::-webkit-scrollbar-track,[data-rr-view] *::-webkit-scrollbar-track { background: #0f172a; } [data-rr-view]::-webkit-scrollbar-thumb,[data-rr-view] *::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; } [data-rr-view]::-webkit-scrollbar-thumb:hover,[data-rr-view] *::-webkit-scrollbar-thumb:hover { background: #64748b; }';
           document.head.appendChild(styleEl);
         }
         // Confetti canvas overlay
@@ -6015,12 +6684,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (existing) { existing.remove(); }
         if (!newBadgePopup) return;
         var wrap = document.createElement('div');
+        var badgeMotion = !reducedMotionRef.current;
         wrap.id = popupId;
-        wrap.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:99998;pointer-events:none;animation:rr-fade-in 0.4s ease-out;';
+        wrap.setAttribute('role', 'status');
+        wrap.setAttribute('aria-live', 'polite');
+        wrap.setAttribute('aria-label', 'Achievement unlocked: ' + newBadgePopup.ach.name + '. ' + newBadgePopup.ach.desc);
+        wrap.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:99998;pointer-events:none;animation:' + (badgeMotion ? 'rr-fade-in 0.4s ease-out' : 'none') + ';';
         wrap.innerHTML =
-          '<div style="background:linear-gradient(135deg,#78350f,#0f172a);border:3px solid #fbbf24;border-radius:20px;padding:32px 44px;text-align:center;color:#fff;max-width:420px;box-shadow:0 20px 60px rgba(251,191,36,0.5);animation:rr-pulse-soft 2s ease-in-out infinite;">'
+          '<div aria-hidden="true" style="background:linear-gradient(135deg,#78350f,#0f172a);border:3px solid #fbbf24;border-radius:20px;padding:32px 44px;text-align:center;color:#fff;max-width:420px;box-shadow:0 20px 60px rgba(251,191,36,0.5);animation:' + (badgeMotion ? 'rr-pulse-soft 2s ease-in-out infinite' : 'none') + ';">'
           + '<div style="font-size:12px;font-weight:800;color:#fbbf24;text-transform:uppercase;letter-spacing:0.2em;margin-bottom:8px;">🏆 Achievement Unlocked</div>'
-          + '<div style="font-size:72px;margin:12px 0;animation:rr-pulse-soft 1.3s ease-in-out infinite;display:inline-block;">' + newBadgePopup.ach.icon + '</div>'
+          + '<div style="font-size:72px;margin:12px 0;animation:' + (badgeMotion ? 'rr-pulse-soft 1.3s ease-in-out infinite' : 'none') + ';display:inline-block;">' + newBadgePopup.ach.icon + '</div>'
           + '<div style="font-size:22px;font-weight:900;margin-bottom:6px;color:#fef3c7;">' + newBadgePopup.ach.name + '</div>'
           + '<div style="font-size:12px;color:#fde68a;line-height:1.5;font-style:italic;">' + newBadgePopup.ach.desc + '</div>'
           + '</div>';
@@ -6038,7 +6711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // want to scroll the whole page when the tool is embedded inside AlloFlow.
           try {
             // Try Window scroll (AlloFlow canvas typically scrolls here).
-            if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (typeof window !== 'undefined' && window.scrollTo) window.scrollTo({ top: 0, behavior: reducedMotionRef.current ? 'auto' : 'smooth' });
           } catch(_) {}
         }
       }, [view]);
@@ -6066,8 +6739,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             badgePopupTimerRef.current = setTimeout(function() { setNewBadgePopup(null); badgePopupTimerRef.current = null; }, 5000);
           }
           lastBadgeCountRef.current = current;
-          // Fire confetti via imperative canvas draw. Cheap, no dependencies.
-          try {
+          // Fire confetti via imperative canvas draw. Reduced-motion learners
+          // still receive the static status card, without the full-screen burst.
+          if (!reducedMotionRef.current) try {
             var cvs = confettiCanvasRef.current;
             if (!cvs) return;
             cvs.width = window.innerWidth;
@@ -6197,6 +6871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Active spark meshes from crashes — fade & remove after ~1s.
       var crashSparksRef = useRef([]);
       var audioRef = useRef({ ctx: null, engineOsc: null, engineGain: null, started: false });
+      var audioUnlockCleanupRef = useRef(null);
 
       // ── Test hook (no overhead unless window.__testHooks is set by a test harness) ──
       // Lets dev-tools/check_stem_behavior.cjs read live simulation state to assert
@@ -6214,6 +6889,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             signalsRef: signalsRef,
             cyclistsRef: cyclistsRef,
             wildlifeRef: wildlifeRef,
+            statsRef: statsRef,
+            gearRef: gearRef,
+            seatbeltRef: seatbeltRef,
+            rideAlongRef: rideAlongRef,
+            rideAlongStateRef: rideAlongStateRef,
+            timeRef: timeRef,
             stopSignQueueRef: stopSignQueueRef,
             intersectionReservationRef: intersectionReservationRef,
             mapRef: mapRef,
@@ -6254,6 +6935,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // drive runs silent. Null it out so a remount lazily re-creates it.
       useEffect(function() {
         return function() {
+          aiCoachRequestRef.current.requestId += 1;
+          aiCoachRequestRef.current.inFlight = false;
+          reflectionRef.current.requestId = (reflectionRef.current.requestId || 0) + 1;
+          reflectionRef.current.inFlight = false;
+          if (audioUnlockCleanupRef.current) audioUnlockCleanupRef.current();
           try {
             var aUnmount = audioRef.current;
             if (aUnmount && aUnmount.ctx && aUnmount.ctx.state !== 'closed') {
@@ -6524,6 +7210,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // render camera pass reads this each frame and decays it over ~0.4 s.
       var bumpShakeRef = useRef({ intensity: 0, startTime: 0, lastBumpId: null });
       var eventToastRef = useRef({ msg: null, until: 0 });
+      var showDriveAlert = function(message, durationSeconds, priority, tone, announce) {
+        var now = (typeof timeRef !== 'undefined' && timeRef && isFinite(timeRef.current))
+          ? timeRef.current : 0;
+        var previous = eventToastRef.current;
+        var next = mergeDriveAlert(previous, {
+          msg: message,
+          until: now + Math.max(0.5, Number(durationSeconds) || 3),
+          priority: priority == null ? driveAlertPriority(message) : priority,
+          tone: tone || null
+        }, now);
+        eventToastRef.current = next;
+        if (announce && next !== previous &&
+            (!previous || previous.msg !== next.msg || Number(previous.until) <= now)) {
+          rrAnnounce(String(next.msg || ''));
+        }
+        return next;
+      };
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
       // Touch-device detection (computed once at mount). Used to hide the
@@ -6532,10 +7235,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // laptops will get the buttons (correct: redundant but harmless).
       var isTouchDeviceRef = useRef(
         typeof window !== 'undefined' &&
-        ('ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0)
+        (!window.matchMedia || window.matchMedia('(any-pointer: coarse)').matches) &&
+        ((navigator.maxTouchPoints || 0) > 0 || 'ontouchstart' in window)
       );
       var timeRef = useRef(0);
-      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, absSeconds: 0, hydroplaneSeconds: 0, cyclistClose: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} });
+      var statsRef = useRef({ startTime: 0, simTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, absSeconds: 0, hydroplaneSeconds: 0, cyclistClose: 0, laneChanges: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} });
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
@@ -6549,6 +7253,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var distractRef = useRef({ active: false, timer: 0, msg: '', penalty: false }); // distracted driving events
       var blinkerRef = useRef(0); // -1 left, 0 off, 1 right
       var blinkerTimerRef = useRef(0); // for visual blink
+      // Turn-signal cancel state mirrors the detent in a real steering column:
+      // once the wheel turns far enough in the signaled direction, returning
+      // near center cancels the indicator. The React mirror below keeps the
+      // touch controls' aria-pressed state and paint in sync with this ref.
+      var blinkerCancelRef = useRef({ armed: false, dir: 0 });
       var laneChangeRef = useRef({ active: false, dir: 0, signaled: false });
       var mpgHistoryRef = useRef([]); // last 60 MPG readings for sparkline
       var blackBoxRef = useRef([]); // last 5 seconds of car state for crash replay
@@ -6596,10 +7305,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Sends a compact stats snapshot to callGemini every 35s with a prompt designed
       // to elicit one short, specific, encouraging coaching line. Last response is shown
       // briefly as a HUD card and spoken via callTTS. Strictly opt-in (d.coachMode).
-      var coachRef = useRef({ lastCallAt: 0, inFlight: false, lastTip: null, lastTipAt: 0 });
+      var coachRef = useRef({ lastCallAt: 0, inFlight: false, lastTip: null, lastTipAt: 0, requestId: 0 });
+      // Standalone post-drive analysis can outlive its screen. Track a request
+      // generation so a late AI response cannot repopulate or announce after
+      // the learner has navigated elsewhere.
+      var aiCoachRequestRef = useRef({ inFlight: false, requestId: 0 });
       // Drive Reflection: async Gemini-generated coaching essay triggered from debrief view.
       // Result is stored in d.lastReflection so it persists if user navigates away.
-      var reflectionRef = useRef({ inFlight: false });
+      var reflectionRef = useRef({ inFlight: false, requestId: 0 });
+      useEffect(function() {
+        if (view === 'aiCoach') return;
+        aiCoachRequestRef.current.requestId += 1;
+        aiCoachRequestRef.current.inFlight = false;
+        if (dataRef.current && dataRef.current.coachLoading) upd('coachLoading', false);
+      }, [view]);
       // One-shot guard so the new-user tour auto-route only fires once per session.
       var tourAutoRoutedRef = useRef(false);
       // Guard for the reactionTest waiting→react transition: stores the rtWaitUntil
@@ -6616,21 +7335,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (view !== 'reactionTest' || d.rtPhase !== 'waiting' || !d.rtWaitUntil) return;
         var rtDelay = Math.max(0, d.rtWaitUntil - Date.now());
         var rtTimerId = setTimeout(function() {
-          if (rtTransitionFiredRef.current === d.rtWaitUntil) return; // render path beat us
+          if (rtTransitionFiredRef.current === d.rtWaitUntil) return; // an earlier effect instance already fired
           rtTransitionFiredRef.current = d.rtWaitUntil;
           updMulti({ rtPhase: 'react', rtStartTime: Date.now() });
         }, rtDelay);
         return function() { clearTimeout(rtTimerId); };
       }, [view, d.rtPhase, d.rtWaitUntil]);
+
+      // The compact Reaction Trainer uses the same cancellable timing model.
+      // Its old ref callback rolled a second random delay during render, so the
+      // stored greenAt timestamp and the actual green light did not agree.
+      useEffect(function() {
+        var trainerState = d.rtState;
+        if (view !== 'reactionTrainer' || !trainerState ||
+            trainerState.phase !== 'ready' || !trainerState.greenAt) return;
+        var trainerGreenAt = trainerState.greenAt;
+        var trainerTimer = setTimeout(function() {
+          var liveTrainer = dataRef.current && dataRef.current.rtState;
+          if (!liveTrainer || liveTrainer.phase !== 'ready' ||
+              liveTrainer.greenAt !== trainerGreenAt) return;
+          upd('rtState', Object.assign({}, liveTrainer, {
+            phase: 'go', greenTime: Date.now()
+          }));
+        }, Math.max(0, trainerGreenAt - Date.now()));
+        return function() { clearTimeout(trainerTimer); };
+      }, [view, d.rtState && d.rtState.phase, d.rtState && d.rtState.greenAt]);
+
+      // Route first-time learners after commit, never from inside render. The
+      // prior render-time timer could update an instance that had already
+      // closed and React would warn about a state change during teardown.
+      useEffect(function() {
+        if (view !== 'menu' || d.tourCompleted || tourAutoRoutedRef.current) return;
+        tourAutoRoutedRef.current = true;
+        var tourRouteTimer = setTimeout(function() { upd('view', 'tour'); }, 50);
+        return function() { clearTimeout(tourRouteTimer); };
+      }, [view, !!d.tourCompleted]);
       // Parent Ride Check: a structured 2-minute eval mode. Parent taps a category
       // button each time they see an error; engine logs it with timestamp + speed.
       // On drive end (or 2-min timer), a summary screen shows error counts by category
       // and a coaching priority. Persisted to d.lastParentReport.
-      var parentRef = useRef({ active: false, errors: [], startedAt: 0, durationSec: 120 });
+      var parentRef = useRef({ active: false, errors: [], startedAt: null, startedAtSim: null, durationSec: 120 });
       // Road Test Simulator: Maine BMV-style scored eval. 100 pts to start; deductions
       // for each violation. 90+ = pass. Tracks max speed, signal compliance, full stops,
       // lane keeping, following distance over a fixed-duration scored drive.
-      var roadTestRef = useRef({ active: false, deductions: [], score: 100, startedAt: 0, durationSec: 240 });
+      var roadTestRef = useRef({ active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240 });
       var journalLog = function(kind, icon, text) {
         var j = journalRef.current;
         if (!j) return;
@@ -6663,7 +7411,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var togglePause = function(force) {
         var pNext = typeof force === 'boolean' ? force : !pausedRef.current;
         pausedRef.current = pNext;
+        // A pause is a safety boundary. Drop every held keyboard/touch input so
+        // resuming never reapplies stale throttle or steering from before the
+        // pause (keyup/touchend can be lost while an overlay is appearing).
+        if (pNext) keysRef.current = {};
         setIsPaused(pNext);
+      };
+      // Once-per-second React clock for visible timed-evaluation cards. The
+      // physics and grading loops already use timeRef (simulation time), but
+      // the old cards calculated Date.now() only when React happened to render,
+      // so they both froze visually and counted time spent paused.
+      var driveUiSecondsTuple = useState(0);
+      var driveUiSeconds = driveUiSecondsTuple[0];
+      var setDriveUiSeconds = driveUiSecondsTuple[1];
+      var driveUiSecondRef = useRef(-1);
+      var turnSignalTuple = useState(0);
+      var turnSignalUi = turnSignalTuple[0];
+      var setTurnSignalUi = turnSignalTuple[1];
+      var cameraModeTuple = useState('cockpit');
+      var cameraModeUi = cameraModeTuple[0];
+      var setCameraModeUi = cameraModeTuple[1];
+      var applyTurnSignal = function(next, announce) {
+        var normalized = next === -1 ? -1 : next === 1 ? 1 : 0;
+        blinkerRef.current = normalized;
+        blinkerCancelRef.current = { armed: false, dir: normalized };
+        setTurnSignalUi(normalized);
+        if (announce) rrAnnounce(normalized === -1 ? 'Left turn signal on.' : normalized === 1 ? 'Right turn signal on.' : 'Turn signal off.');
+      };
+      var cycleCameraMode = function(announce) {
+        var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
+        var nextMode = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
+        cameraModeRef.current = nextMode;
+        setCameraModeUi(nextMode);
+        if (announce) rrAnnounce('Camera view: ' + nextMode + '.');
+      };
+      var rideAlongControlsLocked = function() {
+        var live = dataRef.current || {};
+        return !!live.rideAlong &&
+          live.roadTestStage !== 'drive' && !live.parentRideMode &&
+          rideAlongSupportsScenario(live.scenario, !!live.freeExplore);
+      };
+      var startFormalEvaluationClocks = function() {
+        var startedAtSim = Math.max(0, Number(timeRef.current) || 0);
+        var startedAt = Date.now();
+        if (roadTestRef.current.active && roadTestRef.current.startedAtSim == null) {
+          roadTestRef.current.startedAtSim = startedAtSim;
+          roadTestRef.current.startedAt = startedAt;
+          roadTestRef.current.lastSampleT = startedAtSim;
+        }
+        if (parentRef.current.active && parentRef.current.startedAtSim == null) {
+          parentRef.current.startedAtSim = startedAtSim;
+          parentRef.current.startedAt = startedAt;
+        }
+      };
+      var attemptDriveGear = function(nextGear, announce) {
+        if (['P', 'R', 'D'].indexOf(nextGear) === -1) return false;
+        if (rideAlongControlsLocked()) {
+          if (announce) rrAnnounce('Ride-Along is managing the transmission.');
+          return false;
+        }
+        if (!canShiftDriveGear(carRef.current && carRef.current.speed)) {
+          if (announce) rrAnnounce('Stop the vehicle completely before shifting gear.');
+          return false;
+        }
+        gearRef.current = nextGear;
+        return true;
       };
       // Grace-banner mirror ("check your mirrors" card after buckling). Its old
       // condition read timeRef at render time, but nothing re-renders when the
@@ -6671,6 +7483,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var graceVisibleTuple = useState(false);
       var graceVisible = graceVisibleTuple[0];
       var setGraceVisible = graceVisibleTuple[1];
+      // Animation-frame state lives in refs, while these mirrors update React
+      // only for deliberate UI milestones and disclosure changes.
+      var missionCompleteTuple = useState(null);
+      var missionComplete = missionCompleteTuple[0];
+      var setMissionComplete = missionCompleteTuple[1];
+      var driveControlsTuple = useState(false);
+      var driveControlsOpen = driveControlsTuple[0];
+      var setDriveControlsOpen = driveControlsTuple[1];
+      var worldControlsTuple = useState(false);
+      var worldControlsOpen = worldControlsTuple[0];
+      var setWorldControlsOpen = worldControlsTuple[1];
+      var debriefDetailsTuple = useState(false);
+      var debriefDetailsOpen = debriefDetailsTuple[0];
+      var setDebriefDetailsOpen = debriefDetailsTuple[1];
+      var missionRef = useRef(null);
       // Blind spot detector: populated every render based on adjacent-lane traffic.
       var blindSpotRef = useRef({ left: false, right: false });
       // Lane departure detector: flags when we drift across a lane line without signaling.
@@ -6711,6 +7538,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       useEffect(function() {
         calmDriveRef.current = !!(d && d.calmDrive);
       }, [d && d.calmDrive]);
+      // Keep the explicit in-tool override scoped to RoadReady and remove it
+      // when the tool closes so neighboring AlloFlow surfaces are unchanged.
+      useEffect(function() {
+        if (d && typeof d.reducedMotion === 'boolean') reducedMotionRef.current = d.reducedMotion;
+        var rrRoot = document.documentElement;
+        rrRoot.classList.toggle('rr-roadready-reduced-motion', !!(d && d.reducedMotion));
+        return function() { rrRoot.classList.remove('rr-roadready-reduced-motion'); };
+      }, [d && d.reducedMotion]);
       // Listen for OS-level prefers-reduced-motion changes. Without this, the
       // setting was sampled once at mount and never updated — a user who flipped
       // their accessibility preference mid-session kept getting full animations.
@@ -6735,56 +7570,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var earnedBadges = d.badges || {};
       var scenariosDriven = d.scenariosDriven || {};
       var weathersDriven = d.weathersDriven || {};
+      var cycleHudPreset = function() {
+        var order = ['driver', 'science', 'instructor', 'calm'];
+        var liveHud = dataRef.current.hudPreset || (dataRef.current.calmDrive ? 'calm' : 'driver');
+        upd('hudPreset', order[(order.indexOf(liveHud) + 1) % order.length]);
+        showHUDRef.current = true;
+      };
 
       // ── Input handling ──
       useEffect(function() {
         if (view !== 'driving') return;
         var onKeyDown = function(e) {
-          // Don't steal keys from form fields — the shared modal can host text
-          // inputs (coach panels, sibling tools); typing "was" in one used to
-          // pause the sim and throttle the car.
+          var keyName = String(e.key || '').toLowerCase();
+          // Escape is the advertised, explicit end-drive shortcut. Handle it
+          // before the interactive-target guard so it works from the dock and
+          // from either modal, too.
+          if (keyName === 'escape') {
+            e.preventDefault();
+            keysRef.current = {};
+            exitDriving();
+            return;
+          }
+          // Editing controls own every key. Buttons and links only own their
+          // native activation keys; letter shortcuts must remain available while
+          // the pause dialog's Resume button is auto-focused (its help still
+          // offers C for camera and K for a photo). This also prevents Space on
+          // Pause from toggling here and again through the button's native click.
           var kTarget = e.target, kTag = kTarget && kTarget.tagName;
-          if (kTag === 'INPUT' || kTag === 'TEXTAREA' || (kTarget && kTarget.isContentEditable)) return;
+          var kEditing = !!(kTarget && (
+            kTarget.isContentEditable ||
+            /^(INPUT|TEXTAREA|SELECT)$/.test(kTag || '') ||
+            (typeof kTarget.closest === 'function' && kTarget.closest('input,textarea,select,[contenteditable="true"]'))
+          ));
+          var kActionControl = !!(kTarget && (
+            /^(BUTTON|A)$/.test(kTag || '') ||
+            (typeof kTarget.closest === 'function' && kTarget.closest('button,a[href],[role="button"],[role="link"]'))
+          ));
+          if (kEditing || (kActionControl && (keyName === ' ' || keyName === 'enter'))) return;
+          // Ride-Along owns every vehicle-control input on supported courses.
+          // Camera, HUD, lights, photo, pause, and Escape remain available;
+          // manual throttle/steering/gears cannot silently disable automation.
+          var rideAlongManagedKeys = [
+            'w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',
+            'f','g','p','e','v','t','q','z','x'
+          ];
+          if (rideAlongControlsLocked() && rideAlongManagedKeys.indexOf(keyName) !== -1) {
+            e.preventDefault();
+            keysRef.current[keyName] = false;
+            if (!e.repeat && ['f','g','p'].indexOf(keyName) !== -1) {
+              rrAnnounce('Ride-Along is managing the transmission.');
+            }
+            return;
+          }
           // preventDefault runs on every event (including repeats) so held WASD/arrows don't scroll the page.
-          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+          if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','q','z','x'].indexOf(keyName) !== -1) e.preventDefault();
           // Skip one-shot toggle logic on OS key-repeat — otherwise holding Space strobes pause,
           // holding C cycles cameras at ~30Hz, holding E/V flips signals, etc.
           if (e.repeat) return;
-          keysRef.current[e.key.toLowerCase()] = true;
+          keysRef.current[keyName] = true;
           if (e.key === ' ') { togglePause(); }
-          if (e.key.toLowerCase() === 'c') {
-            var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
-            cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
-          }
-          if (e.key.toLowerCase() === 'h') showHUDRef.current = !showHUDRef.current;
+          if (keyName === 'c') cycleCameraMode(true);
+          if (keyName === 'h') cycleHudPreset();
           // Read live state via dataRef — this effect's deps are [view], so the
           // closed-over `d` is frozen at drive start; `!d.highBeams` computed the
           // same value on every press and the beams stuck after one toggle.
-          if (e.key.toLowerCase() === 'l') upd('highBeams', !dataRef.current.highBeams);
-          if (e.key.toLowerCase() === 'k') takePhoto();
+          if (keyName === 'l') upd('highBeams', !dataRef.current.highBeams);
+          if (keyName === 'k') takePhoto();
           // Gear shifting: F = drive, G = reverse, P = park (only when stopped or slow)
-          if (e.key.toLowerCase() === 'f') {
-            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D';
-          }
-          if (e.key.toLowerCase() === 'g') {
-            if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'R';
-          }
-          if (e.key.toLowerCase() === 'p') {
-            if (carRef.current.speed < 1) gearRef.current = 'P';
-          }
+          if (keyName === 'f') attemptDriveGear('D', true);
+          if (keyName === 'g') attemptDriveGear('R', true);
+          if (keyName === 'p') attemptDriveGear('P', true);
           // Turn signals: E = left, V = right, T = cancel
-          if (e.key.toLowerCase() === 'e') blinkerRef.current = blinkerRef.current === -1 ? 0 : -1;
-          if (e.key.toLowerCase() === 'v') blinkerRef.current = blinkerRef.current === 1 ? 0 : 1;
-          if (e.key.toLowerCase() === 't') blinkerRef.current = 0;
+          if (keyName === 'e') applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true);
+          if (keyName === 'v') applyTurnSignal(blinkerRef.current === 1 ? 0 : 1, true);
+          if (keyName === 't') applyTurnSignal(0, true);
           // Horn — quick two-tone beep on 'q'
-          if (e.key.toLowerCase() === 'q') playHorn(0.35);
+          if (keyName === 'q') playHorn(0.35);
         };
         var onKeyUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
         // Release everything when focus leaves the window — the matching keyup
-        // fires in the other app, so a held W kept the car accelerating on its
-        // own until the user came back and re-tapped the key.
-        var onWindowBlur = function() { keysRef.current = {}; };
-        var onVisChange = function() { if (document.hidden) keysRef.current = {}; };
+        // fires in the other app. Also pause: letting traffic and hazards keep
+        // moving while the learner is in another tab can manufacture a crash
+        // they never had a chance to perceive or avoid.
+        var pauseForInterruption = function() {
+          keysRef.current = {};
+          if (!pausedRef.current && drivingRef.current) {
+            togglePause(true);
+            try {
+              if (audioRef.current && audioRef.current.ctx && audioRef.current.ctx.state === 'running') audioRef.current.ctx.suspend();
+            } catch (pauseAudioErr) {}
+            rrAnnounce('Drive paused because the simulator lost focus.');
+          }
+        };
+        var onWindowBlur = function() { pauseForInterruption(); };
+        var onVisChange = function() { if (document.hidden) pauseForInterruption(); };
         window.addEventListener('keydown', onKeyDown);
         window.addEventListener('keyup', onKeyUp);
         window.addEventListener('blur', onWindowBlur);
@@ -6809,6 +7688,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // that case, but the intro message / weather sys / scenario-override
         // application would still be skipped.)
         var d = (ctx.toolData && ctx.toolData['roadReady']) || {};
+        // A prior drive may have ended while a key or gamepad trigger was held.
+        // Start every session neutral so stale input cannot move the next car.
+        keysRef.current = {};
         // Shallow-clone so the Free Explore override block below (and any
         // other runtime mutations) don't leak into the SCENARIOS master
         // array. Previously `scn.time = fes.time` would mutate the source
@@ -6819,6 +7701,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var _scnBase = SCENARIOS.find(function(s) { return s.id === scenarioId; }) || SCENARIOS[0];
         var scn = Object.assign({}, _scnBase);
         var veh = VEHICLES.find(function(v) { return v.id === vehicleId; }) || VEHICLES[0];
+        // Keep the imperative controller in sync with imported/persisted data,
+        // then resolve whether this particular course has a spline it can
+        // safely follow. The preference stays on for the learner's next road
+        // scenario even when a bounded maneuver course is hands-on.
+        var rideAlongRequested = !!d.rideAlong;
+        var formalManualDrive = d.roadTestStage === 'drive' || !!d.parentRideMode;
+        var rideAlongActive = rideAlongRequested && !formalManualDrive &&
+          rideAlongSupportsScenario(scn.id, !!d.freeExplore);
+        // Keep the saved preference intact, but store only this drive's resolved
+        // controller state in the imperative ref. Formal evaluations are always
+        // completed by the learner, never by the automatic Ride-Along controller.
+        rideAlongRef.current = rideAlongActive;
+        rideAlongStateRef.current = {
+          lastNarration: 0, lastSignalId: null, lastCellAnnounced: -999,
+          announcedHazards: {}, stopControls: {}, lastBusKey: null,
+          lastRailKey: null, autoSignal: 0
+        };
         var continuousScenarioWorld = !d.freeExplore && scenarioUsesContinuousWorld(scn.id);
         var streamedDrive = continuousScenarioWorld || (d.freeExplore && scn.id !== 'roundabout');
         mapRef.current = buildMap(scn.id);
@@ -6907,7 +7806,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // ── Seatbelt startup sequence ──
         // Unbuckled on start. Plays 2-second chime loop every 4s until fastened.
         // Scenarios that auto-bypass this: parking (top-down, no real car), 3-point, backingDrill.
-        var autoBelt = ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
+        var autoBelt = rideAlongActive ||
+          ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
         seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
         setBeltFastened(!!autoBelt); // reset the UI mirror whenever driving starts
         // Auto-belted scenarios skip the fasten branch in the sim loop, so show
@@ -6920,6 +7820,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               speak('Fasten your seatbelt before driving.');
             }
           }, 1000);
+        }
+        if (rideAlongActive) {
+          safeTimeout(function() {
+            var rideAlongStartText = 'Ride-Along is active. Seatbelt fastened. Check all three mirrors; automated driving begins after the four-second safety scan.';
+            addToast('🎧 Ride-Along ready — mirror scan, then automatic driving.');
+            rrAnnounce(rideAlongStartText);
+            speak(rideAlongStartText, 'coach');
+          }, 500);
+        } else if (rideAlongRequested) {
+          safeTimeout(function() {
+            var rideAlongUnavailableText = 'Ride-Along is not available on this hands-on maneuver course. The car will remain in Park until you use the driving controls.';
+            addToast('🎧 Ride-Along unavailable on this maneuver course.');
+            rrAnnounce(rideAlongUnavailableText);
+            speak(rideAlongUnavailableText, 'coach');
+          }, 500);
         }
         safeTimeout(function() {
           speak('Take your time. Check your rearview, left, and right mirrors before accelerating.');
@@ -6938,15 +7853,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var _autoplayCheckCtx = audioRef.current.ctx;
             safeTimeout(function() {
               if (!_autoplayCheckCtx) return;
-              if (_autoplayCheckCtx.state === 'suspended' && !window._alloflowRRAudioToastShown) {
-                window._alloflowRRAudioToastShown = true;
-                addToast('🔊 Click anywhere to enable engine and coaching sounds.', 'info');
-                var _autoplayResumeOnce = function() {
-                  try { _autoplayCheckCtx.resume(); } catch(_) {}
+              if (_autoplayCheckCtx.state === 'suspended') {
+                if (!window._alloflowRRAudioToastShown) {
+                  window._alloflowRRAudioToastShown = true;
+                  addToast('🔊 Click anywhere to enable engine and coaching sounds.', 'info');
+                }
+                if (audioUnlockCleanupRef.current) audioUnlockCleanupRef.current();
+                var _removeAutoplayResume = function() {
                   window.removeEventListener('click', _autoplayResumeOnce);
                   window.removeEventListener('touchstart', _autoplayResumeOnce);
                   window.removeEventListener('keydown', _autoplayResumeOnce);
+                  if (audioUnlockCleanupRef.current === _removeAutoplayResume) {
+                    audioUnlockCleanupRef.current = null;
+                  }
                 };
+                var _autoplayResumeOnce = function() {
+                  try { _autoplayCheckCtx.resume(); } catch(_) {}
+                  _removeAutoplayResume();
+                };
+                audioUnlockCleanupRef.current = _removeAutoplayResume;
                 window.addEventListener('click', _autoplayResumeOnce);
                 window.addEventListener('touchstart', _autoplayResumeOnce);
                 window.addEventListener('keydown', _autoplayResumeOnce);
@@ -7052,14 +7977,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Traffic in the danger zone gets teleported to a safe distance (preserving lane offset).
         // Peds/cyclists within 6 cells also get pushed away to avoid instant collisions.
         var DANGER_R = 20; // cells ahead OR behind in same direction
+        var safeStartWorld = infiniteWorldRef.current && infiniteWorldRef.current.spline
+          ? infiniteWorldRef.current : null;
+        var safeStartPlayerStation = safeStartWorld ? startY : playerStartWorldY;
+        var safeStartPlayerDirection = safeStartWorld
+          ? trafficRoadCoordinates(safeStartWorld, carRef.current).direction
+          : (Math.sin(startHeading) >= 0 ? 1 : -1);
+        var safeStartState = function(actor) {
+          if (safeStartWorld && actor && !actor.crossStreet) {
+            var actorRoadState = trafficRoadCoordinates(safeStartWorld, actor);
+            if (actorRoadState) {
+              return {
+                station: typeof actor._roadStation === 'number'
+                  ? actor._roadStation : actorRoadState.station,
+                direction: actorRoadState.direction,
+                lateral: actorRoadState.lateral
+              };
+            }
+          }
+          return {
+            station: Number(actor && actor.y) || 0,
+            direction: Math.sin(Number(actor && actor.heading) || 0) >= 0 ? 1 : -1,
+            lateral: Number(actor && actor.x) - Math.floor(MAP_SIZE / 2)
+          };
+        };
+        var safeStartPlayerLateral = safeStartWorld
+          ? mainRoadLocalPoint(safeStartWorld, startX, playerStartWorldY).lateral
+          : startX - Math.floor(MAP_SIZE / 2);
+        var safeStartPushActor = function(actor, radius, push) {
+          if (!actor) return;
+          var actorState = safeStartState(actor);
+          var stationDelta = actorState.station - safeStartPlayerStation;
+          var lateralDelta = actorState.lateral - safeStartPlayerLateral;
+          var distance = safeStartWorld
+            ? Math.hypot(stationDelta, lateralDelta)
+            : Math.hypot(actor.x - startX, actor.y - playerStartWorldY);
+          if (distance >= radius) return;
+          var stationSide = stationDelta >= 0 ? 1 : -1;
+          var targetStation = safeStartPlayerStation + stationSide * push;
+          if (safeStartWorld && !actor.crossStreet) {
+            var targetLateral = typeof actor._sidewalkLateral === 'number'
+              ? actor._sidewalkLateral
+              : typeof actor._bikeLane === 'number' ? actor._bikeLane : actorState.lateral;
+            var targetPoint = mainRoadWorldPoint(safeStartWorld, targetStation, targetLateral);
+            actor.x = targetPoint.x;
+            actor.y = targetPoint.y;
+            actor._roadStation = targetStation;
+            if (actor.homeX !== undefined) actor.homeX = targetPoint.x;
+            if (actor.homeY !== undefined) actor.homeY = targetPoint.y;
+            return;
+          }
+          actor.y = playerStartWorldY + stationSide * push;
+        };
         var HEADON_R = 22; // cells ahead for oncoming traffic (collision range is worse head-on)
         (trafficRef.current || []).forEach(function(t) {
           if (t.crossStreet || t._roundaboutState) return; // specialized actors keep their authored path
-          var dy = t.y - playerStartWorldY;
-          var sameDir = (t.heading < 0); // player heads -π/2 (negative)
+          var safeStartTrafficState = safeStartState(t);
+          var stationDelta = safeStartTrafficState.station - safeStartPlayerStation;
+          var ahead = stationDelta * safeStartPlayerDirection;
+          var sameDir = safeStartTrafficState.direction === safeStartPlayerDirection;
           var inDangerZone = sameDir
-            ? Math.abs(dy) < DANGER_R      // same direction: danger on both sides
-            : (dy < 0 && dy > -HEADON_R);  // oncoming: only danger if car is ahead of player (dy < 0 since player at startY)
+            ? Math.abs(ahead) < DANGER_R
+            : (ahead > 0 && ahead < HEADON_R);
           if (inDangerZone) {
             // Teleport this car to a safe distance further out, same lane offset.
             var push = DANGER_R + 10 + Math.random() * 20;
@@ -7067,7 +8046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (sameDir) {
               var pushedStation = typeof t._roadStation === 'number'
                 ? t._roadStation : mainRoadLocalPoint(infiniteWorldRef.current, t.x, t.y).longitudinal;
-              pushedStation += dy >= 0 ? push : -push;
+              pushedStation += stationDelta >= 0 ? push : -push;
               if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
                 var pushedPoint = mainRoadWorldPoint(infiniteWorldRef.current, pushedStation, t.laneOffset);
                 t.x = pushedPoint.x;
@@ -7076,12 +8055,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t.heading = Math.sin(Number(t.heading) || 0) >= 0
                   ? Math.PI / 2 - pushedPoint.heading : -Math.PI / 2 - pushedPoint.heading;
               } else {
-                t.y = playerStartWorldY + (dy >= 0 ? push : -push);
+                t.y = playerStartWorldY + (stationDelta >= 0 ? push : -push);
               }
             } else {
               var opposingStation = typeof t._roadStation === 'number'
                 ? t._roadStation : mainRoadLocalPoint(infiniteWorldRef.current, t.x, t.y).longitudinal;
-              opposingStation = startY - (push + 10);
+              opposingStation = safeStartPlayerStation + safeStartPlayerDirection * (push + 10);
               if (infiniteWorldRef.current && infiniteWorldRef.current.spline) {
                 var opposingPoint = mainRoadWorldPoint(infiniteWorldRef.current, opposingStation, t.laneOffset);
                 t.x = opposingPoint.x;
@@ -7090,7 +8069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t.heading = Math.sin(Number(t.heading) || 0) >= 0
                   ? Math.PI / 2 - opposingPoint.heading : -Math.PI / 2 - opposingPoint.heading;
               } else {
-                t.y = playerStartWorldY - (push + 10);
+                t.y = playerStartWorldY + safeStartPlayerDirection * (push + 10);
               }
             }
           }
@@ -7098,25 +8077,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Also clear cross-street cars from the first intersection near the player.
         (trafficRef.current || []).forEach(function(t) {
           if (!t.crossStreet) return;
-          if (Math.abs(t.y - playerStartWorldY) < 15) {
-            // Nearest cross-street intersection to player — move the car far down the cross street.
+          if (safeStartWorld) {
+            moveCrossStreetActorToSafeApproach(
+              safeStartWorld, t, safeStartPlayerStation, 15);
+          } else if (Math.abs(t.y - playerStartWorldY) < 15) {
+            // Finite-map fallback; streamed intersections use their rotated frame.
             t.x = Math.random() < 0.5 ? 3 : MAP_SIZE - 3;
           }
         });
         // Peds and cyclists: push away if within 6 cells of the player.
         (pedsRef.current || []).forEach(function(p) {
-          var dd = Math.hypot(p.x - startX, p.y - playerStartWorldY);
+          var dd = safeStartWorld
+            ? Math.hypot(safeStartState(p).station - safeStartPlayerStation,
+              safeStartState(p).lateral - safeStartPlayerLateral)
+            : Math.hypot(p.x - startX, p.y - playerStartWorldY);
           if (dd < 6) {
-            p.y = playerStartWorldY + (p.y >= playerStartWorldY ? 20 : -20);
+            safeStartPushActor(p, 6, 20);
           }
         });
         (cyclistsRef.current || []).forEach(function(cy) {
-          var dd = Math.hypot(cy.x - startX, cy.y - playerStartWorldY);
+          var dd = safeStartWorld
+            ? Math.hypot(safeStartState(cy).station - safeStartPlayerStation,
+              safeStartState(cy).lateral - safeStartPlayerLateral)
+            : Math.hypot(cy.x - startX, cy.y - playerStartWorldY);
           if (dd < 10) {
-            cy.y = playerStartWorldY + (cy.y >= playerStartWorldY ? 25 : -25);
+            safeStartPushActor(cy, 10, 25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, absSeconds: 0, hydroplaneSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, majorViolations: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
+        statsRef.current = { startTime: Date.now(), simTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, absSeconds: 0, hydroplaneSeconds: 0, cyclistClose: 0, laneChanges: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, majorViolations: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
+        missionRef.current = (!d.freeExplore && d.roadTestStage !== 'drive' && !d.parentRideMode)
+          ? { def: rrScenarioMission(scn.id), status: rrScenarioMissionStatus(statsRef.current, 0, scn.id), complete: false }
+          : null;
+        setMissionComplete(null);
+        setDriveControlsOpen(false);
+        setDebriefDetailsOpen(false);
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -7128,17 +8122,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
         // Road Test Simulator: arm scoring when entering the driving phase.
         if (d.roadTestStage === 'drive') {
-          roadTestRef.current = { active: true, deductions: [], score: 100, startedAt: Date.now(), durationSec: 240, lastSampleAt: 0 };
+          roadTestRef.current = { active: true, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240, lastSampleT: null };
           journalLog('roadtest', '🪪', 'Road Test driving phase started');
         } else {
-          roadTestRef.current = { active: false, deductions: [], score: 100, startedAt: 0, durationSec: 240 };
+          roadTestRef.current = { active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240 };
         }
         // Parent Ride Check: reset eval state when this mode is engaged.
         if (d.parentRideMode) {
-          parentRef.current = { active: true, errors: [], startedAt: Date.now(), durationSec: 120 };
+          parentRef.current = { active: true, errors: [], startedAt: null, startedAtSim: null, durationSec: 120 };
           journalLog('parent_check', '👨‍👧', 'Parent Ride Check started (2 min)');
         } else {
-          parentRef.current = { active: false, errors: [], startedAt: 0, durationSec: 120 };
+          parentRef.current = { active: false, errors: [], startedAt: null, startedAtSim: null, durationSec: 120 };
         }
         // Dynamic weather: if enabled in Free Explore, build a multi-stage chain starting
         // ~90s in. Pattern depends on initial weather and time of day.
@@ -7230,7 +8224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (d.freeExplore && d.freeExploreTrip) {
           var tdef = TRIPS.find(function(t) { return t.id === d.freeExploreTrip; });
           if (tdef) {
-            tripRef.current = { def: tdef, goalIndex: 0, completedGoals: [], startedAt: Date.now() };
+            tripRef.current = { def: tdef, goalIndex: 0, completedGoals: [], startedAtSim: timeRef.current };
             journalLog('trip_start', tdef.icon, 'Started trip: ' + tdef.name);
           } else {
             tripRef.current = null;
@@ -7239,7 +8233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           tripRef.current = null;
         }
         gearRef.current = 'P'; // start in Park
-        blinkerRef.current = 0;
+        applyTurnSignal(0, false);
         laneChangeRef.current = { lastLane: null };
         stopSignQueueRef.current = {};
         intersectionReservationRef.current = {};
@@ -7247,6 +8241,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         emergencyRef.current = null;
         lastStateRef.current = { speed: 0, accel: 0 };
         timeRef.current = 0;
+        if (autoBelt) startFormalEvaluationClocks();
+        driveUiSecondRef.current = -1;
+        setDriveUiSeconds(0);
+        setDriveControlsOpen(false);
+        setWorldControlsOpen(false);
         hudRuleCueRef.current = { key: null, lastAnnounceAt: -Infinity };
         // Fresh path + black box per drive. The old array carried _lastSample
         // (stamped in the PREVIOUS drive's sim time) across drives, so the
@@ -7254,6 +8253,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // map + ghost replay showed the previous drive's route.
         drivePathRef.current = [];
         blackBoxRef.current = [];
+        // Let the learner settle for the advertised interval before the first
+        // AI tip, and invalidate any request left over from an earlier drive.
+        coachRef.current = {
+          lastCallAt: 0, inFlight: false, lastTip: null, lastTipAt: 0,
+          requestId: (coachRef.current.requestId || 0) + 1
+        };
         drivingRef.current = true;
         togglePause(false);
         updMulti({ view: 'driving', scenario: scn.id, vehicle: veh.id });
@@ -7270,12 +8275,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       var exitDriving = useCallback(function() {
         drivingRef.current = false;
+        coachRef.current.requestId = (coachRef.current.requestId || 0) + 1;
+        coachRef.current.inFlight = false;
+        if (audioUnlockCleanupRef.current) audioUnlockCleanupRef.current();
         if (animRef.current) cancelAnimationFrame(animRef.current);
+        // Read the active selection from the live store. Escape's global
+        // handler is installed when the driving view mounts; without this
+        // lookup it could debrief the scenario/vehicle captured by an older
+        // render after an in-drive condition change.
+        var liveData = dataRef.current || {};
+        var exitScenarioBase = SCENARIOS.find(function(item) { return item.id === liveData.scenario; }) || currentScenario || SCENARIOS[0];
+        var exitScenario = Object.assign({}, exitScenarioBase);
+        if (liveData.freeExplore && liveData.freeExploreScenario) {
+          var exitOverrides = liveData.freeExploreScenario;
+          if (exitOverrides.weather) exitScenario.weather = exitOverrides.weather;
+          if (exitOverrides.time) exitScenario.time = exitOverrides.time;
+          if (exitOverrides.traffic) exitScenario.traffic = exitOverrides.traffic;
+          if (exitOverrides.speedLimit) exitScenario.speedLimit = exitOverrides.speedLimit;
+        }
+        var exitVehicle = VEHICLES.find(function(item) { return item.id === liveData.vehicle; }) || currentVehicle || VEHICLES[0];
         // Stop the radio so its oscillators don't keep playing after exit.
         try { stopRadio(); } catch(_) {}
         // Clear one-shot drill flags so a normal next drive doesn't keep firing prompts.
-        if (d.nightVisionDrill) upd('nightVisionDrill', false);
-        if (d.parentRideMode) upd('parentRideMode', false);
+        if (liveData.nightVisionDrill) upd('nightVisionDrill', false);
+        if (liveData.parentRideMode) upd('parentRideMode', false);
         // Road test stage is cleared only after result view renders (see roadTestResult view).
         // Stop ALL audio nodes (prevent memory leak from accumulated oscillators/buffers)
         try {
@@ -7305,25 +8328,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         } catch (e) {}
         emergencyRef.current = null;
         var s = statsRef.current;
-        var minutes = Math.floor((Date.now() - s.startTime) / 60000);
-        var seconds = Math.floor(((Date.now() - s.startTime) % 60000) / 1000);
+        var elapsedSec = Math.max(0, Math.round(timeRef.current || 0));
+        var finalMissionStatus = missionRef.current && missionRef.current.status
+          ? missionRef.current.status
+          : rrScenarioMissionStatus(s, elapsedSec, exitScenario.id);
+        var evidence = rrSessionEvidence(s, elapsedSec, {
+          formalResult: liveData.roadTestStage === 'drive',
+          missionReady: !liveData.freeExplore && liveData.roadTestStage !== 'drive' && finalMissionStatus.ready,
+          missionPassed: !liveData.freeExplore && liveData.roadTestStage !== 'drive' ? finalMissionStatus.passed : undefined
+        });
+        var driveOutcome = rrDriveOutcome(s, evidence);
+        var minutes = Math.floor(elapsedSec / 60);
+        var seconds = elapsedSec % 60;
         var avgMPG = s.mpgSamples > 0 ? (s.mpgSum / s.mpgSamples) : 0;
         // Seal the road test result if the exam was running.
-        if (d.roadTestStage === 'drive') {
+        if (liveData.roadTestStage === 'drive') {
+          var rtElapsed = evaluationElapsedSeconds(roadTestRef.current, timeRef.current);
+          var rtCompleted = rtElapsed >= (roadTestRef.current.durationSec || 240);
           var rtFinalScore = Math.max(0, roadTestRef.current.score);
-          var rtPassed = rtFinalScore >= 90;
+          var rtPassed = rtCompleted && rtFinalScore >= 90;
           var rtReport = {
             score: rtFinalScore,
             passed: rtPassed,
+            completed: rtCompleted,
             deductions: roadTestRef.current.deductions.slice(),
-            scenario: currentScenario.name,
-            durationSec: Math.round((Date.now() - roadTestRef.current.startedAt) / 1000),
+            scenario: exitScenario.name,
+            durationSec: Math.min(roadTestRef.current.durationSec || rtElapsed, Math.round(rtElapsed)),
+            startedAt: roadTestRef.current.startedAt,
             endedAt: Date.now()
           };
           updMulti({ lastRoadTest: rtReport, roadTestStage: 'result', view: 'roadTestResult' });
           roadTestRef.current.active = false;
           if (rtPassed) {
-            var rtBadges = Object.assign({}, d.badges || {});
+            var rtBadges = Object.assign({}, liveData.badges || {});
             if (!rtBadges.road_test_pass) { rtBadges.road_test_pass = true; upd('badges', rtBadges); }
           }
           journalLog('roadtest_done', rtPassed ? '🪪' : '❌', 'Road test ' + (rtPassed ? 'PASSED' : 'failed') + ' — score ' + rtFinalScore);
@@ -7331,13 +8368,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // Emergency Drill is a one-drive mode. The flag lives in persisted tool
         // state; without this reset a single drill tap left every later drive —
         // Free Explore, road tests, lessons — swarming with ambulances all session.
-        if (d.emergencyDrillMode) upd('emergencyDrillMode', false);
+        if (liveData.emergencyDrillMode) upd('emergencyDrillMode', false);
         // Seal the parent report if a Parent Ride Check was running.
-        if (d.parentRideMode) {
+        if (liveData.parentRideMode) {
+          var parentElapsed = evaluationElapsedSeconds(parentRef.current, timeRef.current);
           var sealedReport = {
-            scenario: currentScenario.name,
+            scenario: exitScenario.name,
             errors: parentRef.current.errors.slice(),
-            durationSec: Math.round((Date.now() - parentRef.current.startedAt) / 1000),
+            durationSec: Math.min(parentRef.current.durationSec || parentElapsed, Math.round(parentElapsed)),
             startedAt: parentRef.current.startedAt,
             endedAt: Date.now()
           };
@@ -7346,10 +8384,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
         // Seal the journal with a closing entry and persist so the menu can export it.
         journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / METERS_PER_MILE).toFixed(2) + ' mi');
-        var sealedJournal = Object.assign({}, journalRef.current, { endedAt: Date.now(), durationSec: Math.round((Date.now() - journalRef.current.startedAt) / 1000) });
+        var sealedJournal = Object.assign({}, journalRef.current, {
+          endedAt: Date.now(),
+          durationSec: elapsedSec,
+          qualifyingSession: evidence.qualifying,
+          outcome: driveOutcome.label
+        });
         // ── Logbook: append this drive's journal to the running log, capped at 100 sessions ──
         try {
-          var logbookNext = (d.logbook || []).slice();
+          var logbookNext = (liveData.logbook || []).slice();
           logbookNext.push({
             scenario: sealedJournal.scenario,
             vehicle: sealedJournal.vehicle,
@@ -7360,43 +8403,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             entries: (sealedJournal.entries || []).slice(-40), // cap entries to keep file size sane
             safetyScore: Math.max(0, Math.round(s.safetyScore)),
             efficiencyScore: Math.max(0, Math.round(s.efficiencyScore)),
-            freeExplore: sealedJournal.freeExplore
+            freeExplore: sealedJournal.freeExplore,
+            qualifyingSession: evidence.qualifying,
+            outcome: driveOutcome.label
           });
           if (logbookNext.length > 100) logbookNext = logbookNext.slice(-100);
           upd('logbook', logbookNext);
           // Logbook achievements.
-          var lBadges = Object.assign({}, d.badges || {});
+          var lBadges = Object.assign({}, liveData.badges || {});
           var lAwarded = false;
-          if (logbookNext.length >= 5 && !lBadges.logbook_starter) { lBadges.logbook_starter = true; lAwarded = true; unlockBadge('Logbook Started'); }
-          var totalHrs = logbookNext.reduce(function(sec, j) { return sec + (j.durationSec || 0); }, 0) / 3600;
+          var qualifyingLogs = logbookNext.filter(function(entry) { return entry.qualifyingSession !== false && (entry.durationSec || 0) >= 60; });
+          if (qualifyingLogs.length >= 5 && !lBadges.logbook_starter) { lBadges.logbook_starter = true; lAwarded = true; unlockBadge('Logbook Started'); }
+          var totalHrs = qualifyingLogs.reduce(function(sec, j) { return sec + (j.durationSec || 0); }, 0) / 3600;
           if (totalHrs >= 10 && !lBadges.logbook_ten_hr) { lBadges.logbook_ten_hr = true; lAwarded = true; unlockBadge('10 Hours Logged'); }
           if (lAwarded) upd('badges', lBadges);
-          // Track bestSafety per scenario for Lesson Path unlock gating.
-          var drivenNext = Object.assign({}, d.scenariosDriven || {});
-          var sid = currentScenario.id;
-          var prevBest = (drivenNext[sid] && drivenNext[sid].bestSafety) || 0;
-          var curSafety = Math.max(0, Math.round(s.safetyScore));
-          drivenNext[sid] = Object.assign({}, drivenNext[sid] || {}, {
-            bestSafety: Math.max(prevBest, curSafety),
-            lastSafety: curSafety,
-            driveCount: ((drivenNext[sid] && drivenNext[sid].driveCount) || 0) + 1
-          });
-          upd('scenariosDriven', drivenNext);
+          // Only evidence-backed sessions can unlock the lesson path. An early
+          // exit remains in the logbook as a practice sample, but cannot record
+          // a perfect "best" score or increment completed-drive counts.
+          if (evidence.qualifying) {
+            var drivenNext = Object.assign({}, liveData.scenariosDriven || {});
+            var sid = exitScenario.id;
+            var previousScenario = (drivenNext[sid] && typeof drivenNext[sid] === 'object') ? drivenNext[sid] : {};
+            var prevBest = previousScenario.bestSafety || 0;
+            var curSafety = Math.max(0, Math.round(s.safetyScore));
+            drivenNext[sid] = Object.assign({}, previousScenario, {
+              bestSafety: Math.max(prevBest, curSafety),
+              lastSafety: curSafety,
+              driveCount: (previousScenario.driveCount || 0) + 1,
+              lastOutcome: driveOutcome.label
+            });
+            upd('scenariosDriven', drivenNext);
+          }
         } catch (lbErr) { /* logbook non-critical */ }
         // ── Ghost Replay: if this Free Explore drive on this seed beat the previous best, save it ──
         // Best is judged on combined safety+eco score. Stored per worldSeed so racing the right ghost.
-        if (d.freeExplore && drivePathRef.current && drivePathRef.current.length > 4) {
+        if (liveData.freeExplore && evidence.qualifying && drivePathRef.current && drivePathRef.current.length > 4) {
           var combinedScore = Math.max(0, Math.round(s.safetyScore)) + Math.max(0, Math.round(s.efficiencyScore));
-          var seedKey = String(d.worldSeed || 'random');
-          var bestGhosts = Object.assign({}, d.bestGhosts || {});
+          var seedKey = String(liveData.worldSeed || 'random');
+          var bestGhosts = Object.assign({}, liveData.bestGhosts || {});
           var prev = bestGhosts[seedKey];
           if (!prev || combinedScore > prev.score) {
             bestGhosts[seedKey] = {
               score: combinedScore,
               path: drivePathRef.current.slice(0, 600), // cap for storage
-              durationSec: Math.round((Date.now() - statsRef.current.startTime) / 1000),
+              durationSec: elapsedSec,
               savedAt: Date.now(),
-              tripId: d.freeExploreTrip || null
+              tripId: liveData.freeExploreTrip || null
             };
             upd('bestGhosts', bestGhosts);
             addToast('👻 New best ghost saved for seed ' + seedKey + '!');
@@ -7404,12 +8456,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         }
         updMulti({
-          view: 'debrief',
+          view: liveData.roadTestStage === 'drive' ? 'roadTestResult' : (liveData.parentRideMode ? 'parentReport' : 'debrief'),
           lastJournal: sealedJournal,
           drivingStats: {
-            scenario: currentScenario.name,
-            vehicle: currentVehicle.name,
+            scenario: exitScenario.name,
+            vehicle: exitVehicle.name,
             time: minutes + ':' + String(seconds).padStart(2, '0'),
+            durationSec: elapsedSec,
+            distanceMeters: s.distance,
             distance_mi: (s.distance / METERS_PER_MILE).toFixed(2),
             maxSpeed: Math.round(s.maxSpeed * MS_TO_MPH),
             avgMPG: avgMPG.toFixed(1),
@@ -7428,6 +8482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             absSeconds: Math.round(s.absSeconds || 0),
             hydroplaneSeconds: Math.round(s.hydroplaneSeconds || 0),
             cyclistClose: s.cyclistClose,
+            laneChanges: s.laneChanges || 0,
             unsignaledLaneChanges: s.unsignaledLaneChanges || 0,
             emergencyYields: s.emergencyYields || 0,
             busStopCompliance: s.busStopCompliance || 0,
@@ -7435,7 +8490,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             wrongSideViolations: s.wrongSideViolations || 0,
             majorViolations: s.majorViolations || 0,
             childStrike: s.childStrike || 0,
-            scenarioId: currentScenario.id,
+            scenarioId: exitScenario.id,
+            qualifyingSession: evidence.qualifying,
+            evidence: evidence,
+            outcome: driveOutcome,
+            missionStatus: finalMissionStatus,
             lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null, // last 2 sec before end
             drivePath: drivePathRef.current.slice(), // full drive path for map
             // Coaching debrief: per-incident timeline (hard brakes, tailgates, speed violations, etc.)
@@ -7443,49 +8502,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             events: (s.driveEvents || []).slice()
           }
         });
-        // Check achievements
-        var newBadges = Object.assign({}, earnedBadges);
-        var safety = Math.max(0, Math.round(s.safetyScore));
-        var eco = Math.max(0, Math.round(s.efficiencyScore));
-        var comb = (safety + eco) / 2;
-        newBadges.first_drive = true;
-        if (s.crashes === 0) newBadges.no_crash = true;
-        if (eco >= 90) newBadges.eco_warrior = true;
-        if (safety >= 95) newBadges.safety_star = true;
-        if (comb >= 95) newBadges.a_plus = true;
-        if (currentScenario.time === 'night' && safety >= 80) newBadges.night_owl = true;
-        if (currentScenario.id === 'snow' && safety >= 70) newBadges.winter_warrior = true;
-        if (avgMPG > currentVehicle.cityMPG) newBadges.hypermiler = true;
-        if (s.stops >= 3) newBadges.full_stop = true;
-        if ((s.unsignaledLaneChanges || 0) === 0) newBadges.signal_perfect = true;
-        if (Math.round(s.maxSpeed * MS_TO_MPH) >= 80) newBadges.speed_demon = true;
+        // Check achievements from evidence-backed criteria. A start-and-exit
+        // sample cannot unlock a completion badge, and eco performance never
+        // overrides a safety-critical outcome.
+        var newBadges = Object.assign({}, liveData.badges || {}, lBadges || {});
+        delete newBadges.speed_demon;
+        if (rtPassed) newBadges.road_test_pass = true;
+        rrDriveAchievementIds(s, {
+          evidence: evidence,
+          elapsedSec: elapsedSec,
+          scenarioId: exitScenario.id,
+          time: exitScenario.time,
+          avgMPG: avgMPG,
+          cityMPG: exitVehicle.cityMPG
+        }).forEach(function(id) { newBadges[id] = true; });
         // Badge intent ("Encounter a moose and NOT hit it") requires the player
         // to have actually encountered wildlife and avoided striking any of it.
         // Previously this awarded simply for driving 500 m in an eligible scenario
         // without anything spawning. 'dawn' is now included since moose are most
         // active then (highest natural spawn rate, ~2.5%).
-        if ((s.wildlifeEncountered || 0) > 0 &&
+        if (evidence.qualifying && (s.wildlifeEncountered || 0) > 0 &&
             (s.wildlifeHit || 0) === 0 &&
             s.distance > 500 &&
-            ['rural','snow','fog','night','dawn'].indexOf(currentScenario.id) !== -1) {
+            ['rural','snow','fog','night','dawn'].indexOf(exitScenario.id) !== -1) {
           newBadges.moose_dodge = true;
         }
-        if (s.emergencyYields > 0) newBadges.emergency_yield = true;
-        if (currentScenario.time === 'night' || currentScenario.id === 'dawn') newBadges.night_drive = true;
-        // Track total drives for Road Veteran badge
-        var totalDrives = (d.totalDrives || 0) + 1;
-        upd('totalDrives', totalDrives);
-        if (totalDrives >= 10) newBadges.ten_drives = true;
-        var newScenarios = Object.assign({}, scenariosDriven);
-        newScenarios[currentScenario.id] = true;
-        if (Object.keys(newScenarios).length >= 5) newBadges.five_scenarios = true;
-        // Track weather types for all-weather achievement
-        var newWeathers = Object.assign({}, weathersDriven);
-        newWeathers[currentScenario.weather || 'clear'] = true;
-        if (newWeathers.clear && newWeathers.rain && newWeathers.snow && newWeathers.fog) newBadges.all_weather = true;
-        upd('weathersDriven', newWeathers);
+        if (evidence.qualifying && s.emergencyYields > 0) newBadges.emergency_yield = true;
+        var newScenarios = Object.assign({}, drivenNext || liveData.scenariosDriven || {});
+        if (evidence.qualifying) {
+          var totalDrives = (liveData.totalDrives || 0) + 1;
+          upd('totalDrives', totalDrives);
+          if (totalDrives >= 10) newBadges.ten_drives = true;
+          var existingScenarioRecord = (newScenarios[exitScenario.id] && typeof newScenarios[exitScenario.id] === 'object')
+            ? newScenarios[exitScenario.id] : {};
+          newScenarios[exitScenario.id] = Object.assign({}, existingScenarioRecord, {
+            bestSafety: Math.max(existingScenarioRecord.bestSafety || 0, Math.max(0, Math.round(s.safetyScore))),
+            lastSafety: Math.max(0, Math.round(s.safetyScore)),
+            driveCount: Math.max(existingScenarioRecord.driveCount || 0, 1),
+            lastOutcome: driveOutcome.label
+          });
+          if (Object.keys(newScenarios).length >= 5) newBadges.five_scenarios = true;
+          // Track weather types for all-weather achievement.
+          var newWeathers = Object.assign({}, liveData.weathersDriven || {});
+          newWeathers[exitScenario.weather || 'clear'] = true;
+          if (newWeathers.clear && newWeathers.rain && newWeathers.snow && newWeathers.fog) newBadges.all_weather = true;
+          upd('weathersDriven', newWeathers);
+        }
         upd('badges', newBadges);
-        upd('scenariosDriven', newScenarios);
+        if (evidence.qualifying) upd('scenariosDriven', newScenarios);
       }, [currentScenario, currentVehicle]);
 
       // ── Main simulation loop ──
@@ -7497,6 +8561,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (view !== 'driving') return;
         var canvas = canvasRef.current;
         if (!canvas) return;
+        var loopDisposed = false;
+        // A WebGL retry re-runs this effect after cleanup lowered the shared
+        // flag. Re-arm the new loop instance before initialization.
+        drivingRef.current = true;
         var lastT = performance.now();
 
         // ── Gamepad API support ──
@@ -7517,8 +8585,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var axes = gp.axes;
             var buttons = gp.buttons;
             var k = keysRef.current;
+            var gpRideAlongLocked = rideAlongControlsLocked();
             // Steering from left stick X (axis 0) — analog!
-            if (Math.abs(axes[0]) > 0.1) {
+            if (!gpRideAlongLocked && Math.abs(axes[0]) > 0.1) {
               k._gpSteer = axes[0]; // -1 to 1 analog value
             } else {
               k._gpSteer = 0;
@@ -7526,27 +8595,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Throttle from right trigger
             var rtVal = buttons[7] ? buttons[7].value : 0;
             if (axes.length > 5 && axes[5] > 0) rtVal = Math.max(rtVal, (axes[5] + 1) / 2);
-            k._gpThrottle = rtVal;
+            k._gpThrottle = gpRideAlongLocked ? 0 : rtVal;
             // Brake from left trigger
             var ltVal = buttons[6] ? buttons[6].value : 0;
             if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
-            k._gpBrake = ltVal;
+            k._gpBrake = gpRideAlongLocked ? 0 : ltVal;
             // Buttons (edge-triggered)
-            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; playHorn(0.35); }
+            if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; if (!gpRideAlongLocked) playHorn(0.35); }
             else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
-            if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; var modes = ['cockpit','chase','overhead','rearview']; cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current)+1)%modes.length]; }
+            if (buttons[1] && buttons[1].pressed && !k._gpB) { k._gpB = true; cycleCameraMode(true); }
             else if (!buttons[1] || !buttons[1].pressed) k._gpB = false;
-            if (buttons[2] && buttons[2].pressed && !k._gpX) { k._gpX = true; blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; }
+            if (buttons[2] && buttons[2].pressed && !k._gpX) { k._gpX = true; if (!gpRideAlongLocked) applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); }
             else if (!buttons[2] || !buttons[2].pressed) k._gpX = false;
-            if (buttons[3] && buttons[3].pressed && !k._gpY) { k._gpY = true; blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; }
+            if (buttons[3] && buttons[3].pressed && !k._gpY) { k._gpY = true; if (!gpRideAlongLocked) applyTurnSignal(blinkerRef.current === 1 ? 0 : 1, true); }
             else if (!buttons[3] || !buttons[3].pressed) k._gpY = false;
             if (buttons[9] && buttons[9].pressed && !k._gpStart) { k._gpStart = true; togglePause(); }
             else if (!buttons[9] || !buttons[9].pressed) k._gpStart = false;
             // D-pad gear shifting
-            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = 'D'; }
+            if (buttons[12] && buttons[12].pressed && !k._gpUp) { k._gpUp = true; attemptDriveGear('D', true); }
             else if (!buttons[12] || !buttons[12].pressed) k._gpUp = false;
-            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; if (Math.abs(carRef.current.speed) < 1) gearRef.current = gearRef.current === 'R' ? 'P' : 'R'; }
+            if (buttons[13] && buttons[13].pressed && !k._gpDown) { k._gpDown = true; attemptDriveGear(gearRef.current === 'R' ? 'P' : 'R', true); }
             else if (!buttons[13] || !buttons[13].pressed) k._gpDown = false;
+            // Standard D-pad left/right mirror the X/Y signal buttons. This
+            // mapping was documented but previously had no implementation.
+            if (buttons[14] && buttons[14].pressed && !k._gpLeft) { k._gpLeft = true; if (!gpRideAlongLocked) applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); }
+            else if (!buttons[14] || !buttons[14].pressed) k._gpLeft = false;
+            if (buttons[15] && buttons[15].pressed && !k._gpRight) { k._gpRight = true; if (!gpRideAlongLocked) applyTurnSignal(blinkerRef.current === 1 ? 0 : 1, true); }
+            else if (!buttons[15] || !buttons[15].pressed) k._gpRight = false;
             // Headlight toggle with shoulder buttons
             if (buttons[4] && buttons[4].pressed && !k._gpLB) { k._gpLB = true; upd('highBeams', false); }
             else if (!buttons[4] || !buttons[4].pressed) k._gpLB = false;
@@ -7589,7 +8664,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
           if (!pausedRef.current) {
-            timeRef.current += dt;
+            // Waiting at the belt prompt is pre-drive setup, not simulated road
+            // time. Once belted, the mirror scan uses this clock while the parked
+            // dynamic world remains held below.
+            if (seatbeltRef.current.fastened) timeRef.current += dt;
+            statsRef.current.simTime = timeRef.current;
+            var liveDriveSecond = Math.floor(timeRef.current);
+            if (liveDriveSecond !== driveUiSecondRef.current) {
+              driveUiSecondRef.current = liveDriveSecond;
+              setDriveUiSeconds(liveDriveSecond);
+            }
             // Clamp safety/efficiency scores to [0, 100] each frame. Without this they
             // can go arbitrarily negative — a player who racked up many violations would
             // need to "earn back" from -150 before any visible improvement, hiding the
@@ -7598,20 +8682,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (statsRef.current.safetyScore > 100) statsRef.current.safetyScore = 100;
             if (statsRef.current.efficiencyScore < 0) statsRef.current.efficiencyScore = 0;
             if (statsRef.current.efficiencyScore > 100) statsRef.current.efficiencyScore = 100;
-            updateSignals(signalsRef.current, dt);
             updatePhysics(dt);
-            updateTraffic(dt);
-            updatePeds(dt);
-            updateCyclists(dt);
-            updateWildlife(dt);
-            updateEmergency(dt);
+            // Do not let traffic manufacture an unavoidable impact while the
+            // learner is forced to remain parked for the belt/mirror sequence.
+            // Shifting out of Park deliberately releases the road immediately.
+            var holdStartupWorld = shouldHoldStartupWorld(
+              seatbeltRef.current.fastened, timeRef.current,
+              graceRef.current.until, gearRef.current);
+            if (!holdStartupWorld) {
+              updateSignals(signalsRef.current, dt);
+              updateTraffic(dt);
+              updatePeds(dt);
+              updateCyclists(dt);
+              updateWildlife(dt);
+              updateEmergency(dt);
+              checkSignalCompliance();
+              checkCyclistPassing();
+              checkBusCompliance();
+              checkPedestrianYield();
+              scanSpatialHazards();
+              checkCollisions();
+            }
             updateAudio();
-            checkSignalCompliance();
-            checkCyclistPassing();
-            checkBusCompliance();
-            checkPedestrianYield();
-            scanSpatialHazards();
-            checkCollisions();
             // ── Quest / destination system (Free Explore) ──
             // Now anchored to REAL landmarks in the procedural world. The quest engine
             // scans chunks ahead of the player and picks a nearby generated landmark as
@@ -8029,7 +9121,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         journalLog('trip_done', '🏆', 'Completed trip: ' + tr.def.name);
                         statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
                         var completed = Object.assign({}, d.completedTrips || {});
-                        completed[tr.def.id] = { at: Date.now(), timeSec: Math.round((Date.now() - tr.startedAt) / 1000) };
+                        completed[tr.def.id] = {
+                          at: Date.now(),
+                          timeSec: Math.max(0, Math.round(timeRef.current - (tr.startedAtSim || 0)))
+                        };
                         upd('completedTrips', completed);
                         tripRef.current = null;
                       } else {
@@ -8269,7 +9364,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Runs on SIM time (timeRef), not wall clock: this whole block is gated
             // on !paused, but Date.now() kept advancing while paused, so pausing
             // burned test time and the test ended early relative to actual driving.
-            if (roadTestRef.current.active) {
+            var roadTestElapsed = evaluationElapsedSeconds(roadTestRef.current, timeRef.current);
+            if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
               if (timeRef.current - (roadTestRef.current.lastSampleT || 0) >= 1) {
                 roadTestRef.current.lastSampleT = timeRef.current;
                 var rtCar = carRef.current;
@@ -8277,32 +9373,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var limRT = currentScenario.speedLimit;
                 // Speeding: -1/sec while 5+ over, -3/sec while 15+ over (capped at 10 events)
                 if (mphRT > limRT + 15 && roadTestRef.current.deductions.filter(function(x){return x.type==='severe_speed';}).length < 6) {
-                  roadTestRef.current.deductions.push({ type: 'severe_speed', pts: 3, t: timeRef.current, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
+                  roadTestRef.current.deductions.push({ type: 'severe_speed', pts: 3, t: roadTestElapsed, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
                   roadTestRef.current.score -= 3;
                 } else if (mphRT > limRT + 5 && roadTestRef.current.deductions.filter(function(x){return x.type==='speed';}).length < 10) {
-                  roadTestRef.current.deductions.push({ type: 'speed', pts: 1, t: timeRef.current, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
+                  roadTestRef.current.deductions.push({ type: 'speed', pts: 1, t: roadTestElapsed, detail: Math.round(mphRT) + ' mph in ' + limRT + ' zone' });
                   roadTestRef.current.score -= 1;
                 }
               }
-              // Auto-end when duration elapses (sim time — road test always starts
-              // with the drive, when timeRef resets to 0).
-              if (timeRef.current >= roadTestRef.current.durationSec) {
+              // Auto-end after the full evaluated interval. Setup and time spent
+              // unbelted are deliberately excluded from the scored clock.
+              if (roadTestElapsed >= roadTestRef.current.durationSec) {
                 roadTestRef.current.active = false;
                 addToast('🪪 Road Test complete. Tap End Drive for results.');
                 speak('Road test complete. Tap end drive for your results.');
               }
             }
-            // ── Parent Ride Check: auto-end when 2 minutes elapses (sim time; see road test note) ──
-            if (parentRef.current.active && timeRef.current >= parentRef.current.durationSec) {
+            // ── Parent Ride Check: auto-end after 2 evaluated minutes ──
+            var parentRideElapsed = evaluationElapsedSeconds(parentRef.current, timeRef.current);
+            if (parentRef.current.active && parentRef.current.startedAtSim != null &&
+                parentRideElapsed >= parentRef.current.durationSec) {
               parentRef.current.active = false;
               addToast('⏱️ Parent Ride Check complete — 2 minutes elapsed.');
               speak('Parent ride check complete. Tap End Drive to see the report.');
             }
             // ── Coach Mode: periodic AI driving advice (any scenario) ──
             if (d.coachMode && aiHintsEnabled && callGemini && !coachRef.current.inFlight) {
-              var nowMsCo = Date.now();
-              if (nowMsCo - coachRef.current.lastCallAt > 35000) {
-                coachRef.current.lastCallAt = nowMsCo;
+              var nowCo = timeRef.current;
+              if (nowCo - coachRef.current.lastCallAt > 35) {
+                coachRef.current.lastCallAt = nowCo;
                 coachRef.current.inFlight = true;
                 var sCo = statsRef.current;
                 var snapshot = {
@@ -8331,14 +9429,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   // would otherwise stay true forever and silently disable the
                   // coach for the rest of the session. Promise.race lets the
                   // .catch path run on timeout exactly like a normal rejection.
+                  var coachRequestId = (coachRef.current.requestId || 0) + 1;
+                  coachRef.current.requestId = coachRequestId;
+                  var coachTimeoutId = null;
                   var coachTimeoutPromise = new Promise(function(_resolve, reject) {
-                    setTimeout(function() { reject(new Error('coach-timeout')); }, 20000);
+                    coachTimeoutId = setTimeout(function() { reject(new Error('coach-timeout')); }, 20000);
                   });
                   Promise.race([
                     callGemini(coachPrompt, { tier: 'flash', system: 'You are a friendly student driver coach.' }),
                     coachTimeoutPromise
                   ])
                     .then(function(resp) {
+                      if (coachTimeoutId) clearTimeout(coachTimeoutId);
+                      if (!drivingRef.current || coachRef.current.requestId !== coachRequestId) return;
                       coachRef.current.inFlight = false;
                       var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
                       text = String(text).trim().replace(/^["']|["']$/g, '');
@@ -8348,7 +9451,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         speak(text);
                       }
                     })
-                    .catch(function() { coachRef.current.inFlight = false; });
+                    .catch(function() {
+                      if (coachTimeoutId) clearTimeout(coachTimeoutId);
+                      if (coachRef.current.requestId === coachRequestId) coachRef.current.inFlight = false;
+                    });
                 }
               }
             }
@@ -8446,6 +9552,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               dd.active = false;
             }
+            // Scenario practice ends at a clear milestone. The simulator pauses
+            // itself once the authored time + distance segment is complete, then
+            // lets the learner review the evidence before opening the debrief.
+            var liveMission = missionRef.current;
+            if (liveMission && !liveMission.complete) {
+              liveMission.status = rrScenarioMissionStatus(statsRef.current, timeRef.current, currentScenario.id);
+              if (liveMission.status.ready) {
+                liveMission.complete = true;
+                setMissionComplete(liveMission.status);
+                togglePause(true);
+                rrAnnounce('Scenario complete. Review your objectives, then open the drive debrief.');
+              }
+            }
           }
           render();
           animRef.current = requestAnimationFrame(step);
@@ -8490,6 +9609,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (throttleInput > 0 || brakeInput > 0 || k['b']) {
               seatbeltRef.current.fastened = true;
               setBeltFastened(true); // sync React state so the prompt disappears
+              startFormalEvaluationClocks();
+              graceRef.current.until = timeRef.current + 4;
+              graceRef.current.mirrorCheckPrompted = false;
               // Show the mirror-check grace banner for ~4s, with its own timed
               // dismissal (safeTimeout is cancelled on drive exit).
               setGraceVisible(true);
@@ -8522,132 +9644,382 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
           }
           // ─── Ride-Along autopilot override ───
-          // Replaces human input with a lookahead spline-follower + target-speed cruise.
-          // The physics, hazards, and narration pipeline are unchanged — this just feeds
-          // synthetic throttle/brake/steer so the rest of the sim behaves identically.
-          if (rideAlongRef.current && gear !== 'P' && gear !== 'R') {
-            var raSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
-            var raSpeedMph = Math.abs(car.speed) * MS_TO_MPH;
-            // Target speed: posted limit minus a 3 mph comfort buffer, reduced for weather.
-            var raTarget = Math.max(15, (scn.speedLimit || 25) - 3);
+          // Synthetic inputs still flow through the normal physics, collision,
+          // scoring, and rule systems. The controller plans from real stopping
+          // distance rather than a fixed arcade trigger, and only runs on road
+          // scenarios whose streamed spline it can actually follow.
+          if (rideAlongRef.current &&
+              rideAlongSupportsScenario(scn.id, !!(d && d.freeExplore)) &&
+              infiniteWorldRef.current && infiniteWorldRef.current.spline &&
+              gear !== 'R') {
+            var raWorld = infiniteWorldRef.current;
+            var raSpline = raWorld.spline;
+            var ras = rideAlongStateRef.current;
+            if (!ras.stopControls) ras.stopControls = {};
+            if (!ras.announcedHazards) ras.announcedHazards = {};
+            if (!ras.railStops) ras.railStops = {};
+            var rNow = timeRef.current;
+            var raStartup = rNow < (graceRef.current.until || 0);
+            var raSpeedMps = Math.abs(car.speed);
+            var raSpeedMph = raSpeedMps * MS_TO_MPH;
+            var raPlayerSize = vehicleFootprint(veh.id);
+            var raCurrent = mainRoadLocalPoint(raWorld, car.x, car.y);
+            var raLiveProfile = roadProfileAt(raWorld, raCurrent.longitudinal,
+              getContinuousScenarioProfile(scn.id));
+            var raPlanDistance = Math.max(25,
+              stoppingDistance(raSpeedMph, scn.weather, 0.8).total_ft / FT_PER_M + 8);
+
+            // Cruise a little below the posted limit; adverse weather reduces
+            // the target further. School zones can therefore settle near 12
+            // mph instead of the old 15-mph floor.
+            var raTarget = Math.max(8, (scn.speedLimit || 25) - 3);
             if (scn.weather === 'snow') raTarget *= 0.55;
             else if (scn.weather === 'rain' || scn.weather === 'fog') raTarget *= 0.75;
-            // Nearest upcoming signal — slow for red/yellow, resume on green.
-            // Car moves toward decreasing y (heading=-π/2 → sin=-1), so "ahead" = lower y.
+            if (raStartup) raTarget = 0;
+            var raEmergencyYield = emergencyRef.current &&
+              !emergencyRef.current.responded && emergencyRef.current.life > 0;
+            if (raEmergencyYield) raTarget = 0;
+
+            // Pick the nearest relevant traffic control in road coordinates.
+            // Stop signs need a remembered dwell; red lights/flaggers remain a
+            // stop until their state changes. A late yellow is cleared instead
+            // of provoking an unsafe panic stop.
             var sigList = signalsRef.current || [];
+            var raNearestControl = null;
             for (var rsi = 0; rsi < sigList.length; rsi++) {
               var sig = sigList[rsi];
-              if (!sig || (sig.type !== 'light' && sig.type !== 'flagger')) continue;
-                var raSignalAhead = controlDistanceAhead(infiniteWorldRef.current, sig, car,
-                vehicleFootprint(veh.id).length);
-              if (raSignalAhead != null && raSignalAhead > 0 && raSignalAhead < 12) {
-                if (sig.state === 'red' || sig.state === 'yellow') raTarget = Math.min(raTarget, raSignalAhead < 3 ? 0 : 10);
-                break;
+              if (!sig || ['light', 'flagger', 'stop'].indexOf(sig.type) === -1) continue;
+              var raSignalAhead = controlDistanceAhead(raWorld, sig, car, raPlayerSize.length);
+              if (raSignalAhead == null || raSignalAhead <= 0 || raSignalAhead > raPlanDistance) continue;
+              if (!raNearestControl || raSignalAhead < raNearestControl.ahead) {
+                raNearestControl = { signal: sig, ahead: raSignalAhead };
               }
             }
-            // Nearest traffic car ahead in the same direction — maintain following distance.
+            var raYellowWillStop = true;
+            if (raNearestControl) {
+              var raControl = raNearestControl.signal;
+              var raControlAhead = raNearestControl.ahead;
+              var raControlKey = raControl.type + '_' +
+                (raControl._chunk != null ? raControl._chunk :
+                  Math.round((Number(raControl.x) || 0) * 10) + '_' +
+                  Math.round((Number(raControl.y) || 0) * 10));
+              if (raControl.type === 'stop') {
+                var raStopRecord = ras.stopControls[raControlKey] ||
+                  (ras.stopControls[raControlKey] = { stoppedAt: null, complete: false });
+                if (!raStopRecord.complete) {
+                  var raStopTarget = rideAlongApproachSpeedMph(raControlAhead, scn.weather, 1.2);
+                  if (raControlAhead < 1.8) raStopTarget = 0;
+                  raTarget = Math.min(raTarget, raStopTarget);
+                  if (raControlAhead < 2.2 && raSpeedMph < 0.7) {
+                    if (raStopRecord.stoppedAt == null) raStopRecord.stoppedAt = rNow;
+                    if (rNow - raStopRecord.stoppedAt >= 1.2) {
+                      raStopRecord.complete = true;
+                      speak('Full stop complete. Scanning left, right, then left before proceeding.', 'coach');
+                    }
+                  } else if (raSpeedMph >= 0.7) {
+                    raStopRecord.stoppedAt = null;
+                  }
+                }
+              } else {
+                var raIsRed = raControl.state === 'red';
+                var raIsYellow = raControl.state === 'yellow';
+                var raNeededToStop = stoppingDistance(raSpeedMph, scn.weather, 0.8).total_ft / FT_PER_M + 2;
+                raYellowWillStop = !raIsYellow || raControlAhead >= raNeededToStop;
+                if (raIsRed || (raIsYellow && raYellowWillStop)) {
+                  var raLightTarget = rideAlongApproachSpeedMph(raControlAhead, scn.weather, 1.5);
+                  if (raControlAhead < 2.1) raLightTarget = 0;
+                  raTarget = Math.min(raTarget, raLightTarget);
+                }
+              }
+              if (Object.keys(ras.stopControls).length > 160) ras.stopControls = {};
+            }
+
+            // Traffic-aware headway. Same-direction vehicles use the shared
+            // weather-adjusted following target; crossing/oncoming vehicles
+            // that enter the projected path are treated as moving obstacles.
             var tList = trafficRef.current || [];
+            var raNearestBus = null;
             for (var rti = 0; rti < tList.length; rti++) {
               var tc = tList[rti];
               if (!tc) continue;
-              var raTrafficRel = roadRelativeTarget(infiniteWorldRef.current, car, tc);
+              var tcSize = vehicleFootprint(tc.type || 'car');
+              if (tc.type === 'schoolbus' && tc._stopArmActive) {
+                var raBusRequirement = schoolBusStopRequirement(raWorld, raLiveProfile, car, tc);
+                if (raBusRequirement.required && raBusRequirement.ahead > 0 &&
+                    raBusRequirement.ahead < Math.max(raPlanDistance,
+                      schoolBusApproachDistanceWorld(car.speed, scn.weather))) {
+                  var raBusClearance = raPlayerSize.length * 0.5 + tcSize.length * 0.5 + 3;
+                  var raBusTarget = rideAlongApproachSpeedMph(
+                    raBusRequirement.ahead, scn.weather, raBusClearance);
+                  if (raBusRequirement.ahead < raBusClearance + 1) raBusTarget = 0;
+                  raTarget = Math.min(raTarget, raBusTarget);
+                  if (!raNearestBus || raBusRequirement.ahead < raNearestBus.ahead) {
+                    raNearestBus = { bus: tc, ahead: raBusRequirement.ahead,
+                      requirement: raBusRequirement };
+                  }
+                }
+              }
+              var raTrafficRel = roadRelativeTarget(raWorld, car, tc);
+              var raHeadingMatch = Math.cos((Number(tc.heading) || 0) - car.heading);
+              var raLaneWidth = roadLayoutFor(raLiveProfile).laneWidth;
               var sameLaneX = Math.abs(raTrafficRel.lateralDifference) <
-                Math.max(1, scenarioRoadLayout(scn.id).laneWidth * 0.45);
-              if (raTrafficRel.ahead > 0 && raTrafficRel.ahead < 8 && sameLaneX) {
-                raTarget = Math.min(raTarget, Math.max(0, (tc.speed || 0) * MS_TO_MPH - 2));
+                Math.max(1, raLaneWidth * 0.45);
+              if (raTrafficRel.ahead > 0 && raTrafficRel.ahead < raPlanDistance &&
+                  sameLaneX && raHeadingMatch > 0.35 && !tc.crossStreet) {
+                var raClearGap = Math.max(0, raTrafficRel.ahead -
+                  (raPlayerSize.length + tcSize.length) * 0.5);
+                var raDesiredGap = recommendedFollowingMeters(raSpeedMps, scn.weather, 1);
+                if (raClearGap < raDesiredGap) {
+                  var raLeadMph = Math.abs(Number(tc.speed) || 0) * MS_TO_MPH;
+                  var raGapFraction = Math.max(0, Math.min(1, raClearGap / Math.max(1, raDesiredGap)));
+                  var raFollowTarget = Math.max(0,
+                    raLeadMph - (1 - raGapFraction) * 14);
+                  if (raClearGap < 2) raFollowTarget = 0;
+                  raTarget = Math.min(raTarget, raFollowTarget);
+                }
+              } else if (raHeadingMatch <= 0.35 || tc.crossStreet) {
+                var raCrossRel = roadAwareRelativePosition(raWorld, car, tc);
+                // Project the target's oriented body onto our lateral axis.
+                // A raw "car length" threshold falsely treated every legal
+                // oncoming car in the next lane as a collision path.
+                var raCrossSideClearance = vehicleSideClearance(
+                  car, raPlayerSize, tc, tcSize);
+                if (raCrossRel.ahead > 0 && raCrossRel.ahead < raPlanDistance &&
+                    raCrossSideClearance < 0.6) {
+                  var raCrossClearance = raPlayerSize.length * 0.5 + tcSize.width * 0.5 + 1;
+                  var raCrossTarget = rideAlongApproachSpeedMph(
+                    raCrossRel.ahead, scn.weather, raCrossClearance);
+                  if (raCrossRel.ahead < raCrossClearance + 1) raCrossTarget = 0;
+                  raTarget = Math.min(raTarget, raCrossTarget);
+                }
               }
             }
-            // Wildlife / pedestrian in path → brake hard.
+
+            // Active railroad controls and the special full-stop duty for the
+            // school-bus vehicle are planned before the physical gate collider.
+            var raNearestRail = null;
+            var raCrossings = raWorld._railroadCrossings || [];
+            for (var rrAi = 0; rrAi < raCrossings.length; rrAi++) {
+              var raCrossing = raCrossings[rrAi];
+              var raTanX = Math.sin(raCrossing.heading || 0);
+              var raTanY = Math.cos(raCrossing.heading || 0);
+              var raLong = (car.x - raCrossing.centerX) * raTanX +
+                (car.y - raCrossing.centerY) * raTanY;
+              var raApproachSign = raLong < 0 ? -1 : 1;
+              var raRailStopPoint = {
+                x: raCrossing.centerX + raApproachSign * 2.2 * raTanX,
+                y: raCrossing.centerY + raApproachSign * 2.2 * raTanY
+              };
+              var raRailRel = roadAwareRelativePosition(raWorld, car, raRailStopPoint);
+              if (raRailRel.ahead <= 0 || raRailRel.ahead > raPlanDistance) continue;
+              var raRailState = railroadCrossingControlState(rNow, raCrossing);
+              var raPassiveBusStop = railroadRequiresFullStop(veh.id, raCrossing);
+              var raRailKey = String(raCrossing.chunkIdx) + '_' + raApproachSign;
+              var raRailRecord = ras.railStops[raRailKey] ||
+                (ras.railStops[raRailKey] = { stoppedAt: null, complete: false });
+              if (raPassiveBusStop && !raRailRecord.complete) {
+                if (raRailRel.ahead < 2 && raSpeedMph < 0.7) {
+                  if (raRailRecord.stoppedAt == null) raRailRecord.stoppedAt = rNow;
+                  if (rNow - raRailRecord.stoppedAt >= 1) raRailRecord.complete = true;
+                } else if (raSpeedMph >= 0.7) {
+                  raRailRecord.stoppedAt = null;
+                }
+              }
+              var raRailMustStop = raRailState.stopRequired ||
+                (raPassiveBusStop && !raRailRecord.complete);
+              if (raRailMustStop) {
+                var raRailTarget = rideAlongApproachSpeedMph(raRailRel.ahead, scn.weather, 1.3);
+                if (raRailRel.ahead < 2) raRailTarget = 0;
+                raTarget = Math.min(raTarget, raRailTarget);
+                if (!raNearestRail || raRailRel.ahead < raNearestRail.ahead) {
+                  raNearestRail = { crossing: raCrossing, state: raRailState,
+                    key: raRailKey, ahead: raRailRel.ahead,
+                    passiveBusStop: raPassiveBusStop };
+                }
+              }
+            }
+            if (Object.keys(ras.railStops).length > 80) ras.railStops = {};
+
+            // Pedestrians and wildlife are full-stop hazards. Cyclists and
+            // motorcycles moving with traffic receive a real following gap;
+            // crossing riders are handled as full-stop hazards too.
+            var raNearestVulnerable = null;
+            var raPlanFullStopFor = function(actor, radius, key, label) {
+              if (!actor) return;
+              var rel = roadAwareRelativePosition(raWorld, car, actor);
+              var pathWidth = raPlayerSize.width * 0.5 + radius + 0.75;
+              if (rel.ahead <= 0 || rel.ahead > raPlanDistance || Math.abs(rel.lat) >= pathWidth) return;
+              var clearance = raPlayerSize.length * 0.5 + radius + 0.9;
+              var target = rideAlongApproachSpeedMph(rel.ahead, scn.weather, clearance);
+              if (rel.ahead < clearance + 0.8) target = 0;
+              raTarget = Math.min(raTarget, target);
+              if (!raNearestVulnerable || rel.ahead < raNearestVulnerable.ahead) {
+                raNearestVulnerable = { actor: actor, ahead: rel.ahead, key: key, label: label };
+              }
+            };
+            var raPeds = pedsRef.current || [];
+            for (var rpi = 0; rpi < raPeds.length; rpi++) {
+              var raPed = raPeds[rpi];
+              raPlanFullStopFor(raPed, raPed && raPed.kind === 'kid' ? 0.24 : 0.3,
+                'ped_' + (raPed && raPed._chunk != null ? raPed._chunk + '_' + rpi :
+                  Math.round((Number(raPed && raPed.x) || 0) * 2) + '_' + Math.round((Number(raPed && raPed.y) || 0) * 2)),
+                raPed && raPed.kind === 'kid' ? 'Child' : 'Pedestrian');
+            }
             var wl = wildlifeRef.current;
             if (wl) {
-              var raWildlifeRel = roadRelativeTarget(infiniteWorldRef.current, car, wl);
-              if (Math.abs(raWildlifeRel.lateralDifference) < 4 &&
-                  raWildlifeRel.ahead > 0 && raWildlifeRel.ahead < 14) raTarget = 0;
+              raPlanFullStopFor(wl, wildlifeCollisionRadius(wl),
+                'wl_' + (wl.kind || 'animal') + '_' + Math.floor(Number(wl.y) || 0),
+                wl.kind === 'moose' ? 'Moose' : wl.kind === 'deer' ? 'Deer' : 'Animal');
             }
-            // Throttle/brake as a simple cruise controller.
-            var raErr = raTarget - raSpeedMph;
-            if (raErr > 2) { throttleInput = Math.min(1, raErr / 10); brakeInput = 0; }
-            else if (raErr < -3) { throttleInput = 0; brakeInput = Math.min(1, -raErr / 15); }
-            else { throttleInput = 0.1; brakeInput = 0; }
-            // Steering: look ~8 cells ahead on the spline and steer toward the centerline.
-            if (raSpline) {
-              var raLook = Math.max(4, Math.min(12, raSpeedMph * 0.15));
-              var raCurrent = mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y);
-              var raAlignment = Math.cos(car.heading) * Math.sin(raCurrent.heading) +
-                Math.sin(car.heading) * Math.cos(raCurrent.heading);
-              var raTravelSign = raAlignment < 0 ? -1 : 1;
-              var raTargetStation = raCurrent.longitudinal + raTravelSign * raLook;
-              var raTargetHeading = raSpline.headingAt(raTargetStation);
-              var raArrowSpecs = roadLaneArrowSpecs(getContinuousScenarioProfile(scn.id) || {});
-              var raLegalLanes = raArrowSpecs.filter(function(spec) { return spec.direction === raTravelSign; });
-              var raLaneOffset = raLegalLanes.length ? raLegalLanes[0].offset : (raTravelSign < 0 ? 1.2 : -1.2);
-              raLegalLanes.forEach(function(spec) {
-                if (Math.abs(spec.offset - raCurrent.lateral) < Math.abs(raLaneOffset - raCurrent.lateral)) raLaneOffset = spec.offset;
-              });
-              var targetX = raSpline.centerAt(raTargetStation) + raLaneOffset * Math.cos(raTargetHeading);
-              var targetY = raTargetStation - raLaneOffset * Math.sin(raTargetHeading);
-              // Bias slightly right-of-center for right-lane driving (road is ~3 cells each side).
-              var dx = targetX - car.x;
-              // Heading offset from due-north. Positive dx → need to steer toward +x (right turn).
-              var desiredHeading = Math.atan2(targetY - car.y, dx);
-              var headingErr = desiredHeading - car.heading;
-              // Normalize to [-π, π]
-              while (headingErr > Math.PI) headingErr -= Math.PI * 2;
-              while (headingErr < -Math.PI) headingErr += Math.PI * 2;
-              var raSteer = Math.max(-1, Math.min(1, headingErr * 1.2));
-              steerLeft = raSteer < 0 ? -raSteer : 0;
-              steerRight = raSteer > 0 ? raSteer : 0;
-            } else {
-              // No spline (finite map) — just hold straight.
-              steerLeft = 0; steerRight = 0;
-            }
-            // Auto-shift to D if sitting in P.
-            if (gear === 'P') { gearRef.current = gear = 'D'; }
-            // ─── Narration: announce what the driver would be noticing ───
-            // Uses the shared speak() helper (Gemini TTS via ctx.callTTS). The helper already
-            // throttles to once per 5 s, so we just call it with the relevant cue strings.
-            var ras = rideAlongStateRef.current;
-            var rNow = timeRef.current;
-            // Approaching signal
-            for (var nsi = 0; nsi < sigList.length; nsi++) {
-              var nsig = sigList[nsi];
-              if (!nsig || (nsig.type !== 'light' && nsig.type !== 'flagger')) continue;
-              var dySigN = controlDistanceAhead(infiniteWorldRef.current, nsig, car,
-                vehicleFootprint(veh.id).length);
-              if (dySigN != null && dySigN > 4 && dySigN < 10) {
-                var sigKey = 'sig_' + nsig.y + '_' + nsig.state;
-                if (ras.lastSignalId !== sigKey) {
-                  ras.lastSignalId = sigKey;
-                  if (nsig.state === 'red') speak('Red light ahead. Coming to a complete stop.');
-                  else if (nsig.state === 'yellow') speak('Yellow light. Slowing to stop safely.');
-                  else if (nsig.state === 'green') speak('Green light. Proceeding through the intersection.');
+            var raCyclists = cyclistsRef.current || [];
+            for (var rcy = 0; rcy < raCyclists.length; rcy++) {
+              var raRider = raCyclists[rcy];
+              if (!raRider || raRider._hit) continue;
+              var raRiderSize = vulnerableRoadUserFootprint(raRider);
+              var raRiderRel = roadAwareRelativePosition(raWorld, car, raRider);
+              var raRiderHeadingMatch = Math.cos((Number(raRider.heading) || 0) - car.heading);
+              var raRiderPathWidth = raPlayerSize.width * 0.5 + raRiderSize.width * 0.5 + 1.0;
+              if (raRiderRel.ahead <= 0 || raRiderRel.ahead > raPlanDistance ||
+                  Math.abs(raRiderRel.lat) >= raRiderPathWidth) continue;
+              if (raRiderHeadingMatch > 0.35) {
+                var raRiderClear = Math.max(0, raRiderRel.ahead -
+                  (raPlayerSize.length + raRiderSize.length) * 0.5);
+                var raRiderGap = recommendedFollowingMeters(raSpeedMps, scn.weather, 1);
+                if (raRiderClear < raRiderGap) {
+                  var raRiderMph = Math.abs(Number(raRider.speed) || 0) * MS_TO_MPH;
+                  var raRiderFraction = Math.max(0, Math.min(1, raRiderClear / Math.max(1, raRiderGap)));
+                  raTarget = Math.min(raTarget, Math.max(0,
+                    raRiderMph - (1 - raRiderFraction) * 10));
                 }
-                break;
+              } else {
+                raPlanFullStopFor(raRider, raRiderSize.length * 0.5,
+                  'rider_' + (raRider._chunk != null ? raRider._chunk + '_' + rcy : rcy),
+                  raRider.type === 'motorcycle' ? 'Motorcycle' : 'Cyclist');
               }
             }
-            // Wildlife callout (once per creature)
-            if (wl && !ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)]) {
-              var raNarrationWildlife = roadRelativeTarget(infiniteWorldRef.current, car, wl);
-              if (Math.abs(raNarrationWildlife.lateralDifference) < 6 &&
-                  raNarrationWildlife.ahead > 0 && raNarrationWildlife.ahead < 20) {
-                ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)] = true;
-                // Bound the dict so a multi-hour Free Explore drive can't grow
-                // it unboundedly. At 200+ keys we wipe and restart — the only
-                // cost is a player who backtracks past an OLD hazard they
-                // already heard about MIGHT hear the announcement again. Worth
-                // it to avoid a slow memory leak in long sessions.
-                var _hzKeys = Object.keys(ras.announcedHazards);
-                if (_hzKeys.length > 200) ras.announcedHazards = {};
-                if (wl.kind === 'moose') speak('Moose on the road edge. Braking straight, not swerving. Never swerve around a moose.', 'hazard', 'critical');
-                else if (wl.kind === 'deer') speak('Deer detected. Slowing and scanning for more — deer travel in groups.', 'hazard', 'critical');
-                else speak('Animal in the road. Braking.', 'hazard', 'critical');
+
+            // Comfortable cruise controller with an explicit brake-hold at a
+            // zero target. The old 0.1 idle throttle made the car creep through
+            // stop signs while it was trying to satisfy the dwell timer.
+            var raErr = raTarget - raSpeedMph;
+            if (raTarget <= 0.5) {
+              throttleInput = 0;
+              brakeInput = raSpeedMph > 0.35 ? Math.min(1, 0.25 + raSpeedMph / 18) : 0.18;
+            } else if (raErr > 2) {
+              throttleInput = Math.min(0.85, raErr / 12);
+              brakeInput = 0;
+            } else if (raErr < -2) {
+              throttleInput = 0;
+              brakeInput = Math.min(0.85, -raErr / 14);
+            } else {
+              throttleInput = raSpeedMph < raTarget ? 0.1 : 0;
+              brakeInput = 0;
+            }
+
+            // Look ahead on the spline and hold the nearest legal lane. Live
+            // chunk profiles keep Free Explore lane counts and one-way roads
+            // coherent. Automatic lane corrections use a real turn signal.
+            var raLook = Math.max(5, Math.min(18, raSpeedMph * 0.2));
+            var raAlignment = Math.cos(car.heading) * Math.sin(raCurrent.heading) +
+              Math.sin(car.heading) * Math.cos(raCurrent.heading);
+            var raTravelSign = raAlignment < 0 ? -1 : 1;
+            var raTargetStation = raCurrent.longitudinal + raTravelSign * raLook;
+            var raTargetHeading = raSpline.headingAt(raTargetStation);
+            var raArrowSpecs = roadLaneArrowSpecs(raLiveProfile || {});
+            var raLegalLanes = raArrowSpecs.filter(function(spec) {
+              return spec.direction === raTravelSign;
+            });
+            var raLaneOffset = raLegalLanes.length ? raLegalLanes[0].offset :
+              (raTravelSign < 0 ? 1.2 : -1.2);
+            raLegalLanes.forEach(function(spec) {
+                if (Math.abs(spec.offset - raCurrent.lateral) <
+                  Math.abs(raLaneOffset - raCurrent.lateral)) raLaneOffset = spec.offset;
+            });
+            if (raEmergencyYield) {
+              raLaneOffset = trafficRightShoulderOffset(raLiveProfile, raTravelSign);
+            }
+            var targetX = raSpline.centerAt(raTargetStation) +
+              raLaneOffset * Math.cos(raTargetHeading);
+            var targetY = raTargetStation - raLaneOffset * Math.sin(raTargetHeading);
+            var dx = targetX - car.x;
+            var desiredHeading = Math.atan2(targetY - car.y, dx);
+            var headingErr = desiredHeading - car.heading;
+            while (headingErr > Math.PI) headingErr -= Math.PI * 2;
+            while (headingErr < -Math.PI) headingErr += Math.PI * 2;
+            var raSteer = Math.max(-1, Math.min(1, headingErr * 1.2));
+            steerLeft = raSteer < 0 ? -raSteer : 0;
+            steerRight = raSteer > 0 ? raSteer : 0;
+            var raLaneCorrection = raLaneOffset - raCurrent.lateral;
+            if (Math.abs(raLaneCorrection) > 0.75) {
+              var raSignalDir = raLaneCorrection * -raTravelSign > 0 ? 1 : -1;
+              if (blinkerRef.current !== raSignalDir) applyTurnSignal(raSignalDir, false);
+              ras.autoSignal = raSignalDir;
+            } else if (ras.autoSignal && blinkerRef.current === ras.autoSignal) {
+              applyTurnSignal(0, false);
+              ras.autoSignal = 0;
+            }
+
+            // Stay in Park for the four-second mirror scan, then pull away.
+            if (gear === 'P' && !raStartup) gearRef.current = gear = 'D';
+
+            // ─── Narration: announce what the driver is responding to ───
+            if (raNearestControl && raNearestControl.ahead < Math.min(35, raPlanDistance)) {
+              var nControl = raNearestControl.signal;
+              var nControlKey = (nControl._chunk != null ? nControl._chunk :
+                Math.round((Number(nControl.y) || 0) * 10)) + '_' + nControl.type + '_' + nControl.state;
+              if (ras.lastSignalId !== nControlKey) {
+                ras.lastSignalId = nControlKey;
+                if (nControl.type === 'stop') speak('Stop sign ahead. Braking for a full stop, then scanning left, right, left.', 'coach');
+                else if (nControl.state === 'red') speak('Red light ahead. Coming to a complete stop.', 'coach');
+                else if (nControl.state === 'yellow' && raYellowWillStop) speak('Yellow light with room to stop safely. Slowing now.', 'coach');
+                else if (nControl.state === 'yellow') speak('Yellow light, but too close for a safe hard stop. Clearing the intersection.', 'coach');
+                else if (nControl.state === 'green') speak('Green light. Scanning the intersection and proceeding.', 'coach');
               }
             }
-            // Target-speed narration on big changes (rate-limited to 8 s)
+            if (raNearestBus) {
+              var raBusKey = String(raNearestBus.bus.id || raNearestBus.bus._chunk || 'bus');
+              if (ras.lastBusKey !== raBusKey) {
+                ras.lastBusKey = raBusKey;
+                speak(raNearestBus.requirement.sameDirection
+                  ? 'School bus ahead has red flashers and its stop arm out. Stopping behind it.'
+                  : 'School bus across this undivided road has red flashers. Both directions must stop.',
+                  'hazard', 'critical');
+              }
+            } else {
+              ras.lastBusKey = null;
+            }
+            if (raNearestRail) {
+              var raRailNarrationKey = raNearestRail.key + '_' + raNearestRail.state.cycle + '_' +
+                (raNearestRail.state.stopRequired ? 'active' : 'bus-stop');
+              if (ras.lastRailKey !== raRailNarrationKey) {
+                ras.lastRailKey = raRailNarrationKey;
+                speak(raNearestRail.passiveBusStop && !raNearestRail.state.stopRequired
+                  ? 'Railroad crossing ahead. This school bus must make a full stop and look and listen.'
+                  : 'Railroad warning active. Stopping before the tracks and waiting for the gate to clear.',
+                  'hazard', 'critical');
+              }
+            }
+            if (raNearestVulnerable &&
+                !ras.announcedHazards[raNearestVulnerable.key] &&
+                raNearestVulnerable.ahead < Math.min(30, raPlanDistance)) {
+              ras.announcedHazards[raNearestVulnerable.key] = true;
+              if (raNearestVulnerable.label === 'Moose') {
+                speak('Moose in the travel path. Braking straight, not swerving.', 'hazard', 'critical');
+              } else if (raNearestVulnerable.label === 'Deer') {
+                speak('Deer detected. Slowing and scanning for more; deer travel in groups.', 'hazard', 'critical');
+              } else {
+                speak(raNearestVulnerable.label + ' in the travel path. Slowing to a full stop.', 'hazard', 'critical');
+              }
+              if (Object.keys(ras.announcedHazards).length > 200) ras.announcedHazards = {};
+            }
             if (rNow - ras.lastNarration > 8) {
               var gap = raTarget - raSpeedMph;
-              if (raTarget < 5 && raSpeedMph > 8) { speak('Slowing to a stop.', 'coach'); ras.lastNarration = rNow; }
-              else if (gap > 12) { speak('Accelerating toward posted speed of ' + Math.round(raTarget) + '.', 'coach'); ras.lastNarration = rNow; }
+              if (raTarget < 5 && raSpeedMph > 8) {
+                speak('Slowing to a stop.', 'coach'); ras.lastNarration = rNow;
+              } else if (!raStartup && gap > 12) {
+                speak('Accelerating smoothly toward ' + Math.round(raTarget) + ' miles per hour.', 'coach');
+                ras.lastNarration = rNow;
+              }
             }
           }
           // In Park: no movement at all
@@ -8664,6 +10036,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Steering response: responsive at low speed, more stable at high speed (inverted for safety)
           var steerRate = 8 - Math.min(4, Math.abs(car.speed) * 0.1);
           car.steering += (steerTarget - car.steering) * dt * steerRate;
+          // Mechanical-style signal cancellation: arm after a meaningful turn
+          // in the indicated direction, then cancel only when the wheel returns
+          // close to center. This also cleans up a completed lane change while
+          // preserving a signal during small steering corrections.
+          var signalCancel = blinkerCancelRef.current;
+          if (blinkerRef.current !== 0 && signalCancel) {
+            if (!signalCancel.armed && car.steering * blinkerRef.current > 0.28) {
+              signalCancel.armed = true;
+            } else if (signalCancel.armed && Math.abs(car.steering) < 0.07) {
+              applyTurnSignal(0, true);
+            }
+          }
           // Forces. Rain now uses the exact deterministic puddles rendered in the
           // streamed world. Tread, pressure, ABS, and standing water all feed the
           // same friction budget used by acceleration, braking, and steering.
@@ -8706,7 +10090,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           if (tireDynamics.hydroplaneSeverity > 0.15 && (!statsRef.current._lastHydroWarn || timeRef.current - statsRef.current._lastHydroWarn > 8)) {
             statsRef.current._lastHydroWarn = timeRef.current;
-            eventToastRef.current = { msg: 'Hydroplaning — ease off the gas; avoid sudden braking or steering.', until: timeRef.current + 4 };
+            showDriveAlert('Hydroplaning — ease off the gas; avoid sudden braking or steering.', 4, 2, 'caution');
           }
           var maxThrust = veh.powerKW * 1000 / Math.max(1, absSpeed);
           if (absSpeed < 2) maxThrust = veh.powerKW * 500;
@@ -8868,9 +10252,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!statsRef.current._lastRumble || timeRef.current - statsRef.current._lastRumble > 10) {
                 statsRef.current._lastRumble = timeRef.current;
                 if (onGrass) {
-                  eventToastRef.current = { msg: '⚠️ Off the road! Steer back gently — don\'t jerk the wheel.', until: timeRef.current + 3 };
+                  showDriveAlert('⚠️ Off the road! Steer back gently — don\'t jerk the wheel.', 3, 2, 'caution');
                 } else {
-                  eventToastRef.current = { msg: '💡 Rumble strip — drifting toward the shoulder. Adjust gently.', until: timeRef.current + 3 };
+                  showDriveAlert('💡 Rumble strip — drifting toward the shoulder. Adjust gently.', 3, 2, 'caution');
                 }
               }
             } else {
@@ -8962,9 +10346,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               // Gentle safety nudge if the player was speeding over the bump.
               if (Math.abs(car.speed) > 6 && !bumpShakeRef.current._tipped) {
-                eventToastRef.current = { msg: '🐢 Speed bump — ease off the gas next time.', until: timeRef.current + 2.5 };
+                showDriveAlert('🐢 Speed bump — ease off the gas next time.', 2.5, 2, 'caution');
                 bumpShakeRef.current._tipped = true;
-                setTimeout(function() { if (bumpShakeRef.current) bumpShakeRef.current._tipped = false; }, 12000);
+                safeTimeout(function() { if (bumpShakeRef.current) bumpShakeRef.current._tipped = false; }, 12000);
               }
               break;
             }
@@ -9093,8 +10477,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   pushDriveEvent(statsRef, 'crash', impactMph, frictionCoef(scn.weather), scn.speedLimit, 3);
                   journalLog('crash', '💥', 'Crash at ' + Math.round(impactMph) + ' mph');
                   // A crash is an automatic major deduction on the road test (-25 pts, crash any speed = fail zone).
-                  if (roadTestRef.current.active) {
-                    roadTestRef.current.deductions.push({ type: 'crash', pts: 25, t: timeRef.current, detail: 'Crash at ' + Math.round(impactMph) + ' mph' });
+                  if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
+                    roadTestRef.current.deductions.push({ type: 'crash', pts: 25, t: evaluationElapsedSeconds(roadTestRef.current, timeRef.current), detail: 'Crash at ' + Math.round(impactMph) + ' mph' });
                     roadTestRef.current.score -= 25;
                   }
                   var dmg = impactMph > 30 ? 40 : impactMph > 15 ? 25 : 15;
@@ -9142,8 +10526,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               pushDriveEvent(statsRef, 'roundabout_' + kind, Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, info.major ? 2 : 1);
               journalLog('roundabout_' + kind, info.major ? '🚨' : '➡️', info.msg);
               addToast(info.msg + ' -' + info.pts + ' safety');
-              if (roadTestRef.current.active) {
-                roadTestRef.current.deductions.push({ type: 'roundabout_' + kind, pts: info.pts, t: timeRef.current, detail: info.msg });
+              if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
+                roadTestRef.current.deductions.push({ type: 'roundabout_' + kind, pts: info.pts, t: evaluationElapsedSeconds(roadTestRef.current, timeRef.current), detail: info.msg });
                 roadTestRef.current.score -= info.pts;
               }
             });
@@ -9170,8 +10554,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               pushDriveEvent(statsRef, 'highway_' + kind, Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, 1);
               journalLog('highway_' + kind, '!', mergeMsg);
               addToast(mergeMsg + ' -' + mergePts + ' safety');
-              if (roadTestRef.current.active) {
-                roadTestRef.current.deductions.push({ type: 'highway_' + kind, pts: mergePts, t: timeRef.current, detail: mergeMsg });
+              if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
+                roadTestRef.current.deductions.push({ type: 'highway_' + kind, pts: mergePts, t: evaluationElapsedSeconds(roadTestRef.current, timeRef.current), detail: mergeMsg });
                 roadTestRef.current.score -= mergePts;
               }
             });
@@ -9259,26 +10643,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var canTriggerEvent = (timeRef.current - statsRef.current._lastLandmarkEvent) > 8; // min 8s between events
             if (canTriggerEvent && Math.abs(car.speed) > 5) {
               var curCi2 = Math.floor(playerRoadStationForWorld / CHUNK_SIZE);
-              for (var leci = -1; leci <= 1; leci++) {
+              var landmarkTravelSign = mainRoadTravelSign(infiniteWorldRef.current, car);
+              var landmarkEventLead = Math.min(70, Math.max(24,
+                schoolBusApproachDistanceWorld(Math.abs(car.speed), scn.weather)));
+              for (var leci = -2; leci <= 2; leci++) {
                 var eChunk = infiniteWorldRef.current.getChunk(curCi2 + leci);
                 if (!eChunk || !eChunk.landmark) continue;
                 var elmWorldY = (curCi2 + leci) * CHUNK_SIZE + eChunk.landmark.centerY;
-                var elmDist = Math.abs(elmWorldY - playerRoadStationForWorld);
-                // Trigger window: within 5-10 cells of the landmark (approaching it)
-                if (elmDist < 10 && elmDist > 2) {
+                var elmAhead = (elmWorldY - playerRoadStationForWorld) * landmarkTravelSign;
+                // Trigger only while approaching and leave a real perception/stopping window.
+                if (elmAhead < landmarkEventLead && elmAhead > 12) {
                   var lt2 = eChunk.landmark.type;
                   if (Math.random() < (lt2.eventChance || 0) * 0.3) {
                     statsRef.current._landmarkEventActive = true;
                     statsRef.current._lastLandmarkEvent = timeRef.current;
-                    // Generate event appropriate for the landmark
                     var evt = null;
                     if (lt2.id === 'school') {
-                      // 50/50: ball event OR school bus stop-arm reminder
                       if (Math.random() < 0.5) {
                         evt = { kind: 'ball', icon: '⚽', warn: 'CHILD chasing ball into road!', color: '#ef4444' };
                       } else {
-                        // School bus with extended stop arm — Maine law requires a full stop
-                        // even from the opposite direction on undivided roads
                         evt = { kind: 'schoolbus_arm', icon: '🚌', warn: 'SCHOOL BUS stopped with RED FLASHING lights! STOP — illegal to pass!', color: 'var(--rr-amber, #fbbf24)' };
                       }
                     } else if (lt2.id === 'park') {
@@ -9295,40 +10678,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       evt = { kind: 'cruiser', icon: '🚔', warn: 'POLICE CRUISER pulling out — stay alert!', color: '#1e40af' };
                     }
                     if (evt) {
-                      // Spawn the event from the landmark's side of the road. Position
-                      // perpendicular to the spline so it appears IN the actual shoulder
-                      // (not offset by raw world X, which on curves would put it in trees).
-                      var spawnAhead = 6;
-                      var spawnY = car.y + Math.sin(car.heading) * spawnAhead;
-                      var evtSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
-                      var evtSplineCx = evtSpline ? evtSpline.centerAt(spawnY) : car.x + Math.cos(car.heading) * spawnAhead;
-                      var evtSplineTheta = evtSpline ? evtSpline.headingAt(spawnY) : 0;
+                      var evtWorld = infiniteWorldRef.current;
+                      var evtSpline = evtWorld && evtWorld.spline;
+                      // The actor stays connected to its landmark instead of popping up
+                      // a fixed distance from the player in raw world coordinates.
+                      var evtStation = elmWorldY;
+                      var evtProfile = roadProfileAt(evtWorld, evtStation,
+                        getContinuousScenarioProfile(currentScenario.id));
+                      var evtLayout = roadLayoutFor(evtProfile);
+                      var evtSplineTheta = evtSpline ? evtSpline.headingAt(evtStation) : 0;
                       var evtPerpX = Math.cos(evtSplineTheta);
                       var evtPerpY = -Math.sin(evtSplineTheta);
-                      var landmarkSide = eChunk.landmark.side; // +1 or -1
-                      var spawnX = evtSplineCx + landmarkSide * 4 * evtPerpX;
-                      spawnY = spawnY + landmarkSide * 4 * evtPerpY;
+                      var landmarkSide = eChunk.landmark.side;
+                      var evtOneWay = oneWayRoadLayoutFor(evtProfile);
+                      var evtBusTravelSign = evtOneWay.enabled ? evtOneWay.direction
+                        : (landmarkSide > 0 ? -1 : 1);
+                      var evtSpawnLateral = evt.kind === 'schoolbus_arm'
+                        ? nearestAuthoredTrafficLaneOffset(evtProfile, evtBusTravelSign,
+                          landmarkSide * evtLayout.edgeLineOffset)
+                        : landmarkSide * roadsideOffsetFor(evtProfile, 0.8);
+                      var evtSpawnPoint = evtSpline
+                        ? mainRoadWorldPoint(evtWorld, evtStation, evtSpawnLateral)
+                        : { x: evtSpawnLateral, y: evtStation };
+                      var evtCrossSpeed = evt.kind === 'ball' ? 2.2
+                        : evt.kind === 'pedestrian' ? 1.4
+                        : evt.kind === 'tractor' ? 1.5 : 2.4;
+                      var evtVx = evt.kind === 'schoolbus_arm' ? 0
+                        : -landmarkSide * evtCrossSpeed * evtPerpX;
+                      var evtVy = evt.kind === 'schoolbus_arm' ? 0
+                        : -landmarkSide * evtCrossSpeed * evtPerpY;
+                      var evtHeading = evt.kind === 'schoolbus_arm'
+                        ? (evtBusTravelSign > 0 ? Math.PI / 2 - evtSplineTheta
+                          : -Math.PI / 2 - evtSplineTheta)
+                        : Math.atan2(evtVy, evtVx);
                       if (!wildlifeRef.current) {
                         wildlifeRef.current = {
-                          kind: evt.kind,
-                          icon: evt.icon,
-                          mass: evt.kind === 'ambulance' || evt.kind === 'firetruck' || evt.kind === 'tractor' || evt.kind === 'cruiser' ? 'medium' : 'small',
-                          x: spawnX,
-                          y: spawnY,
-                          // Move toward the road (perpendicular toward spline center)
-                          vx: -landmarkSide * 1.5 * evtPerpX,
-                          vy: -landmarkSide * 1.5 * evtPerpY,
+                          kind: evt.kind, icon: evt.icon,
+                          mass: landmarkVehicleAppearance(evt.kind) ? 'vehicle' : 'small',
+                          x: evtSpawnPoint.x, y: evtSpawnPoint.y,
+                          vx: evtVx, vy: evtVy, heading: evtHeading,
+                          _roadStation: evtStation, _roadSide: landmarkSide,
                           hit: false,
-                          life: 8,
-                          fromLandmark: true,
-                          color: evt.color
+                          life: evt.kind === 'schoolbus_arm' ? 15 : 8,
+                          stopLightsActive: evt.kind === 'schoolbus_arm',
+                          fromLandmark: true, color: evt.color
                         };
                       }
-                      eventToastRef.current = { msg: evt.icon + ' ' + evt.warn, until: timeRef.current + 5 };
-                      if (addToast) addToast(evt.icon + ' ' + evt.warn);
+                      showDriveAlert(evt.icon + ' ' + evt.warn, 5,
+                        evt.kind === 'schoolbus_arm' || evt.kind === 'ambulance' ||
+                        evt.kind === 'firetruck' ? 3 : 2,
+                        evt.kind === 'schoolbus_arm' || evt.kind === 'ambulance' ||
+                        evt.kind === 'firetruck' ? 'critical' : 'caution');
                       speak(evt.warn.replace(/[^a-zA-Z0-9 ,.!?']/g, ' '));
-                      // Reward for slowing down
-                      safeTimeout(function() { statsRef.current._landmarkEventActive = false; }, 8000);
+                      safeTimeout(function() { statsRef.current._landmarkEventActive = false; },
+                        evt.kind === 'schoolbus_arm' ? 16000 : 8000);
                     }
                     break;
                   }
@@ -9388,7 +10791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var speedCueToast = eventToastRef.current;
             if (!speedCueToast || timeRef.current >= speedCueToast.until) {
               statsRef.current._lastSpeedCueAt = timeRef.current;
-              eventToastRef.current = { msg: 'Ease off the gas - posted limit is ' + scn.speedLimit + ' mph.', until: timeRef.current + 2.5 };
+              showDriveAlert('Ease off the gas - posted limit is ' + scn.speedLimit + ' mph.', 2.5, 2, 'caution');
             }
           }
           if (overLimitNow) {
@@ -9502,13 +10905,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var isRightShift = dirShift === pRightSignLC;
               // blinkerRef convention: -1 = left, +1 = right
               var expectedBlinker = isRightShift ? 1 : -1;
+              statsRef.current.laneChanges = (statsRef.current.laneChanges || 0) + 1;
               if (blinkerRef.current !== expectedBlinker) {
                 statsRef.current.safetyScore -= 5;
                 if (!statsRef.current.unsignaledLaneChanges) statsRef.current.unsignaledLaneChanges = 0;
                 statsRef.current.unsignaledLaneChanges++;
                 addToast('⚠️ Lane change without signal! -5');
-                if (roadTestRef.current.active) {
-                  roadTestRef.current.deductions.push({ type: 'no_signal', pts: 4, t: timeRef.current, detail: __alloT('stem.roadready.lane_change_without_signal', 'Lane change without signal') });
+                if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
+                  roadTestRef.current.deductions.push({ type: 'no_signal', pts: 4, t: evaluationElapsedSeconds(roadTestRef.current, timeRef.current), detail: __alloT('stem.roadready.lane_change_without_signal', 'Lane change without signal') });
                   roadTestRef.current.score -= 4;
                 }
               } else {
@@ -9570,8 +10974,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   eventToastRef.current = { msg: '🚨 You drove in oncoming traffic. Solid yellow = NO crossing. Get back to your side.', until: timeRef.current + 5 };
                   speak('Wrong side of the road. Return to your lane immediately.');
                 }
-                if (roadTestRef.current.active) {
-                  roadTestRef.current.deductions.push({ type: 'wrong_side', pts: 10, t: timeRef.current, detail: __alloT('stem.roadready.drove_in_oncoming_lane', 'Drove in oncoming lane') });
+                if (roadTestRef.current.active && roadTestRef.current.startedAtSim != null) {
+                  roadTestRef.current.deductions.push({ type: 'wrong_side', pts: 10, t: evaluationElapsedSeconds(roadTestRef.current, timeRef.current), detail: __alloT('stem.roadready.drove_in_oncoming_lane', 'Drove in oncoming lane') });
                   roadTestRef.current.score -= 10;
                 }
               }
@@ -11272,71 +12676,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // then move it toward the road. On curves the prior code spawned at
               // car.x + 6 in raw world X — putting wildlife either deep in trees or
               // already in the road, depending on which way the spline curved.
-              var ahead = 12;
+              // Give roughly three seconds of lead distance, then start beyond
+              // the live paved edge on either roadside and run inward.
+              var ahead = Math.max(18, Math.min(70, Math.abs(car.speed) * 3.2));
               var wlSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
               var wlPlayerFrame = wlSpline
                 ? mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y) : null;
               var wlTravelSign = wlPlayerFrame
-                ? (Math.cos(car.heading) * Math.sin(wlPlayerFrame.heading) +
-                  Math.sin(car.heading) * Math.cos(wlPlayerFrame.heading) < 0 ? -1 : 1) : 0;
+                ? mainRoadTravelSign(infiniteWorldRef.current, car)
+                : (Math.sin(car.heading) < 0 ? -1 : 1);
               var sy = wlPlayerFrame
-                ? wlPlayerFrame.longitudinal - wlTravelSign * ahead
+                ? wlPlayerFrame.longitudinal + wlTravelSign * ahead
                 : car.y + Math.sin(car.heading) * ahead;
+              var wlRoadStation = sy;
               var wlSplineTheta = wlSpline ? wlSpline.headingAt(sy) : 0;
-              // Perpendicular-right to spline direction (sin θ, cos θ): (cos θ, −sin θ).
-              // Spawn 6m to the +perp side; vx will move wildlife back toward the road.
               var wlPerpX = Math.cos(wlSplineTheta);
               var wlPerpY = -Math.sin(wlSplineTheta);
+              var wlSpawnProfile = roadProfileAt(infiniteWorldRef.current, sy,
+                getContinuousScenarioProfile(currentScenario.id));
+              var wlSpawnSide = Math.random() < 0.5 ? -1 : 1;
+              var wlSpawnLateral = wlSpawnSide * roadsideOffsetFor(wlSpawnProfile, 1);
               var wlSpawnPoint = wlSpline
-                ? mainRoadWorldPoint(infiniteWorldRef.current, sy, 6)
-                : { x: car.x + Math.cos(car.heading) * ahead, y: sy };
+                ? mainRoadWorldPoint(infiniteWorldRef.current, sy, wlSpawnLateral)
+                : { x: wlSpawnLateral, y: sy };
               var sx = wlSpawnPoint.x;
               sy = wlSpawnPoint.y;
+              var wlCrossingSpeed = spawn.mass === 'massive' ? 2.2
+                : spawn.mass === 'medium' ? 2.8 : 2;
+              var wlVx = -wlSpawnSide * wlCrossingSpeed * wlPerpX;
+              var wlVy = -wlSpawnSide * wlCrossingSpeed * wlPerpY;
               wildlifeRef.current = {
                 kind: spawn.kind, icon: spawn.icon, mass: spawn.mass,
                 x: sx, y: sy,
-                // Move toward the road (negative perpendicular)
-                vx: -1.2 * wlPerpX, vy: -1.2 * wlPerpY,
+                vx: wlVx, vy: wlVy,
+                heading: Math.atan2(wlVy, wlVx),
+                _roadStation: wlRoadStation,
+                _roadSide: wlSpawnSide,
                 hit: false, life: 8,
-                // Capture player's heading + speed at spawn so we can score their reaction:
-                // brake straight = low maxSwerve + big speed drop. Swerve = high maxSwerve.
                 initialHeading: car.heading,
                 initialSpeed: Math.abs(car.speed),
+                minSpeed: Math.abs(car.speed),
+                initialRoadTravelSign: wlSpline
+                  ? mainRoadTravelSign(infiniteWorldRef.current, car) : 0,
+                initialRoadHeadingError: wlSpline
+                  ? roadRelativeHeadingError(infiniteWorldRef.current, car) : null,
+                initialRoadLateral: wlPlayerFrame ? wlPlayerFrame.lateral : null,
                 maxSwerve: 0,
+                maxLateralSwerve: 0,
                 scored: false
               };
               // Count this as a wildlife encounter so the moose_dodge badge can
               // reward players who actually saw a moose and avoided it (not just
               // anyone who drove rural for 500 m without anything spawning).
               statsRef.current.wildlifeEncountered = (statsRef.current.wildlifeEncountered || 0) + 1;
-              eventToastRef.current = { msg: '⚠️ ' + spawn.warn + ' Brake straight — DO NOT swerve!', until: timeRef.current + 5 };
-              addToast('⚠️ ' + spawn.warn);
+              showDriveAlert('⚠️ ' + spawn.warn +
+                ' Brake straight — do not swerve.', 5, 3, 'critical');
               return;
             }
           } else {
-            // School bus with stop-arm sits still and tests compliance
+            // The stop-arm bus remains in its authored lane and is graded in
+            // road coordinates, including outer lanes and curved approaches.
             if (w.kind === 'schoolbus_arm') {
-              w.vx = 0; w.vy = 0; // stationary
-              w.life -= dt * 0.3; // slower countdown (7-second stop event)
+              w.vx = 0; w.vy = 0;
+              w.life -= dt;
               if (w.life <= 0) { wildlifeRef.current = null; return; }
-              // Detect whether player passes it too fast (illegal pass violation)
-              var busDx = w.x - car.x;
-              var busDy = w.y - car.y;
-              var busDist = Math.hypot(busDx, busDy);
-              if (!w.passed && busDist < 3 && Math.abs(car.speed) > 3) {
+              if (w.credited && !w.released && w.releaseAt != null &&
+                  timeRef.current >= w.releaseAt) {
+                w.released = true;
+                w.stopLightsActive = false;
+                w.life = Math.min(w.life, 1.5);
+                showDriveAlert('✓ Red lights are off. Check that the road is clear, then proceed.', 4, 1, 'success');
+              }
+              if (w.released) return;
+              var eventBusWorld = infiniteWorldRef.current;
+              var eventBusStation = eventBusWorld
+                ? playerRoadStation(eventBusWorld, car) : car.y;
+              var eventBusProfileStation = w._roadStation == null
+                ? eventBusStation : w._roadStation;
+              var eventBusRequirement = schoolBusStopRequirement(
+                eventBusWorld,
+                roadProfileAt(eventBusWorld, eventBusProfileStation,
+                  getContinuousScenarioProfile(currentScenario.id)), car, w);
+              if (!eventBusRequirement.required) {
+                w._playerPreviousAhead = null;
+                return;
+              }
+              var eventBusAhead = eventBusRequirement.ahead;
+              var eventBusClearance =
+                vehicleFootprint(currentVehicle && currentVehicle.id).length * 0.5 +
+                landmarkVehicleAppearance('schoolbus_arm').length * 0.5 + 0.5;
+              var crossedEventBus = w._playerPreviousAhead != null &&
+                w._playerPreviousAhead > eventBusClearance &&
+                eventBusAhead <= eventBusClearance;
+              if (!w.passed && crossedEventBus) {
                 w.passed = true;
                 statsRef.current.safetyScore -= 30;
-                statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
+                statsRef.current.majorViolations =
+                  (statsRef.current.majorViolations || 0) + 1;
                 addToast('🚨 ILLEGAL PASS! You passed a stopped school bus. -30 safety');
-                eventToastRef.current = { msg: '🚨 PASSING A STOPPED SCHOOL BUS is a serious violation — this endangers children.', until: timeRef.current + 6 };
+                showDriveAlert('🚨 Passing a stopped school bus with red flashers endangers children.', 6, 3, 'critical');
                 speak('Illegal pass of a stopped school bus. This is a serious violation under Maine law.');
               }
-              if (!w.credited && busDist < 5 && Math.abs(car.speed) <= 0.15) {
+              if (!w.credited && !w.passed &&
+                  eventBusAhead >= eventBusClearance &&
+                  eventBusAhead <= eventBusClearance + 12 &&
+                  Math.abs(car.speed) <= 0.15) {
                 w.credited = true;
-                statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
+                w.releaseAt = timeRef.current + 2.5;
+                statsRef.current.safetyScore =
+                  Math.min(100, statsRef.current.safetyScore + 5);
                 statsRef.current.stops = (statsRef.current.stops || 0) + 1;
+                statsRef.current.busStopCompliance =
+                  (statsRef.current.busStopCompliance || 0) + 1;
                 addToast('✓ Stopped for the school bus. +5 safety');
-                eventToastRef.current = { msg: '✓ Correct. Stopped school bus = FULL STOP in both directions (undivided road).', until: timeRef.current + 4 };
+                showDriveAlert('✓ Full stop before the school bus. Wait until its red lights stop or the driver signals you.', 4, 1, 'success');
                 var busBadges = Object.assign({}, (d.badges || {}));
                 if (!busBadges.bus_respect) {
                   busBadges.bus_respect = true;
@@ -11344,18 +12797,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   upd('badges', busBadges);
                 }
               }
+              w._playerPreviousAhead = eventBusAhead;
               return;
             }
             w.x += w.vx * dt;
             w.y += w.vy * dt;
             w.life -= dt;
-            // Track player's reaction while the animal is present. maxSwerve = the largest
-            // deviation from the heading they had when the animal appeared. Low value = they
-            // stayed in their lane (the correct response). Higher = they tried to swerve.
+            // Track the full reaction, not merely the final frame. On a curve,
+            // steering is measured against the live tangent so following the bend
+            // is not mislabeled as an avoidance swerve.
+            if (w.initialSpeed !== undefined) {
+              w.minSpeed = Math.min(w.minSpeed == null ? Math.abs(car.speed) : w.minSpeed,
+                Math.abs(car.speed));
+            }
             if (w.initialHeading !== undefined) {
-              var headingDelta = Math.abs(car.heading - w.initialHeading);
-              // Normalize across the wrap point (heading is on a circle)
-              while (headingDelta > Math.PI) headingDelta = Math.abs(headingDelta - 2 * Math.PI);
+              var wildlifeWorld = infiniteWorldRef.current;
+              var headingDelta;
+              if (wildlifeWorld && wildlifeWorld.spline &&
+                  w.initialRoadHeadingError != null) {
+                var liveRoadError = roadRelativeHeadingError(
+                  wildlifeWorld, car, w.initialRoadTravelSign);
+                headingDelta = Math.abs(normalizeSignedAngle(
+                  liveRoadError - w.initialRoadHeadingError));
+                var liveRoadFrame = mainRoadLocalPoint(
+                  wildlifeWorld, car.x, car.y);
+                var lateralDelta = w.initialRoadLateral == null ? 0
+                  : Math.abs(liveRoadFrame.lateral - w.initialRoadLateral);
+                if (lateralDelta > (w.maxLateralSwerve || 0)) {
+                  w.maxLateralSwerve = lateralDelta;
+                }
+              } else {
+                headingDelta = Math.abs(normalizeSignedAngle(
+                  car.heading - w.initialHeading));
+              }
               if (headingDelta > w.maxSwerve) w.maxSwerve = headingDelta;
             }
             if (w.life <= 0) {
@@ -11364,65 +12838,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // which is what the Moose Encounter Drill teaches.
               if (!w.hit && !w.scored && w.mass === 'massive' && w.initialSpeed !== undefined) {
                 w.scored = true;
-                var speedDrop = w.initialSpeed > 0 ? 1 - (Math.abs(car.speed) / w.initialSpeed) : 0;
+                var lowestSpeed = w.minSpeed == null ? Math.abs(car.speed) : w.minSpeed;
+                var speedDrop = w.initialSpeed > 0
+                  ? 1 - (lowestSpeed / w.initialSpeed) : 0;
                 var swerveRad = w.maxSwerve || 0;
-                // Thresholds: swerve < ~11° AND speed dropped by ≥ 30% = textbook brake-straight.
-                if (swerveRad < 0.2 && speedDrop > 0.3) {
-                  statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 10);
-                  if (!statsRef.current.mooseSafeAvoids) statsRef.current.mooseSafeAvoids = 0;
-                  statsRef.current.mooseSafeAvoids++;
+                var lateralSwerve = w.maxLateralSwerve || 0;
+                if (swerveRad < 0.2 && lateralSwerve < 0.75 && speedDrop > 0.3) {
+                  statsRef.current.safetyScore =
+                    Math.min(100, statsRef.current.safetyScore + 10);
+                  statsRef.current.mooseSafeAvoids =
+                    (statsRef.current.mooseSafeAvoids || 0) + 1;
                   addToast('✓ Brake straight, no swerve — textbook Maine moose response. +10 safety');
-                  eventToastRef.current = { msg: '✓ Exactly what the Moose Encounter Drill teaches: brake in a straight line, do not swerve.', until: timeRef.current + 5 };
+                  showDriveAlert('✓ Braked straight and stayed in lane — correct moose response.', 5, 1, 'success');
                   var mBadges = Object.assign({}, (d.badges || {}));
                   if (!mBadges.moose_avoided) {
                     mBadges.moose_avoided = true;
                     upd('badges', mBadges);
                     unlockBadge('Moose-Safe in the Field 🫎');
                   }
-                } else if (swerveRad >= 0.25) {
-                  // Player swerved — didn't hit it (maybe luck), but not what the drill teaches.
+                } else if (swerveRad >= 0.25 || lateralSwerve >= 1.0) {
                   addToast('⚠️ You swerved to avoid the moose. Drill reminder: brake STRAIGHT next time.');
-                  eventToastRef.current = { msg: '⚠️ Swerving at speed risks rollover and head-on. Review the Moose Drill.', until: timeRef.current + 5 };
+                  showDriveAlert('⚠️ Swerving at speed risks rollover or a head-on crash. Brake straight.', 5, 2, 'caution');
                 }
               }
               wildlifeRef.current = null; return;
             }
-            // Hit detection
-            var dx = w.x - car.x;
-            var dy = w.y - car.y;
-            var dist = Math.hypot(dx, dy);
-            if (!w.hit && dist < 1.2) {
+            // Category-specific contact prevents a vehicle-shaped landmark
+            // from inheriting a wildlife radius or wildlife crash message.
+            var hazardCategory = hazardActorCategory(w);
+            var landmarkVehicle = landmarkVehicleAppearance(w.kind);
+            var hazardPlayerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+            var wildlifeOverlap = landmarkVehicle
+              ? vehicleRectsOverlap(car, hazardPlayerSize, w,
+                { length: landmarkVehicle.length, width: landmarkVehicle.width })
+              : pointOverlapsVehicle(car, hazardPlayerSize, w,
+                wildlifeCollisionRadius(w));
+            // A stationary driver who braked successfully is not charged when
+            // a moving animal finishes crossing into the vehicle footprint.
+            if (!w.hit && wildlifeOverlap && Math.abs(car.speed) > 0.5) {
               w.hit = true;
-              // Stamp crash time so dependent guards (e.g., suppressing the
-              // child-from-bus spawn within 5s of a prior crash) can react.
-              statsRef.current._lastCrashAt = timeRef.current;
-              // Special case: hitting a CHILD is the worst possible outcome — it's the
-              // exact thing the school-bus stop-arm exists to prevent.
-              if (w.kind === 'child') {
+              w._impactAt = timeRef.current;
+              w.life = Math.max(w.life, 4);
+              if (landmarkVehicle) {
+                w.vx = 0; w.vy = 0;
+                separateVehicleAfterImpact(infiniteWorldRef.current, car, w, 0.8);
+              } else {
+                separateRoadUserAfterImpact(
+                  infiniteWorldRef.current, car, w,
+                  hazardCategory === 'child' || hazardCategory === 'pedestrian' ? 1.0 : 1.3);
+              }
+              if (hazardCategory !== 'ball') {
+                statsRef.current._lastCrashAt = timeRef.current;
+              }
+              if (hazardCategory === 'child') {
                 statsRef.current.crashes++;
                 statsRef.current.safetyScore -= 80;
-                if (!statsRef.current.childStrike) statsRef.current.childStrike = 0;
-                statsRef.current.childStrike++;
+                statsRef.current.childStrike = (statsRef.current.childStrike || 0) + 1;
                 addToast('🚨 YOU HIT A CHILD. This is what the stop-arm prevents. -80');
-                eventToastRef.current = { msg: '🚨 Maine school-bus stop-arm law exists because of moments exactly like this. Always stop for a school bus with red flashers on an undivided road.', until: timeRef.current + 8 };
+                showDriveAlert('🚨 Child struck. Always stop for a school bus with red flashers on an undivided road.', 8, 3, 'critical');
                 speak('You struck a child. Always stop for a school bus with red flashers.');
                 car.speed *= 0.05;
+              } else if (hazardCategory === 'pedestrian') {
+                statsRef.current.crashes++;
+                statsRef.current.safetyScore -= 60;
+                addToast('💥 PEDESTRIAN STRUCK! -60 safety');
+                showDriveAlert('💥 Pedestrian struck. Stop immediately and call emergency services.', 7, 3, 'critical');
+                car.speed *= 0.15;
+              } else if (hazardCategory === 'ball') {
+                statsRef.current.safetyScore -= 5;
+                addToast('⚠️ Ball in the road. A child may follow. -5 safety');
+                showDriveAlert('⚠️ You hit the ball. Stop and scan for the child who may be following it.', 5, 2, 'caution');
+                car.speed *= 0.7;
+              } else if (hazardCategory === 'emergency_vehicle' ||
+                         hazardCategory === 'vehicle') {
+                var landmarkVehiclePenalty =
+                  hazardCategory === 'emergency_vehicle' ? 50 : 35;
+                statsRef.current.crashes++;
+                statsRef.current.safetyScore -= landmarkVehiclePenalty;
+                addToast('💥 Collision with ' + landmarkVehicle.label + '! -' +
+                  landmarkVehiclePenalty + ' safety');
+                showDriveAlert('💥 Collision with ' + landmarkVehicle.label +
+                  '. Stop safely and call emergency services.', 6, 3, 'critical');
+                car.speed *= hazardCategory === 'emergency_vehicle' ? 0.15 : 0.3;
+                crashFxRef.current.push({
+                  x: (car.x + w.x) * 0.5,
+                  y: (car.y + w.y) * 0.5,
+                  severity: hazardCategory === 'emergency_vehicle' ? 3 : 2,
+                  spawnAt: timeRef.current,
+                  hudFlashed: false
+                });
               } else if (w.mass === 'massive') {
                 statsRef.current.crashes++;
-                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
+                statsRef.current.wildlifeHit =
+                  (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 MOOSE STRIKE — catastrophic. -60 safety');
+                showDriveAlert('💥 Moose strike. Brake, stop safely, turn on hazards, and call 911.', 7, 3, 'critical');
                 car.speed *= 0.1;
               } else if (w.mass === 'medium') {
                 statsRef.current.crashes++;
-                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
+                statsRef.current.wildlifeHit =
+                  (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 30;
                 addToast('💥 Deer strike. -30 safety');
+                showDriveAlert('💥 Deer strike. Stop safely, turn on hazards, and report the collision.', 6, 3, 'critical');
                 car.speed *= 0.4;
               } else {
-                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
+                statsRef.current.crashes++;
+                statsRef.current.wildlifeHit =
+                  (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 15;
                 addToast('💥 Animal struck. -15 safety');
+                showDriveAlert('💥 Animal struck. Stop safely and check the roadway before proceeding.', 5, 3, 'critical');
+                car.speed *= 0.65;
               }
             }
           }
@@ -11447,12 +12975,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Normal mode: rare, checked once per second
             if (!spawn) spawn = maybeSpawnEmergency(currentScenario, timeRef.current);
             if (spawn) {
-              // Spawn the emergency vehicle in the player's lane on the spline at +15..+23m
-              // BEHIND them. Previously the X was just car.x copied — on curves that placed
-              // it off the road. Now: project player's perp-offset onto the spline at the
-              // emergency vehicle's spawn Y and use the same perp position.
-              var emSpawnDistance = 15 + Math.random() * 8;
               var emSpawnSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+              // The responder closes at about 12 m/s faster than the learner.
+              // A 15–23 m spawn allowed only 1–2 seconds to hear the siren,
+              // scan, signal, and pull over—physically impossible at road speed.
+              // Streamed roads retain three chunks behind the car, so 72–84 m
+              // gives a realistic six-to-seven-second response window without
+              // spawning beyond loaded scenery. Bounded courses use a shorter
+              // fallback because their entire map is only 96 m across.
+              var emSpawnDistance = emSpawnSpline
+                ? 72 + Math.random() * 12
+                : 22 + Math.random() * 8;
               var emPlayerFrame = emSpawnSpline
                 ? mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y) : null;
               var emTravelSign = Math.sin(car.heading) > 0 ? 1 : -1;
@@ -11484,7 +13017,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 responded: false,
                 checked: false
               };
-              eventToastRef.current = { msg: '🚨 EMERGENCY VEHICLE BEHIND YOU — Pull RIGHT and STOP!', until: timeRef.current + 6 };
+              showDriveAlert('🚨 EMERGENCY VEHICLE BEHIND YOU — Pull RIGHT and STOP!', 6, 3, 'critical');
               speak('Emergency vehicle approaching from behind. Pull to the right and stop completely.');
               addToast('🚨 ' + spawn.icon + ' ' + spawn.kind + ' approaching!');
               // Start siren audio
@@ -11495,7 +13028,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   audioRef.current._sirenGain = ac.createGain();
                   audioRef.current._sirenOsc.type = 'sine';
                   audioRef.current._sirenOsc.frequency.value = spawn.sirenFreq;
-                  audioRef.current._sirenGain.gain.value = 0.06;
+                  // Still unmistakable in Calm Drive, but below instructor speech.
+                  audioRef.current._sirenGain.gain.value = calmDriveRef.current ? 0.025 : 0.06;
                   // Stereo panner + low-pass — lets the siren feel directional.
                   // LPF cutoff drops when the vehicle is further away (distance muffle).
                   audioRef.current._sirenPan = ac.createStereoPanner ? ac.createStereoPanner() : null;
@@ -11659,8 +13193,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var updateCyclists = function(dt) {
           var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           cyclistsRef.current.forEach(function(cy) {
-            // Skip the spline lerp + motion entirely for hit cyclists — they should
-            // stay parked far off-screen (cy.x = -99) until the drive ends.
+            // Keep an impacted rider visible and stationary at the separated
+            // roadside position; do not snap them back onto the bike lane.
             if (cy._hit) return;
             // Spline-aware heading + lateral hold so cyclists stay on the bike lane
             // edge through curves instead of drifting into trees / oncoming traffic.
@@ -11763,8 +13297,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var busDirectionText = busRequirement.sameDirection
                 ? 'Traffic behind the bus must stop.'
                 : 'Both directions must stop on this undivided road.';
-              eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. ' +
-                busDirectionText, until: timeRef.current + 5 };
+              showDriveAlert('🚌 SCHOOL BUS with red flashers — STOP. ' +
+                busDirectionText, 5, 3, 'critical');
             }
             // ── Child runs from the bus ──
             // 50% chance per arming: a child sprite crosses the road from the bus side ~3s after arming.
@@ -11826,11 +13360,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     x: childStartX, y: childStartY,
                     vx: -childSideSign * 1.6 * childPerpX,
                     vy: -childSideSign * 1.6 * childPerpY,
+                    heading: Math.atan2(-childSideSign * childPerpY,
+                      -childSideSign * childPerpX),
+                    _roadStation: childMainFrame ? childMainFrame.longitudinal : undefined,
+                    _roadSide: childSideSign,
+                    crossStreet: !!childCrossPose,
+                    _crossPose: childCrossPose || undefined,
                     hit: false, life: 6,
                     fromBus: true,
                     color: 'var(--rr-amber, #fbbf24)'
                   };
-                  eventToastRef.current = { msg: '🧒 CHILD running from the bus! BRAKE NOW.', until: timeRef.current + 5 };
+                  showDriveAlert('🧒 CHILD running from the bus! BRAKE NOW.', 5, 3, 'critical');
                   speak('Child crossing! Brake immediately.');
                 }
               }
@@ -11880,18 +13420,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Each distinct crossing is now an independent graded event, same
             // as the bus stop-arm cycle reset above.
             if (!py.crossing) { py._yieldArmed = false; py._yieldLogged = null; continue; }
-            var dx = py.x - car.x;
-            var dy = py.y - car.y;
-            var dist = Math.hypot(dx, dy);
+            var pedestrianRelation = roadAwareRelativePosition(
+              infiniteWorldRef.current, car, py);
+            var dist = pedestrianRelation.dist;
             if (dist > 9) continue;
-            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (forwardDot < -1) continue; // behind us
-            var carDirX = Math.cos(car.heading), carDirY = Math.sin(car.heading);
-            var latUnits = Math.abs(dx * carDirY - dy * carDirX);
+            if (pedestrianRelation.ahead < -1) continue; // behind us
+            var latUnits = Math.abs(pedestrianRelation.lat);
             if (latUnits > 3) continue; // not in our path
             if (!py._yieldArmed && !py._yieldLogged) {
               py._yieldArmed = true;
-              eventToastRef.current = { msg: '🚶 Pedestrian in the crosswalk — full stop until they clear.', until: timeRef.current + 4 };
+              showDriveAlert('🚶 Pedestrian in the crosswalk — full stop until they clear.', 4, 2, 'caution');
             }
             // Success: came to a near-stop while the ped is still in/near the crosswalk
             if (py._yieldArmed && !py._yieldLogged && Math.abs(car.speed) <= 0.15 && dist < 6) {
@@ -11906,7 +13444,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               py._yieldLogged = timeRef.current;
               statsRef.current.safetyScore -= 20;
               addToast('🚨 Failed to yield to pedestrian! -20');
-              eventToastRef.current = { msg: '🚨 Yield to pedestrians in crosswalks. This is negligent driving.', until: timeRef.current + 5 };
+              showDriveAlert('🚨 Yield to pedestrians in crosswalks. Stop until the crosswalk is clear.', 5, 3, 'critical');
               speak('You failed to yield to a pedestrian in a crosswalk.');
             }
           }
@@ -11914,40 +13452,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var checkCyclistPassing = function() {
           var car = carRef.current;
+          var cyclistWorld = infiniteWorldRef.current;
+          var playerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
           cyclistsRef.current.forEach(function(cy) {
-            // Only check when we're near + passing from behind
-            var dx = cy.x - car.x;
-            var dy = cy.y - car.y;
-            var dist = Math.hypot(dx, dy);
-            if (dist > 3) return;
-            // Are we abeam? (alongside)
-            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (Math.abs(forwardDot) > 1.5) return;
-            // Lateral distance: perpendicular distance from car to cyclist
-            // Use cross product for true perpendicular distance (works on curved roads)
-            var carDirX = Math.cos(car.heading);
-            var carDirY = Math.sin(car.heading);
-            var latUnits = Math.abs(dx * carDirY - dy * carDirX); // perpendicular component
-            var latFt = worldUnitsToFeet(latUnits);
-            if (latFt < 3 && !cy._flaggedClose) {
+            if (!cy || cy._hit) return;
+            var cyclistRelation = roadAwareRelativePosition(cyclistWorld, car, cy);
+            var dist = cyclistRelation.dist;
+            // A recycled cyclist is a new encounter; clear the one-pass guard
+            // while they are safely ahead rather than suppressing it forever.
+            if (cyclistRelation.ahead > 6 && dist > 6) cy._flaggedClose = false;
+            if (dist > 4) return;
+            var cyclistSize = vulnerableRoadUserFootprint(cy);
+            var carVx = Math.cos(car.heading) * car.speed;
+            var carVy = Math.sin(car.heading) * car.speed;
+            var cyclistVx = Math.cos(cy.heading) * (cy.speed || 0);
+            var cyclistVy = Math.sin(cy.heading) * (cy.speed || 0);
+            var cyclistRelativeSpeed = Math.hypot(
+              carVx - cyclistVx, carVy - cyclistVy);
+            var cyclistOverlap = vehicleRectsOverlap(
+              car, playerSize, cy, cyclistSize);
+            if (cyclistOverlap && cyclistRelativeSpeed > 0.5 &&
+                (Math.abs(car.speed) > 0.5 || Math.abs(cy.speed || 0) > 0.5)) {
+              var roadUserLabel = cy.type === 'motorcycle'
+                ? 'motorcycle rider' : 'cyclist';
+              statsRef.current.crashes++;
+              statsRef.current._lastCrashAt = timeRef.current;
+              statsRef.current.safetyScore -= 50;
+              addToast('💥 Struck a ' + roadUserLabel + '! -50');
+              showDriveAlert('💥 You struck a ' + roadUserLabel +
+                '. Stop immediately and call emergency services.', 6, 3, 'critical');
+              car.speed *= cy.type === 'motorcycle' ? 0.35 : 0.2;
+              cy._hit = true;
+              cy._impactAt = timeRef.current;
+              separateRoadUserAfterImpact(
+                cyclistWorld, car, cy, cy.type === 'motorcycle' ? 1.0 : 1.2);
+              return;
+            }
+            // §2070 applies when overtaking a bicycle in the same direction.
+            // Motorcycles remain collision hazards but are not graded as a
+            // bicycle-specific three-foot passing event.
+            var sameDirection = Math.cos((Number(car.heading) || 0) -
+              (Number(cy.heading) || 0)) > 0.5;
+            var isOvertaking = cy.type === 'cyclist' && sameDirection &&
+              Number(car.speed) > Math.abs(cy.speed || 0) + 0.25;
+            if (!isOvertaking || Math.abs(cyclistRelation.ahead) > 1.7) return;
+            var clearanceFt = worldUnitsToFeet(vehicleSideClearance(
+              car, playerSize, cy, cyclistSize));
+            if (clearanceFt < 3 && !cy._flaggedClose) {
               cy._flaggedClose = true;
               statsRef.current.safetyScore -= 10;
               statsRef.current.cyclistClose++;
               addToast('🚴 Too close! Maine law: 3-foot minimum. -10');
-              eventToastRef.current = { msg: '🚴 3-FOOT LAW VIOLATED. Give cyclists at least 3 feet when passing.', until: timeRef.current + 4 };
-            }
-            if (dist < 0.6) {
-              statsRef.current.crashes++;
-              statsRef.current._lastCrashAt = timeRef.current;
-              statsRef.current.safetyScore -= 50;
-              addToast('💥 Struck a ' + cy.type + '! -50');
-              eventToastRef.current = { msg: '💥 You struck a ' + cy.type + '. In real life this is a serious injury or fatality.', until: timeRef.current + 5 };
-              // Mark hit so the spline lateral-correction in updateCyclists doesn't snap
-              // the cyclist back into the bike lane (the cy.x = -99 alone would visually
-              // blink the cyclist back to its lane within ~0.5s as the perp lerp pulled
-              // it back). With _hit set, the update skips lateral correction.
-              cy._hit = true;
-              cy.x = -99;
+              showDriveAlert('🚴 Leave at least 3 feet between your vehicle and the cyclist.', 4, 2, 'caution');
             }
           });
         };
@@ -12701,10 +14257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         //     at most once per window.
         //   - Min-distance ratchet: when a closer instance of the same
         //     type appears, allow re-announcement at half the window.
-        //   - Direction is derived from the car's heading (left/right/
-        //     ahead) using the same dot-product technique used elsewhere
-        //     for collision detection — keeps semantics consistent on
-        //     curved roads.
+        //   - Direction follows the authored road frame on curves and rotated
+        //     cross streets, with a heading fallback on finite courses.
         // ──────────────────────────────────────────────────────────
         var _spatial = { lastT: { ped: 0, traffic: 0, cyclist: 0 }, lastDist: { ped: 999, traffic: 999, cyclist: 999 } };
         var scanSpatialHazards = function() {
@@ -12712,12 +14266,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var car = carRef.current;
           if (!car) return;
           var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
-          var cosH = Math.cos(car.heading), sinH = Math.sin(car.heading);
-          // Helper: classify position relative to car heading. Returns
-          // { ahead: signed-along-heading, lat: signed-perpendicular, dist }.
-          function relTo(ox, oy) {
-            var dx = ox - car.x, dy = oy - car.y;
-            return { ahead: cosH * dx + sinH * dy, lat: -sinH * dx + cosH * dy, dist: Math.hypot(dx, dy) };
+          var hazardWorld = infiniteWorldRef.current;
+          function relTo(actor) {
+            return roadAwareRelativePosition(hazardWorld, car, actor);
           }
           function tryAnnounce(type, msg, dist, windowMs) {
             var lt = _spatial.lastT[type] || 0;
@@ -12734,7 +14285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           for (var pi = 0; pi < peds.length; pi++) {
             var p = peds[pi];
             if (!p) continue;
-            var pr = relTo(p.x, p.y);
+            var pr = relTo(p);
             if (pr.ahead > 0 && pr.ahead < 12 && Math.abs(pr.lat) < 4) {
               var pSide = pr.lat > 1.5 ? ' on the right' : pr.lat < -1.5 ? ' on the left' : ' ahead';
               var pDart = (p.kind === 'kid' && (p.crossing || (p.dartCooldown != null && p.dartCooldown < 1)));
@@ -12747,7 +14298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           for (var ti = 0; ti < traffic.length; ti++) {
             var t = traffic[ti];
             if (!t) continue;
-            var tr = relTo(t.x, t.y);
+            var tr = relTo(t);
             // Blind spot: ahead in [-2, 0.5], lateral in [1.5, 4.5] either side
             if (tr.ahead > -2 && tr.ahead < 0.5 && Math.abs(tr.lat) > 1.5 && Math.abs(tr.lat) < 4.5) {
               var tSide = tr.lat > 0 ? ' right' : ' left';
@@ -12758,11 +14309,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var cyclists = (cyclistsRef.current || []);
           for (var ci = 0; ci < cyclists.length; ci++) {
             var cy = cyclists[ci];
-            if (!cy) continue;
-            var cr = relTo(cy.x, cy.y);
+            if (!cy || cy._hit) continue;
+            var cr = relTo(cy);
             if (cr.ahead > 0 && cr.ahead < 6 && Math.abs(cr.lat) < 4) {
               var cSide = cr.lat > 0 ? ' on the right' : ' on the left';
-              if (tryAnnounce('cyclist', 'Cyclist' + cSide + ', give space.', cr.dist, 5000)) return;
+              var cLabel = cy.type === 'motorcycle' ? 'Motorcycle' : 'Cyclist';
+              if (tryAnnounce('cyclist', cLabel + cSide + ', give space.', cr.dist, 5000)) return;
             }
           }
         };
@@ -12775,9 +14327,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var nearestDist = Infinity;
           var playerCollisionSize = vehicleFootprint(currentVehicle && currentVehicle.id);
           trafficRef.current.forEach(function(t) {
-            var dx = t.x - car.x;
-            var dy = t.y - car.y;
-            var dist = Math.hypot(dx, dy);
             // Track the nearest same-lane, same-direction vehicle by road station.
             // Euclidean distance and heading-sign comparisons become inaccurate on
             // bends, where world X/Y no longer align with lane direction.
@@ -12824,11 +14373,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (impactSpeed > 30) {
                   statsRef.current.safetyScore -= 40;
                   addToast('💥 HIGH-SPEED COLLISION! -40 safety');
-                  eventToastRef.current = { msg: '💥 Major collision at ' + Math.round(impactSpeed) + ' mph relative speed. In real life, serious injuries.', until: timeRef.current + 5 };
+                  showDriveAlert('💥 Major collision at ' + Math.round(impactSpeed) + ' mph relative speed. In real life, serious injuries.', 5, 3, 'critical');
                 } else if (impactSpeed > 10) {
                   statsRef.current.safetyScore -= 25;
                   addToast('💥 Collision with vehicle! -25 safety');
-                  eventToastRef.current = { msg: '💥 Vehicle collision. Even low-speed crashes cause whiplash and $3,000+ damage.', until: timeRef.current + 4 };
+                  showDriveAlert('💥 Vehicle collision. Even low-speed crashes cause whiplash and $3,000+ damage.', 4, 3, 'critical');
                 } else {
                   statsRef.current.safetyScore -= 10;
                   addToast('💥 Fender bender. -10 safety');
@@ -12843,10 +14392,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var sharedVy = (playerMass * carVy + trafficMass * tVy) / (playerMass + trafficMass);
                 car.speed = (sharedVx * Math.cos(car.heading) + sharedVy * Math.sin(car.heading)) * 0.35;
                 t.speed = (sharedVx * Math.cos(t.heading) + sharedVy * Math.sin(t.heading)) * 0.35;
-                // Push apart to prevent stuck-inside-each-other
-                var pushAngle = Math.atan2(car.y - t.y, car.x - t.x);
-                car.x += Math.cos(pushAngle) * 0.5;
-                car.y += Math.sin(pushAngle) * 0.5;
+                // Keep rear-end separation on the authored lane through bends.
+                separateVehicleAfterImpact(infiniteWorldRef.current, car, t, 0.6);
                 // Queue crash FX at the contact midpoint. severity scales spark count
                 // and HUD-flash intensity (3 buckets matching the safety penalty above).
                 crashFxRef.current.push({
@@ -12877,33 +14424,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           // ── Physical collision with pedestrians ──
           pedsRef.current.forEach(function(p) {
-            var dist = Math.hypot(p.x - car.x, p.y - car.y);
-            if (dist < 0.8 && absSpeed > 1) {
+            var pedestrianRadius = p.kind === 'kid' ? 0.22 : 0.28;
+            var pedestrianOverlap = pointOverlapsVehicle(
+              car, playerCollisionSize, p, pedestrianRadius);
+            if (pedestrianOverlap && absSpeed > 1) {
               if (!p._hitCooldown || timeRef.current - p._hitCooldown > 5) {
                 p._hitCooldown = timeRef.current;
                 statsRef.current.crashes++;
                 statsRef.current._lastCrashAt = timeRef.current;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 PEDESTRIAN STRUCK! -60 safety');
-                eventToastRef.current = { msg: '💥 You struck a pedestrian. In real life, this is a potential fatality and criminal charges.', until: timeRef.current + 6 };
+                showDriveAlert('💥 You struck a pedestrian. In real life, this is a potential fatality and criminal charges.', 6, 3, 'critical');
                 car.speed *= 0.2;
-                // Move ped away
-                p.x += (p.x > car.x ? 2 : -2);
+                separatePedestrianAfterImpact(
+                  infiniteWorldRef.current, car, p, 1.4);
               }
             }
           });
           // ── Emergency vehicle collision ──
           if (emergencyRef.current) {
             var em = emergencyRef.current;
-            var emDist = Math.hypot(em.x - car.x, em.y - car.y);
-            if (emDist < 1.5 && absSpeed > 1 && !em._hitPlayer) {
+            var emSize = vehicleFootprint(emergencyVehicleFootprintType(em.kind));
+            var emCarVx = Math.cos(car.heading) * car.speed;
+            var emCarVy = Math.sin(car.heading) * car.speed;
+            var emVx = Math.cos(em.heading || 0) * (em.speed || 0);
+            var emVy = Math.sin(em.heading || 0) * (em.speed || 0);
+            var emRelativeSpeed = Math.hypot(emCarVx - emVx, emCarVy - emVy);
+            var emergencyOverlap = vehicleRectsOverlap(
+              car, playerCollisionSize, em, emSize);
+            if (emergencyOverlap && emRelativeSpeed > 0.5 &&
+                (absSpeed > 0.5 || Math.abs(em.speed || 0) > 0.5) && !em._hitPlayer) {
               em._hitPlayer = true;
               statsRef.current.crashes++;
               statsRef.current._lastCrashAt = timeRef.current;
               statsRef.current.safetyScore -= 50;
               addToast('💥 STRUCK EMERGENCY VEHICLE! -50 safety');
-              eventToastRef.current = { msg: '💥 You collided with an emergency vehicle. Criminal offense + massive liability.', until: timeRef.current + 5 };
+              showDriveAlert('💥 You collided with an emergency vehicle. Criminal offense + massive liability.', 5, 3, 'critical');
               car.speed *= 0.1;
+              em.speed *= 0.45;
+              separateVehicleAfterImpact(infiniteWorldRef.current, car, em, 0.8);
+              crashFxRef.current.push({
+                x: (car.x + em.x) * 0.5,
+                y: (car.y + em.y) * 0.5,
+                severity: 3,
+                spawnAt: timeRef.current,
+                hudFlashed: false
+              });
             }
           }
         };
@@ -13196,7 +14762,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Small perf cost (~5%) but needed — without it the WebGL buffer is cleared
           // before the screenshot can be read back.
           var renderer = new T.WebGLRenderer({ canvas: cnv, antialias: true, preserveDrawingBuffer: true });
-          renderer.setSize(W, H);
+          // Keep layout ownership in React/CSS. Three's default updateStyle=true
+          // writes fixed pixel dimensions onto the canvas, so a phone rotation or
+          // modal resize leaves the WebGL scene stranded at its old width.
+          renderer.setSize(W, H, false);
 
           // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
           // Headlights / emergency lights / lightning glow at night; mid threshold keeps
@@ -15013,6 +16582,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── 3D Dashboard (attached to camera, visible in cockpit) ──
           var dashGroup = new T.Group();
+          // Analog instruments are useful at desktop sizes, but on a portrait
+          // phone their camera-attached projection grows behind the action dock.
+          // Keep them in one subgroup so compact cockpit views can hide only the
+          // duplicated gauges while retaining the dashboard and steering wheel.
+          var dashboardInstrumentGroup = new T.Group();
+          dashGroup.add(dashboardInstrumentGroup);
           // Dashboard panel (dark surface)
           var dashPanelGeo = new T.BoxGeometry(1.6, 0.35, 0.04);
           var dashPanelMat = new T.MeshLambertMaterial({ color: 0x1a1a2e });
@@ -15068,14 +16643,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var gaugeFaceGeo = new T.CircleGeometry(0.12, 32);
           var gaugeFace = new T.Mesh(gaugeFaceGeo, gaugeFaceMat);
           gaugeFace.position.set(-0.25, -0.28, -0.679);
-          dashGroup.add(gaugeFace);
+          dashboardInstrumentGroup.add(gaugeFace);
           // Speedometer needle (thin red line that rotates)
           var needleGeo = new T.BoxGeometry(0.005, 0.09, 0.002);
           var needleMat = new T.MeshBasicMaterial({ color: 0xff3333 });
           var needleMesh = new T.Mesh(needleGeo, needleMat);
           needleMesh.position.set(-0.25, -0.28, -0.678);
           needleMesh.geometry.translate(0, 0.045, 0); // pivot at bottom
-          dashGroup.add(needleMesh);
+          dashboardInstrumentGroup.add(needleMesh);
           // RPM gauge (smaller, right side)
           // RPM gauge materials (separate from speedometer canvas)
           var rpmBgMat = new T.MeshBasicMaterial({ color: 0x0a0a14 });
@@ -15083,16 +16658,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var rpmBgGeo = new T.CircleGeometry(0.08, 20);
           var rpmBg = new T.Mesh(rpmBgGeo, rpmBgMat);
           rpmBg.position.set(0.25, -0.28, -0.68);
-          dashGroup.add(rpmBg);
+          dashboardInstrumentGroup.add(rpmBg);
           var rpmRingGeo = new T.RingGeometry(0.065, 0.08, 20);
           var rpmRing = new T.Mesh(rpmRingGeo, rpmRingMat2);
           rpmRing.position.set(0.25, -0.28, -0.679);
-          dashGroup.add(rpmRing);
+          dashboardInstrumentGroup.add(rpmRing);
           var rpmNeedleGeo = new T.BoxGeometry(0.004, 0.06, 0.002);
           var rpmNeedle = new T.Mesh(rpmNeedleGeo, needleMat);
           rpmNeedle.position.set(0.25, -0.28, -0.678);
           rpmNeedle.geometry.translate(0, 0.03, 0);
-          dashGroup.add(rpmNeedle);
+          dashboardInstrumentGroup.add(rpmNeedle);
           // Steering wheel (3D ring)
           var swGeo3d = new T.TorusGeometry(0.18, 0.015, 8, 24);
           var swMat3d = new T.MeshLambertMaterial({ color: 0x333333 });
@@ -15279,6 +16854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             blinkerMeshRL: blinkerMeshRL, blinkerMeshRR: blinkerMeshRR,
             exhaustParticles: exhaustParticles,
             dashboardGroup: dashGroup,
+            dashboardInstrumentGroup: dashboardInstrumentGroup,
             speedNeedle: needleMesh,
             rpmNeedle: rpmNeedle,
             steeringWheel3d: sw3d,
@@ -15736,6 +17312,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // 3D Dashboard updates
           if (s3.dashboardGroup) {
             s3.dashboardGroup.visible = (camMode === 'cockpit');
+            var dashboardCssWidth = s3.renderer && s3.renderer.domElement
+              ? s3.renderer.domElement.clientWidth : 0;
+            if (s3.dashboardInstrumentGroup) {
+              s3.dashboardInstrumentGroup.visible = camMode === 'cockpit' &&
+                (!dashboardCssWidth || dashboardCssWidth >= 560);
+            }
             if (camMode === 'cockpit') {
               // Speed needle: rotate from -135° (0 mph) to +135° (max mph).
               // Real analog needles have inertia — they don't snap. Smooth toward target
@@ -15759,7 +17341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var dsGeo = new window.THREE.PlaneGeometry(0.08, 0.03);
                 s3.digitalSpeedMesh = new window.THREE.Mesh(dsGeo, dsMat);
                 s3.digitalSpeedMesh.position.set(-0.25, -0.33, -0.677);
-                s3.dashboardGroup.add(s3.digitalSpeedMesh);
+                (s3.dashboardInstrumentGroup || s3.dashboardGroup).add(s3.digitalSpeedMesh);
               }
               // Update the digital readout every few frames
               if (Math.floor(timeRef.current * 10) % 3 === 0) {
@@ -16612,18 +18194,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Lift the entire cyclist by 0.03 to prevent the torus-wheel bottom from
             // Z-fighting with the road mesh (same fix pattern as the car wheels).
             var cyRoadH = roadSurfacePoseAt(infiniteWorldRef.current, cy.x, cy.y).height;
-            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + 0.03, cy.y - MAP_SIZE / 2);
+            var cyImpactLift = cy._impactPose ? 0.12 : 0.03;
+            m.position.set(cy.x - MAP_SIZE / 2, cyRoadH + cyImpactLift, cy.y - MAP_SIZE / 2);
             // Bike was built with local +Z = forward, but motion uses (cos h, sin h)
             // in world (X, Z) and every other vehicle was built with +X = forward.
             // Offset by π/2 so the bike faces its actual travel direction (otherwise
             // cyclists render sideways across the lane — a.k.a. "horizontal").
             m.rotation.y = Math.PI / 2 - cy.heading;
+            // A restrained static lean communicates that the rider/bike stopped
+            // abruptly without graphic animation or an unrealistic disappearance.
+            m.rotation.z = cy._impactPose
+              ? (cy._impactSide || 1) * (isMoto ? 0.38 : 0.55) : 0;
           });
 
-          // Wildlife — built ONCE per spawn and repositioned each frame. The old
-          // code cleared + rebuilt the whole creature every frame without ever
-          // disposing the orphaned geometries/materials: GC thrash + a steady
-          // GPU leak for as long as any moose/deer/dog/child was on screen.
+          // Roadside hazards are cached per spawn. Landmark vehicles get
+          // recognizable, metre-scaled models instead of generic animal boxes.
           var wGroup = s3.wildlifeGroup;
           var _clearWl = function() {
             while (wGroup.children.length > 0) {
@@ -16638,28 +18223,223 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (s3._wlKey) _clearWl();
           } else {
             var wl = wildlifeRef.current;
-            var wlKey = wl.kind === 'child' ? 'child' : ('box_' + wl.mass);
+            var wlVehicleAppearance = landmarkVehicleAppearance(wl.kind);
+            var wlKey = wlVehicleAppearance ? ('vehicle_' + wl.kind)
+              : (wl.kind === 'child' || wl.kind === 'pedestrian' || wl.kind === 'ball'
+                ? wl.kind : ('animal_' + wl.mass));
             if (s3._wlKey !== wlKey) {
               _clearWl();
-              if (wl.kind === 'child') {
+              if (wlVehicleAppearance) {
+                var hazardVehicleGroup = new T.Group();
+                var hvBodyMat = new T.MeshLambertMaterial({ color: wlVehicleAppearance.color });
+                var hvBody = new T.Mesh(new T.BoxGeometry(
+                  wlVehicleAppearance.bodyLength,
+                  wlVehicleAppearance.bodyHeight,
+                  wlVehicleAppearance.bodyWidth), hvBodyMat);
+                hvBody.position.y = wlVehicleAppearance.bodyHeight * 0.5 + 0.2;
+                hvBody.castShadow = true;
+                hazardVehicleGroup.add(hvBody);
+                var hvAccentMat = new T.MeshBasicMaterial({ color: wlVehicleAppearance.accent });
+                var hvStripe = new T.Mesh(new T.BoxGeometry(
+                  wlVehicleAppearance.bodyLength * 0.82, 0.1,
+                  wlVehicleAppearance.bodyWidth + 0.018), hvAccentMat);
+                hvStripe.position.y = wlVehicleAppearance.bodyHeight * 0.62 + 0.2;
+                hazardVehicleGroup.add(hvStripe);
+                var hvCabin = new T.Mesh(new T.BoxGeometry(
+                  wlVehicleAppearance.bodyLength * (wlVehicleAppearance.stopArm ? 0.88 : 0.48),
+                  wlVehicleAppearance.stopArm ? 0.28 : 0.42,
+                  wlVehicleAppearance.bodyWidth * 0.88),
+                  new T.MeshLambertMaterial({ color: wlVehicleAppearance.color }));
+                hvCabin.position.set(wlVehicleAppearance.stopArm ? 0 : -0.12,
+                  wlVehicleAppearance.bodyHeight + 0.34, 0);
+                hazardVehicleGroup.add(hvCabin);
+                var hvGlassMat = new T.MeshBasicMaterial({
+                  color: 0x16324a, transparent: true, opacity: 0.78 });
+                var hvWindowCount = wlVehicleAppearance.stopArm ? 5 : 2;
+                for (var hvwi = 0; hvwi < hvWindowCount; hvwi++) {
+                  var hvWindowX = wlVehicleAppearance.stopArm
+                    ? -wlVehicleAppearance.bodyLength * 0.32 + hvwi *
+                      (wlVehicleAppearance.bodyLength * 0.16)
+                    : (hvwi - 0.5) * wlVehicleAppearance.bodyLength * 0.22;
+                  [1, -1].forEach(function(hvSide) {
+                    var hvWindow = new T.Mesh(new T.BoxGeometry(
+                      wlVehicleAppearance.stopArm
+                        ? wlVehicleAppearance.bodyLength * 0.115
+                        : wlVehicleAppearance.bodyLength * 0.16,
+                      wlVehicleAppearance.stopArm ? 0.55 : 0.34, 0.018), hvGlassMat);
+                    hvWindow.position.set(hvWindowX,
+                      wlVehicleAppearance.bodyHeight + 0.34,
+                      hvSide * (wlVehicleAppearance.bodyWidth * 0.5 + 0.012));
+                    hazardVehicleGroup.add(hvWindow);
+                  });
+                }
+                if (wl.kind === 'ambulance') {
+                  var hvMedicalMat = new T.MeshBasicMaterial({ color: 0xdc2626 });
+                  [1, -1].forEach(function(hvMedicalSide) {
+                    var hvCrossH = new T.Mesh(
+                      new T.BoxGeometry(0.78, 0.14, 0.025), hvMedicalMat);
+                    var hvCrossV = new T.Mesh(
+                      new T.BoxGeometry(0.14, 0.72, 0.026), hvMedicalMat);
+                    hvCrossH.position.set(0.65,
+                      wlVehicleAppearance.bodyHeight * 0.58 + 0.2,
+                      hvMedicalSide * (wlVehicleAppearance.bodyWidth * 0.5 + 0.014));
+                    hvCrossV.position.copy(hvCrossH.position);
+                    hazardVehicleGroup.add(hvCrossH);
+                    hazardVehicleGroup.add(hvCrossV);
+                  });
+                } else if (wl.kind === 'firetruck') {
+                  var hvLadderMat = new T.MeshLambertMaterial({ color: 0xcbd5e1 });
+                  [-0.34, 0.34].forEach(function(hvLadderSide) {
+                    var hvLadderRail = new T.Mesh(
+                      new T.BoxGeometry(4.8, 0.08, 0.08), hvLadderMat);
+                    hvLadderRail.position.set(0.5,
+                      wlVehicleAppearance.bodyHeight + 0.55, hvLadderSide);
+                    hazardVehicleGroup.add(hvLadderRail);
+                  });
+                  for (var hvRungIndex = -4; hvRungIndex <= 4; hvRungIndex++) {
+                    var hvLadderRung = new T.Mesh(
+                      new T.BoxGeometry(0.08, 0.07, 0.76), hvLadderMat);
+                    hvLadderRung.position.set(0.5 + hvRungIndex * 0.52,
+                      wlVehicleAppearance.bodyHeight + 0.56, 0);
+                    hazardVehicleGroup.add(hvLadderRung);
+                  }
+                } else if (wl.kind === 'cruiser') {
+                  var hvDoorMat = new T.MeshLambertMaterial({ color: 0xf8fafc });
+                  [1, -1].forEach(function(hvDoorSide) {
+                    var hvDoorPanel = new T.Mesh(
+                      new T.BoxGeometry(1.45, 0.42, 0.025), hvDoorMat);
+                    hvDoorPanel.position.set(-0.15,
+                      wlVehicleAppearance.bodyHeight * 0.62 + 0.2,
+                      hvDoorSide * (wlVehicleAppearance.bodyWidth * 0.5 + 0.014));
+                    hazardVehicleGroup.add(hvDoorPanel);
+                  });
+                } else if (wl.kind === 'tractor') {
+                  var hvTractorRoof = new T.Mesh(
+                    new T.BoxGeometry(1.7, 0.12, 1.65),
+                    new T.MeshLambertMaterial({ color: 0xf97316 }));
+                  hvTractorRoof.position.set(-0.75,
+                    wlVehicleAppearance.bodyHeight + 0.74, 0);
+                  hazardVehicleGroup.add(hvTractorRoof);
+                  var hvExhaust = new T.Mesh(
+                    new T.CylinderGeometry(0.07, 0.09, 1.0, 8),
+                    new T.MeshLambertMaterial({ color: 0x334155 }));
+                  hvExhaust.position.set(0.75,
+                    wlVehicleAppearance.bodyHeight + 0.5, 0.62);
+                  hazardVehicleGroup.add(hvExhaust);
+                }
+                var hvWheelMat = new T.MeshLambertMaterial({ color: 0x0b0b0c });
+                var hvWheelRadius = wlVehicleAppearance.stopArm ? 0.46
+                  : wl.kind === 'firetruck' ? 0.48
+                  : wl.kind === 'tractor' ? 0.55
+                  : wl.kind === 'ambulance' ? 0.36 : 0.32;
+                var hvWheelWidth = wlVehicleAppearance.stopArm || wl.kind === 'firetruck'
+                  ? 0.26 : 0.21;
+                var hvAxle = wlVehicleAppearance.bodyLength * 0.31;
+                [[-hvAxle, 1], [-hvAxle, -1], [hvAxle, 1], [hvAxle, -1]].forEach(function(hvWheelPos) {
+                  var hvThisWheelRadius = wl.kind === 'tractor'
+                    ? (hvWheelPos[0] < 0 ? 0.68 : 0.34) : hvWheelRadius;
+                  var hvWheel = new T.Mesh(new T.CylinderGeometry(
+                    hvThisWheelRadius, hvThisWheelRadius, hvWheelWidth, 12), hvWheelMat);
+                  hvWheel.rotation.x = Math.PI / 2;
+                  hvWheel.position.set(hvWheelPos[0], hvThisWheelRadius + 0.04,
+                    hvWheelPos[1] * wlVehicleAppearance.bodyWidth * 0.48);
+                  hazardVehicleGroup.add(hvWheel);
+                });
+                hazardVehicleGroup.userData.rrHazardFlashers = [];
+                if (wlVehicleAppearance.stopArm) {
+                  var hvStopArmY = wlVehicleAppearance.bodyHeight * 0.62 + 0.2;
+                  var hvArm = new T.Mesh(new T.BoxGeometry(0.08, 0.1, 0.9),
+                    new T.MeshBasicMaterial({ color: 0xdc2626 }));
+                  hvArm.position.set(0.2, hvStopArmY,
+                    wlVehicleAppearance.bodyWidth * 0.5 + 0.43);
+                  hazardVehicleGroup.add(hvArm);
+                  var hvStopSign = new T.Mesh(new T.CircleGeometry(0.23, 8),
+                    new T.MeshBasicMaterial({ color: 0xdc2626, side: T.DoubleSide }));
+                  hvStopSign.position.set(0.2, hvStopArmY,
+                    wlVehicleAppearance.bodyWidth * 0.5 + 0.9);
+                  hazardVehicleGroup.add(hvStopSign);
+                  [-1, 1].forEach(function(hvFlashX, hvFlashIndex) {
+                    var hvFlashMat = new T.MeshBasicMaterial({ color: 0x4a0000 });
+                    var hvFlash = new T.Mesh(
+                      new T.SphereGeometry(0.1, 8, 6), hvFlashMat);
+                    hvFlash.position.set(
+                      hvFlashX * wlVehicleAppearance.bodyLength * 0.34,
+                      wlVehicleAppearance.bodyHeight + 0.55, 0);
+                    hazardVehicleGroup.add(hvFlash);
+                    hazardVehicleGroup.userData.rrHazardFlashers.push({
+                      material: hvFlashMat, phase: hvFlashIndex, color: 0xff1f1f });
+                  });
+                } else if (wlVehicleAppearance.emergency) {
+                  [-0.3, 0.3].forEach(function(hvLightZ, hvLightIndex) {
+                    var hvLightMat = new T.MeshBasicMaterial({ color: 0x2b1010 });
+                    var hvLight = new T.Mesh(
+                      new T.BoxGeometry(0.34, 0.1, 0.16), hvLightMat);
+                    hvLight.position.set(0,
+                      wlVehicleAppearance.bodyHeight + 0.65, hvLightZ);
+                    hazardVehicleGroup.add(hvLight);
+                    hazardVehicleGroup.userData.rrHazardFlashers.push({
+                      material: hvLightMat, phase: hvLightIndex,
+                      color: hvLightIndex ? 0x2563eb : 0xef4444 });
+                  });
+                }
+                wGroup.add(hazardVehicleGroup);
+                s3._wlNode = hazardVehicleGroup;
+              } else if (wl.kind === 'child' || wl.kind === 'pedestrian') {
                 var childGroup = new T.Group();
-                var bodyMat = new T.MeshLambertMaterial({ color: 0xfbbf24 });
-                var torsoChild = new T.Mesh(new T.CylinderGeometry(0.13, 0.16, 0.45, 8), bodyMat);
-                torsoChild.position.y = 0.4;
+                var isAdultPedestrian = wl.kind === 'pedestrian';
+                var personScale = isAdultPedestrian ? 1.25 : 1;
+                var bodyMat = new T.MeshLambertMaterial({
+                  color: isAdultPedestrian ? 0x2563eb : 0xfbbf24 });
+                var torsoChild = new T.Mesh(new T.CylinderGeometry(
+                  0.13 * personScale, 0.16 * personScale,
+                  0.45 * personScale, 8), bodyMat);
+                torsoChild.position.y = 0.4 * personScale;
                 torsoChild.castShadow = true;
                 childGroup.add(torsoChild);
-                var headChild = new T.Mesh(new T.SphereGeometry(0.13, 10, 8), new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
-                headChild.position.y = 0.78;
+                var headChild = new T.Mesh(new T.SphereGeometry(
+                  0.13 * personScale, 10, 8),
+                  new T.MeshLambertMaterial({ color: 0xf4c8a8 }));
+                headChild.position.y = 0.78 * personScale;
                 childGroup.add(headChild);
-                var packChild = new T.Mesh(new T.BoxGeometry(0.18, 0.22, 0.12), new T.MeshLambertMaterial({ color: 0xdc2626 }));
-                packChild.position.set(-0.13, 0.45, 0);
-                childGroup.add(packChild);
+                [-1, 1].forEach(function(personSide) {
+                  var personLeg = new T.Mesh(new T.CylinderGeometry(
+                    0.045 * personScale, 0.05 * personScale,
+                    0.32 * personScale, 6),
+                    new T.MeshLambertMaterial({ color: 0x1f2937 }));
+                  personLeg.position.set(personSide * 0.07 * personScale,
+                    0.16 * personScale, 0);
+                  childGroup.add(personLeg);
+                });
+                if (!isAdultPedestrian) {
+                  var packChild = new T.Mesh(
+                    new T.BoxGeometry(0.18, 0.22, 0.12),
+                    new T.MeshLambertMaterial({ color: 0xdc2626 }));
+                  packChild.position.set(-0.13, 0.45, 0);
+                  childGroup.add(packChild);
+                }
                 wGroup.add(childGroup);
                 s3._wlNode = childGroup;
+              } else if (wl.kind === 'ball') {
+                var ballGroup = new T.Group();
+                var ballMesh = new T.Mesh(new T.SphereGeometry(0.22, 14, 10),
+                  new T.MeshLambertMaterial({ color: 0xf8fafc }));
+                ballMesh.position.y = 0.22;
+                ballMesh.castShadow = true;
+                ballGroup.add(ballMesh);
+                [[0.16, 0.27, 0], [-0.13, 0.18, 0.11], [0, 0.13, -0.15]].forEach(function(spotPos) {
+                  var ballSpot = new T.Mesh(new T.SphereGeometry(0.055, 7, 5),
+                    new T.MeshBasicMaterial({ color: 0x111827 }));
+                  ballSpot.position.set(spotPos[0], spotPos[1], spotPos[2]);
+                  ballGroup.add(ballSpot);
+                });
+                wGroup.add(ballGroup);
+                s3._wlNode = ballGroup;
               } else {
-                var wSize0 = wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4;
+                var wSize0 = wl.mass === 'massive' ? 1.5
+                  : wl.mass === 'medium' ? 0.8 : 0.4;
                 var wGeo = new T.BoxGeometry(wSize0 * 1.5, wSize0, wSize0 * 0.6);
-                var wMat = new T.MeshLambertMaterial({ color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
+                var wMat = new T.MeshLambertMaterial({
+                  color: wl.mass === 'massive' ? 0x4a3520 : 0x8b6914 });
                 var wMesh = new T.Mesh(wGeo, wMat);
                 wMesh.castShadow = true;
                 wGroup.add(wMesh);
@@ -16667,12 +18447,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               s3._wlKey = wlKey;
             }
-            // Per-frame: follow the creature. Road height keeps it ON the road
-            // instead of at world Y=0 (which on hills puts it under the surface).
-            var wlRoadH = roadSurfacePoseAt(infiniteWorldRef.current, wl.x, wl.y).height;
+            var wlRoadH = roadSurfacePoseAt(
+              infiniteWorldRef.current, wl.x, wl.y).height;
             if (s3._wlNode) {
-              var wlYOff = wl.kind === 'child' ? 0 : ((wl.mass === 'massive' ? 1.5 : wl.mass === 'medium' ? 0.8 : 0.4) / 2);
-              s3._wlNode.position.set(wl.x - MAP_SIZE / 2, wlRoadH + wlYOff, wl.y - MAP_SIZE / 2);
+              var wlCategory = hazardActorCategory(wl);
+              var wlIsNaturalAnimal = wlCategory === 'wildlife';
+              var wlYOff = wlIsNaturalAnimal
+                ? ((wl.mass === 'massive' ? 1.5
+                  : wl.mass === 'medium' ? 0.8 : 0.4) / 2) : 0;
+              var wlImpactLift = wl._impactPose && wlIsNaturalAnimal
+                ? wlYOff * 0.2 : 0;
+              s3._wlNode.position.set(wl.x - MAP_SIZE / 2,
+                wlRoadH + wlYOff + wlImpactLift, wl.y - MAP_SIZE / 2);
+              s3._wlNode.rotation.y = -(Number(wl.heading) || 0);
+              s3._wlNode.rotation.z = wl._impactPose && wlIsNaturalAnimal
+                ? (wl._impactSide || 1) * 0.24 : 0;
+              var wlFlashers = s3._wlNode.userData.rrHazardFlashers || [];
+              var wlFlashPhase = Math.floor(timeRef.current * 4) % 2;
+              var wlFlashersActive = wl.kind !== 'schoolbus_arm' ||
+                wl.stopLightsActive !== false;
+              wlFlashers.forEach(function(wlFlasher) {
+                wlFlasher.material.color.setHex(wlFlashersActive &&
+                  wlFlashPhase === wlFlasher.phase
+                  ? wlFlasher.color : 0x3b1010);
+              });
             }
           }
 
@@ -17004,15 +18802,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var scn_ = s3.scene;
                 var originalBg = scn_.background;
                 scn_.background = new T.Color(0xccddff);
-                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 0.8; scn_.background = originalBg; }, 70);
-                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 2.8; scn_.background = new T.Color(0xaabbdd); }, 140);
-                setTimeout(function() { if (s3.lightningLight) s3.lightningLight.intensity = 0; scn_.background = originalBg; }, 260);
+                var lightningSceneLive = function() {
+                  return drivingRef.current && threeRef.current === s3 && s3.scene === scn_;
+                };
+                safeTimeout(function() {
+                  if (!lightningSceneLive()) return;
+                  if (s3.lightningLight) s3.lightningLight.intensity = 0.8;
+                  scn_.background = originalBg;
+                }, 70);
+                safeTimeout(function() {
+                  if (!lightningSceneLive()) return;
+                  if (s3.lightningLight) s3.lightningLight.intensity = 2.8;
+                  scn_.background = new T.Color(0xaabbdd);
+                }, 140);
+                safeTimeout(function() {
+                  if (!lightningSceneLive()) return;
+                  if (s3.lightningLight) s3.lightningLight.intensity = 0;
+                  scn_.background = originalBg;
+                }, 260);
                 // Deep thunder rumble — random delay 1-6s after the flash (real physics: speed of sound).
                 try {
                   var thunderDelay = 1000 + Math.random() * 5000;
-                  setTimeout(function() {
+                  safeTimeout(function() {
+                    if (!lightningSceneLive() || pausedRef.current ||
+                        (dataRef.current && dataRef.current.calmDrive)) return;
                     var ac = audioRef.current && audioRef.current.ctx;
-                    if (!ac) return;
+                    if (!ac || ac.state !== 'running') return;
                     var tBuf = ac.createBuffer(1, Math.floor(ac.sampleRate * 1.8), ac.sampleRate);
                     var tD = tBuf.getChannelData(0);
                     for (var tbi = 0; tbi < tD.length; tbi++) {
@@ -22433,9 +24248,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Render (bloom composer when available; the rear-view scissor pass below stays plain)
           var _ac=s3.renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ s3.renderer._alloComposer=null; s3.renderer.render(s3.scene, s3.camera); } } else { s3.renderer.render(s3.scene, s3.camera); }
 
-          // Rear-view mirror — small viewport in cockpit mode showing what's behind.
-          // Uses scissor test to render a second pass into a top-center rectangle.
-          if (cameraModeRef.current === 'cockpit') {
+          // Real mirror views use rear-facing scene cameras. Projection X is
+          // inverted so left/right behaves like reflective glass.
+          s3._realRearMirror = false;
+          s3._realSideMirrors = false;
+          if (cameraModeRef.current === 'cockpit' && dataRef.current.realMirrors !== false) {
             if (!s3._mirrorCam) {
               s3._mirrorCam = new T.PerspectiveCamera(55, 3.2, 0.1, 100);
             }
@@ -22446,18 +24263,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var behindZ = carWorldZ - Math.sin(car.heading) * 8;
             mc.lookAt(behindX, roadH + 0.9, behindZ);
             // Scissor rectangle: centered top, ~20% width × 8% height.
-            var rW = s3.renderer.domElement.width;
-            var rH = s3.renderer.domElement.height;
+            // WebGLRenderer viewport/scissor inputs are CSS pixels; the canvas
+            // width/height attributes are drawing-buffer pixels (already scaled
+            // by devicePixelRatio). Using those attributes here scaled the mirror
+            // pass twice on HiDPI screens and let it spill across the windshield.
+            var mirrorRenderSize = s3.renderer.getSize(new T.Vector2());
+            var rW = Math.max(1, Math.round(mirrorRenderSize.x));
+            var rH = Math.max(1, Math.round(mirrorRenderSize.y));
             var mw = Math.floor(rW * 0.22);
             var mh = Math.floor(rH * 0.10);
             var mx = Math.floor((rW - mw) / 2);
             var my = rH - mh - Math.floor(rH * 0.02); // top of canvas (WebGL Y is from bottom)
+            mc.aspect = mw / mh;
+            mc.updateProjectionMatrix();
+            mc.projectionMatrix.elements[0] *= -1;
+            var oldMirrorCarVisible = s3.playerCarGroup.visible;
             s3.renderer.setScissorTest(true);
             s3.renderer.setScissor(mx, my, mw, mh);
             s3.renderer.setViewport(mx, my, mw, mh);
             s3.playerCarGroup.visible = false;
             s3.renderer.render(s3.scene, mc);
+            s3._realRearMirror = true;
+            if (rW >= 680) {
+              var sideW = Math.floor(rW * 0.15), sideH = Math.floor(rH * 0.085);
+              var sideY = rH - sideH - Math.floor(rH * 0.035);
+              var mirrorLeftX = -Math.sin(car.heading), mirrorLeftZ = Math.cos(car.heading);
+              if (!s3._leftMirrorCam) s3._leftMirrorCam = new T.PerspectiveCamera(62, sideW / sideH, 0.1, 140);
+              if (!s3._rightMirrorCam) s3._rightMirrorCam = new T.PerspectiveCamera(62, sideW / sideH, 0.1, 140);
+              [s3._leftMirrorCam, s3._rightMirrorCam].forEach(function(sideCam, sideIndex) {
+                var side = sideIndex === 0 ? 1 : -1;
+                sideCam.position.copy(s3.camera.position);
+                sideCam.position.x += mirrorLeftX * side * 0.8;
+                sideCam.position.z += mirrorLeftZ * side * 0.8;
+                sideCam.aspect = sideW / sideH;
+                sideCam.updateProjectionMatrix();
+                sideCam.projectionMatrix.elements[0] *= -1;
+                sideCam.lookAt(carWorldX - Math.cos(car.heading) * 10 + mirrorLeftX * side * 3.2, roadH + 0.9, carWorldZ - Math.sin(car.heading) * 10 + mirrorLeftZ * side * 3.2);
+                var sideX = sideIndex === 0 ? Math.floor(rW * 0.02) : rW - Math.floor(rW * 0.02) - sideW;
+                s3.renderer.setScissor(sideX, sideY, sideW, sideH);
+                s3.renderer.setViewport(sideX, sideY, sideW, sideH);
+                s3.renderer.render(s3.scene, sideCam);
+              });
+              s3._realSideMirrors = true;
+            }
             // Restore
+            s3.playerCarGroup.visible = oldMirrorCarVisible;
             s3.renderer.setScissorTest(false);
             s3.renderer.setViewport(0, 0, rW, rH);
           }
@@ -22470,12 +24320,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // was frozen at drive start — pressing L updated the score logic but
           // the headlight cone, beam label, and warning strip never changed.
           var d = dataRef.current || {};
+          var hudPreset = d.hudPreset || (d.calmDrive ? 'calm' : 'driver');
+          var hudCompact = W < 560;
+          // Dense force/RPM instrumentation does not fit safely beside the
+          // primary driving controls on a phone. Compact mode preserves the
+          // safety-critical cluster and restores the selected preset at wider sizes.
+          var hudScience = !hudCompact && (hudPreset === 'science' || hudPreset === 'instructor');
+          var hudInstructor = !hudCompact && hudPreset === 'instructor';
+          var hudCalm = hudPreset === 'calm';
+          var hudTextScale = Math.max(1, Math.min(1.35, Number(d.hudTextScale) || (hudCalm ? 1.18 : 1)));
           var gfx = canvas.getContext('2d');
+          var themeKey = document.documentElement.className || 'default';
+          if (!statsRef.current._hudPalette || statsRef.current._hudPalette.key !== themeKey) {
+            var themeStyle = getComputedStyle(document.documentElement);
+            statsRef.current._hudPalette = {
+              key: themeKey,
+              accent: themeStyle.getPropertyValue('--rr-cyan').trim() || '#22d3ee',
+              amber: themeStyle.getPropertyValue('--rr-amber').trim() || '#fbbf24',
+              blue: themeStyle.getPropertyValue('--rr-blue').trim() || '#60a5fa'
+            };
+          }
+          var hudPalette = statsRef.current._hudPalette;
           gfx.clearRect(0, 0, W, H);
           // Impact flash: red vignette right after a collision. We look at the most
           // recent crash event in crashFxRef and fade by age (0–0.4s window).
           // Severity 3 = bright red, severity 1 = subtle. Reduced motion suppresses it.
-          if (crashFxRef.current.length && !reducedMotionRef.current && !calmDriveRef.current) {
+          if (crashFxRef.current.length && !reducedMotionRef.current && !calmDriveRef.current && !hudCalm) {
             var latestCfx = crashFxRef.current[crashFxRef.current.length - 1];
             var cfxAge = timeRef.current - latestCfx.spawnAt;
             if (cfxAge < 0.4) {
@@ -22611,7 +24481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillRect(0, H - 96, W, 96);
           // ── Breathing top bar: cyan edge pulses at idle, brightens with speed ──
           // Gives the dashboard a "live" feel like a modern car cluster at startup.
-          var breathPulse = 0.7 + 0.3 * Math.sin(timeRef.current * 1.3);
+          var breathPulse = hudCalm ? 1 : 0.7 + 0.3 * Math.sin(timeRef.current * 1.3);
           var speedBoost = Math.min(0.25, Math.abs(car.speed) * 0.02); // extra glow at speed
           var edgeAlpha = 0.7 + speedBoost + 0.1 * breathPulse;
           var edgeGrad = gfx.createLinearGradient(0, 0, W, 0);
@@ -22630,7 +24500,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // ── Speedometer: dual-ring digital gauge ──
-          var gaugeX = 62, gaugeY = H - 50, gaugeR = 40;
+          var gaugeX = hudCompact ? 55 : 62;
+          var gaugeY = hudCompact ? H - 44 : H - 50;
+          var gaugeR = hudCompact ? 34 : 40;
           var maxGauge = Math.max(80, hudPostedLimitMph + 30);
           // Outer ring background (dim)
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, 0, false);
@@ -22649,7 +24521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           stats._displaySpeed += (speedMph - stats._displaySpeed) * 0.14;
           var shownSpeed = stats._displaySpeed;
           var needleAngle = Math.PI + (Math.min(shownSpeed, maxGauge) / maxGauge) * Math.PI;
-          var activeColor = speedMph > hudPostedLimitMph + 5 ? '#ef4444' : speedMph > hudPostedLimitMph ? '#f59e0b' : '#22d3ee';
+          var activeColor = speedMph > hudPostedLimitMph + 5 ? '#ef4444' : speedMph > hudPostedLimitMph ? hudPalette.amber : hudPalette.accent;
           gfx.shadowColor = activeColor; gfx.shadowBlur = 8;
           gfx.beginPath(); gfx.arc(gaugeX, gaugeY, gaugeR, Math.PI, needleAngle, false);
           gfx.strokeStyle = activeColor; gfx.lineWidth = 4; gfx.stroke();
@@ -22671,7 +24543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Digital speed readout in the center — matches the smoothed needle
           gfx.shadowColor = activeColor; gfx.shadowBlur = 12;
           gfx.fillStyle = activeColor;
-          gfx.font = 'bold 28px "Segoe UI", system-ui, sans-serif';
+          gfx.font = 'bold ' + Math.round((hudCompact ? 24 : 28) * Math.min(hudTextScale, hudCompact ? 1.18 : 1.35)) + 'px "Segoe UI", system-ui, sans-serif';
           gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
           gfx.fillText(Math.round(shownSpeed), gaugeX, gaugeY - 4);
           gfx.shadowBlur = 0;
@@ -22690,6 +24562,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── RPM tachometer — half-ring gauge mirroring the speedometer ──
           // Fake RPM computed from throttle + speed. Revs spike on throttle, settle
           // at cruising, drop when braking/off-gas. Max ~6000 with 5500 redline.
+          if (hudScience) {
           if (stats._displayRpm == null) stats._displayRpm = 800;
           var targetRpm = 800 + (car.throttle || 0) * 3200 + Math.abs(car.speed) * 180;
           if (car.brake > 0.3 && Math.abs(car.speed) > 2) targetRpm *= 0.8;
@@ -22724,6 +24597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText(Math.round(stats._displayRpm / 100) / 10, rpmX, rpmY - 4);
           gfx.fillStyle = '#94a3b8'; gfx.font = '7px system-ui';
           gfx.fillText('x1000 RPM', rpmX, rpmY + 8);
+          }
 
           // ── Dashboard turn signal arrows — big green flashing chevrons ──
           // Two arrows flanking the speedometer, blink in sync with the signal.
@@ -22748,8 +24622,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           };
           var leftBlinkLit = blinkerRef.current === -1 && blinkVisible;
           var rightBlinkLit = blinkerRef.current === 1 && blinkVisible;
-          drawArrow(gaugeX - gaugeR - 22, gaugeY - 30, -1, leftBlinkLit);
-          drawArrow(gaugeX + gaugeR + 40, gaugeY - 30, 1, rightBlinkLit);
+          if (hudCompact) {
+            if (leftBlinkLit) drawArrow(W / 2 - 14, H - 78, -1, true);
+            if (rightBlinkLit) drawArrow(W / 2 + 14, H - 78, 1, true);
+          } else {
+            drawArrow(gaugeX - gaugeR - 22, gaugeY - 30, -1, leftBlinkLit);
+            drawArrow(gaugeX + gaugeR + 40, gaugeY - 30, 1, rightBlinkLit);
+          }
 
           // ── Steering wheel indicator (small icon below speedometer) ──
           // Rotates with steering input (-1 full left, +1 full right).
@@ -22771,22 +24650,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Gear indicator + RPM-style bar (left of speedometer) ──
           var gearTxt = gearRef.current || 'P';
           var gearColors = { P: '#3b82f6', R: '#f59e0b', D: '#22c55e' };
-          gfx.fillStyle = 'rgba(15,23,42,0.8)';
-          gfx.beginPath();
-          if (gfx.roundRect) { gfx.roundRect(10, H - 80, 38, 22, 5); } else { gfx.rect(10, H - 80, 38, 22); }
-          gfx.fill();
-          ['P','R','D'].forEach(function(g, gi) {
-            var active = gearTxt === g;
-            gfx.fillStyle = active ? gearColors[g] : '#475569';
-            gfx.font = (active ? 'bold ' : '') + '11px "Segoe UI"';
-            gfx.fillText(g, 18 + gi * 12, H - 64);
-          });
+          if (!hudCompact) {
+            gfx.fillStyle = 'rgba(15,23,42,0.8)';
+            gfx.beginPath();
+            if (gfx.roundRect) { gfx.roundRect(10, H - 80, 38, 22, 5); } else { gfx.rect(10, H - 80, 38, 22); }
+            gfx.fill();
+            ['P','R','D'].forEach(function(g, gi) {
+              var active = gearTxt === g;
+              gfx.fillStyle = active ? gearColors[g] : '#475569';
+              gfx.font = (active ? 'bold ' : '') + '11px "Segoe UI"';
+              gfx.fillText(g, 18 + gi * 12, H - 64);
+            });
+          }
           // Warning light strip — shows active indicator lights like a real car
-          var warnX = 10, warnY = H - 54;
+          var warnX = hudCompact ? 116 : 10;
+          var warnY = hudCompact ? H - 88 : H - 54;
           var warnIcons = [];
           if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: __alloT('stem.roadready.high_beams', 'High beams') });
-          if (blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: __alloT('stem.roadready.left_signal', 'Left signal') });
-          if (blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: __alloT('stem.roadready.right_signal', 'Right signal') });
+          if (!hudCompact && blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: __alloT('stem.roadready.left_signal', 'Left signal') });
+          if (!hudCompact && blinkerRef.current === 1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '►', color: '#22c55e', title: __alloT('stem.roadready.right_signal', 'Right signal') });
           if (car.brake > 0.3) warnIcons.push({ icon: '🛑', color: '#ef4444', title: __alloT('stem.roadready.braking', 'Braking') });
           if (skidRef.current && skidRef.current.active) warnIcons.push({ icon: '⚠', color: '#f59e0b', title: __alloT('stem.roadready.traction_loss', 'Traction loss') });
           if (tireDynamicsRef.current && tireDynamicsRef.current.absActive) warnIcons.push({ icon: 'ABS', color: '#f59e0b', title: 'Anti-lock brakes active' });
@@ -22800,10 +24682,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
 
           // MPG readout (center-ish)
+          if (hudScience) {
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 20px monospace'; gfx.textAlign = 'center';
           gfx.fillText(avgMpg > 0 && avgMpg < 999 ? avgMpg.toFixed(1) : '—', W / 2, H - 40);
           gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
           gfx.fillText(veh.type === 'electric' ? 'MPGe AVG' : 'MPG AVG', W / 2, H - 22);
+          }
 
           // ── Fuel gauge — vertical bar on the right side of MPG readout ──
           // fuelUsed accumulates GALLONS (miles/MPG + idle gal/h), but fuelCap is
@@ -22817,7 +24701,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var fuelRemaining = Math.max(0, tankCap - (stats.fuelUsed || 0));
           var fuelFrac = fuelRemaining / tankCap;
           var fuelLabel = veh.type === 'electric' ? 'BAT' : 'FUEL';
-          var fgX = W / 2 + 60, fgY = H - 62, fgW = 12, fgH = 44;
+          var fgX = W / 2 + (hudCompact ? 30 : 60);
+          var fgY = hudCompact ? H - 60 : H - 62;
+          var fgW = 12, fgH = hudCompact ? 30 : 44;
           // Frame
           gfx.fillStyle = 'rgba(15,23,42,0.9)'; gfx.fillRect(fgX - 1, fgY - 1, fgW + 2, fgH + 2);
           gfx.strokeStyle = '#475569'; gfx.lineWidth = 1; gfx.strokeRect(fgX - 1, fgY - 1, fgW + 2, fgH + 2);
@@ -22833,12 +24719,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.beginPath(); gfx.moveTo(fgX, ty); gfx.lineTo(fgX + fgW, ty); gfx.stroke();
           });
           // E / F labels
-          gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px "Segoe UI"'; gfx.textAlign = 'center';
-          gfx.fillText('F', fgX + fgW / 2, fgY - 3);
-          gfx.fillText('E', fgX + fgW / 2, fgY + fgH + 10);
+          if (!hudCompact) {
+            gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px "Segoe UI"'; gfx.textAlign = 'center';
+            gfx.fillText('F', fgX + fgW / 2, fgY - 3);
+            gfx.fillText('E', fgX + fgW / 2, fgY + fgH + 10);
+          }
           // Label under the gauge
-          gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText(fuelLabel, fgX + fgW / 2, H - 4);
+          gfx.fillStyle = '#94a3b8'; gfx.font = (hudCompact ? '9px' : '11px') + ' system-ui'; gfx.textAlign = 'center';
+          gfx.fillText(fuelLabel, fgX + fgW / 2, hudCompact ? H - 18 : H - 4);
           // ── Low fuel warning (blinks when under 1/8 tank) ──
           if (fuelFrac < 0.125) {
             var fuelBlink = Math.floor(timeRef.current * 1.8) % 2 === 0;
@@ -22879,46 +24767,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           stats._displayEco += (stats.efficiencyScore - stats._displayEco) * 0.12;
           var showSafety = Math.max(0, Math.round(stats._displaySafety));
           var showEco = Math.max(0, Math.round(stats._displayEco));
+          var safetyX = hudCompact ? W - 12 : W - 20;
+          var ecoX = hudCompact ? W - 78 : W - 100;
+          var scoreY = H - 50;
+          var scoreLabelY = hudCompact ? H - 32 : H - 35;
           gfx.fillStyle = showSafety > 70 ? '#4ade80' : showSafety > 40 ? '#f59e0b' : '#ef4444';
-          gfx.font = 'bold 18px monospace'; gfx.textAlign = 'right';
-          gfx.fillText(showSafety, W - 20, H - 50);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
-          gfx.fillText('SAFETY', W - 20, H - 35);
+          gfx.font = 'bold ' + (hudCompact ? 16 : 18) + 'px monospace'; gfx.textAlign = 'right';
+          gfx.fillText(showSafety, safetyX, scoreY);
+          gfx.fillStyle = '#94a3b8'; gfx.font = (hudCompact ? '9px' : '12px') + ' system-ui';
+          gfx.fillText('SAFETY', safetyX, scoreLabelY);
           gfx.fillStyle = showEco > 70 ? '#4ade80' : showEco > 40 ? '#f59e0b' : '#ef4444';
-          gfx.font = 'bold 18px monospace';
-          gfx.fillText(showEco, W - 100, H - 50);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
-          gfx.fillText('ECO', W - 100, H - 35);
+          gfx.font = 'bold ' + (hudCompact ? 16 : 18) + 'px monospace';
+          gfx.fillText(showEco, ecoX, scoreY);
+          gfx.fillStyle = '#94a3b8'; gfx.font = (hudCompact ? '9px' : '12px') + ' system-ui';
+          gfx.fillText('ECO', ecoX, scoreLabelY);
 
           // Odometer / trip meter / landmark counter
           var distMi = (stats.distance / METERS_PER_MILE).toFixed(2);
-          var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
+          var elapsed = Math.floor(Math.max(0, timeRef.current || 0));
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
-          gfx.fillStyle = '#94a3b8'; gfx.font = '12px monospace'; gfx.textAlign = 'left';
-          var tripLine = 'TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0');
+          gfx.fillStyle = '#94a3b8'; gfx.font = (hudCompact ? '9px' : '12px') + ' monospace'; gfx.textAlign = hudCompact ? 'center' : 'left';
+          var tripLine = hudCompact
+            ? 'TRIP ' + distMi + ' mi · ' + elMin + ':' + String(elSec).padStart(2, '0')
+            : 'TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0');
           if (stats.landmarkVisits) {
             var totalVisitsHud = Object.values(stats.landmarkVisits).reduce(function(a, b) { return a + b; }, 0);
             var uniqueVisitsHud = Object.keys(stats.landmarkVisits).length;
-            if (totalVisitsHud > 0) tripLine += '  |  🗺 ' + totalVisitsHud + ' visits (' + uniqueVisitsHud + ' unique)';
+            if (!hudCompact && totalVisitsHud > 0) tripLine += '  |  🗺 ' + totalVisitsHud + ' visits (' + uniqueVisitsHud + ' unique)';
           }
-          gfx.fillText(tripLine, 130, H - 14);
+          gfx.fillText(tripLine, hudCompact ? W / 2 : 130, hudCompact ? H - 5 : H - 14);
 
           // Gear indicator (actual gear state from gearRef)
           var gear = gearRef.current;
-          gfx.fillStyle = gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
-          gfx.font = 'bold 16px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(gear, 130, H - 42);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
-          gfx.fillText('F=D G=R P=Park', 130, H - 28);
+          var rideAlongHudActive = rideAlongControlsLocked();
+          var gearHudX = hudCompact ? 125 : 130;
+          gfx.fillStyle = rideAlongHudActive ? '#86efac' : gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
+          gfx.font = 'bold ' + (hudCompact ? 15 : 16) + 'px monospace'; gfx.textAlign = 'center';
+          gfx.fillText(rideAlongHudActive ? 'AUTO' : gear, gearHudX, hudCompact ? H - 50 : H - 42);
+          gfx.fillStyle = '#94a3b8'; gfx.font = (hudCompact ? '9px' : '11px') + ' system-ui';
+          gfx.fillText(rideAlongHudActive ? (hudCompact ? 'Managed' : 'Transmission managed') : (hudCompact ? 'GEAR' : 'F=D G=R P=Park'), gearHudX, hudCompact ? H - 32 : H - 28);
 
-          // Top-left info
-          gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(10, 10, 220, 54);
-          gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'left';
-          gfx.fillText(scn.icon + ' ' + scn.name, 20, 28);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
-          gfx.fillText(veh.icon + ' ' + veh.name, 20, 44);
-          gfx.fillText(cameraModeRef.current.toUpperCase() + ' — C to switch', 20, 58);
+          // Keep persistent HUD cards below the mirror row at every width. The
+          // compact layout previously painted these cards over the side mirrors.
+          var hudTopStackY = Math.max(72, Math.ceil(H * 0.14));
+          var hudStartupScan = !!rideAlongRef.current &&
+            timeRef.current < (graceRef.current.until || 0);
+          var hudFormalOverlay = !!(d && d.roadTestStage === 'drive');
+          var hudChallengeOverlay = !!(d && d.freeExplore &&
+            (challengeRef.current.offered || challengeRef.current.active));
+          var hudCoachOverlay = !!(d && d.coachMode && coachRef.current.lastTip &&
+            Date.now() - coachRef.current.lastTipAt < 12000);
+          var hudPersistentOverlay = hudFormalOverlay ||
+            !!(d && d.parentRideMode && parentRef.current.active) ||
+            !!(d && d.freeExplore && tripRef.current) || hudChallengeOverlay || hudCoachOverlay;
+          // Top-left info. Keep the compact card below the mirrors and hide
+          // duplicate guidance while the staged Ride-Along scan is visible.
+          if (!hudStartupScan && !hudPersistentOverlay) {
+            var hudInfoW = W < 520 ? Math.min(190, W - 90) : 220;
+            gfx.fillStyle = 'rgba(0,0,0,0.6)'; gfx.fillRect(10, hudTopStackY, hudInfoW, 54);
+            gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText(scn.icon + ' ' + scn.name, 20, hudTopStackY + 18);
+            gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
+            gfx.fillText(veh.icon + ' ' + veh.name, 20, hudTopStackY + 34);
+            gfx.fillText(cameraModeRef.current.toUpperCase() + ' — C to switch', 20, hudTopStackY + 48);
+          }
 
           // Signal ahead — prominent mini traffic light HUD indicator. Keep a
           // little more approach distance than the old 12m window so a learner
@@ -22932,14 +24845,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               nearestSigDist = ahead; nearestSig = s;
             }
           });
-          if (nearestSig && nearestSigDist < 24) {
+          if (nearestSig && nearestSigDist < 24 && !hudStartupScan &&
+              !hudFormalOverlay && !hudChallengeOverlay) {
             var sigIsStop = nearestSig.type === 'stop';
             var hudSigApproach = playerControlApproach(infiniteWorldRef.current, nearestSig, car, vehicleFootprint(veh.id).length);
             var hudSigIntent = blinkerRef.current < 0 ? 'left' : blinkerRef.current > 0 ? 'right' : 'straight';
             hudSignalState = sigIsStop ? 'stop' : trafficSignalMovementIndication(nearestSig, hudSigApproach.approachGroup, hudSigIntent);
             hudSignalDistanceFt = worldUnitsToFeet(nearestSigDist);
             // Draw a mini traffic light icon (top-center, always visible even when light is overhead)
-            var tlX = W / 2 + 50, tlY = 30;
+            var tlX = W / 2 + 50, tlY = hudTopStackY + 30;
             if (sigIsStop) {
               // Mini stop sign (red octagon)
               gfx.fillStyle = '#dc2626';
@@ -23013,13 +24927,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             signalDistanceFt: hudSignalDistanceFt,
             laneSide: laneDepartureRef.current && laneDepartureRef.current.side
           });
+          if (String(hudCue.color).indexOf('var(') === 0) hudCue.color = hudPalette.accent;
           // Announce only meaningful rule-state changes. Distance text can change
           // every frame, so the key intentionally uses kind + title only. Urgent
           // and caution states are spoken after a short cooldown; the good state
           // stays visual unless it is the first cue after a fresh drive.
           var hudCueKey = hudCue.kind + ':' + hudCue.title;
           var hudCueStateChanged = hudRuleCueRef.current.key !== hudCueKey;
-          if (hudCueStateChanged) {
+          if (!hudFormalOverlay && hudCueStateChanged) {
             var wasUnset = hudRuleCueRef.current.key == null;
             hudRuleCueRef.current.key = hudCueKey;
             var shouldAnnounceCue = hudCue.kind !== 'good' || wasUnset;
@@ -23030,8 +24945,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           var cueToastActive = eventToastRef.current && eventToastRef.current.msg && timeRef.current < eventToastRef.current.until;
           var cueW = Math.min(300, W - 20);
-          if (!cueToastActive && cueW > 150) {
-            var cueX = 10, cueY = 72, cueH = 44;
+          if (!hudPersistentOverlay && !hudStartupScan && !cueToastActive && cueW > 150 && (hudInstructor || hudCue.kind !== 'good')) {
+            var cueX = 10, cueY = hudTopStackY + 72, cueH = 44;
             gfx.save();
             gfx.fillStyle = 'rgba(2,6,23,0.82)';
             gfx.fillRect(cueX, cueY, cueW, cueH);
@@ -23049,33 +24964,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.restore();
           }
 
-          // Event toast with smooth fade in/out
+          // Quiet mission progress replaces the old always-on scenario clutter.
+          // It yields to an alert or safety cue so the driver sees one requested
+          // action at a time.
+          var hudMission = missionRef.current && missionRef.current.status;
+          if (hudMission && !missionRef.current.complete && !hudPersistentOverlay && !hudStartupScan && !cueToastActive && hudCue.kind === 'good') {
+            var missionW = Math.min(280, Math.max(190, W * 0.34));
+            var missionX = 10, missionY = hudTopStackY + 76, missionH = 62;
+            var nextMissionCheck = hudMission.criteria.find(function(item) { return !item.met; });
+            gfx.save();
+            gfx.fillStyle = 'rgba(2,6,23,0.84)';
+            gfx.fillRect(missionX, missionY, missionW, missionH);
+            gfx.strokeStyle = '#22d3ee'; gfx.lineWidth = 1.5;
+            gfx.strokeRect(missionX, missionY, missionW, missionH);
+            gfx.fillStyle = '#67e8f9'; gfx.font = 'bold ' + Math.round(9 * hudTextScale) + 'px system-ui'; gfx.textAlign = 'left';
+            gfx.fillText('MISSION · ' + hudMission.percent + '%', missionX + 10, missionY + 15);
+            gfx.fillStyle = '#e2e8f0'; gfx.font = 'bold ' + Math.round(11 * hudTextScale) + 'px system-ui';
+            var missionTitle = hudMission.mission.title.length > 34 ? hudMission.mission.title.slice(0, 32) + '…' : hudMission.mission.title;
+            gfx.fillText(missionTitle, missionX + 10, missionY + 31);
+            gfx.fillStyle = '#1e293b'; gfx.fillRect(missionX + 10, missionY + 39, missionW - 20, 6);
+            gfx.fillStyle = '#22d3ee'; gfx.fillRect(missionX + 10, missionY + 39, (missionW - 20) * hudMission.percent / 100, 6);
+            gfx.fillStyle = '#cbd5e1'; gfx.font = Math.round(8 * hudTextScale) + 'px system-ui';
+            gfx.fillText(nextMissionCheck ? 'Next: ' + nextMissionCheck.label : 'Keep the safety margin.', missionX + 10, missionY + 56);
+            gfx.restore();
+          }
+
+          // One meaning-colored driving alert. Reduced Motion and Calm Drive
+          // keep it stationary, while long messages wrap instead of overflowing.
           var et = eventToastRef.current;
-          if (et && et.msg && timeRef.current < et.until) {
-            var totalDur = et.until - (et._fadeStart || (et._fadeStart = timeRef.current));
-            if (totalDur <= 0) totalDur = 4;
+          if (et && et.msg && timeRef.current < et.until && !hudStartupScan) {
+            if (et._fadeStart == null) et._fadeStart = timeRef.current;
             var elapsed = timeRef.current - et._fadeStart;
             var remaining = et.until - timeRef.current;
-            // Fade in over first 0.3s, fade out over last 0.5s
+            var staticAlert = !!(reducedMotionRef.current || calmDriveRef.current || hudCalm);
             var fadeAlpha = 1;
-            if (elapsed < 0.3) fadeAlpha = elapsed / 0.3;
-            else if (remaining < 0.5) fadeAlpha = remaining / 0.5;
+            if (!staticAlert && elapsed < 0.25) fadeAlpha = elapsed / 0.25;
+            else if (!staticAlert && remaining < 0.4) fadeAlpha = remaining / 0.4;
             fadeAlpha = Math.max(0, Math.min(1, fadeAlpha));
-            // Slide in from top: y position animates during fade-in
-            var slideY = 80 + (1 - Math.min(1, elapsed / 0.3)) * -20;
+            var alertBaseY = hudTopStackY + 72;
+            var slideY = staticAlert ? alertBaseY : alertBaseY + (1 - Math.min(1, elapsed / 0.25)) * -14;
+            var alertAppearance = driveAlertAppearance(et.msg, et.tone);
+            var alertW = Math.max(120, Math.min(W - 16, W * 0.82));
+            var alertX = (W - alertW) * 0.5;
+            gfx.font = 'bold ' + Math.round(12 * hudTextScale) + 'px system-ui';
+            var alertLines = canvasMessageLines(gfx, et.msg, alertW - 26, 2);
+            var alertH = alertLines.length > 1 ? 54 : 40;
             gfx.save();
             gfx.globalAlpha = fadeAlpha;
-            gfx.fillStyle = 'rgba(127,29,29,0.85)';
-            gfx.fillRect(W * 0.1, slideY, W * 0.8, 36);
-            gfx.strokeStyle = '#fbbf24'; gfx.lineWidth = 2;
-            gfx.strokeRect(W * 0.1, slideY, W * 0.8, 36);
-            gfx.fillStyle = '#fff'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText(et.msg, W / 2, slideY + 22);
+            if (!staticAlert) { gfx.shadowColor = alertAppearance.border; gfx.shadowBlur = 8; }
+            gfx.fillStyle = alertAppearance.background;
+            gfx.fillRect(alertX, slideY, alertW, alertH);
+            gfx.shadowBlur = 0;
+            gfx.fillStyle = alertAppearance.border;
+            gfx.fillRect(alertX, slideY, 5, alertH);
+            gfx.strokeStyle = alertAppearance.border; gfx.lineWidth = 1.5;
+            gfx.strokeRect(alertX, slideY, alertW, alertH);
+            gfx.fillStyle = alertAppearance.text; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
+            var alertTextY = slideY + (alertLines.length > 1 ? 20 : 25);
+            alertLines.forEach(function(line, lineIndex) {
+              gfx.fillText(line, W / 2 + 2, alertTextY + lineIndex * 17);
+            });
             gfx.restore();
           }
 
           // Speed limit sign
-          var signX = W - 70, signY2 = 20;
+          var signX = W - 70, signY2 = hudTopStackY;
           gfx.fillStyle = '#fff'; gfx.fillRect(signX, signY2, 50, 60);
           gfx.strokeStyle = '#000'; gfx.lineWidth = 2; gfx.strokeRect(signX, signY2, 50, 60);
           gfx.fillStyle = '#000'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
@@ -23085,12 +25038,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Blinkers
           var blink = blinkerRef.current;
           var blinkOn = Math.floor(blinkerTimerRef.current * 2.5) % 2 === 0;
-          if (blink !== 0 && blinkOn) {
+          if (!hudCompact && blink !== 0 && blinkOn) {
             gfx.fillStyle = '#22c55e'; gfx.font = 'bold 20px system-ui'; gfx.textAlign = 'center';
             gfx.fillText(blink === -1 ? '◄' : '►', W / 2 + blink * 70, H - 55);
           }
-          gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('E=◄  V=►  T=off', W / 2, H - 8);
+          if (!hudCompact) {
+            gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(rideAlongHudActive ? 'AUTO manages signals + safety checks' : 'E=◄  V=►  T=off', W / 2, H - 8);
+          }
 
           // ─── HEAD-CHECK INDICATOR ───
           // Shows a prominent visual cue when player is shoulder-checking, plus a subtle hint when not.
@@ -23100,24 +25055,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var hcColor = '#fbbf24';
             var arrow = hcState.dir === -1 ? '◄' : '►';
             var side = hcState.dir === -1 ? 'LEFT' : 'RIGHT';
+            var hcPanelY = hudCompact ? Math.max(hudTopStackY + 64, H - 150) : 60;
             gfx.save();
             gfx.fillStyle = 'rgba(30,41,59,0.8)';
             gfx.strokeStyle = hcColor;
             gfx.lineWidth = 2;
-            gfx.fillRect(W / 2 - 90, 60, 180, 32);
-            gfx.strokeRect(W / 2 - 90, 60, 180, 32);
+            gfx.fillRect(W / 2 - 90, hcPanelY, 180, 32);
+            gfx.strokeRect(W / 2 - 90, hcPanelY, 180, 32);
             gfx.fillStyle = hcColor;
             gfx.font = 'bold 22px system-ui';
             gfx.textAlign = 'center';
-            gfx.fillText(arrow + ' SHOULDER CHECK ' + arrow, W / 2, 82);
+            gfx.fillText(arrow + ' SHOULDER CHECK ' + arrow, W / 2, hcPanelY + 22);
             gfx.restore();
-          } else {
+          } else if (!hudCompact) {
             // Subtle hint in the controls row
             gfx.fillStyle = '#475569'; gfx.font = '9px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText('Z=look left  X=look right (shoulder check)', W / 2, H - 22);
+            gfx.fillText(rideAlongHudActive ? 'Observe the automated scan before each maneuver' : 'Z=look left  X=look right (shoulder check)', W / 2, H - 22);
           }
 
           // MPG sparkline
+          if (hudScience) {
           var mHist = mpgHistoryRef.current;
           if (mHist.length > 4) {
             var sparkW = 120, sparkH = 30;
@@ -23178,6 +25135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           bar('Drag',  dragF,            '#22d3ee', 1);
           bar('Roll',  rollF,            '#10b981', 2);
           bar('Hill',  Math.abs(gradeFhud), gradeFhud >= 0 ? '#f59e0b' : '#a78bfa', 3);
+          }
 
           // ── 3-second following distance visualizer ──
           // Finds the nearest car directly ahead in our path, computes seconds-gap at current speed,
@@ -23448,8 +25406,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Enhanced rearview mirror (top-center) ──
           // Bigger + tailgate warning glow + distance text. Shows vehicles, cyclists, and peds
           // in a cone directly behind the player. Pulses red when anyone is closing in fast.
-          var mirrorW = Math.min(260, W * 0.32), mirrorH = 60;
-          var mirrorX = W / 2 - mirrorW / 2, mirrorY = 12;
+          var mirrorW = W * 0.22, mirrorH = H * 0.10;
+          var mirrorX = W / 2 - mirrorW / 2, mirrorY = H * 0.02;
+          var liveThreeScene = threeRef.current;
+          var realRearMirror = !!(liveThreeScene && liveThreeScene._realRearMirror);
           var rearAngle = car.heading + Math.PI;
           // Find the closest thing behind us (traffic/cyclist/ped) for warning logic
           var closestRearDist = 99, closestRearClosingMph = 0;
@@ -23479,9 +25439,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = 'rgba(239,68,68,' + (0.3 * pulse) + ')';
             gfx.fillRect(mirrorX - 10, mirrorY - 10, mirrorW + 20, mirrorH + 20);
           }
-          gfx.fillStyle = 'rgba(0,0,0,0.85)'; gfx.fillRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
+          gfx.fillStyle = realRearMirror ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.85)'; gfx.fillRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
           gfx.strokeStyle = tailgateWarning ? '#ef4444' : '#94a3b8'; gfx.lineWidth = 2;
           gfx.strokeRect(mirrorX - 3, mirrorY - 3, mirrorW + 6, mirrorH + 6);
+          if (!realRearMirror) {
           // Sky
           var mirrorSky = gfx.createLinearGradient(0, mirrorY, 0, mirrorY + mirrorH / 2);
           if (isNight) { mirrorSky.addColorStop(0, '#020617'); mirrorSky.addColorStop(1, '#0a0f1e'); }
@@ -23534,6 +25495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               gfx.fillRect(mx + mSize * 0.4 - 2, verticalPos + mSize * 0.1, 2, 2);
             }
           });
+          }
           // Label + distance readout
           gfx.fillStyle = tailgateWarning ? '#fca5a5' : '#94a3b8';
           gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
@@ -23550,15 +25512,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
           // ── Side mirrors (left + right) — show adjacent-lane traffic ──
           // Smaller than rearview. Each mirror shows a ~90° cone to that side.
-          var smW = 70, smH = 44;
-          var smY = mirrorY + 10;
+          var smW = W * 0.15, smH = H * 0.085;
+          var smY = H * 0.035;
+          var realSideMirrors = !!(liveThreeScene && liveThreeScene._realSideMirrors);
           var drawSideMirror = function(isLeft) {
-            var smX = isLeft ? 14 : W - smW - 14;
+            var smX = isLeft ? W * 0.02 : W - smW - W * 0.02;
             // Frame
-            gfx.fillStyle = 'rgba(0,0,0,0.85)';
+            gfx.fillStyle = realSideMirrors ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.85)';
             gfx.fillRect(smX - 2, smY - 2, smW + 4, smH + 4);
             gfx.strokeStyle = '#475569'; gfx.lineWidth = 1;
             gfx.strokeRect(smX - 2, smY - 2, smW + 4, smH + 4);
+            if (!realSideMirrors) {
             // Sky + ground
             gfx.fillStyle = isNight ? '#0a0f1e' : isFog ? '#94a3b8' : '#1e3a5f';
             gfx.fillRect(smX, smY, smW, smH / 2);
@@ -23623,6 +25587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillRect(mx - 1, verticalPos + mSize * 0.1, 2, 1.5);
               }
             });
+            }
             // Label
             gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText(isLeft ? '◄ LEFT' : 'RIGHT ►', smX + smW / 2, smY - 4);
@@ -23667,6 +25632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // once after unmount when `d` has been cleared (same race as the
           // d.highBeams crash at ~9963 and the d.rideshareMode crash at ~15240).
           var isFE = !!(d && d.freeExplore);
+          if (hudInstructor || isFE) {
           var mmSize = isFE ? 140 : 90;
           var mmX = 10, mmY = H - (isFE ? 250 : 200);
           var mmScale = isFE ? 0.9 : 1.4; // world units per pixel — tighter zoom in FE
@@ -23878,6 +25844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.closePath(); gfx.fill();
           gfx.fillStyle = '#475569'; gfx.font = '7px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('MAP', mmX + mmSize / 2, mmY + mmSize + 8);
+          }
 
           // ── Rideshare ride-summary card ──
           // Centered card that pops after each dropoff for ~8s. Shows the star
@@ -24135,9 +26102,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (diff < nearestDiff) { nearestDiff = diff; nearestDir = cd[1]; }
           });
           gfx.fillStyle = 'rgba(0,0,0,0.5)';
-          gfx.fillRect(W / 2 - 40, 2, 80, 18);
+          var compassY = mirrorY + Math.max(4, mirrorH - 20);
+          gfx.fillRect(W / 2 - 40, compassY, 80, 18);
           gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 11px monospace'; gfx.textAlign = 'center';
-          gfx.fillText(nearestDir + '  ' + String(Math.round(compassDeg) % 360).padStart(3, '0') + '°', W / 2, 15);
+          gfx.fillText(nearestDir + '  ' + String(Math.round(compassDeg) % 360).padStart(3, '0') + '°', W / 2, compassY + 13);
 
           // ─── TURN-BY-TURN NAVIGATION ARROW (when quest active) ───
           if (questRef.current && !questRef.current.completed && d.freeExplore) {
@@ -24293,12 +26261,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         // ── Main render loop: init Three.js then loop ──
         // Handle window resize for Three.js canvas
+        var driveResizeObserver = null;
         var onResize = function() {
+          if (loopDisposed) return;
           if (scn3d && scn3d.renderer && canvas3dRef.current) {
-            var w = canvas3dRef.current.clientWidth;
-            var h = canvas3dRef.current.clientHeight;
+            var host = canvas3dRef.current.parentElement;
+            var w = Math.round((host && host.clientWidth) || canvas3dRef.current.clientWidth);
+            var h = Math.round((host && host.clientHeight) || canvas3dRef.current.clientHeight);
             if (w && h) {
-              scn3d.renderer.setSize(w, h);
+              scn3d.renderer.setSize(w, h, false);
               try{ if(scn3d.renderer && scn3d.renderer._alloComposer){ scn3d.renderer._alloComposer.setSize(w, h); } }catch(e){}
               scn3d.camera.aspect = w / h;
               scn3d.camera.updateProjectionMatrix();
@@ -24306,9 +26277,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
         };
         window.addEventListener('resize', onResize);
+        // The STEAM Lab modal can change size without a browser resize (header
+        // wrapping, sidebar changes, device rotation). Observe the actual drive
+        // viewport as well so WebGL and the HUD remain aligned.
+        if (typeof ResizeObserver !== 'undefined' && canvas3dRef.current && canvas3dRef.current.parentElement) {
+          driveResizeObserver = new ResizeObserver(onResize);
+          driveResizeObserver.observe(canvas3dRef.current.parentElement);
+        }
 
         function ensureThreeAndStart() {
           try {
+            if (loopDisposed || !drivingRef.current) return;
             if (window.THREE) {
               scn3d = initThreeScene();
               threeRef.current = scn3d;
@@ -24322,6 +26301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             } else {
               // Load Three.js on demand (shared resilient loader: multi-CDN + timeout)
               window.StemLab.ensureThree({ orbit: false }).then(function () {
+                if (loopDisposed || !drivingRef.current) return;
                 try {
                   scn3d = initThreeScene();
                   threeRef.current = scn3d;
@@ -24333,15 +26313,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     setWebglError(true);
                   }
                 } catch (err) {
+                  if (loopDisposed) return;
                   console.error('[RoadReady] WebGL initialization failed', err);
                   setWebglError(true);
                 }
               }).catch(function () {
+                if (loopDisposed) return;
                 console.error('[RoadReady] Three.js failed to load');
                 setWebglError(true);
               });
             }
           } catch (err) {
+            if (loopDisposed) return;
             console.error('[RoadReady] WebGL initialization failed', err);
             setWebglError(true);
           }
@@ -24354,16 +26337,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
           var hudCanvas = canvasRef.current;
           if (hudCanvas && showHUDRef.current) {
-            hudCanvas.width = hudCanvas.offsetWidth;
-            hudCanvas.height = hudCanvas.offsetHeight;
-            drawHUD(hudCanvas.width, hudCanvas.height);
+            var hudCssW = Math.max(1, Math.round(hudCanvas.clientWidth || hudCanvas.offsetWidth));
+            var hudCssH = Math.max(1, Math.round(hudCanvas.clientHeight || hudCanvas.offsetHeight));
+            var hudPixelRatio = Math.min(2, Math.max(1, Number(window.devicePixelRatio) || 1));
+            var hudBackingW = Math.max(1, Math.round(hudCssW * hudPixelRatio));
+            var hudBackingH = Math.max(1, Math.round(hudCssH * hudPixelRatio));
+            // Resize only when the backing store actually changes. Assigning
+            // canvas.width/height on every frame clears the context, reallocates
+            // its bitmap, and leaves text soft on Retina/HiDPI displays.
+            if (hudCanvas.width !== hudBackingW || hudCanvas.height !== hudBackingH) {
+              hudCanvas.width = hudBackingW;
+              hudCanvas.height = hudBackingH;
+            }
+            var hudContext = hudCanvas.getContext('2d');
+            if (hudContext) hudContext.setTransform(hudPixelRatio, 0, 0, hudPixelRatio, 0, 0);
+            drawHUD(hudCssW, hudCssH);
           }
         };
 
         return function() {
+          loopDisposed = true;
           drivingRef.current = false;
+          keysRef.current = {};
           if (animRef.current) cancelAnimationFrame(animRef.current);
+          animRef.current = null;
           window.removeEventListener('resize', onResize);
+          if (driveResizeObserver) driveResizeObserver.disconnect();
+          if (audioUnlockCleanupRef.current) audioUnlockCleanupRef.current();
           // Cancel any pending tracked timeouts on unmount (covers nav-without-exit)
           try {
             timeoutsRef.current.forEach(function(id) { clearTimeout(id); });
@@ -24382,6 +26382,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                '_reverseOsc', '_wiperNode', '_ambDayNode', '_ambNightNode'].forEach(function(key) {
                 if (aud[key]) { try { aud[key].stop(); } catch(e2){} aud[key] = null; }
               });
+              ['engineGain', '_engineFundGain', '_engineHarmGain', '_engineOctGain',
+               '_engineNoiseGain', '_engineLFOGain',
+               '_skidGain', '_sirenGain', '_windGain', '_rainGain', '_ambientGain',
+               '_rumbleGain', '_brakeGain', '_signalGain', '_tireGain',
+               '_reverseGain', '_wiperGain', '_ambDayGain', '_ambNightGain'].forEach(function(key) {
+                if (aud[key]) { try { aud[key].gain.value = 0; aud[key].disconnect(); } catch(e3){} aud[key] = null; }
+              });
+              aud.started = false;
             }
           } catch (eAud) {}
           // Radio nodes are NOT in the list above (they live on radioRef) — a
@@ -24407,6 +26415,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // "oldest context lost" and blank the canvas.
             try { threeRef.current.renderer.forceContextLoss(); } catch (eCtx) {}
           }
+          threeRef.current = null;
+          scn3d = null;
+          threeReady = false;
         };
       // Depend on the PRIMITIVE IDs, not the scenario/vehicle objects. currentScenario is
       // `Object.assign({}, _scenarioBase)` (new object each render), so using it in the dep
@@ -24421,13 +26432,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ═══════════════════════════════════════════
 
       // ── MENU VIEW ──
-      // Auto-route new users to the tour on the first menu visit per session.
-      // Ref-gated so we don't re-trigger after the user dismisses/completes.
-      if (view === 'menu' && !d.tourCompleted && !tourAutoRoutedRef.current) {
-        tourAutoRoutedRef.current = true;
-        setTimeout(function() { upd('view', 'tour'); }, 50);
-      }
-
       // ══════════════════════════════════════════════════════════
       // FIRST-TIME ONBOARDING TOUR
       // ══════════════════════════════════════════════════════════
@@ -24530,9 +26534,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       if (view === 'menu') {
         return h('div', { 'data-rr-view': view, key: view, style: { padding: '20px', maxWidth: '960px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
-          // Header
-          // ── Animated hero: panning gradient + floating emoji particles ──
-          // Inline <style> injects the keyframes once; it's idempotent via the id selector.
+          // Calm, road-focused header. The shared keyframes remain available to
+          // reaction drills and the achievement gallery, but this menu does not
+          // run decorative motion.
           h('style', null,
             '@keyframes rrHeroPan { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }' +
             '@keyframes rrHeroFloat { 0%{transform:translateY(0) translateX(0);opacity:0} 15%{opacity:0.8} 85%{opacity:0.8} 100%{transform:translateY(-80px) translateX(30px);opacity:0} }' +
@@ -24542,14 +26546,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             style: {
               position: 'relative', textAlign: 'center', marginBottom: '20px', padding: '28px 20px 24px 20px', borderRadius: '18px',
               overflow: 'hidden',
-              background: 'linear-gradient(120deg, #0c4a6e, #1e1b4b, #4c1d95, #0c4a6e)',
-              backgroundSize: '300% 300%',
-              animation: reducedMotionRef.current ? 'none' : 'rrHeroPan 20s ease infinite',
-              border: '1px solid rgba(168,139,250,0.4)',
-              boxShadow: '0 8px 32px rgba(76, 29, 149, 0.3)'
+              background: 'linear-gradient(135deg, #123447, #0f2430)',
+              animation: 'none',
+              border: '1px solid rgba(34,211,238,0.42)',
+              boxShadow: '0 8px 28px rgba(2, 6, 23, 0.24)'
             }
           },
-            // Floating emoji particles (6 of them, varied delays + positions).
+            // Decorative particles are dormant on the menu so this header stays still.
+            false ?
             ['🚗', '🛣️', '🌲', '🏠', '🦌', '🌅'].map(function(em, ei) {
               var left = 10 + ei * 15;
               var delay = ei * 1.7;
@@ -24560,15 +26564,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   bottom: '-10px',
                   fontSize: '20px',
                   pointerEvents: 'none',
-                  animation: reducedMotionRef.current ? 'none' : ('rrHeroFloat ' + (8 + (ei % 3) * 2) + 's linear ' + delay + 's infinite'),
+                  animation: 'none',
                   opacity: 0
                 }
               }, em);
-            }),
+            }) : null,
             h('div', { style: { position: 'relative', zIndex: 2 } },
-              h('div', { style: { fontSize: '56px', animation: reducedMotionRef.current ? 'none' : 'rrHeroPulse 3s ease-in-out infinite', display: 'inline-block' } }, '🚗'),
-              h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', background: 'linear-gradient(90deg, #fbbf24, #f472b6, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' } }, 'RoadReady'),
-              h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
+              h('div', { style: { fontSize: '52px', display: 'inline-block' } }, '🚗'),
+              h('h2', { style: { fontSize: '26px', fontWeight: 900, marginBottom: '4px', color: '#f8fafc', letterSpacing: '-0.02em' } }, 'RoadReady'),
+              h('div', { style: { fontSize: '13px', color: '#e2e8f0', fontWeight: 600 } }, __alloT('stem.roadready.driver_s_ed_automotive_science_maine_e', "Driver's Ed & Automotive Science — Maine edition")),
               h('div', { style: { fontSize: '11px', color: '#a5b4fc', marginTop: '4px' } }, __alloT('stem.roadready.learn_the_physics_pass_the_test_drive_', "Learn the physics. Pass the test. Drive safer."))
             )
           ),
@@ -24580,24 +26584,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var doy = Math.floor((dt - start) / 86400000);
             var q = DAILY_QUOTES[doy % DAILY_QUOTES.length];
             return h('div', {
-              style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.8), rgba(30,41,59,0.6))', borderRadius: '10px', padding: '14px 18px', borderLeft: '4px solid #fbbf24', marginBottom: '14px', display: 'flex', gap: '12px', alignItems: 'flex-start' }
+              style: { background: 'linear-gradient(135deg, #172033, #263449)', borderRadius: '10px', padding: '14px 18px', borderLeft: '4px solid #fbbf24', marginBottom: '14px', display: 'flex', gap: '12px', alignItems: 'flex-start' }
             },
               h('div', { style: { fontSize: '28px', flexShrink: 0, lineHeight: 1 } }, '💬'),
               h('div', { style: { flex: 1 } },
-                h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-amber, #fbbf24)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '4px' } }, __alloT('stem.roadready.today_s_driving_thought', "Today's Driving Thought")),
-                h('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '4px' } }, '"' + q.t + '"'),
-                h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', textAlign: 'right' } }, '— ' + q.a)
+                h('div', { style: { fontSize: '9px', fontWeight: 700, color: '#fde68a', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '4px' } }, __alloT('stem.roadready.today_s_driving_thought', "Today's Driving Thought")),
+                h('div', { style: { fontSize: '13px', color: '#f8fafc', lineHeight: '1.5', fontStyle: 'italic', marginBottom: '4px' } }, '"' + q.t + '"'),
+                h('div', { style: { fontSize: '10px', color: '#cbd5e1', textAlign: 'right' } }, '— ' + q.a)
               )
             );
           })(),
+          // One primary next step keeps the menu useful without making the
+          // learner interpret the entire tool catalog before they can begin.
+          (function() {
+            var next = null;
+            if (!scenariosDriven.residential) {
+              next = { title: 'Neighborhood foundations', detail: 'Practice pace, complete stops, and scanning on a low-speed residential route.', action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'residential', freeExplore: false, freeExploreScenario: null }); } };
+            } else if (!earnedBadges.permit_pass) {
+              next = { title: 'Build permit readiness', detail: 'Check your Maine rules knowledge and review each explanation as you go.', action: function() { upd('view', 'permitStart'); } };
+            } else if (!scenariosDriven.highway) {
+              next = { title: 'Highway space management', detail: 'Practice merging, lane-change signals, and a stable following gap.', action: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: 'highway', freeExplore: false, freeExploreScenario: null }); } };
+            } else if (!earnedBadges.road_test_pass) {
+              next = { title: 'Prepare for the road test', detail: 'Use the guided path, then try the scored road-test simulation when ready.', action: function() { upd('view', 'lessonPath'); } };
+            } else {
+              next = { title: 'Keep skills current', detail: 'Review your logbook and choose one coaching focus for the next drive.', action: function() { upd('view', 'logbook'); } };
+            }
+            return h('section', { 'aria-label': 'Recommended next step', style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--rr-cyan, #22d3ee)', borderRadius: '12px', padding: '14px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' } },
+              h('div', { style: { flex: '1 1 320px' } },
+                h('div', { style: { fontSize: '10px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '4px' } }, 'Recommended next'),
+                h('div', { style: { fontSize: '15px', fontWeight: 850, marginBottom: '3px' } }, next.title),
+                h('div', { style: { fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, next.detail)
+              ),
+              h('button', { onClick: next.action, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: '#082f49', fontSize: '12px', fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Continue learning')
+            );
+          })(),
           // Free Explore hero button
-          h('button', { 'data-rr-tile': 'true', className: 'rr-cta-pulse', onClick: function() { upd('view', 'freeExploreSetup'); },
+          h('button', { 'data-rr-tile': 'true', onClick: function() { upd('view', 'freeExploreSetup'); },
             style: { width: '100%', padding: '18px 24px', borderRadius: '14px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg, #2e1065, #1e1b4b, #0c4a6e)', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' } },
             h('div', { style: { fontSize: '42px' } }, '🌎'),
             h('div', null,
               h('div', { style: { fontSize: '16px', fontWeight: 900 } }, __alloT('stem.roadready.free_explore', 'Free Explore')),
               h('div', { style: { fontSize: '12px', color: '#c4b5fd', marginTop: '2px' } }, __alloT('stem.roadready.open_sandbox_no_objectives_toggle_weat', 'Open sandbox. No objectives. Toggle weather, time, traffic live. Practice anything. Earn achievements.')),
-              h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
+              h('div', { style: { fontSize: '10px', color: '#c4b5fd', marginTop: '4px' } }, Object.keys(earnedBadges).length + '/' + ACHIEVEMENTS.length + ' achievements earned')
             )
           ),
           // Structured modes
@@ -24645,8 +26673,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '11px', color: '#bbf7d0', marginTop: '4px' } }, __alloT('stem.roadready.mpg_vs_speed_graph_beat_the_epa', 'MPG vs speed graph — beat the EPA'))
             )
           ),
+          h('div', { style: { display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap', margin: '-4px 0 16px' } },
+            h('button', {
+              onClick: function() { upd('showRoadReadyCatalog', !d.showRoadReadyCatalog); },
+              'aria-expanded': !!d.showRoadReadyCatalog,
+              'aria-controls': 'rr-specialist-tool-catalog',
+              style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
+            }, d.showRoadReadyCatalog ? 'Hide specialist tools' : 'Explore specialist tools'),
+            h('button', {
+              onClick: function() { upd('view', 'helpHub'); },
+              style: { minHeight: '38px', padding: '8px 14px', borderRadius: '8px', border: '1px solid var(--rr-cyan, #22d3ee)', background: 'transparent', color: 'var(--rr-cyan, #22d3ee)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' }
+            }, 'Find a specific tool')
+          ),
           // Second row of tools
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
+          d.showRoadReadyCatalog ? h('div', { id: 'rr-specialist-tool-catalog', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' } },
             h('button', { onClick: function() { upd('view', 'maineWinter'); },
               style: { padding: '16px', borderRadius: '12px', border: '2px solid #38bdf8', background: 'linear-gradient(135deg, #0c4a6e, #1e3a5f)', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
               h('div', { style: { fontSize: '28px' } }, '❄️'),
@@ -24979,7 +27019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, __alloT('stem.roadready.force_diagram', 'Force Diagram')),
               h('div', { style: { fontSize: '10px', color: '#c7d2fe', marginTop: '2px' } }, __alloT('stem.roadready.live_drag_friction_thrust_vectors', 'Live drag, friction, thrust vectors'))
             )
-          ),
+          ) : null,
           // Maine facts strip
           h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '16px' } },
             h('div', { style: { fontSize: '11px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.maine_state_rules_at_a_glance', '🌲 Maine state rules at a glance')),
@@ -25041,7 +27081,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               })(),
               // Best safety score
               (function() {
-                var best = drivingStats ? drivingStats.safetyScore : 0;
+                var best = Object.keys(scenariosDriven || {}).reduce(function(currentBest, key) {
+                  var record = scenariosDriven[key];
+                  return Math.max(currentBest, record && typeof record === 'object' ? (Number(record.bestSafety) || 0) : 0);
+                }, 0);
+                if (drivingStats && drivingStats.qualifyingSession !== false) best = Math.max(best, Number(drivingStats.safetyScore) || 0);
                 return h('div', { style: { textAlign: 'center' } },
                   h('div', { style: { height: '4px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '2px', marginBottom: '4px' } },
                     h('div', { style: { height: '100%', background: best >= 80 ? '#4ade80' : '#f59e0b', borderRadius: '2px', width: best + '%' } })
@@ -25125,15 +27169,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', null, __alloT('stem.roadready.calm_drive', 'Calm Drive')),
               h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px' } }, __alloT('stem.roadready.quieter_engine_and_ambient_layers_no', '— quieter engine/ambient layers; no celebration bursts; safety cues stay on'))
             ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px' } },
+              h('span', { style: { minWidth: '86px', fontWeight: 800 } }, 'Driving HUD'),
+              h('select', { value: d.hudPreset || (d.calmDrive ? 'calm' : 'driver'), onChange: function(e) { upd('hudPreset', e.target.value); }, style: { flex: 1, minHeight: '34px', borderRadius: '7px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '4px 7px', fontSize: '12px' } },
+                h('option', { value: 'driver' }, 'Driver · essentials'),
+                h('option', { value: 'science' }, 'Science · forces + MPG'),
+                h('option', { value: 'instructor' }, 'Instructor · full evidence'),
+                h('option', { value: 'calm' }, 'Calm · larger + quieter')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px' } },
+              h('span', { style: { minWidth: '86px', fontWeight: 800 } }, 'HUD text'),
+              h('select', { value: String(d.hudTextScale || 1), onChange: function(e) { upd('hudTextScale', Number(e.target.value)); }, style: { flex: 1, minHeight: '34px', borderRadius: '7px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '4px 7px', fontSize: '12px' } },
+                h('option', { value: '1' }, 'Standard'), h('option', { value: '1.18' }, 'Large'), h('option', { value: '1.32' }, 'Extra large')
+              )
+            ),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px', cursor: 'pointer' } },
+              h('input', { type: 'checkbox', checked: d.realMirrors !== false, onChange: function(e) { upd('realMirrors', e.target.checked); } }),
+              h('span', null, 'Real scene mirrors ', h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px' } }, '— turn off for a lower-cost schematic view'))
+            ),
             h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer' } },
-              h('input', { type: 'checkbox', checked: !!rideAlongRef.current,
+              h('input', { type: 'checkbox', checked: !!d.rideAlong,
                 onChange: function(e) {
                   rideAlongRef.current = e.target.checked;
                   upd('rideAlong', e.target.checked);
                 }
               }),
               h('span', null, __alloT('stem.roadready.ride_along_mode', '🎧 Ride-Along mode')),
-              h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px' } }, __alloT('stem.roadready.the_car_drives_itself_and_narrates_alo', '— the car drives itself and narrates aloud (for blind/low-vision and keyboard-only learners)'))
+              h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px' } }, __alloT('stem.roadready.ride_along_automatic_scope', '— automatic steering, braking, and narration on road scenarios; parking and roundabout courses stay hands-on'))
             ),
             aiHintsEnabled && h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', cursor: 'pointer', marginTop: '8px' } },
               h('input', { type: 'checkbox', checked: !!d.coachMode,
@@ -25166,6 +27229,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     worldSeed: d.worldSeed || null,
                     reducedMotion: !!d.reducedMotion,
                     calmDrive: !!d.calmDrive,
+                    hudPreset: d.hudPreset || 'driver',
+                    hudTextScale: d.hudTextScale || 1,
+                    realMirrors: d.realMirrors !== false,
                     rideAlong: !!d.rideAlong,
                     lastJournal: d.lastJournal || null,
                     completedTrips: d.completedTrips || {},
@@ -25271,7 +27337,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           addToast('Not a RoadReady save file.'); return;
                         }
                         var toApply = {};
-                        if (parsed.badges) toApply.badges = parsed.badges;
+                        if (parsed.badges) {
+                          toApply.badges = Object.assign({}, parsed.badges);
+                          delete toApply.badges.speed_demon;
+                        }
                         if (parsed.scenariosDriven) toApply.scenariosDriven = parsed.scenariosDriven;
                         if (parsed.weathersDriven) toApply.weathersDriven = parsed.weathersDriven;
                         if (typeof parsed.totalDrives === 'number') toApply.totalDrives = parsed.totalDrives;
@@ -25279,6 +27348,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         if (typeof parsed.worldSeed === 'number') toApply.worldSeed = parsed.worldSeed;
                         if (typeof parsed.reducedMotion === 'boolean') toApply.reducedMotion = parsed.reducedMotion;
                         if (typeof parsed.calmDrive === 'boolean') toApply.calmDrive = parsed.calmDrive;
+                        if (['driver','science','instructor','calm'].indexOf(parsed.hudPreset) !== -1) toApply.hudPreset = parsed.hudPreset;
+                        if (typeof parsed.hudTextScale === 'number') toApply.hudTextScale = Math.max(1, Math.min(1.35, parsed.hudTextScale));
+                        if (typeof parsed.realMirrors === 'boolean') toApply.realMirrors = parsed.realMirrors;
                         if (typeof parsed.rideAlong === 'boolean') toApply.rideAlong = parsed.rideAlong;
                         if (parsed.lastJournal) toApply.lastJournal = parsed.lastJournal;
                         if (parsed.completedTrips) toApply.completedTrips = parsed.completedTrips;
@@ -25466,7 +27538,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('label', { htmlFor: 'rr-world-seed', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.world_seed', 'World Seed:')),
             h('input', { id: 'rr-world-seed', type: 'number', value: d.worldSeed || '', placeholder: __alloT('stem.roadready.random', 'Random'),
               onChange: function(e) { upd('worldSeed', e.target.value ? parseInt(e.target.value, 10) : null); },
-              style: { width: '100px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', fontSize: '12px', fontFamily: 'monospace', textAlign: 'center' }
+              style: { width: '100px', padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontFamily: 'monospace', textAlign: 'center' }
             }),
             h('button', { onClick: function() { upd('worldSeed', Math.floor(Math.random() * 100000)); },
               style: { padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '11px', cursor: 'pointer' }
@@ -25480,7 +27552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
       // ── SCENARIO SELECT ──
       if (view === 'scenarioSelect') {
-        return h('div', { style: { padding: '20px', maxWidth: '1000px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
+        return h('div', { 'data-rr-view': 'scenarioSelect', style: { padding: '20px', maxWidth: '1000px', margin: '0 auto', color: 'var(--allo-stem-text, #e2e8f0)' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_2', '← Menu')),
           h('h3', { style: { fontSize: '18px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.choose_your_scenario', 'Choose Your Scenario')),
           h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '14px' } }, __alloT('stem.roadready.start_easy_residential_25_mph_is_where', 'Start easy. Residential 25 mph is where real learners begin.')),
@@ -25503,13 +27575,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' } },
             SCENARIOS.map(function(s) {
               var diffDots = '★'.repeat(s.difficulty) + '☆'.repeat(5 - s.difficulty);
-              return h('button', { key: s.id, onClick: function() { startDriving(s.id, selectedVehicle); },
-                style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), var(--allo-stem-panel, var(--allo-stem-panel, #1e293b)))', color: '#fff', cursor: 'pointer', textAlign: 'left' } },
+              var mission = rrScenarioMission(s.id);
+              var rideAlongSupported = rideAlongSupportsScenario(s.id, false);
+              return h('button', { key: s.id, onClick: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: s.id }); },
+                'aria-label': s.name + '. ' + mission.title + '. ' +
+                  (d.rideAlong ? (rideAlongSupported ? 'Ride-Along available. ' : 'Hands-on maneuver; Ride-Along unavailable. ') : '') +
+                  'Open briefing.',
+                style: { padding: '14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, #334155)', background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a), var(--allo-stem-panel, #1e293b))', color: 'var(--allo-stem-text, #fff)', cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
                   h('span', { style: { fontSize: '20px' } }, s.icon),
                   h('span', { style: { fontSize: '9px', color: 'var(--rr-amber, #fbbf24)' } }, diffDots)
                 ),
                 h('div', { style: { fontSize: '13px', fontWeight: 800, marginTop: '4px' } }, s.name),
+                h('div', { style: { display: 'inline-flex', marginTop: '5px', padding: '3px 7px', borderRadius: '999px', background: 'rgba(34,211,238,0.12)', border: '1px solid rgba(34,211,238,0.35)', color: 'var(--rr-cyan, #22d3ee)', fontSize: '10px', fontWeight: 800 } }, mission.title),
+                d.rideAlong ? h('div', { style: { display: 'inline-flex', margin: '5px 0 0 5px', padding: '3px 7px', borderRadius: '999px', background: rideAlongSupported ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)', border: '1px solid ' + (rideAlongSupported ? 'rgba(74,222,128,0.4)' : 'rgba(251,191,36,0.45)'), color: rideAlongSupported ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 800 } },
+                  rideAlongSupported ? '🎧 Ride-Along' : 'Hands-on only') : null,
                 h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, s.speedLimit + ' mph · ' + s.weather + ' · ' + s.time),
                 h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', lineHeight: '1.4' } }, __alloT('stem.roadready.' + (s.id) + '_desc', s.desc))
               );
@@ -25518,9 +27598,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         );
       }
 
+      // ── SCENARIO BRIEFING ──
+      // Setup and success criteria belong before the car starts moving. The
+      // live mission and debrief consume the same definition below.
+      if (view === 'scenarioBriefing') {
+        var briefingScenario = SCENARIOS.find(function(item) { return item.id === (d.pendingScenario || selectedScenario); }) || SCENARIOS[0];
+        var briefingMission = rrScenarioMission(briefingScenario.id);
+        var briefingRideAlongSupported = rideAlongSupportsScenario(briefingScenario.id, false);
+        var previousBriefingRecord = d.scenariosDriven && d.scenariosDriven[briefingScenario.id] && typeof d.scenariosDriven[briefingScenario.id] === 'object'
+          ? d.scenariosDriven[briefingScenario.id] : null;
+        var briefingFacts = [
+          ['Posted limit', briefingScenario.speedLimit + ' mph'],
+          ['Conditions', briefingScenario.weather + ' · ' + briefingScenario.time],
+          ['Traffic', briefingScenario.traffic],
+          ['Practice length', Math.ceil(briefingMission.durationSec / 60) + '–2 min']
+        ];
+        var briefingChecks = [
+          'Complete the ' + briefingMission.durationSec + '-second, ' + (briefingMission.distanceMeters / METERS_PER_MILE).toFixed(2) + '-mile segment.',
+          briefingMission.criteria[3].label + '; hold the posted limit and safe following space.',
+          'Finish without a collision or major safety violation.'
+        ];
+        return h('div', { 'data-rr-view': 'scenarioBriefing', style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, #e2e8f0)' } },
+          h('button', { onClick: function() { upd('view', 'scenarioSelect'); }, style: { marginBottom: '14px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 800 } }, '← Scenarios'),
+          h('section', { 'aria-labelledby': 'rr-briefing-title', style: { overflow: 'hidden', borderRadius: '18px', border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-panel, #111827)', boxShadow: '0 18px 48px rgba(0,0,0,0.22)' } },
+            h('header', { style: { padding: '22px', background: 'linear-gradient(135deg, rgba(14,116,144,0.24), rgba(30,41,59,0.3))', borderBottom: '1px solid var(--allo-stem-border, #334155)', display: 'flex', alignItems: 'center', gap: '14px' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: '42px', lineHeight: 1 } }, briefingScenario.icon),
+              h('div', null,
+                h('div', { style: { fontSize: '11px', fontWeight: 900, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', letterSpacing: '0.1em' } }, 'Drive briefing'),
+                h('h2', { id: 'rr-briefing-title', style: { margin: '3px 0 2px', fontSize: '24px', lineHeight: 1.15 } }, briefingScenario.name),
+                h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '13px' } }, 'Main skill: ' + briefingMission.title)
+              )
+            ),
+            h('div', { style: { padding: '20px', display: 'grid', gap: '16px' } },
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' } },
+                briefingFacts.map(function(item) {
+                  return h('div', { key: item[0], style: { padding: '10px 12px', borderRadius: '10px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
+                    h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase' } }, item[0]),
+                    h('div', { style: { marginTop: '3px', fontSize: '13px', fontWeight: 800, textTransform: item[0] === 'Traffic' ? 'capitalize' : 'none' } }, item[1])
+                  );
+                })
+              ),
+              h('div', null,
+                h('h3', { style: { margin: '0 0 8px', fontSize: '14px' } }, 'Three success checks'),
+                briefingChecks.map(function(label, index) {
+                  return h('div', { key: index, style: { display: 'flex', gap: '9px', alignItems: 'flex-start', margin: '7px 0', fontSize: '13px', lineHeight: 1.45 } },
+                    h('span', { 'aria-hidden': 'true', style: { flex: '0 0 22px', height: '22px', borderRadius: '50%', display: 'grid', placeItems: 'center', background: 'rgba(34,211,238,0.15)', color: 'var(--rr-cyan, #22d3ee)', fontSize: '11px', fontWeight: 900 } }, index + 1),
+                    h('span', null, label)
+                  );
+                })
+              ),
+              h('div', { style: { padding: '11px 13px', borderRadius: '10px', background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.28)', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px', lineHeight: 1.5 } }, h('strong', { style: { color: 'var(--rr-blue, #60a5fa)' } }, 'Controls: '), briefingMission.controls),
+              d.rideAlong ? h('div', { role: briefingRideAlongSupported ? 'status' : 'alert', style: { padding: '11px 13px', borderRadius: '10px', background: briefingRideAlongSupported ? 'rgba(34,197,94,0.09)' : 'rgba(245,158,11,0.1)', border: '1px solid ' + (briefingRideAlongSupported ? 'rgba(74,222,128,0.35)' : 'rgba(251,191,36,0.45)'), color: briefingRideAlongSupported ? '#bbf7d0' : '#fde68a', fontSize: '12px', lineHeight: 1.5 } },
+                h('strong', null, briefingRideAlongSupported ? '🎧 Ride-Along active: ' : 'Hands-on course: '),
+                briefingRideAlongSupported
+                  ? 'The car buckles up, pauses for a four-second mirror scan, then steers, follows traffic, and stops for controls and hazards. You can pause or end the drive at any time.'
+                  : 'Ride-Along cannot safely follow this bounded maneuver. Starting here keeps the car in Park for manual control; choose a road scenario for automatic driving.'
+              ) : null,
+              previousBriefingRecord ? h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, 'Previous best safety: ' + previousBriefingRecord.bestSafety + ' · ' + (previousBriefingRecord.driveCount || 1) + ' qualifying drive' + ((previousBriefingRecord.driveCount || 1) === 1 ? '' : 's')) : null,
+              h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap' } },
+                h('button', { onClick: function() { startDriving(briefingScenario.id, selectedVehicle); }, style: { flex: '1 1 220px', minHeight: '46px', border: 'none', borderRadius: '11px', background: 'linear-gradient(135deg, #0891b2, #2563eb)', color: '#fff', fontSize: '14px', fontWeight: 900, cursor: 'pointer' } },
+                  (d.rideAlong && briefingRideAlongSupported ? 'Start Ride-Along · ' : d.rideAlong ? 'Start hands-on · ' : 'Start ') + briefingScenario.name),
+                h('button', { onClick: function() { upd('view', 'scenarioSelect'); }, style: { minHeight: '46px', padding: '0 18px', borderRadius: '11px', border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, 'Choose another')
+              )
+            )
+          )
+        );
+      }
+
       // ── DRIVING VIEW ──
       if (view === 'driving') {
-        return h('div', { style: { position: 'relative', width: '100%', height: '100%', minHeight: '520px', maxHeight: 'calc(100vh - 80px)', background: '#000', borderRadius: '12px', overflow: 'hidden' } },
+        var rideAlongSupportedUi = rideAlongSupportsScenario(currentScenario.id, !!d.freeExplore);
+        var formalManualDriveUi = d.roadTestStage === 'drive' || !!d.parentRideMode;
+        var rideAlongActiveUi = !!d.rideAlong && !formalManualDriveUi && rideAlongSupportedUi;
+        var formalRideAlongPausedUi = !!d.rideAlong && formalManualDriveUi;
+        var rideAlongPreparingUi = rideAlongActiveUi &&
+          driveUiSeconds < (graceRef.current.until || 0);
+        var rideAlongEmergencyUi = rideAlongActiveUi && emergencyRef.current &&
+          !emergencyRef.current.responded;
+        var startupOverlayVisibleUi = !beltFastened ||
+          (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible);
+        return h('div', { className: 'rr-drive-shell', 'data-rr-view': 'driving', style: { position: 'relative', width: '100%', height: 'clamp(360px, calc(100vh - 80px), 760px)', minHeight: '360px', background: '#000', borderRadius: '12px', overflow: 'hidden' } },
           // Three.js WebGL canvas (behind). role=img + aria-label so SR users
           // hear what the 3D scene contains; the HUD canvas above carries the
           // live driving data + controls reference.
@@ -25573,51 +27730,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('canvas', {
             ref: canvasRef,
             role: 'application',
-            'aria-label': __alloT('stem.roadready.roadready_driving_hud_shows_current_sp', 'RoadReady driving HUD: shows current speed in mph, score, elapsed time, fuel, and active warnings (seatbelt, speed limit, hazards). Controls: W or up arrow to accelerate, S or down arrow to brake, A and D or left and right arrows to steer, C to cycle camera, L to toggle high beams, Space to pause, Escape to end the drive.'),
+            'aria-label': rideAlongActiveUi
+              ? 'RoadReady Ride-Along driving HUD: the car automatically steers, follows traffic, and stops for controls and hazards while narration explains decisions. The HUD shows speed, elapsed time, and warnings. Press Space to pause, C to cycle camera, or Escape to end the drive.'
+              : __alloT('stem.roadready.roadready_driving_hud_shows_current_sp', 'RoadReady driving HUD: shows current speed in mph, score, elapsed time, fuel, and active warnings (seatbelt, speed limit, hazards). Controls: W or up arrow to accelerate, S or down arrow to brake, A and D or left and right arrows to steer, C to cycle camera, L to toggle high beams, Space to pause, Escape to end the drive.'),
             tabIndex: 0,
             'data-rr-focusable': 'true',
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'block', pointerEvents: 'none', zIndex: 2 }
           }),
-          // Controls legend
-          h('div', { style: { position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 10 } },
-            h('button', { onClick: exitDriving,
-              'aria-label': __alloT('stem.roadready.end_drive_and_return_to_menu', 'End drive and return to menu'), 'aria-keyshortcuts': 'Escape',
-              'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(239,68,68,0.8)', color: '#fff', border: 'none', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.end_drive', '✕ End Drive')),
-            h('button', { onClick: function() { togglePause(); },
-              'aria-label': isPaused ? 'Resume the drive' : 'Pause the drive',
-              'aria-pressed': !!isPaused, 'aria-keyshortcuts': 'Space',
-              'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.pause', '⏸ Pause')),
-            h('button', { onClick: function() {
-              var modes = ['cockpit', 'chase', 'overhead', 'rearview'];
-              cameraModeRef.current = modes[(modes.indexOf(cameraModeRef.current) + 1) % modes.length];
-            },
-              'aria-label': __alloT('stem.roadready.cycle_camera_view_cockpit_chase_overhe', 'Cycle camera view: cockpit, chase, overhead, rearview'), 'aria-keyshortcuts': 'C',
-              'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.camera', '📷 Camera')),
-            h('button', { onClick: function() { upd('highBeams', !d.highBeams); },
-              'aria-label': d.highBeams ? 'Switch to low beams' : 'Switch to high beams',
-              'aria-pressed': !!d.highBeams, 'aria-keyshortcuts': 'L',
-              'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: d.highBeams ? 'rgba(251,191,36,0.4)' : 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid ' + (d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.2)'), fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, d.highBeams ? '💡 HIGH' : '💡 LOW'),
-            h('button', { onClick: takePhoto, title: __alloT('stem.roadready.snap_a_screenshot_k', 'Snap a screenshot (K)'),
-              'aria-label': __alloT('stem.roadready.take_a_screenshot_of_the_driving_scene', 'Take a screenshot of the driving scene'), 'aria-keyshortcuts': 'K',
-              'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', minHeight: 28, borderRadius: '6px', background: 'rgba(168,139,250,0.3)', color: '#fff', border: '1px solid #a78bfa', fontSize: '11px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.photo', '📸 Photo'))
-          ),
-          h('div', { style: { position: 'absolute', bottom: '100px', left: '10px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.6)', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', fontSize: '10px', zIndex: 10 } },
-            __alloT('stem.roadready.w_accel_s_brake_a_d_steer_f_drive_g_re', 'W Accel · S Brake · A/D Steer · F Drive · G Reverse · P Park · E/V Signal · C Cam · L Beams · K Photo · Q Horn · SPACE Pause')
-          ),
+          // Compact control dock stays below the road view and leaves every
+          // mirror unobstructed. Secondary controls disclose on demand.
+          (function() {
+            var preset = d.hudPreset || (d.calmDrive ? 'calm' : 'driver');
+            var dockButton = { minHeight: '36px', padding: '6px 10px', borderRadius: '8px', background: 'rgba(2,6,23,0.84)', color: '#fff', border: '1px solid rgba(255,255,255,0.28)', fontSize: '11px', fontWeight: 800, cursor: 'pointer', backdropFilter: 'blur(6px)' };
+            return [
+              h('div', { key: 'dock', className: 'rr-drive-dock', style: { position: 'absolute', bottom: 'calc(104px + env(safe-area-inset-bottom, 0px))', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '5px', zIndex: 21, whiteSpace: 'nowrap' } },
+                h('button', { onClick: exitDriving, 'aria-label': 'End drive and open debrief', 'aria-keyshortcuts': 'Escape', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { background: 'rgba(185,28,28,0.9)', borderColor: '#fca5a5' }) }, 'End'),
+                rideAlongActiveUi ? h('span', { className: 'rr-ridealong-state' + (driveControlsOpen ? ' rr-more-open' : ''), role: 'status', 'aria-label': rideAlongEmergencyUi ? 'Ride-Along yielding to an emergency vehicle' : rideAlongPreparingUi ? 'Ride-Along active; safety scan in progress' : 'Ride-Along active; automatic driving in progress', style: { minHeight: '34px', padding: '0 9px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', background: rideAlongEmergencyUi ? 'rgba(185,28,28,0.94)' : rideAlongPreparingUi ? 'rgba(30,64,175,0.9)' : 'rgba(21,128,61,0.9)', color: '#fff', border: '1px solid ' + (rideAlongEmergencyUi ? '#fca5a5' : rideAlongPreparingUi ? '#93c5fd' : '#86efac'), fontSize: '10px', fontWeight: 900, letterSpacing: '0.02em' } },
+                  rideAlongEmergencyUi ? '🚨 Yield' : rideAlongPreparingUi ? '🎧 Scan' : '🎧 Auto') : null,
+                h('button', { onClick: function() { togglePause(); }, 'aria-label': isPaused ? 'Resume drive' : 'Pause drive', 'aria-pressed': !!isPaused, 'aria-keyshortcuts': 'Space', 'data-rr-focusable': 'true', style: dockButton }, isPaused ? '▶ Resume' : '⏸ Pause'),
+                h('button', { onClick: function() {
+                  var order = ['driver', 'science', 'instructor', 'calm'];
+                  upd('hudPreset', order[(order.indexOf(preset) + 1) % order.length]);
+                  showHUDRef.current = true;
+                }, 'aria-label': 'Cycle driving HUD preset. Current: ' + preset, 'aria-keyshortcuts': 'H', 'data-rr-focusable': 'true', style: dockButton }, 'HUD: ' + preset.charAt(0).toUpperCase() + preset.slice(1)),
+                h('button', { onClick: function() { setDriveControlsOpen(!driveControlsOpen); }, 'aria-expanded': !!driveControlsOpen, 'aria-controls': 'rr-drive-more-controls', 'data-rr-focusable': 'true', style: dockButton }, driveControlsOpen ? 'Less' : 'More')
+              ),
+              driveControlsOpen ? h('div', { key: 'more', id: 'rr-drive-more-controls', className: 'rr-drive-more', style: { position: 'absolute', bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))', right: '10px', width: 'min(330px, calc(100% - 20px))', padding: '10px', borderRadius: '12px', background: 'rgba(2,6,23,0.94)', border: '1px solid rgba(255,255,255,0.3)', color: '#e2e8f0', zIndex: 22, boxShadow: '0 12px 32px rgba(0,0,0,0.4)' } },
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
+                  h('button', { onClick: function() { cycleCameraMode(true); }, 'aria-label': 'Cycle camera view. Current: ' + cameraModeUi, 'aria-keyshortcuts': 'C', 'data-rr-focusable': 'true', style: dockButton }, 'Camera: ' + cameraModeUi.charAt(0).toUpperCase() + cameraModeUi.slice(1)),
+                  h('button', { onClick: function() { upd('highBeams', !d.highBeams); }, 'aria-pressed': !!d.highBeams, 'aria-keyshortcuts': 'L', 'data-rr-focusable': 'true', style: Object.assign({}, dockButton, { borderColor: d.highBeams ? '#fbbf24' : 'rgba(255,255,255,0.28)' }) }, d.highBeams ? 'High beams' : 'Low beams'),
+                  h('button', { onClick: takePhoto, 'aria-keyshortcuts': 'K', 'data-rr-focusable': 'true', style: dockButton }, 'Photo'),
+                  d.freeExplore ? h('button', { onClick: function() { setWorldControlsOpen(!worldControlsOpen); }, 'aria-expanded': !!worldControlsOpen, 'aria-controls': 'rr-world-controls', 'data-rr-focusable': 'true', style: dockButton }, worldControlsOpen ? 'Hide world' : 'World settings') : null
+                ),
+                h('div', { style: { fontSize: '11px', lineHeight: 1.55, color: '#cbd5e1' } },
+                  rideAlongActiveUi
+                    ? h('span', null,
+                        h('strong', { style: { color: '#86efac' } }, 'Ride-Along: '),
+                        'Automatic steering, safe headway, controls, crossings, and hazard stops.', h('br'),
+                        h('strong', { style: { color: '#fff' } }, 'You control: '),
+                        'C camera · L beams · K photo · Space pause · Escape end')
+                    : h('span', null,
+                        h('strong', { style: { color: '#fff' } }, 'Drive: '), 'W/S or arrows · A/D steer · F drive · G reverse · P park', h('br'),
+                        h('strong', { style: { color: '#fff' } }, 'Observe: '), 'E/V signal · Z/X shoulder check · Q horn · Space pause')
+                )
+              ) : null
+            ];
+          })(),
+          missionComplete ? h('div', {
+            role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'rr-mission-complete-title', 'aria-describedby': 'rr-mission-complete-desc',
+            style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.8)', zIndex: 32, display: 'grid', placeItems: 'center', padding: '18px', backdropFilter: 'blur(5px)' }
+          },
+            h('div', { className: 'rr-mission-dialog-card', style: { width: 'min(460px, 100%)', maxHeight: 'calc(100% - 12px)', overflowY: 'auto', boxSizing: 'border-box', borderRadius: '16px', padding: '22px', background: 'var(--allo-stem-panel, #0f172a)', border: '2px solid ' + (missionComplete.passed ? '#4ade80' : '#fbbf24'), boxShadow: '0 20px 60px rgba(0,0,0,0.45)' } },
+              h('div', { style: { color: missionComplete.passed ? '#4ade80' : '#fbbf24', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em' } }, missionComplete.passed ? 'Mission passed' : 'Segment complete · review needed'),
+              h('h2', { id: 'rr-mission-complete-title', style: { margin: '5px 0 4px', color: '#fff', fontSize: '22px' } }, missionComplete.mission.title),
+              h('p', { id: 'rr-mission-complete-desc', style: { margin: '0 0 13px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.5 } }, 'The car is safely paused. Your debrief will show one strength and the best next practice focus.'),
+              h('div', { style: { display: 'grid', gap: '6px', marginBottom: '16px' } },
+                missionComplete.criteria.map(function(item) {
+                  return h('div', { key: item.id, style: { display: 'flex', gap: '8px', alignItems: 'center', padding: '7px 9px', borderRadius: '8px', background: item.met ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)', color: '#e2e8f0', fontSize: '12px' } },
+                    h('span', { 'aria-hidden': 'true', style: { color: item.met ? '#4ade80' : '#fbbf24', fontWeight: 900 } }, item.met ? '✓' : '△'),
+                    item.label
+                  );
+                })
+              ),
+              h('button', { onClick: exitDriving, autoFocus: true, 'data-rr-focusable': 'true', style: { width: '100%', minHeight: '46px', border: 'none', borderRadius: '10px', background: 'linear-gradient(135deg, #0891b2, #2563eb)', color: '#fff', fontSize: '14px', fontWeight: 900, cursor: 'pointer' } }, 'Open drive debrief')
+            )
+          ) : null,
           // ── Pause screen overlay — visible while paused (isPaused state
           // mirror, not the ref — see the togglePause declaration) ──
-          isPaused ? h('div', {
-            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
+          isPaused && !missionComplete ? h('div', {
+            role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'rr-pause-title', 'aria-describedby': 'rr-pause-desc',
+            style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.75)', zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: reducedMotionRef.current ? 'none' : 'rr-fade-in 0.3s ease-out', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }
           },
-            h('div', { style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: '36px 44px', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', maxWidth: '420px' } },
+            h('div', { className: 'rr-pause-dialog-card', style: { background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(2,6,23,0.95))', borderRadius: '18px', padding: 'clamp(20px, 5vw, 36px) clamp(20px, 6vw, 44px)', border: '2px solid #22d3ee', boxShadow: '0 20px 60px rgba(34,211,238,0.3)', textAlign: 'center', width: 'min(420px, calc(100% - 24px))', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', boxSizing: 'border-box' } },
               h('div', { style: { fontSize: '64px', marginBottom: '12px', animation: reducedMotionRef.current ? 'none' : 'rr-pulse-soft 2s ease-in-out infinite' }, 'aria-hidden': 'true' }, '⏸'),
-              h('h2', { style: { fontSize: '28px', fontWeight: 900, color: 'var(--rr-cyan, #22d3ee)', margin: '0 0 8px 0', letterSpacing: '0.12em' } }, 'PAUSED'),
-              h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '22px' } }, __alloT('stem.roadready.take_a_breath_check_your_mirrors_plan_', 'Take a breath. Check your mirrors. Plan your next move.')),
+              h('h2', { id: 'rr-pause-title', style: { fontSize: '28px', fontWeight: 900, color: 'var(--rr-cyan, #22d3ee)', margin: '0 0 8px 0', letterSpacing: '0.12em' } }, 'PAUSED'),
+              h('div', { id: 'rr-pause-desc', style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '22px' } }, __alloT('stem.roadready.take_a_breath_check_your_mirrors_plan_', 'Take a breath. Check your mirrors. Plan your next move.')),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px', fontSize: '13px', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', alignItems: 'center' } },
                 h('div', null,
                   h('kbd', { style: { padding: '4px 10px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', border: '1px solid #22d3ee', borderRadius: '5px', fontFamily: 'monospace', fontWeight: 900, color: 'var(--rr-cyan, #22d3ee)' } }, 'SPACE'),
@@ -25632,7 +27819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   h('span', { style: { marginLeft: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))' } }, __alloT('stem.roadready.take_a_photo', 'Take a photo'))
                 )
               ),
-              h('button', { onClick: function() { togglePause(false); },
+              h('button', { onClick: function() { togglePause(false); }, autoFocus: true, 'data-rr-focusable': 'true',
                 style: { marginTop: '24px', padding: '10px 24px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #22d3ee, #0891b2)', color: '#0f172a', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 12px rgba(34,211,238,0.4)' }
               }, __alloT('stem.roadready.resume_driving', '▶ Resume Driving'))
             )
@@ -25645,23 +27832,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),
             h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.fasten_your_seatbelt', 'Fasten Your Seatbelt')),
-            h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, __alloT('stem.roadready.press', 'Press '), h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), __alloT('stem.roadready.or_any_movement_key_to_fasten_the_car_', ' or any movement key to fasten. The car will not move until you do.'))
+            h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, __alloT('stem.roadready.press', 'Press '), h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), __alloT('stem.roadready.or_any_movement_key_to_fasten_the_car_', ' or any movement key to fasten. The car will not move until you do.')),
+            formalRideAlongPausedUi ? h('div', { style: { marginTop: '7px', fontSize: '11px', fontWeight: 800, color: '#fef3c7' } }, '🎧 Ride-Along is paused for evaluated drives. You are in control.') : null
           ) :
           // ── Grace period banner: visible for ~4s after belt is fastened
           // (graceVisible state, set + timed out at the fasten site) ──
-          graceVisible ? h('div', {
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: 'rr-fade-in 0.5s ease-out' }
+          (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible) ? h('div', {
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: reducedMotionRef.current ? 'none' : 'rr-fade-in 0.5s ease-out' }
           },
-            h('div', { style: { fontSize: '20px', marginBottom: '6px' } }, __alloT('stem.roadready.check_your_mirrors', '🪞 Check Your Mirrors')),
-            h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '4px' } }, __alloT('stem.roadready.glance_at_each_mirror_before_you_pull_', 'Glance at each mirror before you pull out')),
-            h('div', { style: { fontSize: '11px', color: '#bbf7d0', lineHeight: '1.4' } }, __alloT('stem.roadready.rearview_top_center_left_mirror_top_le', 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Take your time — the road isn\'t going anywhere.'))
+            h('div', { style: { fontSize: '20px', marginBottom: '6px' } }, rideAlongActiveUi ? '🎧🪞 Ride-Along Safety Scan' : __alloT('stem.roadready.check_your_mirrors', '🪞 Check Your Mirrors')),
+            h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '4px' } }, rideAlongActiveUi
+              ? 'Automatic driving begins in ' + Math.max(1, Math.ceil((graceRef.current.until || 0) - driveUiSeconds)) + '…'
+              : __alloT('stem.roadready.glance_at_each_mirror_before_you_pull_', 'Glance at each mirror before you pull out')),
+            h('div', { style: { fontSize: '11px', color: '#bbf7d0', lineHeight: '1.4' } }, rideAlongActiveUi
+              ? 'Rearview · left mirror · right mirror. The car stays in Park until this safety scan finishes.'
+              : __alloT('stem.roadready.rearview_top_center_left_mirror_top_le', 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Take your time — the road isn\'t going anywhere.')),
+            formalRideAlongPausedUi ? h('div', { style: { marginTop: '5px', fontSize: '10px', fontWeight: 800, color: '#fef3c7' } }, 'Evaluated drive · manual control') : null
           ) : null,
           // ── Touch controls for mobile/tablet ──
           // Wrapped in isTouchDeviceRef check so they only render on touch-
           // capable devices. On desktop they were ~10% of the viewport in
           // visual clutter for no benefit (keyboard handles all input).
-          isTouchDeviceRef.current ? h('div', { style: { position: 'absolute', bottom: '110px', right: d.freeExplore ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
-            className: 'touch-controls' },
+          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', { style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', right: d.freeExplore && worldControlsOpen ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
+            className: 'touch-controls rr-touch-pedals' },
             // Throttle (big green button). onTouchCancel mirrors onTouchEnd on
             // all four hold-buttons: the browser fires touchcancel (NOT touchend)
             // when it hijacks the gesture — edge swipe, notification, finger
@@ -25714,31 +27907,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }, '▼')
           ) : null,
           // Left side touch: gear + signals (same touch-only guard)
-          isTouchDeviceRef.current ? h('div', { style: { position: 'absolute', bottom: '110px', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
-            className: 'touch-controls' },
-            h('button', { onClick: function() { if (Math.abs(carRef.current.speed) < 2) gearRef.current = gearRef.current === 'D' ? 'R' : 'D'; },
+          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', { style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
+            className: 'touch-controls rr-touch-secondary' },
+            h('button', { onClick: function() { attemptDriveGear(gearRef.current === 'D' ? 'R' : 'D', true); },
               'aria-label': __alloT('stem.roadready.shift_between_drive_and_reverse_only_w', 'Shift between Drive and Reverse (only when stopped)'),
               style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.shift_gear', '⚙ Shift Gear')),
-            h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === -1 ? 0 : -1; },
+            h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); },
               'aria-label': __alloT('stem.roadready.toggle_left_turn_signal', 'Toggle left turn signal'),
-              'aria-pressed': blinkerRef.current === -1,
-              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              'aria-pressed': turnSignalUi === -1,
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.signal', '◄ Signal')),
-            h('button', { onClick: function() { blinkerRef.current = blinkerRef.current === 1 ? 0 : 1; },
+            h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === 1 ? 0 : 1, true); },
               'aria-label': __alloT('stem.roadready.toggle_right_turn_signal', 'Toggle right turn signal'),
-              'aria-pressed': blinkerRef.current === 1,
-              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: blinkerRef.current === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              'aria-pressed': turnSignalUi === 1,
+              'data-rr-focusable': 'true',
+              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.roadready.signal_2', 'Signal ►'))
           ) : null,
           // Free Explore live condition toolbar
           // ── Road Test HUD: score + time remaining (when road test is active) ──
-          d.roadTestStage === 'drive' && roadTestRef.current.active ? h('div', {
-            style: { position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', padding: '8px 14px', borderRadius: '10px', background: 'rgba(20,83,45,0.95)', border: '2px solid #4ade80', zIndex: 26, color: '#fff', minWidth: '200px', textAlign: 'center' },
-            role: 'status', 'aria-live': 'polite'
+          !startupOverlayVisibleUi && d.roadTestStage === 'drive' && roadTestRef.current.active ? h('div', {
+            className: 'rr-drive-overlay rr-road-test-meter',
+            style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '50%', transform: 'translateX(-50%)', padding: '8px 14px', borderRadius: '10px', background: 'rgba(20,83,45,0.95)', border: '2px solid #4ade80', zIndex: 26, color: '#fff', minWidth: '200px', textAlign: 'center' },
+            role: 'timer', 'aria-live': 'off', 'aria-label': 'Road test time remaining and current score'
           },
             (function() {
-              var elapsed = Math.round((Date.now() - roadTestRef.current.startedAt) / 1000);
+              var elapsed = Math.min(roadTestRef.current.durationSec,
+                Math.floor(evaluationElapsedSeconds(roadTestRef.current, driveUiSeconds)));
               var remaining = Math.max(0, roadTestRef.current.durationSec - elapsed);
               var curScore = Math.max(0, roadTestRef.current.score);
               return h('div', null,
@@ -25748,12 +27945,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             })()
           ) : null,
           // ── Parent Ride Check overlay (bottom-center tap-to-mark error buttons) ──
-          d.parentRideMode && parentRef.current.active ? h('div', {
-            style: { position: 'absolute', top: '60px', right: '10px', padding: '8px 10px', borderRadius: '10px', background: 'rgba(131,24,67,0.92)', border: '2px solid #f472b6', zIndex: 22, color: '#fff', minWidth: '140px' },
+          !startupOverlayVisibleUi && d.parentRideMode && parentRef.current.active ? h('div', {
+            className: 'rr-drive-overlay rr-parent-check-panel',
+            style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '10px', padding: '8px 10px', borderRadius: '10px', background: 'rgba(131,24,67,0.92)', border: '2px solid #f472b6', zIndex: 22, color: '#fff', minWidth: '140px' },
             role: 'region', 'aria-label': __alloT('stem.roadready.parent_error_marking_panel', 'Parent error marking panel')
           },
             (function() {
-              var elapsed = Math.round((Date.now() - parentRef.current.startedAt) / 1000);
+              var elapsed = Math.min(parentRef.current.durationSec,
+                Math.floor(evaluationElapsedSeconds(parentRef.current, driveUiSeconds)));
               var remaining = Math.max(0, parentRef.current.durationSec - elapsed);
               return h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbcfe8', textTransform: 'uppercase', marginBottom: '4px', textAlign: 'center' } },
                 '👨‍👧 ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0') + ' · ' + parentRef.current.errors.length + ' marked'
@@ -25763,7 +27962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               [['speed','🚦'],['signal','◄'],['following','🚗'],['lane','🛣️'],['scan','👀'],['stop','🛑']].map(function(c) {
                 return h('button', { key: c[0],
                   onClick: function() {
-                    parentRef.current.errors.push({ cat: c[0], t: timeRef.current, speedMph: Math.abs(carRef.current.speed) * MS_TO_MPH });
+                    parentRef.current.errors.push({ cat: c[0], t: evaluationElapsedSeconds(parentRef.current, timeRef.current), speedMph: Math.abs(carRef.current.speed) * MS_TO_MPH });
                     addToast(c[1] + ' Marked: ' + c[0]);
                   },
                   style: { padding: '5px 4px', borderRadius: '5px', border: '1px solid #f472b6', background: 'rgba(244,114,182,0.2)', color: '#fff', fontSize: '10px', fontWeight: 700, cursor: 'pointer' }
@@ -25772,9 +27971,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ) : null,
           // ── Coach Mode tip card (top-right, fades after 12s) ──
-          d.coachMode && coachRef.current.lastTip && (Date.now() - coachRef.current.lastTipAt < 12000) ? h('div', {
+          !startupOverlayVisibleUi && d.coachMode && !d.parentRideMode && d.roadTestStage !== 'drive' &&
+          !tripRef.current && !challengeRef.current.offered && !challengeRef.current.active &&
+          coachRef.current.lastTip && (Date.now() - coachRef.current.lastTipAt < 12000) ? h('div', {
             key: 'coach-' + coachRef.current.lastTipAt,
-            style: { position: 'absolute', top: '60px', right: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,41,59,0.95)', border: '2px solid #38bdf8', zIndex: 24, color: '#fff', maxWidth: '260px', fontSize: '12px', lineHeight: '1.4', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', animation: 'rr-fade-in 0.4s ease-out' },
+            className: 'rr-drive-overlay rr-coach-tip',
+            style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(30,41,59,0.95)', border: '2px solid #38bdf8', zIndex: 24, color: '#fff', maxWidth: '260px', fontSize: '12px', lineHeight: '1.4', boxShadow: '0 4px 12px rgba(0,0,0,0.6)', animation: 'rr-fade-in 0.4s ease-out' },
             role: 'status', 'aria-live': 'polite'
           },
             h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } }, __alloT('stem.roadready.coach', '🧑‍🏫 Coach')),
@@ -25782,13 +27984,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) : null,
           // ── Free Explore: Road Trip progress HUD ──
           // Small panel top-left showing current goal + progress dots for the active trip.
-          d.freeExplore && tripRef.current ? (function() {
+          !startupOverlayVisibleUi && d.freeExplore && tripRef.current ? (function() {
             var tr = tripRef.current;
             var gi = tr.goalIndex;
             var cur = tr.def.goals[gi];
             return h('div', {
-              style: { position: 'absolute', top: '10px', left: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '2px solid #f59e0b', zIndex: 24, color: '#fff', minWidth: '180px', maxWidth: '240px' },
-              role: 'status', 'aria-live': 'polite'
+              className: 'rr-drive-overlay rr-trip-progress',
+              style: { position: 'absolute', top: 'clamp(78px, 24%, 172px)', left: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '2px solid #f59e0b', zIndex: 24, color: '#fff', minWidth: '180px', maxWidth: '240px' },
+              role: 'region', 'aria-label': 'Road trip progress'
             },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' } }, tr.def.icon + ' ' + tr.def.name),
               // Progress dots — filled for completed, outline for remaining, current with ring.
@@ -25815,9 +28018,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Free Explore: Challenge card HUD ──
           // Shows offered card (with Accept/Decline) OR active card (with progress bar).
           // Rendered as an overlay near the top-center so it doesn't clobber the steering HUD.
-          d.freeExplore && (challengeRef.current.offered || challengeRef.current.active) ? h('div', {
-            style: { position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', padding: '12px 16px', borderRadius: '12px', background: 'rgba(0,0,0,0.92)', border: '2px solid ' + (challengeRef.current.active ? '#22d3ee' : '#fbbf24'), zIndex: 25, minWidth: '280px', maxWidth: '420px', color: '#fff', boxShadow: '0 4px 14px rgba(0,0,0,0.6)' },
-            role: 'status', 'aria-live': 'polite'
+          !startupOverlayVisibleUi && d.freeExplore && (challengeRef.current.offered || challengeRef.current.active) ? h('div', {
+            className: 'rr-drive-overlay rr-challenge-card',
+            style: { position: 'absolute', top: tripRef.current ? 'clamp(210px, 42%, 300px)' : 'clamp(78px, 24%, 172px)', left: '50%', transform: 'translateX(-50%)', padding: '12px 16px', borderRadius: '12px', background: 'rgba(0,0,0,0.92)', border: '2px solid ' + (challengeRef.current.active ? '#22d3ee' : '#fbbf24'), zIndex: 25, minWidth: 'min(280px, calc(100% - 20px))', maxWidth: 'min(420px, calc(100% - 20px))', boxSizing: 'border-box', color: '#fff', boxShadow: '0 4px 14px rgba(0,0,0,0.6)' },
+            role: 'region', 'aria-label': challengeRef.current.active ? 'Active driving challenge' : 'Driving challenge offer'
           },
             (function() {
               var ch = challengeRef.current;
@@ -25870,8 +28074,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return null;
             })()
           ) : null,
-          d.freeExplore ? h('div', { style: { position: 'absolute', bottom: '110px', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.85)', border: '1px solid #a78bfa', zIndex: 19, minWidth: '160px' } },
-            h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', textTransform: 'uppercase', marginBottom: '6px', textAlign: 'center' } }, __alloT('stem.roadready.free_explore_4', '🌎 FREE EXPLORE')),
+          d.freeExplore && worldControlsOpen ? h('div', { id: 'rr-world-controls', className: 'rr-world-controls', role: 'region', 'aria-label': 'Free Explore world settings', style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', right: '10px', padding: '10px', borderRadius: '10px', background: 'rgba(0,0,0,0.88)', border: '1px solid #a78bfa', zIndex: 19, minWidth: '160px', boxShadow: '0 10px 28px rgba(0,0,0,0.35)' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' } },
+              h('div', { style: { fontSize: '9px', fontWeight: 700, color: 'var(--rr-violet, #a78bfa)', textTransform: 'uppercase' } }, __alloT('stem.roadready.free_explore_4', '🌎 FREE EXPLORE')),
+              h('button', { onClick: function() { setWorldControlsOpen(false); }, 'aria-label': 'Close world settings', 'data-rr-focusable': 'true', style: { width: '26px', height: '26px', borderRadius: '6px', border: '1px solid #64748b', background: 'rgba(15,23,42,0.8)', color: '#fff', cursor: 'pointer', fontSize: '14px', lineHeight: 1 } }, '×')
+            ),
             // Weather row
             h('div', { style: { display: 'flex', gap: '3px', marginBottom: '4px', justifyContent: 'center' } },
               [['clear','☀️'],['rain','🌧'],['snow','❄'],['fog','🌫']].map(function(w) {
@@ -26465,7 +28672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             role: 'status', 'aria-live': 'assertive',
             style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
                      zIndex: 9999, pointerEvents: 'none',
-                     animation: 'roadready-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+                     animation: reducedMotionRef.current ? 'none' : 'roadready-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
           },
             h('div', { style: { background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #dc2626 100%)',
                                 color: '#fff', padding: '14px 22px', borderRadius: 16,
@@ -26539,7 +28746,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       };
                       try {
                         setRrCeleb({ question: q.q, category: catKey, total: Object.keys(nextMastery).length, at: Date.now() });
-                        setTimeout(function () { setRrCeleb(null); }, 3500);
+                        if (rrCelebTimerRef.current) clearTimeout(rrCelebTimerRef.current);
+                        rrCelebTimerRef.current = setTimeout(function () {
+                          setRrCeleb(null);
+                          rrCelebTimerRef.current = null;
+                        }, 3500);
                       } catch (e) {}
                     }
                     upd('permitMastery', nextMastery);
@@ -26616,12 +28827,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── DEBRIEF VIEW ──
       if (view === 'debrief' && drivingStats) {
         var gradeLabel, gradeColor, gradeLetter, gradeXP;
-        var combined = (drivingStats.safetyScore + drivingStats.efficiencyScore) / 2;
+        var debriefDistanceMeters = Math.max(0, Number(drivingStats.distanceMeters) || Number(drivingStats.distance) || (Number(drivingStats.distance_mi) || 0) * METERS_PER_MILE);
+        var debriefEvidence = drivingStats.evidence || rrSessionEvidence(
+          Object.assign({}, drivingStats, { distance: debriefDistanceMeters }),
+          Number(drivingStats.durationSec) || 0,
+          {
+            missionReady: !!(drivingStats.missionStatus && drivingStats.missionStatus.ready),
+            missionPassed: drivingStats.missionStatus ? !!drivingStats.missionStatus.passed : undefined
+          }
+        );
+        // Recompute through the current safety policy so imported/legacy drive
+        // records cannot preserve an older, more permissive result label.
+        var driveOutcome = rrDriveOutcome(drivingStats, debriefEvidence);
+        var combined = driveOutcome.score == null ? 0 : driveOutcome.score;
         var isFreeExplore = d.freeExplore;
+        var debriefFocusList = rrPracticeFocusFor(drivingStats.events || [], 1);
+        var debriefFocus = debriefFocusList[0] || null;
+        if (!debriefFocus && ((Number(drivingStats.crashes) || 0) > 0 || (Number(drivingStats.majorViolations) || 0) > 0 || (Number(drivingStats.childStrike) || 0) > 0)) {
+          debriefFocus = { type: 'collision', label: 'Rebuild hazard space', rule: 'Before moving, scan the full path, leave an escape route, and wait until every vulnerable road user is clear.' };
+        } else if (!debriefFocus && (Number(drivingStats.speedViolations) || Number(drivingStats.secondsOverLimit) || 0) > 0) {
+          debriefFocus = { type: 'speedViolation', label: 'Hold the posted limit', rule: 'Ease off early when the limit changes or the road slopes downhill.' };
+        } else if (!debriefFocus && (Number(drivingStats.closeFollows) || 0) > 2) {
+          debriefFocus = { type: 'tailgate', label: 'Build following distance', rule: 'Use at least 3 seconds on dry roads and more in poor conditions.' };
+        } else if (!debriefFocus && (Number(drivingStats.hardBrakes) || 0) > 2) {
+          debriefFocus = { type: 'hardBrake', label: 'Brake earlier', rule: 'Look 12-15 seconds ahead and begin slowing sooner.' };
+        }
+        if (!debriefFocus) debriefFocus = { type: 'steady', label: 'Repeat the good habits', rule: 'Keep the same calm pace while adding one more deliberate mirror-and-shoulder check.' };
+        var debriefStrength = (Number(drivingStats.crashes) || 0) === 0 && (Number(drivingStats.majorViolations) || 0) === 0
+          ? ((Number(drivingStats.speedViolations) || 0) === 0 ? 'Collision-free, speed-disciplined control' : 'Collision-free route management')
+          : ((Number(drivingStats.pedYields) || 0) > 0 ? 'Yielded correctly before the later safety incident' : 'Stopped and opened the debrief to review the safety incident');
+        var retryScenarioId = SCENARIOS.some(function(item) { return item.id === drivingStats.scenarioId; }) ? drivingStats.scenarioId : 'residential';
         // Letter comes from the shared rrGradeLetter helper (also used by the
         // certificate view) so the two can't drift.
         if (isFreeExplore) {
-          gradeLabel = '🌎 Free Explore — No Grade'; gradeColor = '#a78bfa'; gradeLetter = '—'; gradeXP = 15;
+          gradeLabel = '🌎 Free Explore — No Grade'; gradeColor = '#c4b5fd'; gradeLetter = '—'; gradeXP = 15;
         } else {
           gradeLetter = rrGradeLetter(combined);
           if (combined >= 95) { gradeLabel = '🏆 Outstanding — Instructor Ready'; gradeColor = '#fbbf24'; gradeXP = 50; }
@@ -26633,21 +28872,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         }
 
         return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
-          h('div', { style: { background: 'linear-gradient(135deg, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)), #1e1b4b)', borderRadius: '14px', padding: '24px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
+          (function() {
+            // Apply the safety-aware outcome before any result UI is rendered.
+            if (!isFreeExplore) {
+              gradeLetter = driveOutcome.grade;
+              gradeLabel = driveOutcome.label;
+              gradeColor = driveOutcome.tone === 'pass' ? '#4ade80' : driveOutcome.tone === 'sample' ? '#cbd5e1' : driveOutcome.tone === 'critical' ? '#f87171' : '#fbbf24';
+              gradeXP = driveOutcome.qualifying ? (driveOutcome.passed ? Math.max(20, Math.round(combined / 2)) : 5) : 0;
+            }
+            return null;
+          })(),
+          h('div', { style: { background: 'linear-gradient(135deg, #172033, #312e81)', borderRadius: '14px', padding: '24px', border: '1px solid #475569', color: '#f8fafc' } },
             h('div', { style: { textAlign: 'center', marginBottom: '14px' } },
               h('div', { style: { fontSize: '48px' } }, '🚗'),
-              h('h2', { style: { fontSize: '20px', fontWeight: 900 } }, __alloT('stem.roadready.drive_debrief', 'Drive Debrief')),
+              h('h2', { style: { fontSize: '20px', fontWeight: 900, color: '#f8fafc' } }, __alloT('stem.roadready.drive_debrief', 'Drive Debrief')),
               h('div', { style: { fontSize: '14px', color: gradeColor, fontWeight: 800, marginTop: '4px' } }, gradeLabel),
-              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle),
+              h('div', { style: { fontSize: '11px', color: '#cbd5e1', marginTop: '2px' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle),
               h('div', { style: { display: 'inline-flex', gap: '12px', marginTop: '8px' } },
                 h('span', { style: { padding: '4px 14px', borderRadius: '8px', background: gradeColor + '22', border: '2px solid ' + gradeColor, fontSize: '18px', fontWeight: 900, color: gradeColor } }, gradeLetter),
-                h('span', { style: { padding: '4px 12px', borderRadius: '8px', background: '#1e3a5f', border: '1px solid #3b82f6', fontSize: '12px', fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, '+' + gradeXP + ' XP')
+                gradeXP > 0 ? h('span', { style: { padding: '4px 12px', borderRadius: '8px', background: '#1e3a5f', border: '1px solid #3b82f6', fontSize: '12px', fontWeight: 700, color: 'var(--rr-blue, #60a5fa)' } }, '+' + gradeXP + ' XP') : null
+              )
+            ),
+            h('section', { 'aria-label': 'Drive result and next step', style: { background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', border: '1px solid ' + gradeColor, borderRadius: '12px', padding: '14px', marginBottom: '14px' } },
+              h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: '10px' } },
+                isFreeExplore ? 'Exploration runs are ungraded. The evidence below can still guide your next practice.' : driveOutcome.detail
+              ),
+              !debriefEvidence.qualifying && !isFreeExplore ? h('div', { role: 'status', style: { padding: '8px 10px', borderRadius: '7px', background: 'rgba(148,163,184,0.12)', color: 'var(--allo-stem-text-soft, #cbd5e1)', fontSize: '10px', lineHeight: 1.5, marginBottom: '10px' } }, debriefEvidence.reason) : null,
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '8px', marginBottom: '12px' } },
+                h('div', { style: { padding: '10px', borderRadius: '8px', background: 'var(--allo-stem-deeper, #020617)' } },
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Strength'),
+                  h('div', { style: { fontSize: '11px', fontWeight: 750, marginTop: '4px', lineHeight: 1.4 } }, debriefStrength)
+                ),
+                h('div', { style: { padding: '10px', borderRadius: '8px', background: 'var(--allo-stem-deeper, #020617)' } },
+                  h('div', { style: { fontSize: '9px', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Next focus'),
+                  h('div', { style: { fontSize: '11px', fontWeight: 800, marginTop: '4px' } }, debriefFocus.label),
+                  h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '3px', lineHeight: 1.4 } }, debriefFocus.rule)
+                )
+              ),
+              h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                h('button', { onClick: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: retryScenarioId, freeExplore: false, freeExploreScenario: null }); }, style: { minHeight: '40px', padding: '9px 15px', borderRadius: '8px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: '#082f49', fontSize: '11px', fontWeight: 900, cursor: 'pointer' } }, 'Practice this now'),
+                h('button', { onClick: function() { setDebriefDetailsOpen(!debriefDetailsOpen); }, 'aria-expanded': debriefDetailsOpen, style: { minHeight: '40px', padding: '9px 15px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' } }, debriefDetailsOpen ? 'Hide drive details' : 'Show drive details')
               )
             ),
             // Keep the score tiles readable on phones/tablets instead of
             // squeezing ten values into four fixed columns. The desktop view
             // still settles at four columns; narrower widths gracefully wrap.
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '8px', marginBottom: '16px' } },
+            debriefDetailsOpen ? h('div', { id: 'rr-drive-details', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: '8px', marginBottom: '16px' } },
               [['⏱️', drivingStats.time, 'Drive Time'],
                ['📏', drivingStats.distance_mi + ' mi', 'Distance'],
                ['💨', drivingStats.maxSpeed + ' mph', 'Max Speed'],
@@ -26659,17 +28929,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                ['💧', (drivingStats.hydroplaneSeconds || 0) + 's', 'Hydroplaning'],
                ['💥', drivingStats.crashes + (drivingStats.aiCausedCrashes ? ' (' + drivingStats.aiCausedCrashes + ' AI)' : ''), 'Crashes']
               ].map(function(stat) {
-                return h('div', { key: stat[2], style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
+                return h('div', { key: stat[2], style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: '8px', padding: '10px', textAlign: 'center', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))' } },
                   h('div', { style: { fontSize: '16px' } }, stat[0]),
                   h('div', { style: { fontSize: '14px', fontWeight: 800, color: 'var(--rr-cyan, #22d3ee)', marginTop: '2px' } }, stat[1]),
                   h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '2px' } }, stat[2])
                 );
               })
-            ),
+            ) : null,
             // Coaching tips
-            h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
+            h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #1e293b))', marginBottom: '14px' } },
               // ── Cinematic Drive Path: animated SVG playback with event markers ──
-              drivingStats.drivePath && drivingStats.drivePath.length > 5 ? (function() {
+              drivingStats.drivePath && drivingStats.drivePath.length > 5 && debriefDistanceMeters >= 5 ? (function() {
                 var path = drivingStats.drivePath;
                 var minX = 999, maxX = -999, minY = 999, maxY = -999;
                 path.forEach(function(p) { if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x; if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y; });
@@ -26749,7 +29019,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ),
                   h('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', textAlign: 'center' } }, __alloT('stem.roadready.start_end_events', '● START · ● END · 🏅 events'))
                 );
-              })() : null,
+              })() : h('div', { role: 'status', style: { marginBottom: '12px', padding: '10px', borderRadius: '8px', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', lineHeight: 1.5 } }, 'Drive a little farther to unlock the route replay.'),
               // Legacy canvas path kept for users who want a static view
               false && drivingStats.drivePath && drivingStats.drivePath.length > 5 ? h('div', { style: { marginBottom: '14px' } },
                 h('div', { style: { fontSize: '10px', fontWeight: 700, color: 'var(--rr-cyan, #22d3ee)', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.your_drive_path', '🗺️ Your Drive Path')),
@@ -26829,13 +29099,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               )
             ),
             // ── AI Drive Reflection: personalized coaching essay from callGemini ──
-            callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.6))', borderRadius: '10px', padding: '14px', border: '1px solid #38bdf8', marginTop: '12px', marginBottom: '14px' } },
+            debriefDetailsOpen && callGemini ? h('div', { style: { background: 'linear-gradient(135deg, rgba(30,41,59,0.6), rgba(15,23,42,0.6))', borderRadius: '10px', padding: '14px', border: '1px solid #38bdf8', marginTop: '12px', marginBottom: '14px' } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
                 h('div', { style: { fontSize: '11px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' } }, __alloT('stem.roadready.ai_reflection', '🧑‍🏫 AI Reflection')),
                 !d.lastReflection && !reflectionRef.current.inFlight ? h('button', {
                   onClick: function() {
                     if (reflectionRef.current.inFlight) return;
                     reflectionRef.current.inFlight = true;
+                    var reflectionRequestId = (reflectionRef.current.requestId || 0) + 1;
+                    reflectionRef.current.requestId = reflectionRequestId;
                     upd('reflectionTick', Date.now()); // force rerender
                     var snapshot = {
                       scenario: drivingStats.scenario,
@@ -26874,14 +29146,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       // "loading…" state indefinitely, blocking the user from
                       // retrying or moving on. Promise.race makes timeout
                       // surface through the existing .catch path.
+                      var reflTimeoutId = null;
                       var reflTimeoutPromise = new Promise(function(_resolve, reject) {
-                        setTimeout(function() { reject(new Error('reflection-timeout')); }, 30000);
+                        reflTimeoutId = setTimeout(function() { reject(new Error('reflection-timeout')); }, 30000);
                       });
                       Promise.race([
                         callGemini(promptText, { tier: 'flash', system: 'You are a thoughtful student-driver coach.' }),
                         reflTimeoutPromise
                       ])
                         .then(function(resp) {
+                          if (reflTimeoutId) clearTimeout(reflTimeoutId);
+                          if (reflectionRef.current.requestId !== reflectionRequestId) return;
                           reflectionRef.current.inFlight = false;
                           var text = (resp && (resp.text || resp.message || resp.content)) || (typeof resp === 'string' ? resp : '');
                           text = String(text).trim().replace(/^["']|["']$/g, '');
@@ -26894,6 +29169,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                           }
                         })
                         .catch(function() {
+                          if (reflTimeoutId) clearTimeout(reflTimeoutId);
+                          if (reflectionRef.current.requestId !== reflectionRequestId) return;
                           reflectionRef.current.inFlight = false;
                           addToast('Reflection failed — try again.');
                           upd('reflectionTick', Date.now());
@@ -26921,7 +29198,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               isFreeExplore ? h('button', { onClick: function() { upd('view', 'freeExploreSetup'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#7c3aed', color: '#fff', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.roadready.explore_again', '🌎 Explore Again')) : null,
               h('button', { onClick: function() { updMulti({ view: 'scenarioSelect', freeExplore: false, freeExploreScenario: null }); },
-                style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#22d3ee', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.roadready.drive_again', '🔁 Drive Again')),
+                style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#22d3ee', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' } }, __alloT('stem.roadready.choose_another_scenario', 'Choose another scenario')),
               h('button', { onClick: function() { upd('view', 'menu'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #64748b', background: 'transparent', color: 'var(--allo-stem-text, var(--allo-stem-text, #cbd5e1))', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.menu_7', '🏠 Menu')),
               // Crash replay button (only if there was a crash)
@@ -26935,7 +29212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: '#67e8f9', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
               }, '🎓 Coaching (' + drivingStats.events.length + ')') : null,
               // Certificate button (only if passed with A or B)
-              !isFreeExplore && combined >= 80 ? h('button', { onClick: function() { upd('view', 'certificate'); },
+              !isFreeExplore && driveOutcome.passed && driveOutcome.qualifying && driveOutcome.score >= 80 ? h('button', { onClick: function() { upd('view', 'certificate'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: 'var(--allo-stem-text, #fcd34d)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, __alloT('stem.roadready.certificate', '📜 Certificate')) : null
             )
           )
@@ -27559,15 +29836,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rtr = d.lastRoadTest;
         var ded = rtr.deductions || [];
         var byType = {};
+        var rtrIncomplete = rtr.completed === false;
+        var rtrDurationSec = Math.max(0, Math.round(Number(rtr.durationSec) || 0));
+        var rtrDurationLabel = Math.floor(rtrDurationSec / 60) + ':' + String(rtrDurationSec % 60).padStart(2, '0');
         ded.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + e.pts; });
         return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_14', '← Menu')),
           // Big pass/fail banner
           h('div', { style: { background: rtr.passed ? 'linear-gradient(135deg, #14532d, #166534)' : 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '32px', border: '2px solid ' + (rtr.passed ? '#4ade80' : '#ef4444'), marginBottom: '14px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : '❌'),
-            h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : 'Not Yet — Try Again'),
+            h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : rtrIncomplete ? '⏱️' : '❌'),
+            h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : rtrIncomplete ? 'Incomplete — Try Again' : 'Not Yet — Try Again'),
             h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.score + ' / 100'),
-            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed ? 'You cleared this simulator\'s 90-point bar — your rules and hazard decisions are solid. The real Maine BMV road test is scored by an examiner riding with you, on car control and observation a keyboard cannot measure.' : 'Need 90+ to pass. Review the deductions below and try again.')
+            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed
+              ? 'You cleared this simulator\'s 90-point bar — your rules and hazard decisions are solid. The real Maine BMV road test is scored by an examiner riding with you, on car control and observation a keyboard cannot measure.'
+              : rtrIncomplete
+                ? 'Complete the full four-minute evaluated drive to earn a result. Evaluated time: ' + rtrDurationLabel + '.'
+                : 'Need 90+ to pass. Review the deductions below and try again.')
           ),
           // Deductions breakdown
           ded.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
@@ -30939,7 +33223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Search
           h('input', { type: 'text', 'aria-label': __alloT('stem.roadready.search_roadready_help_directory_by_fea', 'Search RoadReady help directory by feature'), placeholder: __alloT('stem.roadready.search_features', '🔎 Search features...'), value: d.helpQuery || '',
             onChange: function(e) { upd('helpQuery', e.target.value); },
-            style: { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', color: '#fff', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box' }
+            style: { width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px', marginBottom: '12px', boxSizing: 'border-box' }
           }),
           // Goal filter pills
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' } },
@@ -31118,7 +33402,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rtMode = d.rtMode || 'baseline'; // baseline | impaired
         var rtStartTime = d.rtStartTime;
         var rtTargetColor = d.rtTargetColor;
-        var rtWaitUntil = d.rtWaitUntil;
         var colors = { red: '#ef4444', green: '#22c55e', blue: '#3b82f6', yellow: '#fbbf24' };
         var avgOf = function(arr) { if (!arr.length) return 0; return Math.round(arr.reduce(function(a,b){return a+b;},0) / arr.length); };
         if (rtPhase === 'intro') {
@@ -31142,13 +33425,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var isBaseline = rtMode === 'baseline';
           var simulatedLag = isBaseline ? 0 : 280;
           var trialsDone = rtTrials.length;
-          // Time-based phase transition. Ref-guarded against rtWaitUntil so repeated
-          // renders don't re-schedule the upd (which would overwrite rtStartTime
-          // and shave ms off the measured reaction).
-          if (rtPhase === 'waiting' && Date.now() >= rtWaitUntil && rtTransitionFiredRef.current !== rtWaitUntil) {
-            rtTransitionFiredRef.current = rtWaitUntil;
-            setTimeout(function() { updMulti({ rtPhase: 'react', rtStartTime: Date.now() }); }, 0);
-          }
+          // The waiting→react transition is owned by the cancellable effect
+          // near the component hooks, keeping render pure and the start stamp
+          // stable even under React Strict Mode.
           return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: 'var(--allo-stem-text, var(--allo-stem-text, #e2e8f0))', textAlign: 'center', minHeight: '500px' } },
             h('button', { onClick: function() { updMulti({ view: 'menu', rtPhase: 'intro' }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, alignSelf: 'flex-start' } }, __alloT('stem.roadready.cancel', '← Cancel')),
             h('div', { style: { fontSize: '12px', color: '#a5f3fc', marginBottom: '8px' } },
@@ -31824,7 +34103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     first_challenge: 'COMMON', eco_warrior: 'UNCOMMON', safety_star: 'UNCOMMON',
                     signal_perfect: 'UNCOMMON', full_stop: 'COMMON', night_drive: 'COMMON', night_owl: 'UNCOMMON',
                     pretrip_pro: 'UNCOMMON', daily_streak_3: 'UNCOMMON', five_scenarios: 'UNCOMMON',
-                    all_weather: 'RARE', five_challenges: 'RARE', a_plus: 'RARE', speed_demon: 'RARE',
+                    all_weather: 'RARE', five_challenges: 'RARE', a_plus: 'RARE', speed_discipline: 'RARE',
                     park_master: 'RARE', three_point: 'RARE', hazard_ace: 'RARE', hypermiler: 'RARE',
                     emergency_response: 'RARE', emergency_yield: 'RARE', five_landmarks: 'RARE',
                     biome_tourist: 'RARE', defensive_drill: 'RARE', peer_pro: 'RARE',
@@ -32918,10 +35197,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var certCarCR = (parseInt(certColor.replace('#',''),16)>>16)&0xff, certCarCG = (parseInt(certColor.replace('#',''),16)>>8)&0xff, certCarCB = parseInt(certColor.replace('#',''),16)&0xff;
         var certCarDark = '#' + [Math.floor(certCarCR*0.8), Math.floor(certCarCG*0.8), Math.floor(certCarCB*0.8)].map(function(v){var s=v.toString(16);return s.length<2?'0'+s:s;}).join('');
         var certEarned = Object.keys(earnedBadges).length;
-        var certTotalSec = (d.logbook || []).reduce(function(s, j) { return s + (j.durationSec || 0); }, 0);
+        var certTotalSec = (d.logbook || []).filter(function(j) { return j.qualifyingSession !== false; }).reduce(function(s, j) { return s + (j.durationSec || 0); }, 0);
         var certHours = (certTotalSec / 3600).toFixed(1);
         var permitPassed = !!earnedBadges.permit_pass;
         var roadTestPassed = !!earnedBadges.road_test_pass;
+        var certDistanceMeters = Math.max(0, Number(drivingStats.distanceMeters) || Number(drivingStats.distance) || (Number(drivingStats.distance_mi) || 0) * METERS_PER_MILE);
+        var certEvidence = drivingStats.evidence || rrSessionEvidence(Object.assign({}, drivingStats, { distance: certDistanceMeters }), Number(drivingStats.durationSec) || 0, {
+          missionReady: !!(drivingStats.missionStatus && drivingStats.missionStatus.ready),
+          missionPassed: drivingStats.missionStatus ? !!drivingStats.missionStatus.passed : undefined
+        });
+        var certOutcome = drivingStats.outcome || rrDriveOutcome(drivingStats, certEvidence);
+        var certEligible = certOutcome.qualifying && certOutcome.passed && Number(certOutcome.score) >= 80;
+        if (!certEligible) {
+          return h('div', { style: { padding: '24px', maxWidth: '620px', margin: '0 auto', color: 'var(--allo-stem-text, #e2e8f0)' } },
+            h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', border: 'none', background: 'transparent', color: 'var(--rr-blue, #60a5fa)', fontWeight: 750, cursor: 'pointer' } }, 'Back to debrief'),
+            h('div', { role: 'status', style: { padding: '18px', borderRadius: '12px', border: '1px solid #f59e0b', background: 'var(--allo-stem-panel, #1e293b)' } },
+              h('h2', { style: { margin: '0 0 8px', fontSize: '18px' } }, 'Practice certificate not available yet'),
+              h('p', { style: { margin: 0, fontSize: '12px', lineHeight: 1.6, color: 'var(--allo-stem-text-soft, #cbd5e1)' } }, 'Complete a qualifying drive with no critical safety event and a safety-weighted score of 80 or higher. Short samples and unsafe drives cannot generate a certificate.')
+            )
+          );
+        }
         return h('div', { style: { padding: '20px', maxWidth: '780px', margin: '0 auto' } },
           h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.back_3', '← Back')),
           h('style', null,
@@ -32938,7 +35233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return h('div', { key: pi, style: styles }, '✦');
             }),
             // Header
-            h('div', { style: { fontSize: '11px', letterSpacing: '8px', color: '#a07830', fontWeight: 700, marginBottom: '4px' } }, __alloT('stem.roadready.certificate_of_completion', 'CERTIFICATE OF COMPLETION')),
+            h('div', { style: { fontSize: '11px', letterSpacing: '5px', color: '#7c5b18', fontWeight: 800, marginBottom: '4px' } }, __alloT('stem.roadready.safe_practice_achievement', 'SAFE PRACTICE ACHIEVEMENT')),
             // Custom SVG car illustration with user's color + plate
             h('svg', { 'aria-hidden': 'true', focusable: 'false', viewBox: '0 0 200 70', width: '160', height: '56', style: { margin: '4px auto 0' } },
               h('rect', { x: 30, y: 22, width: 140, height: 28, rx: 6, fill: certColor, stroke: '#422006', strokeWidth: 1 }),
@@ -32952,20 +35247,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ) : null
             ),
             h('div', { style: { fontSize: '24px', fontWeight: 900, color: '#1e293b', marginBottom: '4px' } }, 'RoadReady'),
-            h('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '14px', fontStyle: 'italic' } }, __alloT('stem.roadready.driver_s_education_automotive_science', "Driver's Education & Automotive Science")),
+            h('div', { style: { fontSize: '12px', color: '#475569', marginBottom: '14px', fontStyle: 'italic' } }, __alloT('stem.roadready.driver_s_education_automotive_science', "Driver's Education & Automotive Science")),
             h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '0 auto 16px' } }),
-            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '2px' } }, __alloT('stem.roadready.this_certifies_that', 'This certifies that')),
+            h('div', { style: { fontSize: '11px', color: '#475569', marginBottom: '2px' } }, __alloT('stem.roadready.this_recognizes_that', 'This recognizes that')),
             h('div', { style: { fontSize: '28px', fontWeight: 800, color: '#1e293b', marginBottom: '12px', fontFamily: '"Georgia", "Times New Roman", serif', fontStyle: 'italic' } }, certName),
-            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginBottom: '14px', maxWidth: '500px', margin: '0 auto 14px', lineHeight: '1.6' } },
-              'has completed the RoadReady driver\'s education curriculum including physics of stopping distance, Maine state laws, hazard recognition, and ' + certHours + ' hours of simulated supervised driving practice.'
+            h('div', { style: { fontSize: '11px', color: '#475569', marginBottom: '14px', maxWidth: '500px', margin: '0 auto 14px', lineHeight: '1.6' } },
+              'completed a qualifying RoadReady simulation with a safety-weighted score of ' + certOutcome.score + '. Their RoadReady log contains ' + certHours + ' hours of qualifying simulated practice.'
             ),
             h('div', { style: { fontSize: '10px', color: '#a07830', fontWeight: 700, letterSpacing: '2px', marginBottom: '4px' } }, __alloT('stem.roadready.final_grade', 'FINAL GRADE')),
             // Computed HERE — the debrief's local gradeLetter is unassigned in
             // this view branch and rendered as a blank grade on the certificate.
             h('div', { style: { fontSize: '48px', fontWeight: 900, color: '#a07830', marginBottom: '12px', lineHeight: '1' } },
-              rrGradeLetter((drivingStats.safetyScore + drivingStats.efficiencyScore) / 2)),
+              certOutcome.grade),
             // Stats grid
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', margin: '12px auto', maxWidth: '520px' } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(92px, 1fr))', gap: '8px', margin: '12px auto', maxWidth: '520px' } },
               [['🛡️', drivingStats.safetyScore, 'Safety'],
                ['🌿', drivingStats.efficiencyScore, 'Eco'],
                ['🏆', certEarned, 'Badges'],
@@ -32974,41 +35269,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 return h('div', { key: si, style: { textAlign: 'center', padding: '6px', background: 'rgba(212,168,67,0.1)', borderRadius: '6px', border: '1px solid #d4a843' } },
                   h('div', { style: { fontSize: '14px' } }, s[0]),
                   h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#422006' } }, s[1]),
-                  h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', textTransform: 'uppercase' } }, s[2])
+                   h('div', { style: { fontSize: '9px', color: '#475569', textTransform: 'uppercase', fontWeight: 700 } }, s[2])
                 );
               })
             ),
             // Seals row
             h('div', { style: { display: 'flex', justifyContent: 'center', gap: '20px', margin: '14px 0', fontSize: '10px' } },
-              h('div', { style: { textAlign: 'center', opacity: permitPassed ? 1 : 0.3 } },
+              h('div', { style: { textAlign: 'center', opacity: permitPassed ? 1 : 0.68 } },
                 h('div', { style: { fontSize: '24px' } }, '📝'),
-                h('div', { style: { color: permitPassed ? '#15803d' : '#94a3b8', fontWeight: 700 } }, permitPassed ? 'PERMIT PASSED' : 'permit pending')
+                h('div', { style: { color: permitPassed ? '#15803d' : '#475569', fontWeight: 700 } }, permitPassed ? 'PERMIT PASSED' : 'permit pending')
               ),
-              h('div', { style: { textAlign: 'center', opacity: roadTestPassed ? 1 : 0.3 } },
+              h('div', { style: { textAlign: 'center', opacity: roadTestPassed ? 1 : 0.68 } },
                 h('div', { style: { fontSize: '24px' } }, '🪪'),
-                h('div', { style: { color: roadTestPassed ? '#15803d' : '#94a3b8', fontWeight: 700 } }, roadTestPassed ? 'ROAD TEST PASSED' : 'road test pending')
+                h('div', { style: { color: roadTestPassed ? '#15803d' : '#475569', fontWeight: 700 } }, roadTestPassed ? 'ROAD TEST PASSED' : 'road test pending')
               ),
               // Was a "70+ HOURS" / "X of 70 hrs" seal, which put simulator time on a
               // certificate — next to a parent signature line — in the units of Maine's
               // statutory requirement. It now reads as what it counts.
-              h('div', { style: { textAlign: 'center', opacity: certHours > 10 ? 1 : 0.5 } },
+              h('div', { style: { textAlign: 'center', opacity: certHours > 10 ? 1 : 0.75 } },
                 h('div', { style: { fontSize: '24px' } }, '🕙'),
-                h('div', { style: { color: '#94a3b8', fontWeight: 700 } }, certHours + ' SIM HRS')
+                h('div', { style: { color: '#475569', fontWeight: 700 } }, certHours + ' SIM HRS')
               )
             ),
             h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '14px auto' } }),
             // Signature lines
-            h('div', { style: { display: 'flex', justifyContent: 'space-around', fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-around', gap: '16px', flexWrap: 'wrap', fontSize: '10px', color: '#475569', marginTop: '10px' } },
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { borderTop: '1px solid #422006', width: '180px', marginBottom: '4px' } }),
-                h('div', null, __alloT('stem.roadready.parent_guardian_signature', 'Parent / Guardian Signature'))
+                h('div', null, __alloT('stem.roadready.optional_coach_acknowledgement', 'Optional Coach Acknowledgement'))
               ),
               h('div', { style: { textAlign: 'center' } },
                 h('div', { style: { borderTop: '1px solid #422006', width: '180px', marginBottom: '4px' } }),
                 h('div', null, __alloT('stem.roadready.date_2', 'Date'))
               )
             ),
-            h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '18px' } }, 'Issued ' + certDate + ' · AlloFlow RoadReady · Portland, Maine'),
+            h('div', { style: { fontSize: '10px', color: '#475569', marginTop: '18px' } }, 'Issued ' + certDate + ' · AlloFlow RoadReady · Portland, Maine'),
             // Was 8px italic muted — the smallest text on a document whose whole visual
             // language (double gold border, seals, letterspaced caps, a parent signature
             // line, "Portland, Maine") says "official". A disclaimer that quiet does not
@@ -33313,6 +35608,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               ' · Skid: ' + drivingStats.skidSeconds + 's · Unsignaled: ' + drivingStats.unsignaledLaneChanges
             ),
             !coachResponse && !coachLoading ? h('button', { onClick: function() {
+              if (aiCoachRequestRef.current.inFlight) return;
+              var aiCoachRequestId = aiCoachRequestRef.current.requestId + 1;
+              aiCoachRequestRef.current = { inFlight: true, requestId: aiCoachRequestId };
               upd('coachLoading', true);
               var prompt = 'You are RoadReady, an AI driving instructor for a teen learning to drive in Maine. ' +
                 'Analyze this driving session data and give 3-4 specific, encouraging tips for improvement. ' +
@@ -33327,14 +35625,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ', CyclistClosePass=' + (drivingStats.cyclistClose || 0) +
                 '. Format as short paragraphs, each starting with an emoji.';
               if (!callGemini) {
+                aiCoachRequestRef.current.inFlight = false;
                 upd('coachResponse', 'AI coach not available in this environment.');
                 upd('coachLoading', false);
               } else {
                 callGemini(prompt).then(function(response) {
+                  if (aiCoachRequestRef.current.requestId !== aiCoachRequestId ||
+                      !dataRef.current || dataRef.current.view !== 'aiCoach') return;
+                  aiCoachRequestRef.current.inFlight = false;
                   upd('coachResponse', response);
                   upd('coachLoading', false);
                   if (response) speak('Your AI driving coach analysis is ready.');
                 }).catch(function() {
+                  if (aiCoachRequestRef.current.requestId !== aiCoachRequestId ||
+                      !dataRef.current || dataRef.current.view !== 'aiCoach') return;
+                  aiCoachRequestRef.current.inFlight = false;
                   upd('coachResponse', 'Unable to connect to AI coach. Please try again.');
                   upd('coachLoading', false);
                 });
@@ -33959,7 +36264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #7c2d12, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '24px', border: '1px solid #fb923c', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '⏱️'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.reaction_time_trainer_2', 'Reaction Time Trainer')),
-            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, __alloT('stem.roadready.measure_your_actual_reaction_speed_the', 'Measure your ACTUAL reaction speed. The average driver is 1.5 seconds. How fast are you?'))
+            h('div', { style: { fontSize: '12px', color: '#fed7aa' } }, __alloT('stem.roadready.simple_reaction_trainer_context', 'This measures only a simple tap response. Real driving adds perception and decision time; never substitute this score for the simulator\'s 1.5-second planning allowance.'))
           ),
           // The test area
           h('div', {
@@ -34035,20 +36340,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('div', { style: { fontSize: '12px', color: 'var(--rr-cyan, #22d3ee)', marginTop: '10px', fontWeight: 700 } }, __alloT('stem.roadready.click_to_try_again', 'Click to try again'))
             ) : null
           ),
-          // Timer logic: transition from ready → go after random delay
-          rtState.phase === 'ready' ? h('div', { ref: function(el) {
-            if (!el) return;
-            if (!el._timerSet) {
-              el._timerSet = true;
-              var delay = 2000 + Math.random() * 4000;
-              setTimeout(function() {
-                var cur = d.rtState;
-                if (cur && cur.phase === 'ready') {
-                  upd('rtState', Object.assign({}, cur, { phase: 'go', greenTime: Date.now() }));
-                }
-              }, delay);
-            }
-          } }) : null,
           // Stats
           rtState.times && rtState.times.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '10px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginTop: '14px' } },
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#fb923c', textTransform: 'uppercase', marginBottom: '6px' } }, __alloT('stem.roadready.your_results', 'Your Results')),
@@ -34067,7 +36358,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               )
             ),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', lineHeight: '1.5' } },
-              'Your best reaction time of ' + rtState.bestTime + ' ms adds ' + Math.round(rtState.bestTime / 1000 * 88) + ' feet to your stopping distance at 60 mph. ',
+              'At 60 mph, your best simple tap time of ' + rtState.bestTime + ' ms covers about ' + Math.round(rtState.bestTime / 1000 * 88) + ' feet before braking could begin; real hazard perception usually takes longer. ',
               __alloT('stem.roadready.fatigue_alcohol_or_phone_use_can_doubl', 'Fatigue, alcohol, or phone use can slow recognition and response. NHTSA lists reaction-time impairment at .08 BAC; your safest fix is more following distance and no impaired driving.')
             )
           ) : null
@@ -34306,6 +36597,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       MPH_TO_MS: MPH_TO_MS, MS_TO_MPH: MS_TO_MPH, FT_PER_M: FT_PER_M,
       METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
       METERS_PER_WORLD_UNIT: METERS_PER_WORLD_UNIT, FEET_PER_WORLD_UNIT: FEET_PER_WORLD_UNIT,
+      GEAR_SHIFT_MAX_SPEED_MPS: GEAR_SHIFT_MAX_SPEED_MPS,
       MAP_SIZE: MAP_SIZE, CHUNK_SIZE: CHUNK_SIZE,
       MAX_ROAD_WIDTH: MAX_ROAD_WIDTH, CLEARANCE_BUFFER: CLEARANCE_BUFFER,
       SPLINE_MAX_HEADING: SPLINE_MAX_HEADING,
@@ -34330,10 +36622,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       idleGph: idleGph, instantMPG: instantMPG, cruiseMPG: cruiseMPG,
       safeFollowingFeet: safeFollowingFeet,
       worldUnitsToMeters: worldUnitsToMeters, worldUnitsToFeet: worldUnitsToFeet,
-      metersToWorldUnits: metersToWorldUnits, followingGapSeconds: followingGapSeconds,
+      metersToWorldUnits: metersToWorldUnits, canShiftDriveGear: canShiftDriveGear,
+      evaluationElapsedSeconds: evaluationElapsedSeconds,
+      shouldHoldStartupWorld: shouldHoldStartupWorld,
+      followingGapSeconds: followingGapSeconds,
       recommendedFollowingMeters: recommendedFollowingMeters,
       crossedControlLine: crossedControlLine, vehicleFootprint: vehicleFootprint,
-      vehicleRectsOverlap: vehicleRectsOverlap, vehicleGridCollision: vehicleGridCollision,
+      vehicleRectsOverlap: vehicleRectsOverlap, pointOverlapsVehicle: pointOverlapsVehicle,
+      vulnerableRoadUserFootprint: vulnerableRoadUserFootprint,
+      vehicleSideClearance: vehicleSideClearance, wildlifeCollisionRadius: wildlifeCollisionRadius,
+      landmarkVehicleAppearance: landmarkVehicleAppearance, hazardActorCategory: hazardActorCategory,
+      emergencyVehicleFootprintType: emergencyVehicleFootprintType,
+      vehicleGridCollision: vehicleGridCollision,
       roadLayoutFor: roadLayoutFor, scenarioRoadLayout: scenarioRoadLayout, oneWayRoadLayoutFor: oneWayRoadLayoutFor,
       authoredTrafficLaneOffsets: authoredTrafficLaneOffsets,
       nearestAuthoredTrafficLaneOffset: nearestAuthoredTrafficLaneOffset,
@@ -34343,6 +36643,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       crossStreetPose: crossStreetPose, crossStreetWorldPoint: crossStreetWorldPoint,
       crossStreetLocalPoint: crossStreetLocalPoint, crossStreetTravelHeading: crossStreetTravelHeading,
       crossStreetTravelDirection: crossStreetTravelDirection,
+      moveCrossStreetActorToSafeApproach: moveCrossStreetActorToSafeApproach,
       trafficRoadCoordinates: trafficRoadCoordinates,
       trafficRelativeRoadPosition: trafficRelativeRoadPosition,
       followingVehicleRoadState: followingVehicleRoadState,
@@ -34370,7 +36671,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       roadCrownHeight: roadCrownHeight, roadShoulderDrainageDrop: roadShoulderDrainageDrop,
       roadLaneArrowSpecs: roadLaneArrowSpecs, mainRoadLocalPoint: mainRoadLocalPoint,
       mainRoadWorldPoint: mainRoadWorldPoint,
-      roadRelativeTarget: roadRelativeTarget, assessRoadLanePosition: assessRoadLanePosition,
+      roadRelativeTarget: roadRelativeTarget, roadAwareRelativePosition: roadAwareRelativePosition,
+      mainRoadTravelSign: mainRoadTravelSign,
+      roadRelativeHeadingError: roadRelativeHeadingError,
+      separatePedestrianAfterImpact: separatePedestrianAfterImpact,
+      separateRoadUserAfterImpact: separateRoadUserAfterImpact,
+      separateVehicleAfterImpact: separateVehicleAfterImpact,
+      assessRoadLanePosition: assessRoadLanePosition,
       controlDistanceAhead: controlDistanceAhead,
       signedRoadCurvatureAt: signedRoadCurvatureAt, guardrailSideForRoad: guardrailSideForRoad,
       GUARDRAIL_CURVATURE_THRESHOLD: GUARDRAIL_CURVATURE_THRESHOLD,
@@ -34397,6 +36704,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       generateChunk: generateChunk, createInfiniteWorld: createInfiniteWorld,
       createFreeExploreWorld: createFreeExploreWorld, createScenarioWorld: createScenarioWorld,
       getContinuousScenarioProfile: getContinuousScenarioProfile, scenarioUsesContinuousWorld: scenarioUsesContinuousWorld,
+      rideAlongSupportsScenario: rideAlongSupportsScenario,
+      rideAlongApproachSpeedMph: rideAlongApproachSpeedMph,
       scenarioChunkHasIntersection: scenarioChunkHasIntersection, scenarioWorldSeed: scenarioWorldSeed,
       worldPostedLimitMph: worldPostedLimitMph, playerRoadStation: playerRoadStation,
       playerPostedLimitMph: playerPostedLimitMph, SCHOOL_ZONE_RADIUS_WORLD: SCHOOL_ZONE_RADIUS_WORLD,
@@ -34405,7 +36714,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       getBiomeSpeedLimitMph: getBiomeSpeedLimitMph, townForChunk: townForChunk,
       scenarioRoadCenterX: scenarioRoadCenterX,
       // spawns + signals + events
-      hasTrafficGap: hasTrafficGap, leftTurnGapState: leftTurnGapState,
+      hasTrafficGap: hasTrafficGap, mainRoadCoordinateDistance: mainRoadCoordinateDistance,
+      hasMainRoadTrafficGap: hasMainRoadTrafficGap, leftTurnGapState: leftTurnGapState,
       alignTrafficToStreamedWorld: alignTrafficToStreamedWorld,
       trafficCountForLevel: trafficCountForLevel,
       reconcileFreeExploreTrafficPopulation: reconcileFreeExploreTrafficPopulation,
@@ -34419,9 +36729,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       maybeSpawnWildlife: maybeSpawnWildlife,
       // coaching / grading / misc
       pushDriveEvent: pushDriveEvent, coachTipFor: coachTipFor,
+      driveAlertPriority: driveAlertPriority, mergeDriveAlert: mergeDriveAlert,
+      driveAlertAppearance: driveAlertAppearance, canvasMessageLines: canvasMessageLines,
       rrPracticeFocusFor: rrPracticeFocusFor,
       rrRuleOutcomeFor: rrRuleOutcomeFor,
       rrRuleCueFor: rrRuleCueFor,
+      rrScenarioMission: rrScenarioMission,
+      rrScenarioMissionStatus: rrScenarioMissionStatus,
+      rrSessionEvidence: rrSessionEvidence,
+      rrDriveOutcome: rrDriveOutcome,
+      rrDriveAchievementIds: rrDriveAchievementIds,
       rrGradeLetter: rrGradeLetter, localDayKey: localDayKey,
       rectsOverlap: rectsOverlap, obstacleAabb: obstacleAabb, makeParkingObb: makeParkingObb, parkingCarObb: parkingCarObb,
       parkingObstacleObb: parkingObstacleObb, parkingObbsOverlap: parkingObbsOverlap,

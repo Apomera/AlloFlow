@@ -17,6 +17,9 @@
   var FORMS = ['original', 'same-text-supported', 'adapted'];
   var DESIGNATION_SOURCES = ['educator', 'workflow-default', 'legacy-inferred'];
   var PRIMARY_POLICIES = ['preserve-primary', 'educator-directed'];
+  var ADAPTED_TEXT_POLICIES = ['include', 'omit', 'prohibited'];
+  var PRIMARY_TEXT_ACCESS = ['required', 'available'];
+  var TEXT_ACCESS_DECISION_SOURCES = ['educator', 'standard', 'workflow-default'];
 
   var GRADE_CALIBRATION = {
     'Kindergarten': { asl: 6, asw: 1.15, min: 0, max: 1 },
@@ -488,6 +491,95 @@
     return next;
   }
 
+  function _instructionalConstraintsFromStandards(standardsContext) {
+    var context = isObject(standardsContext) ? standardsContext : {};
+    if (isObject(context.instructionalConstraints)
+        && cleanText(context.instructionalConstraints.textAccessExpectation, 80) !== 'unspecified') {
+      return context.instructionalConstraints;
+    }
+    var entries = Array.isArray(context.standards) ? context.standards : [];
+    for (var i = 0; i < entries.length; i++) {
+      var constraints = entries[i] && entries[i].instructionalConstraints;
+      if (isObject(constraints) && cleanText(constraints.textAccessExpectation, 80) !== 'unspecified') {
+        return constraints;
+      }
+    }
+    return isObject(context.instructionalConstraints) ? context.instructionalConstraints : {};
+  }
+
+  function _standardsText(standardsContext, standardsInput) {
+    var context = isObject(standardsContext) ? standardsContext : {};
+    var entries = Array.isArray(context.standards) ? context.standards : [];
+    var values = [standardsInput, context.inputText, context.promptText];
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      if (isObject(entry)) {
+        values.push(entry.code, entry.label, entry.text, entry.statement, entry.description);
+      } else {
+        values.push(entry);
+      }
+    }
+    return values.map(function (value) { return cleanText(value, 3600); }).filter(Boolean).join(' ');
+  }
+
+  /**
+   * Resolve the two independent text-access decisions used by planning:
+   * whether students must retain the primary text, and whether an adapted
+   * companion should be included. A grade-level/complex-text requirement
+   * affects only the former. Suppressing adaptation requires either an
+   * educator choice or an explicit, sourced prohibition.
+   */
+  function deriveTextAccessPlan(raw, options) {
+    var source = isObject(raw) ? raw : {};
+    var opts = isObject(options) ? options : {};
+    var standardsContext = source.standardsContext || opts.standardsContext || null;
+    var constraints = _instructionalConstraintsFromStandards(standardsContext);
+    var expectation = cleanText(constraints.textAccessExpectation, 80) || 'unspecified';
+    var sourced = constraints.sourced === true
+      || !!cleanText(constraints.basis || constraints.authority || constraints.sourceUrl || constraints.url, 600);
+    var searchable = _standardsText(standardsContext, opts.standardsInput || opts.standards || '');
+    var textComplexityRequirement = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+      || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+    var standardRequiresPrimary = expectation === 'preserve-primary'
+      || expectation === 'adaptation-prohibited'
+      || textComplexityRequirement;
+    var sourcedProhibition = sourced && expectation === 'adaptation-prohibited';
+
+    var explicitAdaptedPolicy = cleanText(source.adaptedTextPolicy || opts.adaptedTextPolicy, 40);
+    var adaptedTextPolicy = ADAPTED_TEXT_POLICIES.indexOf(explicitAdaptedPolicy) !== -1
+      ? explicitAdaptedPolicy : 'include';
+    if (adaptedTextPolicy === 'prohibited' && !sourcedProhibition) adaptedTextPolicy = 'omit';
+    if (sourcedProhibition) adaptedTextPolicy = 'prohibited';
+
+    var decisionSource = cleanText(source.adaptedTextPolicySource || opts.adaptedTextPolicySource, 40);
+    if (sourcedProhibition) decisionSource = 'standard';
+    else if (explicitAdaptedPolicy === 'prohibited') decisionSource = 'educator';
+    else if (TEXT_ACCESS_DECISION_SOURCES.indexOf(decisionSource) === -1) {
+      decisionSource = explicitAdaptedPolicy ? 'educator' : 'workflow-default';
+    }
+
+    var explicitPrimaryAccess = cleanText(source.primaryTextAccess || opts.primaryTextAccess, 40);
+    var primaryTextAccess = PRIMARY_TEXT_ACCESS.indexOf(explicitPrimaryAccess) !== -1
+      ? explicitPrimaryAccess : (standardRequiresPrimary ? 'required' : 'available');
+    if (standardRequiresPrimary) primaryTextAccess = 'required';
+
+    var reason = sourcedProhibition
+      ? 'sourced-adaptation-prohibition'
+      : (expectation === 'preserve-primary' && sourced
+          ? 'sourced-primary-text-requirement'
+          : (textComplexityRequirement
+              ? 'standard-text-complexity-requirement'
+              : (explicitAdaptedPolicy ? 'educator-choice' : 'default-access-companion')));
+    return {
+      primaryTextAccess: primaryTextAccess,
+      adaptedTextPolicy: adaptedTextPolicy,
+      adaptedTextPolicySource: decisionSource,
+      textAccessReason: reason,
+      standardRequiresPrimary: standardRequiresPrimary,
+      sourcedAdaptationProhibition: sourcedProhibition
+    };
+  }
+
   function normalizeInstructionalContext(raw, options) {
     var source = isObject(raw) ? raw : {};
     var opts = isObject(options) ? options : {};
@@ -498,10 +590,15 @@
       source.instructionalGrade || (source.grade && (source.grade.instructionalGrade || source.grade.label)) || opts.instructionalGrade,
       opts.fallbackGrade || ''
     );
+    var textAccess = deriveTextAccessPlan(source, Object.assign({}, opts, { standardsContext: standardsContext }));
     return {
       schemaVersion: CONTEXT_SCHEMA_VERSION,
       instructionalGrade: instructionalGrade,
       primaryTextPolicy: policy,
+      primaryTextAccess: textAccess.primaryTextAccess,
+      adaptedTextPolicy: textAccess.adaptedTextPolicy,
+      adaptedTextPolicySource: textAccess.adaptedTextPolicySource,
+      textAccessReason: textAccess.textAccessReason,
       standardsContext: standardsContext,
       standardsFingerprint: cleanText(source.standardsFingerprint, 120) || fingerprintValue(standardsContext || null)
     };
@@ -531,6 +628,8 @@
     SOURCE_COMPLEXITY_MEASUREMENT_VERSION: SOURCE_COMPLEXITY_MEASUREMENT_VERSION,
     ROLES: ROLES.slice(),
     FORMS: FORMS.slice(),
+    ADAPTED_TEXT_POLICIES: ADAPTED_TEXT_POLICIES.slice(),
+    PRIMARY_TEXT_ACCESS: PRIMARY_TEXT_ACCESS.slice(),
     normalizeGrade: normalizeGrade,
     normalizeGradeLabel: normalizeGradeLabel,
     getComplexityTarget: getComplexityTarget,
@@ -549,6 +648,7 @@
     inferInstructionalText: inferInstructionalText,
     withComplexityEvidence: withComplexityEvidence,
     invalidateComplexityEvidence: invalidateComplexityEvidence,
+    deriveTextAccessPlan: deriveTextAccessPlan,
     normalizeInstructionalContext: normalizeInstructionalContext,
     resolveArtifactContext: resolveArtifactContext
   };

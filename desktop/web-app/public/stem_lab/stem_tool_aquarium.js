@@ -553,18 +553,23 @@ window.StemLab = window.StemLab || {
       conditions.push({ id: 'observation', label: 'Observe at least ' + mission.requiredTicks + ' aquarium-hour ticks', met: Number(elapsedTicks) >= mission.requiredTicks });
       var structuralDeltas = { shelter: deltas.shelter, territory: deltas.territory, openSwim: deltas.openSwim, minimum: deltas.minimum };
       var actualLeadingMetric = Object.keys(structuralDeltas).sort(function(a, b) { return structuralDeltas[b] - structuralDeltas[a]; })[0];
-      var predictionCorrect = prediction === actualLeadingMetric || prediction === mission.focus && structuralDeltas[mission.focus] > 0;
+      var predictionMatched = prediction === actualLeadingMetric || prediction === mission.focus && structuralDeltas[mission.focus] > 0;
       var vitalityProtected = deltas.vitality >= -5 && deltas.stress <= 8;
       var success = conditions.every(function(condition) { return condition.met; });
-      var stars = success ? 1 + (predictionCorrect ? 1 : 0) + (vitalityProtected ? 1 : 0) : 0;
+      var fairTestComplete = conditions.filter(function(condition) { return condition.id === 'controlled' || condition.id === 'observation'; }).every(function(condition) { return condition.met; });
+      // Inquiry stars describe the quality of the investigation, not whether the
+      // preregistered hypothesis happened to match the model outcome.
+      var stars = success ? 1 + (fairTestComplete ? 1 : 0) + (vitalityProtected ? 1 : 0) : 0;
       return {
         mission: mission,
         success: success,
         stars: stars,
         points: stars * 100,
-        predictionCorrect: predictionCorrect,
+        predictionMatched: predictionMatched,
+        predictionCorrect: predictionMatched,
         actualLeadingMetric: actualLeadingMetric,
         vitalityProtected: vitalityProtected,
+        fairTestComplete: fairTestComplete,
         conditions: conditions,
         metCount: conditions.filter(function(condition) { return condition.met; }).length,
         deltas: deltas,
@@ -15558,6 +15563,7 @@ var d = (labToolData && labToolData._aquarium) || {};
           var habitatMissionObservationStartTick = typeof d.habitatMissionObservationStartTick === 'number' ? d.habitatMissionObservationStartTick : null;
           var habitatMissionObservationLayoutSignature = typeof d.habitatMissionObservationLayoutSignature === 'string' ? d.habitatMissionObservationLayoutSignature : null;
           var habitatMissionOutcome = d.habitatMissionOutcome && typeof d.habitatMissionOutcome === 'object' && Array.isArray(d.habitatMissionOutcome.conditions) ? Object.assign({}, d.habitatMissionOutcome, { stars: Math.max(0, Math.min(3, Number(d.habitatMissionOutcome.stars) || 0)) }) : null;
+          var habitatMissionRevision = ['supported', 'revised', 'uncertain'].indexOf(d.habitatMissionRevision) !== -1 ? d.habitatMissionRevision : '';
           var habitatMissionReflection = typeof d.habitatMissionReflection === 'string' ? d.habitatMissionReflection.slice(0, 600) : '';
           var habitatMissionCompleted = d.habitatMissionCompleted && typeof d.habitatMissionCompleted === 'object' ? d.habitatMissionCompleted : {};
           var habitatMissionPoints = Math.max(0, Math.floor(Number(d.habitatMissionPoints) || 0));
@@ -16902,7 +16908,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               selectedPlantId: null,
               ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', habitatLayout: [], habitatUndoLayout: [], habitatPlantZones: {}, habitatStudioOpen: false, habitatViewMode: 'plan', habitatOverlay: 'none', habitatInteractionFilter: 'all', habitatInteractionBaseline: null, habitatSelectedInteractionId: null, selectedHabitatItemId: null, nextHabitatItemId: 1, lastEcosystemExchange: null,
               ecosystemExchangeHistory: [], vitalityHistory: [], fishVitality: {}, ecosystemBaseline: null, ecosystemPrediction: { oxygen: null, nitrate: null, vitality: null }, ecosystemInterventionNote: '',
-              habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '', habitatMissionCompleted: {}, habitatMissionPoints: 0, habitatMissionPanelOpen: true,
+              habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '', habitatMissionCompleted: {}, habitatMissionPoints: 0, habitatMissionPanelOpen: true,
 
               fishBirthTicks: {}, fishCareLog: {},
               fishInstanceIds: [], nextFishInstanceId: 1, fishIdentityVersion: 3,
@@ -20608,6 +20614,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   habitatMissionObservationStartTick: null,
                   habitatMissionObservationLayoutSignature: null,
                   habitatMissionOutcome: null,
+                  habitatMissionRevision: '',
                   habitatMissionReflection: '',
                   habitatMissionPanelOpen: true,
                   habitatStudioOpen: true
@@ -20636,7 +20643,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
 
               function recordHabitatMissionReflection() {
-                if (!activeHabitatMission || habitatMissionStage !== 'reflect' || !habitatMissionOutcome || habitatMissionReflection.trim().length < 20) return;
+                if (!activeHabitatMission || habitatMissionStage !== 'reflect' || !habitatMissionOutcome || !habitatMissionRevision || habitatMissionReflection.trim().length < 20) return;
                 var previousMissionRecord = habitatMissionCompleted[activeHabitatMission.id] || {};
                 var previousStars = Math.max(0, Number(previousMissionRecord.stars) || 0);
                 var nextStars = Math.max(previousStars, Number(habitatMissionOutcome.stars) || 0);
@@ -20645,11 +20652,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                   success: habitatMissionOutcome.success,
                   stars: nextStars,
                   attempts: Math.max(0, Number(previousMissionRecord.attempts) || 0) + 1,
+                  predictionMatched: habitatMissionOutcome.predictionMatched === true,
+                  revision: habitatMissionRevision,
                   reflection: habitatMissionReflection.trim(),
                   tick: simTick
                 };
                 var earnedPoints = Math.max(0, nextStars - previousStars) * 100;
-                updMulti({ habitatMissionCompleted: nextCompleted, habitatMissionPoints: habitatMissionPoints + earnedPoints, habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '', eventLog: appendTankEvent('Habitat mission ' + activeHabitatMission.title + ': ' + (habitatMissionOutcome.success ? 'completed' : 'attempt recorded') + ' with ' + habitatMissionOutcome.stars + ' star' + (habitatMissionOutcome.stars === 1 ? '' : 's')) });
+                updMulti({ habitatMissionCompleted: nextCompleted, habitatMissionPoints: habitatMissionPoints + earnedPoints, habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '', eventLog: appendTankEvent('Habitat mission ' + activeHabitatMission.title + ': ' + (habitatMissionOutcome.success ? 'completed' : 'attempt recorded') + ' with ' + habitatMissionOutcome.stars + ' star' + (habitatMissionOutcome.stars === 1 ? '' : 's')) });
                 if (addToast) addToast(habitatMissionOutcome.success ? activeHabitatMission.title + ' completed! +' + earnedPoints + ' habitat points.' : 'Reflection saved. Revise the design and try again.', habitatMissionOutcome.success ? 'success' : 'info');
               }
 
@@ -20662,6 +20671,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   habitatMissionObservationStartTick: null,
                   habitatMissionObservationLayoutSignature: null,
                   habitatMissionOutcome: null,
+                  habitatMissionRevision: '',
                   habitatMissionReflection: ''
                 });
               }
@@ -20753,6 +20763,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         elapsedTicks: habitatMissionElapsedTicks,
                         controlled: habitatMissionObservationControlled,
                         outcome: habitatMissionOutcome,
+                        revision: habitatMissionRevision,
                         reflection: habitatMissionReflection
                       } : null
                     },
@@ -22928,7 +22939,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-2.5" },
                         React.createElement("div", null,
                           React.createElement("h5", { id: "aquarium-habitat-missions-title", className: "text-[10px] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
-                          React.createElement("p", { className: "text-[8px] text-amber-200" }, "Predict → build → observe → explain. Earn stars for ecological balance, not object count.")
+                          React.createElement("p", { className: "text-[8px] text-amber-200" }, "Predict → build → observe → revise and explain. Stars reflect mission success, fair testing, and organism welfare—not prediction accuracy.")
                         ),
                         React.createElement("div", { className: "flex items-center gap-1.5" },
                           React.createElement("span", { className: "rounded-full bg-amber-300 px-2 py-0.5 text-[8px] font-black text-amber-950", 'aria-label': habitatMissionPoints + " habitat mission points" }, "🏅 " + habitatMissionPoints + " pts"),
@@ -22959,11 +22970,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   React.createElement("strong", { className: "text-[11px] text-white" }, activeHabitatMission.icon + " " + activeHabitatMission.title),
                                   React.createElement("p", { className: "mt-0.5 text-[8px] text-slate-200" }, activeHabitatMission.brief)
                                 ),
-                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, "Mission board")
+                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionRevision: '', habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, "Mission board")
                               ),
                               React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1", role: "list", 'aria-label': "Mission learning-loop stages" },
                                 [
-                                  { id: 'predict', label: '1 Predict' }, { id: 'build', label: '2 Build' }, { id: 'observe', label: '3 Observe' }, { id: 'reflect', label: '4 Explain' }
+                                  { id: 'predict', label: '1 Predict' }, { id: 'build', label: '2 Build' }, { id: 'observe', label: '3 Observe' }, { id: 'reflect', label: '4 Revise + explain' }
                                 ].map(function(stage, stageIndex) {
                                   var currentIndex = ['predict', 'build', 'observe', 'reflect'].indexOf(habitatMissionStage);
                                   var complete = stageIndex < currentIndex;
@@ -22973,7 +22984,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                               ),
                               habitatMissionStage === 'predict' && React.createElement("div", { className: "mt-2 rounded-lg border border-violet-300/25 bg-violet-400/10 p-2" },
                                 React.createElement("strong", { className: "text-[9px] text-violet-100" }, "Prediction: which outcome will improve the most?"),
-                                React.createElement("p", { className: "mt-0.5 text-[7px] text-violet-200" }, "Commit before editing. Accuracy can earn a second star."),
+                                React.createElement("p", { className: "mt-0.5 text-[7px] text-violet-200" }, "Commit before editing. Any prediction can earn full inquiry credit when you run a fair test and revise from evidence."),
                                 React.createElement("div", { className: "mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-4", role: "group", 'aria-label': "Choose mission prediction" },
                                   [
                                     { id: 'shelter', label: '🏠 Shelter' }, { id: 'territory', label: '⚑ Territory' }, { id: 'openSwim', label: '🌊 Open swim' }, { id: 'minimum', label: '🛟 Weakest resident' }
@@ -23018,15 +23029,30 @@ var d = (labToolData && labToolData._aquarium) || {};
                                 React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                                   React.createElement("div", null,
                                     React.createElement("strong", { className: "text-[10px] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
-                                    React.createElement("p", { className: "text-[7px] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionCorrect ? "matched" : "did not match") + " the strongest change • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
+                                    React.createElement("p", { className: "text-[7px] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionMatched ? "matched" : "differed from") + " the strongest change; this does not affect stars • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
                                   ),
-                                  React.createElement("span", { className: "text-sm text-amber-300", 'aria-label': habitatMissionOutcome.stars + " of 3 stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
+                                  React.createElement("span", { className: "text-sm text-amber-300", 'aria-label': habitatMissionOutcome.stars + " of 3 investigation stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
                                 ),
+                                React.createElement("p", { className: "mt-1 text-[7px] font-bold text-amber-200" }, "Investigation stars: mission targets • controlled observation • welfare protection"),
                                 React.createElement("div", { className: "mt-1.5 grid gap-1 sm:grid-cols-2", role: "list", 'aria-label': "Mission success criteria" }, habitatMissionOutcome.conditions.map(function(condition) { return React.createElement("div", { key: condition.id, role: "listitem", className: "rounded border px-1.5 py-1 text-[7px] " + (condition.met ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100" : "border-rose-300/25 bg-rose-400/10 text-rose-100") }, (condition.met ? "✓ " : "○ ") + condition.label); })),
-                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[8px] font-black text-white" }, "Evidence reflection"),
-                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: "Explain which habitat change caused the response. Cite at least two numbers or observations.", className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[8px] text-white placeholder:text-slate-400" }),
+                                React.createElement("fieldset", { className: "mt-2 rounded-lg border border-violet-200/25 bg-violet-400/10 p-2", 'data-aquarium-mission-revision': "true" },
+                                  React.createElement("legend", { className: "px-1 text-[8px] font-black text-violet-100" }, "How did the evidence affect your prediction?"),
+                                  React.createElement("div", { className: "grid gap-1 sm:grid-cols-3", role: "radiogroup", 'aria-label': "Habitat mission prediction revision" }, [
+                                    { id: 'supported', label: 'It strengthened my explanation' },
+                                    { id: 'revised', label: 'It changed my explanation' },
+                                    { id: 'uncertain', label: 'I would run another test' }
+                                  ].map(function(option) {
+                                    var selectedRevision = habitatMissionRevision === option.id;
+                                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1 rounded border p-1.5 text-[7px] font-bold " + (selectedRevision ? "border-violet-200 bg-violet-200 text-violet-950" : "border-white/15 text-violet-100") },
+                                      React.createElement("input", { type: "radio", name: "aquarium-habitat-mission-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('habitatMissionRevision', option.id); }, className: "mt-0.5 h-3.5 w-3.5 accent-violet-300" }),
+                                      React.createElement("span", null, option.label)
+                                    );
+                                  }))
+                                ),
+                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[8px] font-black text-white" }, "Prediction revision and evidence"),
+                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: "State whether the evidence supported or changed your prediction. Cite at least two numbers or observations.", className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[8px] text-white placeholder:text-slate-400" }),
                                 React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-1" },
-                                  React.createElement("button", { type: "button", disabled: habitatMissionReflection.trim().length < 20, onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[8px] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save reflection and claim points" : "Record attempt and return"),
+                                  React.createElement("button", { type: "button", disabled: !habitatMissionRevision || habitatMissionReflection.trim().length < 20, 'aria-disabled': habitatMissionRevision && habitatMissionReflection.trim().length >= 20 ? 'false' : 'true', onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[8px] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save revision and claim points" : "Record revision and return"),
                                   !habitatMissionOutcome.success && React.createElement("button", { type: "button", onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[8px] font-bold text-white" }, "Retry from current tank")
                                 )
                               )

@@ -78,6 +78,76 @@
     '.rh-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px;}.rh-stat-card{position:relative;overflow:hidden;min-height:82px!important;border:1px solid rgba(148,163,184,.28)!important;border-radius:12px!important;background:rgba(2,6,23,.52)!important;}.rh-stat-card::after{content:"";position:absolute;inset:auto 12px 0;height:2px;border-radius:99px;background:linear-gradient(90deg,#fbbf24,#22d3ee);opacity:.75;}',
     '.rh-quick-grid{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:12px;}.rh-quick-card{position:relative;min-height:154px;padding:18px!important;border-radius:16px!important;overflow:hidden;box-shadow:0 14px 34px rgba(2,6,23,.24);transition:transform .18s,border-color .18s,box-shadow .18s!important;}.rh-quick-card:hover{transform:translateY(-3px);box-shadow:0 18px 42px rgba(2,6,23,.4);}.rh-quick-card-primary{background:linear-gradient(140deg,rgba(127,29,29,.84),rgba(67,20,7,.72))!important;border-color:#fb7185!important;}.rh-quick-number{position:absolute;right:14px;top:11px;color:rgba(255,255,255,.28);font:900 30px/1 ui-monospace,SFMono-Regular,Menlo,monospace;}.rh-quick-arrow{position:absolute;right:15px;bottom:13px;color:#fef3c7;font-size:20px;transition:transform .18s;}.rh-quick-card:hover .rh-quick-arrow{transform:translateX(4px);}',
     '.rh-category-section{border:1px solid rgba(100,116,139,.5);border-radius:18px;background:rgba(15,23,42,.55);padding:16px;}.rh-category-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px;}.rh-category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}.rh-category-card{position:relative;min-height:132px;padding:15px!important;border-radius:15px!important;background:linear-gradient(145deg,rgba(30,41,59,.9),rgba(15,23,42,.86))!important;box-shadow:inset 0 1px rgba(255,255,255,.045);transition:transform .18s,background-color .18s,border-color .18s!important;}.rh-category-card:hover{transform:translateY(-3px);background:linear-gradient(145deg,rgba(51,65,85,.94),rgba(15,23,42,.9))!important;}.rh-category-progress{height:4px;margin-top:10px;border-radius:99px;background:#0f172a;overflow:hidden;}.rh-category-progress>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#22d3ee);}.rh-category-count{display:flex;justify-content:space-between;gap:8px;margin-top:6px;color:#cbd5e1;font:800 10px/1.25 ui-monospace,SFMono-Regular,Menlo,monospace;}',
+    '.rh-collection-page{--rh-collection-accent:#67e8f9;--rh-collection-strong:#155e75;display:grid;gap:14px;}.rh-collection-page[data-collection-tone="amber"]{--rh-collection-accent:#fbbf24;--rh-collection-strong:#92400e;}.rh-collection-page[data-collection-tone="cyan"]{--rh-collection-accent:#67e8f9;--rh-collection-strong:#155e75;}.rh-collection-page[data-collection-tone="emerald"]{--rh-collection-accent:#6ee7b7;--rh-collection-strong:#047857;}.rh-collection-page[data-collection-tone="teal"]{--rh-collection-accent:#5eead4;--rh-collection-strong:#0f766e;}.rh-collection-page[data-collection-tone="lime"]{--rh-collection-accent:#bef264;--rh-collection-strong:#4d7c0f;}.rh-collection-page[data-collection-tone="purple"]{--rh-collection-accent:#d8b4fe;--rh-collection-strong:#7e22ce;}.rh-collection-page[data-collection-tone="indigo"]{--rh-collection-accent:#a5b4fc;--rh-collection-strong:#4338ca;}.rh-collection-page[data-collection-tone="blue"]{--rh-collection-accent:#93c5fd;--rh-collection-strong:#1d4ed8;}.rh-collection-page[data-collection-tone="rose"]{--rh-collection-accent:#fda4af;--rh-collection-strong:#be123c;}',
+    '.rh-collection-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:18px;overflow:hidden;padding:22px;border:1px solid var(--rh-collection-accent);border-radius:20px;background:linear-gradient(125deg,rgba(15,23,42,.98),rgba(30,41,59,.92) 58%,rgba(8,47,73,.62));box-shadow:0 22px 58px rgba(2,6,23,.4),inset 0 1px rgba(255,255,255,.06);}.rh-collection-hero::after{content:"";position:absolute;z-index:-1;right:-85px;top:-120px;width:330px;height:330px;border:1px solid var(--rh-collection-accent);border-radius:50%;opacity:.14;box-shadow:0 0 0 34px rgba(148,163,184,.08),0 0 0 72px rgba(148,163,184,.045);}.rh-collection-main{min-width:0;}.rh-collection-kicker,.rh-collection-directory-kicker{color:var(--rh-collection-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-collection-title-row{display:flex;align-items:center;gap:13px;margin-top:9px;}.rh-collection-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border:1px solid var(--rh-collection-accent);border-radius:17px;background:rgba(2,6,23,.62);font-size:30px;box-shadow:inset 0 1px rgba(255,255,255,.08),0 10px 30px rgba(2,6,23,.28);}.rh-collection-title{margin:0;color:#f8fafc;font-size:clamp(25px,3.1vw,38px);font-weight:950;line-height:1.02;letter-spacing:-.035em;text-wrap:balance;}.rh-collection-desc{max-width:690px;margin:7px 0 0;color:#cbd5e1;font-size:13px;line-height:1.55;}.rh-collection-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;}.rh-collection-action{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:9px 13px;border-radius:11px;font-size:11px;font-weight:900;transition:transform .16s,filter .16s,border-color .16s;}.rh-collection-action:hover{transform:translateY(-2px);filter:brightness(1.08);}.rh-collection-action-primary{border:1px solid var(--rh-collection-accent);background:var(--rh-collection-strong);color:#fff;box-shadow:0 9px 24px rgba(2,6,23,.3);}.rh-collection-action-secondary{border:1px solid #94a3b8;background:rgba(15,23,42,.75);color:#e2e8f0;}',
+    '.rh-collection-progress-card{align-self:stretch;display:flex;flex-direction:column;justify-content:center;min-width:0;padding:16px;border:1px solid rgba(148,163,184,.46);border-radius:15px;background:rgba(2,6,23,.54);box-shadow:inset 0 1px rgba(255,255,255,.045);}.rh-collection-progress-head{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-collection-progress-head strong{color:var(--rh-collection-accent);font:900 18px/1 ui-monospace,Menlo,monospace;letter-spacing:-.04em;}.rh-collection-progress-track{height:8px;margin-top:10px;border:1px solid rgba(148,163,184,.34);border-radius:999px;background:#020617;overflow:hidden;}.rh-collection-progress-track>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--rh-collection-strong),var(--rh-collection-accent));}.rh-collection-progress-copy{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px;color:#94a3b8;font-size:10px;}.rh-collection-progress-copy strong{color:#f8fafc;font:900 12px/1 ui-monospace,Menlo,monospace;}.rh-collection-next{margin-top:14px;padding-top:12px;border-top:1px solid rgba(148,163,184,.25);}.rh-collection-next span{display:block;color:#94a3b8;font:800 9px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-collection-next strong{display:block;margin-top:5px;color:#fef3c7;font:900 11px/1.25 ui-sans-serif,system-ui;}',
+    '.rh-collection-directory{padding:16px;border:1px solid rgba(100,116,139,.52);border-radius:18px;background:rgba(15,23,42,.62);}.rh-collection-directory-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:12px;}.rh-collection-directory-head h2{margin:4px 0 0;color:#f8fafc;font-size:17px;font-weight:900;letter-spacing:-.015em;}.rh-collection-directory-head>span{color:#94a3b8;font:800 10px/1.2 ui-monospace,Menlo,monospace;}.rh-collection-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}.rh-collection-card{position:relative;display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;gap:9px;min-height:86px;padding:12px 42px 12px 11px!important;border:1px solid rgba(100,116,139,.55);border-radius:13px;background:linear-gradient(145deg,rgba(30,41,59,.9),rgba(15,23,42,.92));color:#e2e8f0;text-align:left;box-shadow:inset 0 1px rgba(255,255,255,.04);transition:transform .16s,border-color .16s,background-color .16s;}.rh-collection-card:hover{transform:translateY(-2px);border-color:var(--rh-collection-accent);background:linear-gradient(145deg,rgba(51,65,85,.94),rgba(15,23,42,.95));}.rh-collection-card[data-section-state="visited"]{border-color:rgba(52,211,153,.48);}.rh-collection-card[data-section-state="next"]{border-color:var(--rh-collection-accent);box-shadow:inset 3px 0 var(--rh-collection-accent),inset 0 1px rgba(255,255,255,.05);}.rh-collection-card-index{color:#64748b;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-collection-card-icon{display:grid;place-items:center;width:33px;height:33px;border:1px solid rgba(148,163,184,.38);border-radius:9px;background:rgba(2,6,23,.5);font-size:17px;}.rh-collection-card-copy{min-width:0;}.rh-collection-card-copy strong{display:block;color:#f8fafc;font:900 11px/1.2 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-collection-card-copy>span{display:block;margin-top:4px;color:#94a3b8;font:700 9px/1.1 ui-sans-serif,system-ui;}.rh-collection-card-status{grid-column:2/4;color:#94a3b8;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-collection-card[data-section-state="visited"] .rh-collection-card-status{color:#6ee7b7;}.rh-collection-card[data-section-state="next"] .rh-collection-card-status{color:var(--rh-collection-accent);}.rh-collection-card-arrow{position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--rh-collection-accent);font-size:18px;transition:transform .16s;}.rh-collection-card:hover .rh-collection-card-arrow{transform:translate(3px,-50%);}',
+    '.rh-molt-atlas{--rh-molt-accent:#67e8f9;display:grid;gap:14px;}.rh-molt-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(125,211,252,.52);border-radius:19px;background:linear-gradient(118deg,rgba(30,41,59,.96),rgba(15,23,42,.98) 50%,rgba(8,47,73,.78));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-molt-hero::after{content:"";position:absolute;z-index:-1;right:-75px;top:-110px;width:294px;height:294px;border:1px solid rgba(125,211,252,.28);border-radius:50%;box-shadow:0 0 0 32px rgba(196,181,253,.04),0 0 0 66px rgba(125,211,252,.025);}.rh-molt-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-molt-hero-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border:1px solid rgba(125,211,252,.68);border-radius:16px;background:rgba(2,6,23,.6);color:#e0f2fe;font:950 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.07em;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-molt-kicker{color:#7dd3fc;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-molt-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-molt-copy{max-width:760px;margin:7px 0 0;color:#dbeafe;font-size:12px;line-height:1.55;}.rh-molt-summary{display:grid;grid-template-columns:repeat(2,minmax(88px,1fr));gap:7px;}.rh-molt-stat{min-width:94px;padding:10px;border:1px solid rgba(125,211,252,.38);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-molt-stat strong{display:block;color:#e0f2fe;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-molt-stat span{display:block;margin-top:5px;color:#bae6fd;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-molt-species-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-molt-species-tab{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:39px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-molt-species-tab:hover{transform:translateY(-1px);border-color:var(--rh-molt-accent);color:#f8fafc;}.rh-molt-species-tab[aria-selected="true"]{border-color:var(--rh-molt-accent);background:rgba(8,47,73,.78);color:#fff;box-shadow:0 0 0 2px rgba(125,211,252,.08);}.rh-molt-species-code{display:grid;place-items:center;min-width:25px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-molt-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}',
+    '.rh-molt-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.5fr);gap:12px;align-items:stretch;}.rh-molt-plate,.rh-molt-detail,.rh-molt-timeline,.rh-molt-concepts,.rh-molt-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-molt-plate{overflow:hidden;}.rh-molt-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.9),rgba(15,23,42,.72));}.rh-molt-plate-kicker,.rh-molt-detail-kicker,.rh-molt-section-kicker{color:var(--rh-molt-accent);font:900 9px/1.15 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-molt-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.15 ui-sans-serif,system-ui;}.rh-molt-phase-badge{padding:6px 9px;border:1px solid var(--rh-molt-accent);border-radius:999px;background:rgba(8,47,73,.48);color:#e0f2fe;font:900 9px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-molt-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#020617;}.rh-molt-stage svg{display:block;width:100%;height:100%;}.rh-molt-grid{opacity:.2;}.rh-molt-body,.rh-molt-wing-base,.rh-molt-secondary,.rh-molt-primary,.rh-molt-line,.rh-molt-line-thin,.rh-molt-accent-stroke{vector-effect:non-scaling-stroke;}.rh-molt-body{fill:#1e293b;stroke:#e2e8f0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-molt-wing-base{fill:rgba(71,85,105,.46);stroke:#94a3b8;stroke-width:2.5;stroke-linejoin:round;}.rh-molt-secondary{fill:#64748b;stroke:#cbd5e1;stroke-width:1.7;stroke-linejoin:round;}.rh-molt-primary{fill:#475569;stroke:#94a3b8;stroke-width:2.1;stroke-linejoin:round;transition:fill .2s,stroke .2s,filter .2s,opacity .2s;}.rh-molt-primary-feather[data-status="renewed"] .rh-molt-primary{fill:var(--rh-molt-accent);stroke:#f8fafc;opacity:.88;}.rh-molt-primary-feather[data-status="growing"] .rh-molt-primary{fill:#fef3c7;stroke:var(--rh-molt-accent);stroke-width:4;filter:drop-shadow(0 0 8px var(--rh-molt-accent));animation:rhMoltGrow 1.8s ease-in-out infinite;}.rh-molt-primary-feather[data-selected="true"] .rh-molt-primary{stroke:#fff;stroke-width:5;filter:drop-shadow(0 0 9px var(--rh-molt-accent));}.rh-molt-primary-feather[data-status="worn"] .rh-molt-wear{opacity:.78;}.rh-molt-feather-label{fill:#f8fafc;font:950 10px/1 ui-monospace,Menlo,monospace;text-anchor:middle;paint-order:stroke;stroke:#020617;stroke-width:4;stroke-linejoin:round;}.rh-molt-line{fill:none;stroke:#e2e8f0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-molt-line-thin{fill:none;stroke:#94a3b8;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}.rh-molt-accent-stroke{fill:none;stroke:var(--rh-molt-accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}.rh-molt-svg-label{fill:#cbd5e1;font:850 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.07em;}.rh-molt-svg-label-accent{fill:var(--rh-molt-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}@keyframes rhMoltGrow{50%{opacity:.7;filter:drop-shadow(0 0 14px var(--rh-molt-accent));}}',
+    '.rh-molt-stage-legend{position:absolute;left:12px;bottom:11px;display:flex;gap:6px;flex-wrap:wrap;padding:6px 7px;border:1px solid rgba(148,163,184,.38);border-radius:8px;background:rgba(2,6,23,.78);color:#cbd5e1;font-size:8px;font-weight:800;}.rh-molt-legend-item{display:inline-flex;align-items:center;gap:4px;}.rh-molt-legend-dot{width:8px;height:8px;border:1px solid #cbd5e1;border-radius:50%;background:#475569;}.rh-molt-legend-dot[data-status="renewed"]{background:var(--rh-molt-accent);}.rh-molt-legend-dot[data-status="growing"]{background:#fef3c7;border-color:var(--rh-molt-accent);}.rh-molt-phase-controls{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.4);}.rh-molt-phase-controls button{min-height:36px;padding:7px 10px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-molt-phase-controls button:hover:not(:disabled){border-color:var(--rh-molt-accent);color:#fff;}.rh-molt-phase-controls button:disabled{cursor:not-allowed;opacity:.38;}.rh-molt-scrubber{min-width:0;}.rh-molt-scrubber-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;color:#94a3b8;font:800 8px/1.15 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.05em;}.rh-molt-scrubber-head strong{color:#e0f2fe;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-molt-scrubber input{display:block;width:100%;accent-color:var(--rh-molt-accent);}.rh-molt-meters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px 12px;border-top:1px solid rgba(100,116,139,.38);}.rh-molt-meter-head{display:flex;justify-content:space-between;gap:6px;color:#94a3b8;font:800 8px/1.15 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.05em;}.rh-molt-meter-head strong{color:#e2e8f0;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-molt-meter-track{height:5px;margin-top:5px;border-radius:999px;background:#020617;overflow:hidden;}.rh-molt-meter-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#0e7490,var(--rh-molt-accent));}.rh-molt-primary-controls{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;padding:10px 12px;border-top:1px solid rgba(100,116,139,.38);}.rh-molt-primary-control{min-height:39px;padding:5px 3px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#cbd5e1;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-molt-primary-control[data-status="renewed"]{border-color:var(--rh-molt-accent);background:rgba(8,47,73,.64);color:#e0f2fe;}.rh-molt-primary-control[data-status="growing"]{border-color:#fef3c7;background:rgba(120,53,15,.58);color:#fef3c7;}.rh-molt-primary-control[aria-pressed="true"]{outline:2px solid #fff;outline-offset:2px;}.rh-molt-primary-status{display:block;margin-top:4px;font-size:6px;letter-spacing:.04em;text-transform:uppercase;}',
+    '.rh-molt-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-molt-accent);background:linear-gradient(155deg,rgba(30,41,59,.94),rgba(15,23,42,.94));}.rh-molt-detail-index{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-molt-detail-index strong{display:grid;place-items:center;min-width:44px;height:34px;padding:0 6px;border:1px solid var(--rh-molt-accent);border-radius:10px;background:rgba(2,6,23,.48);color:var(--rh-molt-accent);font-size:11px;}.rh-molt-detail h3{margin:13px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.027em;}.rh-molt-role{margin-top:6px;color:#67e8f9;font-size:10px;font-style:italic;line-height:1.35;}.rh-molt-status-card{margin-top:12px;padding:10px;border:1px solid rgba(125,211,252,.38);border-radius:10px;background:rgba(8,47,73,.28);}.rh-molt-status-card[data-status="growing"]{border-color:#fef3c7;background:rgba(120,53,15,.24);}.rh-molt-status-card[data-status="renewed"]{border-color:var(--rh-molt-accent);background:rgba(8,47,73,.32);}.rh-molt-status-card span,.rh-molt-month-read span,.rh-molt-question span{display:block;color:var(--rh-molt-accent);font:900 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-molt-status-card strong{display:block;margin-top:5px;color:#f8fafc;font-size:12px;}.rh-molt-status-card p,.rh-molt-month-read p,.rh-molt-question p{margin:5px 0 0;color:#dbeafe;font-size:10px;line-height:1.46;}.rh-molt-month-read{margin-top:10px;padding:10px;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(2,6,23,.34);}.rh-molt-month-read[data-active="true"]{border-color:rgba(125,211,252,.5);}.rh-molt-month-read strong{display:block;margin-top:5px;color:#e0f2fe;font-size:11px;}.rh-molt-question{margin-top:10px;padding:10px;border:1px solid rgba(196,181,253,.4);border-radius:10px;background:rgba(76,29,149,.18);}.rh-molt-question span{color:#c4b5fd;}.rh-molt-question p{color:#ede9fe;}.rh-molt-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-molt-detail-nav button{min-height:38px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-molt-detail-nav button:hover{border-color:var(--rh-molt-accent);color:#fff;}',
+    '.rh-molt-timeline,.rh-molt-concepts,.rh-molt-directory{padding:14px;}.rh-molt-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-molt-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-molt-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-molt-month-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;}.rh-molt-month{position:relative;min-height:72px;padding:7px 4px;border:1px solid rgba(100,116,139,.5);border-radius:9px;background:rgba(2,6,23,.34);color:#94a3b8;text-align:center;overflow:hidden;}.rh-molt-month[data-active="true"]{border-color:rgba(125,211,252,.54);background:rgba(8,47,73,.28);color:#dbeafe;}.rh-molt-month[data-peak="true"]{box-shadow:inset 0 3px var(--rh-molt-accent);}.rh-molt-month[aria-pressed="true"]{border-color:#fff;background:rgba(30,64,175,.34);outline:2px solid var(--rh-molt-accent);outline-offset:2px;color:#fff;}.rh-molt-month-name{display:block;font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-molt-month-activity{display:block;margin-top:8px;color:inherit;font:800 7px/1.25 ui-monospace,Menlo,monospace;white-space:normal;}.rh-molt-month-dot{display:block;width:7px;height:7px;margin:7px auto 0;border-radius:50%;background:#475569;}.rh-molt-month[data-active="true"] .rh-molt-month-dot{background:var(--rh-molt-accent);}.rh-molt-month[data-peak="true"] .rh-molt-month-dot{box-shadow:0 0 0 3px rgba(125,211,252,.15);}.rh-molt-concept-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-molt-concept{min-width:0;padding:11px;border:1px solid rgba(100,116,139,.46);border-radius:10px;background:rgba(2,6,23,.34);}.rh-molt-concept-index{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--rh-molt-accent);border-radius:8px;color:var(--rh-molt-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-molt-concept strong{display:block;margin-top:8px;color:#f8fafc;font-size:10px;line-height:1.2;}.rh-molt-concept p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.48;}',
+    '.rh-molt-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.rh-molt-card{display:grid;grid-template-columns:minmax(130px,.55fr) minmax(0,1fr);gap:10px;align-items:center;min-height:88px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.34);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-molt-card:hover{transform:translateY(-2px);border-color:var(--rh-molt-accent);background:rgba(30,41,59,.84);}.rh-molt-card[data-active="true"]{border-color:var(--rh-molt-accent);background:rgba(8,47,73,.3);box-shadow:inset 3px 0 var(--rh-molt-accent);}.rh-molt-card strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25;}.rh-molt-card-timing{display:block;margin-top:4px;color:var(--rh-molt-accent);font:900 8px/1.15 ui-monospace,Menlo,monospace;}.rh-molt-card-copy{display:block;color:#94a3b8;font-size:9px;line-height:1.42;}.rh-molt-card-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:2px;margin-top:9px;}.rh-molt-card-month{height:7px;border-radius:2px;background:#334155;}.rh-molt-card-month[data-active="true"]{background:var(--rh-molt-accent);}.rh-molt-card-month[data-peak="true"]{outline:1px solid #fff;outline-offset:1px;}',
+    '@media(max-width:980px){.rh-molt-workbench{grid-template-columns:1fr;}.rh-molt-detail-nav{margin-top:14px;}.rh-molt-month-grid{grid-template-columns:repeat(6,minmax(0,1fr));}.rh-molt-directory-grid{grid-template-columns:1fr;}}@media(max-width:720px){.rh-molt-hero{grid-template-columns:1fr;padding:16px;}.rh-molt-summary{max-width:245px;}.rh-molt-stage{min-height:240px;}.rh-molt-primary-controls{grid-template-columns:repeat(5,minmax(0,1fr));}.rh-molt-meters{grid-template-columns:1fr;}.rh-molt-concept-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-molt-plate-head{align-items:flex-start;}.rh-molt-phase-badge{max-width:46%;white-space:normal;line-height:1.25;text-align:center;}}@media(max-width:460px){.rh-molt-month-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.rh-molt-concept-grid{grid-template-columns:1fr;}.rh-molt-card{grid-template-columns:1fr;}.rh-molt-stage{min-height:210px;}.rh-molt-stage-legend{right:8px;left:8px;justify-content:center;}.rh-molt-phase-controls{grid-template-columns:1fr 1fr;}.rh-molt-scrubber{grid-column:1/-1;grid-row:1;}.rh-molt-phase-controls button{grid-row:2;}}@media(prefers-reduced-motion:reduce){.rh-molt-species-tab,.rh-molt-primary,.rh-molt-card{transition:none!important;}.rh-molt-species-tab:hover,.rh-molt-card:hover{transform:none!important;}.rh-molt-primary-feather[data-status="growing"] .rh-molt-primary{animation:none!important;}}@media(forced-colors:active){.rh-molt-hero,.rh-molt-stat,.rh-molt-species-tab,.rh-molt-plate,.rh-molt-detail,.rh-molt-timeline,.rh-molt-concepts,.rh-molt-concept,.rh-molt-directory,.rh-molt-card,.rh-molt-month,.rh-molt-status-card,.rh-molt-month-read,.rh-molt-question,.rh-molt-stage-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-molt-kicker,.rh-molt-title,.rh-molt-copy,.rh-molt-stat strong,.rh-molt-stat span,.rh-molt-species-tab,.rh-molt-species-code,.rh-molt-plate-kicker,.rh-molt-plate-title,.rh-molt-phase-badge,.rh-molt-detail-kicker,.rh-molt-detail-index,.rh-molt-detail-index strong,.rh-molt-detail h3,.rh-molt-role,.rh-molt-status-card span,.rh-molt-status-card strong,.rh-molt-status-card p,.rh-molt-month-read span,.rh-molt-month-read strong,.rh-molt-month-read p,.rh-molt-question span,.rh-molt-question p,.rh-molt-section-kicker,.rh-molt-section-head h3,.rh-molt-section-head>span,.rh-molt-concept-index,.rh-molt-concept strong,.rh-molt-concept p,.rh-molt-card strong,.rh-molt-card-timing,.rh-molt-card-copy{color:CanvasText}.rh-molt-species-tab[aria-selected="true"],.rh-molt-primary-control[aria-pressed="true"],.rh-molt-month[aria-pressed="true"],.rh-molt-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-molt-stage{border:1px solid CanvasText;background:Canvas}.rh-molt-body,.rh-molt-wing-base,.rh-molt-secondary,.rh-molt-primary,.rh-molt-line,.rh-molt-line-thin,.rh-molt-accent-stroke{fill:none;stroke:CanvasText}.rh-molt-meter-track{border:1px solid CanvasText;background:Canvas}.rh-molt-meter-track span,.rh-molt-card-month[data-active="true"]{background:Highlight}.rh-molt-phase-controls button,.rh-molt-primary-control{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+    '.rh-mystery-lab{--rh-mystery-accent:#c084fc;display:grid;gap:14px;}.rh-mystery-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(192,132,252,.48);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(49,46,129,.78) 54%,rgba(88,28,135,.58));box-shadow:0 20px 52px rgba(2,6,23,.4),inset 0 1px rgba(255,255,255,.06);}.rh-mystery-hero::after{content:"";position:absolute;z-index:-1;right:-74px;top:-118px;width:310px;height:310px;border:1px solid rgba(216,180,254,.22);border-radius:50%;box-shadow:0 0 0 35px rgba(168,85,247,.045),0 0 0 72px rgba(129,140,248,.025);}.rh-mystery-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-mystery-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(216,180,254,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#f3e8ff;font:950 10px/1.15 ui-monospace,Menlo,monospace;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-mystery-kicker,.rh-mystery-section-kicker,.rh-mystery-dossier-kicker{color:var(--rh-mystery-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-mystery-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-mystery-copy{max-width:770px;margin:7px 0 0;color:#ede9fe;font-size:12px;line-height:1.55;}',
+    '.rh-mystery-summary{display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:7px;}.rh-mystery-stat{min-width:82px;padding:10px;border:1px solid rgba(216,180,254,.34);border-radius:11px;background:rgba(2,6,23,.5);text-align:center;}.rh-mystery-stat strong{display:block;color:#faf5ff;font:900 17px/1 ui-monospace,Menlo,monospace;}.rh-mystery-stat span{display:block;margin-top:5px;color:#ddd6fe;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-mystery-case-rail{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-mystery-case-tab{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"number level" "number name";column-gap:8px;align-items:center;flex:0 0 154px;min-height:55px;padding:8px 10px;border:1px solid #64748b;border-radius:11px;background:rgba(30,41,59,.86);color:#cbd5e1;text-align:left;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s;}.rh-mystery-case-tab:hover{transform:translateY(-2px);border-color:var(--tab-accent,#c084fc);}.rh-mystery-case-tab[aria-pressed="true"]{border-color:var(--tab-accent,#c084fc);background:rgba(76,29,149,.62);box-shadow:inset 3px 0 var(--tab-accent,#c084fc);}.rh-mystery-case-tab[data-status="correct"]{border-color:#34d399;background:rgba(6,78,59,.42);}.rh-mystery-case-tab[data-status="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.32);}.rh-mystery-case-number{grid-area:number;display:grid;place-items:center;width:31px;height:31px;border:1px solid var(--tab-accent,#c084fc);border-radius:9px;color:var(--tab-accent,#c084fc);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-mystery-case-level{grid-area:level;color:#a78bfa;font:900 7px/1 ui-monospace,Menlo,monospace;text-transform:uppercase;}.rh-mystery-case-name{grid-area:name;margin-top:4px;color:#f8fafc;font-size:9px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '.rh-mystery-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:stretch;}.rh-mystery-scene-panel,.rh-mystery-dossier{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.76);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-mystery-scene-panel{overflow:hidden;}.rh-mystery-scene-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.94),rgba(49,46,129,.72));}.rh-mystery-scene-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-mystery-difficulty{padding:6px 9px;border:1px solid var(--rh-mystery-accent);border-radius:999px;background:rgba(46,16,101,.48);color:#f3e8ff;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-mystery-scene-stage{position:relative;aspect-ratio:9/5;min-height:330px;overflow:hidden;background:#0f172a;}.rh-mystery-scene-stage svg{display:block;width:100%;height:100%;}.rh-mystery-hud{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;}.rh-mystery-hud span{padding:6px 8px;border:1px solid rgba(226,232,240,.38);border-radius:8px;background:rgba(2,6,23,.78);color:#e2e8f0;font:850 8px/1.15 ui-monospace,Menlo,monospace;}.rh-mystery-observation{padding:12px 13px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.42);}.rh-mystery-observation span{display:block;color:var(--rh-mystery-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-mystery-observation p{margin:6px 0 0;color:#f1f5f9;font-size:11px;line-height:1.52;}',
+    '.rh-mystery-sky-star{fill:#fff;opacity:.65;}.rh-mystery-sun{fill:#fef3c7;opacity:.78;}.rh-mystery-horizon{fill:none;stroke:#e2e8f0;stroke-width:1.5;opacity:.18;vector-effect:non-scaling-stroke;}.rh-mystery-water-line{fill:none;stroke:#bae6fd;stroke-width:2;opacity:.28;vector-effect:non-scaling-stroke;}.rh-mystery-tree{fill:#052e16;stroke:#86efac;stroke-width:1.2;stroke-opacity:.22;}.rh-mystery-branch,.rh-mystery-wire{fill:none;stroke:#d6d3d1;stroke-width:4;stroke-linecap:round;vector-effect:non-scaling-stroke;}.rh-mystery-wire{stroke-width:2;opacity:.65;}.rh-mystery-bird-fill{fill:#020617;stroke:#f8fafc;stroke-width:3;stroke-linejoin:round;vector-effect:non-scaling-stroke;}.rh-mystery-bird-detail{fill:none;stroke:var(--rh-mystery-accent);stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke;}.rh-mystery-eye{fill:#fef08a;stroke:#0f172a;stroke-width:2;}.rh-mystery-evidence-marker circle{fill:#0f172a;stroke:var(--rh-mystery-accent);stroke-width:3;vector-effect:non-scaling-stroke;}.rh-mystery-evidence-marker text{fill:#fff;font:950 12px/1 ui-monospace,Menlo,monospace;text-anchor:middle;dominant-baseline:central;}.rh-mystery-evidence-marker path{fill:none;stroke:var(--rh-mystery-accent);stroke-width:2;stroke-dasharray:4 4;vector-effect:non-scaling-stroke;}.rh-mystery-svg-label{fill:#e2e8f0;font:850 10px/1 ui-monospace,Menlo,monospace;paint-order:stroke;stroke:#0f172a;stroke-width:4;stroke-linejoin:round;}.rh-mystery-svg-accent{fill:var(--rh-mystery-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;paint-order:stroke;stroke:#0f172a;stroke-width:5;stroke-linejoin:round;}',
+    '.rh-mystery-dossier{display:flex;flex-direction:column;padding:15px;border-color:var(--rh-mystery-accent);background:linear-gradient(155deg,rgba(30,27,75,.96),rgba(15,23,42,.97));}.rh-mystery-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-mystery-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:20px;font-weight:950;line-height:1.08;letter-spacing:-.025em;}.rh-mystery-case-chip{display:grid;place-items:center;min-width:48px;height:36px;padding:0 7px;border:1px solid var(--rh-mystery-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-mystery-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-mystery-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px;}.rh-mystery-meta div{padding:8px;border:1px solid rgba(139,92,246,.32);border-radius:9px;background:rgba(2,6,23,.34);}.rh-mystery-meta span{display:block;color:#a78bfa;font:900 7px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.09em;}.rh-mystery-meta strong{display:block;margin-top:5px;color:#e2e8f0;font-size:9px;line-height:1.25;}.rh-mystery-progress{margin-top:11px;}.rh-mystery-progress-head{display:flex;justify-content:space-between;gap:8px;color:#cbd5e1;font-size:8px;font-weight:850;}.rh-mystery-progress-head strong{color:var(--rh-mystery-accent);font-family:ui-monospace,Menlo,monospace;}.rh-mystery-progress-track{height:6px;margin-top:6px;border-radius:999px;background:#020617;overflow:hidden;}.rh-mystery-progress-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,var(--rh-mystery-accent));}',
+    '.rh-mystery-evidence{padding:14px;border:1px solid rgba(100,116,139,.54);border-radius:16px;background:rgba(15,23,42,.74);}.rh-mystery-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-mystery-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-mystery-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right;}.rh-mystery-clue-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;}.rh-mystery-clue{position:relative;min-height:78px;padding:10px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34);}.rh-mystery-clue[data-state="revealed"]{border-color:rgba(192,132,252,.54);background:rgba(76,29,149,.22);}.rh-mystery-clue-index{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--rh-mystery-accent);border-radius:7px;color:var(--rh-mystery-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-mystery-clue p{margin:8px 0 0;color:#e9d5ff;font-size:9px;line-height:1.42;}.rh-mystery-clue[data-state="sealed"] p{color:#64748b;font-style:italic;}.rh-mystery-reveal-clue{width:100%;min-height:38px;margin-top:9px;border:1px solid #8b5cf6;border-radius:9px;background:rgba(76,29,149,.48);color:#f3e8ff;font-size:10px;font-weight:900;}.rh-mystery-reveal-clue:hover{border-color:#e9d5ff;background:rgba(91,33,182,.64);}',
+    '.rh-mystery-decision{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:12px;padding:14px;border:1px solid rgba(100,116,139,.54);border-radius:16px;background:rgba(15,23,42,.74);}.rh-mystery-suspect-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}.rh-mystery-suspect{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;min-height:50px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:rgba(30,41,59,.8);color:#cbd5e1;text-align:left;transition:transform .15s,border-color .15s,background-color .15s;}.rh-mystery-suspect:hover:not(:disabled){transform:translateY(-1px);border-color:var(--rh-mystery-accent);color:#fff;}.rh-mystery-suspect[aria-pressed="true"]{border-color:#fff;background:rgba(76,29,149,.58);outline:2px solid var(--rh-mystery-accent);outline-offset:1px;color:#fff;}.rh-mystery-suspect[data-answer="correct"]{border-color:#34d399;background:rgba(6,78,59,.45);}.rh-mystery-suspect[data-answer="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.36);}.rh-mystery-suspect:disabled{cursor:default;}.rh-mystery-suspect-code{display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:#020617;color:var(--rh-mystery-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-mystery-suspect-label{font-size:10px;font-weight:850;line-height:1.28;}.rh-mystery-confidence{padding:11px;border:1px solid rgba(139,92,246,.34);border-radius:11px;background:rgba(2,6,23,.34);}.rh-mystery-confidence>span{display:block;color:#c4b5fd;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-mystery-confidence-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px;}.rh-mystery-confidence button{min-height:39px;padding:5px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#94a3b8;font-size:8px;font-weight:850;}.rh-mystery-confidence button[aria-pressed="true"]{border-color:var(--rh-mystery-accent);background:rgba(76,29,149,.58);color:#fff;}.rh-mystery-submit{width:100%;min-height:43px;margin-top:8px;border:1px solid #e9d5ff;border-radius:10px;background:linear-gradient(110deg,#6d28d9,#a21caf);color:#fff;font-size:10px;font-weight:950;box-shadow:0 8px 24px rgba(88,28,135,.28);}.rh-mystery-submit:disabled{cursor:not-allowed;filter:saturate(.3);opacity:.42;}.rh-mystery-submit:not(:disabled):hover{filter:brightness(1.12);}',
+    '.rh-mystery-result{margin-top:11px;padding:11px;border:1px solid #64748b;border-radius:11px;background:rgba(2,6,23,.42);}.rh-mystery-result[data-result="correct"]{border-color:#34d399;background:rgba(6,78,59,.28);}.rh-mystery-result[data-result="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.24);}.rh-mystery-result-kicker{color:#cbd5e1;font:900 8px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.09em;}.rh-mystery-result strong{display:block;margin-top:5px;color:#f8fafc;font-size:13px;line-height:1.3;}.rh-mystery-result p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.48;}.rh-mystery-score-head{display:flex;justify-content:space-between;gap:8px;margin-top:9px;color:#cbd5e1;font-size:8px;font-weight:850;}.rh-mystery-score-head b{color:#fff;font-family:ui-monospace,Menlo,monospace;}.rh-mystery-score-track{height:7px;margin-top:5px;border-radius:999px;background:#020617;overflow:hidden;}.rh-mystery-score-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8b5cf6,#34d399);}.rh-mystery-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:9px;}.rh-mystery-result-actions button{min-height:35px;padding:6px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-mystery-result-actions button:hover{border-color:var(--rh-mystery-accent);color:#fff;}.rh-mystery-note{padding:11px 13px;border:1px solid rgba(139,92,246,.38);border-radius:11px;background:rgba(46,16,101,.22);color:#ddd6fe;font-size:9px;line-height:1.5;}.rh-mystery-note strong{color:#f3e8ff;}',
+    '@media(max-width:980px){.rh-mystery-workbench,.rh-mystery-decision{grid-template-columns:1fr;}.rh-mystery-clue-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:720px){.rh-mystery-hero{grid-template-columns:1fr;padding:16px;}.rh-mystery-summary{max-width:320px;}.rh-mystery-scene-stage{min-height:250px;}.rh-mystery-scene-head{align-items:flex-start;}.rh-mystery-difficulty{max-width:48%;white-space:normal;text-align:center;}.rh-mystery-suspect-grid{grid-template-columns:1fr;}}@media(max-width:460px){.rh-mystery-summary{grid-template-columns:1fr 1fr;}.rh-mystery-stat:last-child{grid-column:1/-1;}.rh-mystery-scene-stage{min-height:220px;}.rh-mystery-clue-grid,.rh-mystery-meta,.rh-mystery-result-actions{grid-template-columns:1fr;}.rh-mystery-hud{display:none;}}@media(prefers-reduced-motion:reduce){.rh-mystery-case-tab,.rh-mystery-suspect{transition:none!important;}.rh-mystery-case-tab:hover,.rh-mystery-suspect:hover{transform:none!important;}}@media(forced-colors:active){.rh-mystery-hero,.rh-mystery-stat,.rh-mystery-case-tab,.rh-mystery-scene-panel,.rh-mystery-dossier,.rh-mystery-meta div,.rh-mystery-evidence,.rh-mystery-clue,.rh-mystery-decision,.rh-mystery-confidence,.rh-mystery-result,.rh-mystery-note,.rh-mystery-observation,.rh-mystery-hud span{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-mystery-kicker,.rh-mystery-title,.rh-mystery-copy,.rh-mystery-stat strong,.rh-mystery-stat span,.rh-mystery-case-level,.rh-mystery-case-name,.rh-mystery-case-number,.rh-mystery-scene-title,.rh-mystery-difficulty,.rh-mystery-observation span,.rh-mystery-observation p,.rh-mystery-dossier-kicker,.rh-mystery-dossier h3,.rh-mystery-case-chip,.rh-mystery-meta span,.rh-mystery-meta strong,.rh-mystery-section-kicker,.rh-mystery-section-head h3,.rh-mystery-section-head>span,.rh-mystery-clue-index,.rh-mystery-clue p,.rh-mystery-confidence>span,.rh-mystery-result-kicker,.rh-mystery-result strong,.rh-mystery-result p,.rh-mystery-note{color:CanvasText}.rh-mystery-case-tab[aria-pressed="true"],.rh-mystery-suspect[aria-pressed="true"],.rh-mystery-confidence button[aria-pressed="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-mystery-scene-stage{border:1px solid CanvasText;background:Canvas}.rh-mystery-bird-fill,.rh-mystery-bird-detail,.rh-mystery-branch,.rh-mystery-wire,.rh-mystery-horizon,.rh-mystery-water-line{fill:none;stroke:CanvasText}.rh-mystery-case-tab,.rh-mystery-reveal-clue,.rh-mystery-suspect,.rh-mystery-confidence button,.rh-mystery-submit,.rh-mystery-result-actions button{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-mystery-progress-track,.rh-mystery-score-track{border:1px solid CanvasText;background:Canvas}.rh-mystery-progress-track span,.rh-mystery-score-track span{background:Highlight;}}',
+    '.rh-fossil-lab{--rh-fossil-accent:#fbbf24;display:grid;gap:14px;}.rh-fossil-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.48);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(68,64,60,.82) 55%,rgba(120,53,15,.54));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-fossil-hero::after{content:"";position:absolute;z-index:-1;right:-76px;top:-112px;width:304px;height:304px;border:1px solid rgba(251,191,36,.24);border-radius:50%;box-shadow:0 0 0 34px rgba(245,158,11,.04),0 0 0 70px rgba(168,162,158,.025);}.rh-fossil-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-fossil-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(251,191,36,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#fef3c7;font:950 11px/1.1 ui-monospace,Menlo,monospace;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-fossil-kicker,.rh-fossil-section-kicker,.rh-fossil-detail-kicker{color:var(--rh-fossil-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-fossil-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-fossil-copy{max-width:790px;margin:7px 0 0;color:#e7e5e4;font-size:12px;line-height:1.55;}.rh-fossil-summary{display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:7px;}.rh-fossil-stat{min-width:82px;padding:10px;border:1px solid rgba(251,191,36,.34);border-radius:11px;background:rgba(2,6,23,.5);text-align:center;}.rh-fossil-stat strong{display:block;color:#fffbeb;font:900 17px/1 ui-monospace,Menlo,monospace;}.rh-fossil-stat span{display:block;margin-top:5px;color:#fde68a;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}',
+    '.rh-fossil-modebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:7px;border:1px solid rgba(100,116,139,.52);border-radius:14px;background:rgba(15,23,42,.7);}.rh-fossil-mode{min-height:43px;padding:8px 12px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#cbd5e1;font-size:10px;font-weight:900;}.rh-fossil-mode:hover{border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-mode[aria-pressed="true"]{border-color:var(--rh-fossil-accent);background:rgba(120,53,15,.62);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.08);}.rh-fossil-filters{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-fossil-filter{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-fossil-filter:hover{transform:translateY(-1px);border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-filter[aria-pressed="true"]{border-color:var(--rh-fossil-accent);background:rgba(120,53,15,.62);color:#fff;}.rh-fossil-filter-code{display:grid;place-items:center;min-width:28px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-fossil-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}',
+    '.rh-fossil-chronology,.rh-fossil-compare,.rh-fossil-directory,.rh-fossil-challenge,.rh-fossil-events{padding:14px;border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.22),inset 0 1px rgba(255,255,255,.04);}.rh-fossil-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-fossil-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:900;}.rh-fossil-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right;}.rh-fossil-time-window{position:relative;overflow-x:auto;padding:4px 2px 10px;scrollbar-width:thin;}.rh-fossil-time-nodes{display:grid;grid-template-columns:repeat(14,minmax(72px,1fr));gap:5px;min-width:1080px;}.rh-fossil-time-node{position:relative;min-height:82px;padding:9px 6px 7px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.36);color:#94a3b8;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-fossil-time-node::before{content:"";position:absolute;left:9px;right:9px;top:0;height:3px;border-radius:0 0 99px 99px;background:var(--node-accent,#64748b);opacity:.72;}.rh-fossil-time-node:hover{transform:translateY(-2px);border-color:var(--node-accent,var(--rh-fossil-accent));}.rh-fossil-time-node[data-in-filter="false"]{opacity:.38;}.rh-fossil-time-node[aria-pressed="true"]{border-color:var(--node-accent,var(--rh-fossil-accent));background:rgba(120,53,15,.32);box-shadow:inset 0 0 0 1px var(--node-accent,var(--rh-fossil-accent));color:#fff;}.rh-fossil-time-code{display:block;color:var(--node-accent,var(--rh-fossil-accent));font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-fossil-time-age{display:block;margin-top:8px;color:#f8fafc;font:900 9px/1.2 ui-monospace,Menlo,monospace;}.rh-fossil-time-name{display:block;margin-top:5px;font-size:8px;line-height:1.25;}.rh-fossil-scrubber{display:block;margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.28);color:#cbd5e1;font-size:9px;font-weight:800;}.rh-fossil-scrubber-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;}.rh-fossil-scrubber-head strong{color:var(--rh-fossil-accent);font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-fossil-scrubber input{display:block;width:100%;accent-color:var(--rh-fossil-accent);}.rh-fossil-scrubber-labels{display:flex;justify-content:space-between;margin-top:5px;color:#64748b;font:800 7px/1 ui-monospace,Menlo,monospace;text-transform:uppercase;}',
+    '.rh-fossil-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.45fr);gap:12px;align-items:stretch;}.rh-fossil-plate,.rh-fossil-detail{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-fossil-plate{overflow:hidden;}.rh-fossil-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.92),rgba(41,37,36,.8));}.rh-fossil-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-fossil-age-badge{padding:6px 9px;border:1px solid var(--rh-fossil-accent);border-radius:999px;background:rgba(120,53,15,.4);color:#fef3c7;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-fossil-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#0c0a09;}.rh-fossil-stage svg,.rh-fossil-mystery-plate svg{display:block;width:100%;height:100%;}.rh-fossil-grid{opacity:.28;}.rh-fossil-bone,.rh-fossil-bone-thin,.rh-fossil-callout-line,.rh-fossil-strata{vector-effect:non-scaling-stroke;}.rh-fossil-bone{fill:none;stroke:#f5f5f4;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}.rh-fossil-bone-thin{fill:none;stroke:#d6d3d1;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;}.rh-fossil-feather{fill:var(--rh-fossil-accent);fill-opacity:.13;stroke:var(--rh-fossil-accent);stroke-width:2;stroke-linejoin:round;}.rh-fossil-slab-shadow{fill:#0c0a09;opacity:.28;}.rh-fossil-strata{fill:none;stroke:#d6d3d1;stroke-width:1.4;opacity:.14;}.rh-fossil-callout-line{fill:none;stroke:#a8a29e;stroke-width:1.5;stroke-dasharray:4 4;}.rh-fossil-callout-dot{fill:#1c1917;stroke:#e7e5e4;stroke-width:2;}.rh-fossil-evidence-callout[data-active="true"] .rh-fossil-callout-line{stroke:var(--rh-fossil-accent);stroke-width:3;stroke-dasharray:none;}.rh-fossil-evidence-callout[data-active="true"] .rh-fossil-callout-dot{fill:var(--rh-fossil-accent);stroke:#fff;}.rh-fossil-callout-label{fill:#e7e5e4;font:850 10px/1 ui-sans-serif,system-ui;paint-order:stroke;stroke:#0c0a09;stroke-width:4;stroke-linejoin:round;}.rh-fossil-svg-label{fill:#d6d3d1;font:850 10px/1 ui-monospace,Menlo,monospace;}.rh-fossil-svg-accent{fill:var(--rh-fossil-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;}.rh-fossil-stage-legend{position:absolute;left:12px;bottom:10px;padding:7px 9px;border:1px solid rgba(168,162,158,.42);border-radius:9px;background:rgba(12,10,9,.82);color:#e7e5e4;font-size:9px;font-weight:800;}.rh-fossil-lenses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.38);}.rh-fossil-lens{min-height:43px;padding:6px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;}.rh-fossil-lens span{display:block;margin-bottom:4px;color:var(--rh-fossil-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-fossil-lens:hover{border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-lens[aria-pressed="true"]{border-color:#fff;background:#78350f;color:#fff;outline:2px solid var(--rh-fossil-accent);outline-offset:2px;}',
+    '.rh-fossil-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-fossil-accent);background:linear-gradient(155deg,rgba(41,37,36,.96),rgba(15,23,42,.96));}.rh-fossil-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-fossil-detail h3{margin:5px 0 0;color:#f8fafc;font-size:20px;font-weight:950;line-height:1.08;letter-spacing:-.025em;}.rh-fossil-chip{display:grid;place-items:center;min-width:49px;height:36px;padding:0 7px;border:1px solid var(--rh-fossil-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-fossil-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-fossil-reading,.rh-fossil-place,.rh-fossil-interpretation,.rh-fossil-scale{margin-top:10px;padding:10px;border:1px solid rgba(168,162,158,.36);border-radius:10px;background:rgba(2,6,23,.34);}.rh-fossil-reading{border-color:rgba(251,191,36,.42);background:rgba(120,53,15,.17);}.rh-fossil-reading span,.rh-fossil-place span,.rh-fossil-interpretation span,.rh-fossil-scale>span{display:block;color:var(--rh-fossil-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-fossil-reading strong{display:block;margin-top:5px;color:#fffbeb;font-size:12px;}.rh-fossil-reading p,.rh-fossil-place p,.rh-fossil-interpretation p{margin:5px 0 0;color:#e7e5e4;font-size:10px;line-height:1.48;}.rh-fossil-place strong,.rh-fossil-interpretation strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px;}.rh-fossil-scale-bars{display:grid;gap:7px;margin-top:9px;}.rh-fossil-scale-row{display:grid;grid-template-columns:62px minmax(0,1fr) auto;gap:7px;align-items:center;color:#cbd5e1;font-size:8px;font-weight:800;}.rh-fossil-scale-track{height:8px;border-radius:999px;background:#0c0a09;overflow:hidden;}.rh-fossil-scale-track span{display:block;height:100%;min-width:3px;border-radius:inherit;background:linear-gradient(90deg,#78716c,var(--rh-fossil-accent));}.rh-fossil-time-depth{margin-top:10px;}.rh-fossil-depth-head{display:flex;justify-content:space-between;gap:6px;color:#a8a29e;font:800 8px/1.2 ui-monospace,Menlo,monospace;}.rh-fossil-depth-head strong{color:#fde68a;}.rh-fossil-depth-track{position:relative;height:7px;margin-top:6px;border-radius:999px;background:linear-gradient(90deg,#1e293b,#a8a29e 44%,#92400e);}.rh-fossil-depth-track span{position:absolute;top:50%;width:13px;height:13px;border:2px solid #fff;border-radius:50%;background:var(--rh-fossil-accent);transform:translate(-50%,-50%);}.rh-fossil-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-fossil-detail-nav button{min-height:39px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-fossil-detail-nav button:hover{border-color:var(--rh-fossil-accent);color:#fff;}',
+    '.rh-fossil-compare-grid{display:grid;grid-template-columns:minmax(220px,.36fr) repeat(2,minmax(0,.32fr));gap:10px;}.rh-fossil-compare-control,.rh-fossil-compare-card{padding:11px;border:1px solid rgba(100,116,139,.44);border-radius:11px;background:rgba(2,6,23,.32);}.rh-fossil-compare-control label{color:#cbd5e1;font-size:10px;font-weight:800;}.rh-fossil-compare-control select{display:block;width:100%;min-height:39px;margin-top:6px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#0f172a;color:#f8fafc;font-size:11px;}.rh-fossil-compare-control p{margin:9px 0 0;color:#cbd5e1;font-size:10px;line-height:1.46;}.rh-fossil-compare-card[data-current="true"]{border-color:var(--rh-fossil-accent);}.rh-fossil-compare-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}.rh-fossil-compare-card-head strong{color:#f8fafc;font-size:11px;}.rh-fossil-compare-card-head span{color:var(--rh-fossil-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-fossil-compare-card b{display:block;margin-top:8px;color:#fde68a;font-size:10px;}.rh-fossil-compare-card p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-fossil-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.rh-fossil-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:67px;padding:9px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.34);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-fossil-card:hover{transform:translateY(-2px);border-color:var(--card-accent,var(--rh-fossil-accent));background:rgba(30,41,59,.84);}.rh-fossil-card[data-active="true"]{border-color:var(--card-accent,var(--rh-fossil-accent));background:rgba(120,53,15,.24);box-shadow:inset 3px 0 var(--card-accent,var(--rh-fossil-accent));}.rh-fossil-card-code{display:grid;place-items:center;width:39px;height:34px;border:1px solid var(--card-accent,var(--rh-fossil-accent));border-radius:9px;background:rgba(2,6,23,.46);color:var(--card-accent,var(--rh-fossil-accent));font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-fossil-card-copy{min-width:0;}.rh-fossil-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25;}.rh-fossil-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:9px;line-height:1.25;}.rh-fossil-card-age{color:#fde68a;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:right;}',
+    '.rh-fossil-challenge-grid{display:grid;grid-template-columns:minmax(0,.58fr) minmax(290px,.42fr);gap:12px;align-items:stretch;}.rh-fossil-mystery-plate{min-height:255px;overflow:hidden;border:1px solid rgba(100,116,139,.48);border-radius:12px;background:#0c0a09;}.rh-fossil-quiz{display:flex;flex-direction:column;padding:12px;border:1px solid rgba(251,191,36,.38);border-radius:12px;background:rgba(120,53,15,.14);}.rh-fossil-quiz>span{color:var(--rh-fossil-accent);font:900 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-fossil-quiz>strong{margin-top:6px;color:#f8fafc;font-size:15px;line-height:1.25;}.rh-fossil-quiz>p{margin:5px 0 0;color:#e7e5e4;font-size:10px;line-height:1.48;}.rh-fossil-guess-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:11px;}.rh-fossil-guess{min-height:40px;padding:7px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-fossil-guess:hover{border-color:var(--rh-fossil-accent);color:#fff;}.rh-fossil-guess[data-guess-state="correct"]{border-color:#6ee7b7;background:rgba(6,78,59,.64);color:#ecfdf5;}.rh-fossil-guess[data-guess-state="wrong"]{border-color:#fda4af;background:rgba(136,19,55,.48);color:#fff1f2;}.rh-fossil-result{margin-top:10px;padding:9px;border:1px solid rgba(168,162,158,.38);border-radius:9px;background:rgba(2,6,23,.38);color:#e7e5e4;font-size:10px;line-height:1.4;}.rh-fossil-result[data-result="correct"]{border-color:#6ee7b7;color:#d1fae5;}.rh-fossil-new{min-height:38px;margin-top:auto;padding:7px 10px;border:1px solid var(--rh-fossil-accent);border-radius:9px;background:#78350f;color:#fffbeb;font-size:10px;font-weight:900;}.rh-fossil-events-intro{padding:11px;border:1px solid rgba(251,191,36,.34);border-radius:11px;background:rgba(120,53,15,.13);color:#e7e5e4;font-size:10px;line-height:1.5;}.rh-fossil-event-rail{position:relative;display:grid;gap:9px;margin-top:12px;padding-left:26px;}.rh-fossil-event-rail::before{content:"";position:absolute;left:8px;top:13px;bottom:13px;width:3px;border-radius:99px;background:linear-gradient(#f59e0b,#a8a29e,#38bdf8);}.rh-fossil-event{position:relative;padding:12px;border:1px solid rgba(100,116,139,.46);border-radius:11px;background:rgba(2,6,23,.34);}.rh-fossil-event::before{content:"";position:absolute;left:-24px;top:17px;width:13px;height:13px;border:2px solid #fff;border-radius:50%;background:var(--event-accent,#fbbf24);}.rh-fossil-event-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}.rh-fossil-event-head strong{color:#f8fafc;font-size:12px;}.rh-fossil-event-head span{color:var(--event-accent,#fbbf24);font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-fossil-event p{margin:6px 0 0;color:#cbd5e1;font-size:10px;line-height:1.48;}.rh-fossil-note{padding:10px 12px;border:1px solid rgba(251,191,36,.3);border-radius:11px;background:rgba(120,53,15,.11);color:#fde68a;font-size:10px;line-height:1.5;}.rh-fossil-note strong{color:#fffbeb;}',
+    '@media(max-width:980px){.rh-fossil-workbench,.rh-fossil-challenge-grid{grid-template-columns:1fr;}.rh-fossil-detail-nav{margin-top:14px;}.rh-fossil-compare-grid{grid-template-columns:1fr 1fr;}.rh-fossil-compare-control{grid-column:1/-1;}}@media(max-width:720px){.rh-fossil-hero{grid-template-columns:1fr;padding:16px;}.rh-fossil-summary{max-width:330px;}.rh-fossil-stage{min-height:250px;}.rh-fossil-plate-head{align-items:flex-start;}.rh-fossil-age-badge{max-width:48%;white-space:normal;text-align:center;}.rh-fossil-lenses{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-fossil-compare-grid,.rh-fossil-directory-grid{grid-template-columns:1fr;}.rh-fossil-compare-control{grid-column:auto;}}@media(max-width:460px){.rh-fossil-summary{grid-template-columns:1fr 1fr;}.rh-fossil-stat:last-child{grid-column:1/-1;}.rh-fossil-stage{min-height:220px;}.rh-fossil-lenses,.rh-fossil-guess-grid,.rh-fossil-detail-nav{grid-template-columns:1fr;}.rh-fossil-card{grid-template-columns:auto minmax(0,1fr);}.rh-fossil-card-age{grid-column:2;justify-self:start;text-align:left;}.rh-fossil-stage-legend{right:8px;left:8px;text-align:center;}.rh-fossil-event-head{display:block;}.rh-fossil-event-head span{display:block;margin-top:5px;}}@media(prefers-reduced-motion:reduce){.rh-fossil-filter,.rh-fossil-time-node,.rh-fossil-card{transition:none!important;}.rh-fossil-filter:hover,.rh-fossil-time-node:hover,.rh-fossil-card:hover{transform:none!important;}}@media(forced-colors:active){.rh-fossil-hero,.rh-fossil-stat,.rh-fossil-modebar,.rh-fossil-mode,.rh-fossil-filter,.rh-fossil-chronology,.rh-fossil-time-node,.rh-fossil-scrubber,.rh-fossil-plate,.rh-fossil-detail,.rh-fossil-reading,.rh-fossil-place,.rh-fossil-interpretation,.rh-fossil-scale,.rh-fossil-compare,.rh-fossil-compare-control,.rh-fossil-compare-card,.rh-fossil-directory,.rh-fossil-card,.rh-fossil-challenge,.rh-fossil-mystery-plate,.rh-fossil-quiz,.rh-fossil-result,.rh-fossil-events,.rh-fossil-events-intro,.rh-fossil-event,.rh-fossil-note,.rh-fossil-stage-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-fossil-kicker,.rh-fossil-title,.rh-fossil-copy,.rh-fossil-stat strong,.rh-fossil-stat span,.rh-fossil-mode,.rh-fossil-filter,.rh-fossil-filter-code,.rh-fossil-section-kicker,.rh-fossil-section-head h3,.rh-fossil-section-head>span,.rh-fossil-time-code,.rh-fossil-time-age,.rh-fossil-time-name,.rh-fossil-plate-title,.rh-fossil-age-badge,.rh-fossil-detail-kicker,.rh-fossil-detail h3,.rh-fossil-chip,.rh-fossil-reading span,.rh-fossil-reading strong,.rh-fossil-reading p,.rh-fossil-place span,.rh-fossil-place strong,.rh-fossil-place p,.rh-fossil-interpretation span,.rh-fossil-interpretation strong,.rh-fossil-interpretation p,.rh-fossil-scale>span,.rh-fossil-compare-card-head strong,.rh-fossil-compare-card-head span,.rh-fossil-compare-card b,.rh-fossil-compare-card p,.rh-fossil-card-code,.rh-fossil-card-copy strong,.rh-fossil-card-copy span,.rh-fossil-card-age,.rh-fossil-quiz>span,.rh-fossil-quiz>strong,.rh-fossil-quiz>p,.rh-fossil-result,.rh-fossil-event-head strong,.rh-fossil-event-head span,.rh-fossil-event p,.rh-fossil-note{color:CanvasText}.rh-fossil-mode[aria-pressed="true"],.rh-fossil-filter[aria-pressed="true"],.rh-fossil-time-node[aria-pressed="true"],.rh-fossil-lens[aria-pressed="true"],.rh-fossil-card[data-active="true"],.rh-fossil-guess[data-guess-state="correct"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-fossil-stage,.rh-fossil-mystery-plate{border:1px solid CanvasText;background:Canvas}.rh-fossil-bone,.rh-fossil-bone-thin,.rh-fossil-feather,.rh-fossil-callout-line{fill:none;stroke:CanvasText}.rh-fossil-mode,.rh-fossil-filter,.rh-fossil-time-node,.rh-fossil-lens,.rh-fossil-detail-nav button,.rh-fossil-compare-control select,.rh-fossil-card,.rh-fossil-guess,.rh-fossil-new{border-color:ButtonText;background:ButtonFace;color:ButtonText;}.rh-fossil-scale-track,.rh-fossil-depth-track{border:1px solid CanvasText;background:Canvas}.rh-fossil-scale-track span,.rh-fossil-depth-track span{background:Highlight;}}',
+    '.rh-age-lab{--rh-age-accent:#f0abfc;display:grid;gap:14px;}.rh-age-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(240,171,252,.52);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(88,28,135,.62) 58%,rgba(131,24,67,.5));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-age-hero::after{content:"";position:absolute;z-index:-1;right:-80px;top:-116px;width:304px;height:304px;border:1px solid rgba(240,171,252,.28);border-radius:50%;box-shadow:0 0 0 34px rgba(216,180,254,.04),0 0 0 70px rgba(244,114,182,.025);}.rh-age-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-age-hero-icon{display:grid;white-space:pre-line;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(240,171,252,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#fae8ff;font:950 11px/1.1 ui-monospace,Menlo,monospace;text-align:center;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-age-kicker,.rh-age-section-kicker,.rh-age-detail-kicker{color:var(--rh-age-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-age-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-age-copy{max-width:760px;margin:7px 0 0;color:#f5d0fe;font-size:12px;line-height:1.55;}.rh-age-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-age-stat{min-width:96px;padding:10px;border:1px solid rgba(240,171,252,.38);border-radius:11px;background:rgba(2,6,23,.52);text-align:center;}.rh-age-stat strong{display:block;color:#fdf4ff;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-age-stat span{display:block;margin-top:5px;color:#f5d0fe;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-age-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-age-tab{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-age-tab:hover{transform:translateY(-1px);border-color:var(--rh-age-accent);color:#fff;}.rh-age-tab[aria-selected="true"]{border-color:var(--rh-age-accent);background:rgba(126,34,206,.58);color:#fff;box-shadow:0 0 0 2px rgba(240,171,252,.09);}.rh-age-code{display:grid;place-items:center;min-width:29px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-age-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-age-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.45fr);gap:12px;align-items:stretch;}.rh-age-plate,.rh-age-detail,.rh-age-compare,.rh-age-challenge,.rh-age-stage-strip{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-age-plate{overflow:hidden;}.rh-age-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.92),rgba(15,23,42,.72));}.rh-age-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-age-stage-badge{padding:6px 9px;border:1px solid var(--rh-age-accent);border-radius:999px;background:rgba(88,28,135,.4);color:#fae8ff;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-age-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#020617;}.rh-age-stage svg,.rh-age-mystery-stage svg{display:block;width:100%;height:100%;}',
+    '.rh-age-grid{opacity:.3;}.rh-age-bird-wing,.rh-age-bird-body,.rh-age-bird-head,.rh-age-bird-tail,.rh-age-bird-line,.rh-age-callout-line{vector-effect:non-scaling-stroke;}.rh-age-bird-wing,.rh-age-bird-body,.rh-age-bird-head,.rh-age-bird-tail{stroke:#e2e8f0;stroke-width:2.2;stroke-linejoin:round;}.rh-age-bird-line{fill:none;stroke:#cbd5e1;stroke-width:2;stroke-linecap:round;}.rh-age-pattern-line{fill:none;stroke:#f8fafc;stroke-width:5;stroke-linecap:round;opacity:.55;}.rh-age-pattern-speckle{fill:#f8fafc;opacity:.6;}.rh-age-callout-line{fill:none;stroke:#94a3b8;stroke-width:1.5;stroke-dasharray:4 4;}.rh-age-field-callout[data-selected="true"] .rh-age-callout-line{stroke:var(--rh-age-accent);stroke-width:3;stroke-dasharray:none;}.rh-age-callout-dot{fill:#0f172a;stroke:#e2e8f0;stroke-width:2;}.rh-age-field-callout[data-selected="true"] .rh-age-callout-dot{fill:var(--rh-age-accent);stroke:#fff;}.rh-age-callout-label{fill:#cbd5e1;font:850 10px/1 ui-sans-serif,system-ui;paint-order:stroke;stroke:#020617;stroke-width:4;stroke-linejoin:round;}.rh-age-field-callout[data-selected="true"] .rh-age-callout-label{fill:#fff;font-weight:950;}.rh-age-svg-label{fill:#cbd5e1;font:850 10px/1 ui-monospace,Menlo,monospace;}.rh-age-svg-accent{fill:var(--rh-age-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.07em;}.rh-age-stage-legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:7px;padding:7px 9px;border:1px solid rgba(148,163,184,.4);border-radius:9px;background:rgba(2,6,23,.82);color:#cbd5e1;font-size:9px;font-weight:800;}.rh-age-controls{padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.38);}.rh-age-stage-buttons,.rh-age-mark-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}.rh-age-stage-button,.rh-age-mark-button{min-height:40px;padding:6px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;}.rh-age-stage-button:hover,.rh-age-mark-button:hover{border-color:var(--rh-age-accent);color:#fff;}.rh-age-stage-button[aria-pressed="true"],.rh-age-mark-button[aria-pressed="true"]{border-color:#fff;background:#7e22ce;color:#fff;outline:2px solid var(--rh-age-accent);outline-offset:2px;}.rh-age-stage-button span{display:block;margin-top:4px;color:inherit;font-size:7px;text-transform:uppercase;letter-spacing:.05em;}.rh-age-scrubber{display:block;margin-top:11px;color:#cbd5e1;font-size:10px;font-weight:800;}.rh-age-scrubber-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;}.rh-age-scrubber-head strong{color:#fdf4ff;font:900 10px/1 ui-monospace,Menlo,monospace;}.rh-age-scrubber input{display:block;width:100%;accent-color:var(--rh-age-accent);}.rh-age-mark-buttons{margin-top:11px;}',
+    '.rh-age-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-age-accent);background:linear-gradient(155deg,rgba(30,41,59,.95),rgba(15,23,42,.96));}.rh-age-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-age-detail h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.07;letter-spacing:-.027em;}.rh-age-chip{display:grid;place-items:center;min-width:48px;height:36px;padding:0 7px;border:1px solid var(--rh-age-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-age-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-age-reading,.rh-age-mark-card,.rh-age-variation,.rh-age-timing{margin-top:10px;padding:10px;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(2,6,23,.34);}.rh-age-reading{border-color:rgba(240,171,252,.42);background:rgba(88,28,135,.2);}.rh-age-reading span,.rh-age-mark-card span,.rh-age-variation span,.rh-age-timing span{display:block;color:var(--rh-age-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-age-reading strong{display:block;margin-top:5px;color:#fdf4ff;font-size:12px;}.rh-age-reading p,.rh-age-mark-card p,.rh-age-variation p,.rh-age-timing p{margin:5px 0 0;color:#f5d0fe;font-size:10px;line-height:1.48;}.rh-age-mark-card{border-color:rgba(196,181,253,.4);}.rh-age-mark-card span{color:#c4b5fd;}.rh-age-mark-card strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px;}.rh-age-timeline{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:11px;}.rh-age-timeline-step{position:relative;padding-top:12px;color:#64748b;font:800 8px/1.2 ui-sans-serif,system-ui;text-align:center;}.rh-age-timeline-step::before{content:"";position:absolute;left:0;right:0;top:3px;height:4px;background:#334155;}.rh-age-timeline-step:first-child::before{border-radius:99px 0 0 99px;}.rh-age-timeline-step:last-child::before{border-radius:0 99px 99px 0;}.rh-age-timeline-step[data-reached="true"]{color:#f5d0fe;}.rh-age-timeline-step[data-reached="true"]::before{background:var(--rh-age-accent);}.rh-age-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-age-detail-actions button{min-height:39px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-age-detail-actions button:hover{border-color:var(--rh-age-accent);color:#fff;}',
+    '.rh-age-compare,.rh-age-challenge,.rh-age-stage-strip{padding:14px;}.rh-age-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-age-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:900;}.rh-age-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-age-compare-grid{display:grid;grid-template-columns:minmax(220px,.35fr) repeat(2,minmax(0,.325fr));gap:10px;}.rh-age-compare-control{padding:11px;border:1px solid rgba(100,116,139,.44);border-radius:11px;background:rgba(2,6,23,.32);}.rh-age-compare-control label{color:#cbd5e1;font-size:10px;font-weight:800;}.rh-age-compare-control select{display:block;width:100%;min-height:39px;margin-top:6px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#0f172a;color:#f8fafc;font-size:11px;}.rh-age-compare-control p{margin:9px 0 0;color:#cbd5e1;font-size:10px;line-height:1.46;}.rh-age-compare-card{padding:11px;border:1px solid rgba(100,116,139,.44);border-radius:11px;background:rgba(2,6,23,.32);}.rh-age-compare-card[data-current="true"]{border-color:var(--rh-age-accent);}.rh-age-compare-card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}.rh-age-compare-card-head strong{color:#f8fafc;font-size:11px;}.rh-age-compare-card-head span{color:var(--rh-age-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-age-compare-card b{display:block;margin-top:8px;color:#e2e8f0;font-size:10px;}.rh-age-compare-card p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-age-stage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-age-stage-card{min-height:105px;padding:11px;border:1px solid rgba(100,116,139,.45);border-radius:11px;background:rgba(2,6,23,.3);color:#cbd5e1;text-align:left;}.rh-age-stage-card[aria-pressed="true"]{border-color:var(--rh-age-accent);background:rgba(88,28,135,.25);box-shadow:inset 3px 0 var(--rh-age-accent);}.rh-age-stage-card span{display:block;color:var(--rh-age-accent);font:900 8px/1.15 ui-monospace,Menlo,monospace;}.rh-age-stage-card strong{display:block;margin-top:7px;color:#f8fafc;font-size:11px;}.rh-age-stage-card p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.44;}',
+    '.rh-age-challenge-grid{display:grid;grid-template-columns:minmax(0,.58fr) minmax(280px,.42fr);gap:12px;align-items:stretch;}.rh-age-mystery-stage{min-height:255px;overflow:hidden;border:1px solid rgba(100,116,139,.48);border-radius:12px;background:#020617;}.rh-age-quiz{display:flex;flex-direction:column;padding:12px;border:1px solid rgba(240,171,252,.38);border-radius:12px;background:rgba(88,28,135,.15);}.rh-age-quiz>span{color:var(--rh-age-accent);font:900 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-age-quiz>strong{margin-top:6px;color:#f8fafc;font-size:15px;line-height:1.25;}.rh-age-quiz>p{margin:5px 0 0;color:#f5d0fe;font-size:10px;line-height:1.48;}.rh-age-guess-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:11px;}.rh-age-guess{min-height:40px;padding:7px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-age-guess:hover{border-color:var(--rh-age-accent);color:#fff;}.rh-age-guess[data-guess-state="correct"]{border-color:#6ee7b7;background:rgba(6,78,59,.64);color:#ecfdf5;}.rh-age-guess[data-guess-state="wrong"]{border-color:#fda4af;background:rgba(136,19,55,.48);color:#fff1f2;}.rh-age-result{margin-top:10px;padding:9px;border:1px solid rgba(148,163,184,.38);border-radius:9px;background:rgba(2,6,23,.38);color:#e2e8f0;font-size:10px;line-height:1.4;}.rh-age-result[data-result="correct"]{border-color:#6ee7b7;color:#d1fae5;}.rh-age-new{min-height:38px;margin-top:auto;padding:7px 10px;border:1px solid var(--rh-age-accent);border-radius:9px;background:#701a75;color:#fdf4ff;font-size:10px;font-weight:900;}.rh-age-note{padding:10px 12px;border:1px solid rgba(240,171,252,.32);border-radius:11px;background:rgba(88,28,135,.12);color:#f5d0fe;font-size:10px;line-height:1.5;}.rh-age-note strong{color:#fdf4ff;}',
+    '@media(max-width:980px){.rh-age-workbench,.rh-age-challenge-grid{grid-template-columns:1fr;}.rh-age-detail-actions{margin-top:14px;}.rh-age-compare-grid{grid-template-columns:1fr 1fr;}.rh-age-compare-control{grid-column:1/-1;}}@media(max-width:720px){.rh-age-hero{grid-template-columns:1fr;padding:16px;}.rh-age-summary{max-width:250px;}.rh-age-stage{min-height:250px;}.rh-age-plate-head{align-items:flex-start;}.rh-age-stage-badge{max-width:48%;white-space:normal;text-align:center;}.rh-age-stage-grid,.rh-age-compare-grid{grid-template-columns:1fr;}.rh-age-compare-control{grid-column:auto;}}@media(max-width:460px){.rh-age-stage{min-height:220px;}.rh-age-stage-buttons,.rh-age-mark-buttons,.rh-age-guess-grid{grid-template-columns:1fr;}.rh-age-detail-actions{grid-template-columns:1fr;}.rh-age-stage-legend{right:8px;left:8px;justify-content:center;}}@media(prefers-reduced-motion:reduce){.rh-age-tab,.rh-age-stage-button,.rh-age-mark-button{transition:none!important;}.rh-age-tab:hover{transform:none!important;}}@media(forced-colors:active){.rh-age-hero,.rh-age-stat,.rh-age-tab,.rh-age-plate,.rh-age-detail,.rh-age-reading,.rh-age-mark-card,.rh-age-variation,.rh-age-timing,.rh-age-compare,.rh-age-compare-control,.rh-age-compare-card,.rh-age-stage-strip,.rh-age-stage-card,.rh-age-challenge,.rh-age-mystery-stage,.rh-age-quiz,.rh-age-result,.rh-age-note,.rh-age-stage-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-age-kicker,.rh-age-title,.rh-age-copy,.rh-age-stat strong,.rh-age-stat span,.rh-age-tab,.rh-age-code,.rh-age-section-kicker,.rh-age-plate-title,.rh-age-stage-badge,.rh-age-detail-kicker,.rh-age-detail h3,.rh-age-chip,.rh-age-reading span,.rh-age-reading strong,.rh-age-reading p,.rh-age-mark-card span,.rh-age-mark-card strong,.rh-age-mark-card p,.rh-age-variation span,.rh-age-variation p,.rh-age-timing span,.rh-age-timing p,.rh-age-section-head h3,.rh-age-section-head>span,.rh-age-compare-card-head strong,.rh-age-compare-card-head span,.rh-age-compare-card b,.rh-age-compare-card p,.rh-age-stage-card span,.rh-age-stage-card strong,.rh-age-stage-card p,.rh-age-quiz>span,.rh-age-quiz>strong,.rh-age-quiz>p,.rh-age-result,.rh-age-note{color:CanvasText}.rh-age-tab[aria-selected="true"],.rh-age-stage-button[aria-pressed="true"],.rh-age-mark-button[aria-pressed="true"],.rh-age-stage-card[aria-pressed="true"],.rh-age-guess[data-guess-state="correct"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-age-stage,.rh-age-mystery-stage{border:1px solid CanvasText;background:Canvas}.rh-age-bird-wing,.rh-age-bird-body,.rh-age-bird-head,.rh-age-bird-tail,.rh-age-bird-line,.rh-age-callout-line{fill:none;stroke:CanvasText}.rh-age-stage-button,.rh-age-mark-button,.rh-age-detail-actions button,.rh-age-guess,.rh-age-new,.rh-age-compare-control select{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+    '.rh-prey-lab{--rh-prey-accent:#fbbf24;display:grid;gap:14px;}.rh-prey-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.5);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(120,53,15,.64) 58%,rgba(20,83,45,.5));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-prey-hero::after{content:"";position:absolute;z-index:-1;right:-82px;top:-116px;width:306px;height:306px;border:1px solid rgba(251,191,36,.26);border-radius:50%;box-shadow:0 0 0 34px rgba(245,158,11,.04),0 0 0 70px rgba(74,222,128,.025);}.rh-prey-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-prey-hero-icon{display:grid;white-space:pre-line;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(251,191,36,.65);border-radius:17px;background:rgba(2,6,23,.58);color:#fef3c7;font:950 11px/1.1 ui-monospace,Menlo,monospace;text-align:center;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-prey-kicker,.rh-prey-section-kicker,.rh-prey-detail-kicker{color:var(--rh-prey-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-prey-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-prey-copy{max-width:780px;margin:7px 0 0;color:#fef3c7;font-size:12px;line-height:1.55;}.rh-prey-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-prey-stat{min-width:96px;padding:10px;border:1px solid rgba(251,191,36,.36);border-radius:11px;background:rgba(2,6,23,.52);text-align:center;}.rh-prey-stat strong{display:block;color:#fffbeb;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-prey-stat span{display:block;margin-top:5px;color:#fde68a;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-prey-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:10px;align-items:center;padding:11px;border:1px solid rgba(100,116,139,.52);border-radius:14px;background:rgba(15,23,42,.66);}.rh-prey-search{display:flex;align-items:center;gap:7px;min-width:0;}.rh-prey-search input{width:100%;min-height:41px;padding:8px 10px;border:1px solid #64748b;border-radius:9px;background:#0f172a;color:#f8fafc;font-size:11px;}.rh-prey-search button{min-height:39px;padding:7px 10px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-prey-result-count{color:#fde68a;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}',
+    '.rh-prey-groups{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-prey-group{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-prey-group:hover{transform:translateY(-1px);border-color:var(--rh-prey-accent);color:#fff;}.rh-prey-group[aria-pressed="true"]{border-color:var(--rh-prey-accent);background:rgba(146,64,14,.62);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.08);}.rh-prey-group-code{display:grid;place-items:center;min-width:26px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-prey-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-prey-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.45fr);gap:12px;align-items:stretch;}.rh-prey-web,.rh-prey-detail,.rh-prey-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-prey-web{overflow:hidden;}.rh-prey-web-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.92),rgba(15,23,42,.72));}.rh-prey-web-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-prey-tier-badge{padding:6px 9px;border:1px solid var(--rh-prey-accent);border-radius:999px;background:rgba(120,53,15,.4);color:#fef3c7;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-prey-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#020617;}.rh-prey-stage svg{display:block;width:100%;height:100%;}.rh-prey-grid{opacity:.27;}.rh-prey-link,.rh-prey-shape-line,.rh-prey-node-ring{vector-effect:non-scaling-stroke;}.rh-prey-link{stroke:#94a3b8;stroke-width:2;opacity:.62;}.rh-prey-node-ring{fill:rgba(15,23,42,.9);stroke:#cbd5e1;stroke-width:2;}.rh-prey-node-code{fill:#f8fafc;font:950 9px/1 ui-monospace,Menlo,monospace;text-anchor:middle;}.rh-prey-node-label{fill:#cbd5e1;font:800 9px/1 ui-sans-serif,system-ui;text-anchor:middle;paint-order:stroke;stroke:#020617;stroke-width:4;}.rh-prey-core{fill:rgba(2,6,23,.7);stroke:var(--rh-prey-accent);stroke-width:3;}.rh-prey-shape-fill{fill:var(--rh-prey-accent);stroke:#fffbeb;stroke-width:2;}.rh-prey-shape-dark{fill:#78350f;stroke:#fffbeb;stroke-width:2;}.rh-prey-shape-line{fill:none;stroke:#fffbeb;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}.rh-prey-core-label{fill:#fffbeb;font:950 12px/1 ui-sans-serif,system-ui;text-anchor:middle;paint-order:stroke;stroke:#020617;stroke-width:5;}.rh-prey-svg-label{fill:#cbd5e1;font:850 10px/1 ui-monospace,Menlo,monospace;}.rh-prey-svg-accent{fill:var(--rh-prey-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;}.rh-prey-stage-legend{position:absolute;left:12px;bottom:10px;padding:7px 9px;border:1px solid rgba(148,163,184,.4);border-radius:9px;background:rgba(2,6,23,.82);color:#cbd5e1;font-size:9px;font-weight:800;}',
+    '.rh-prey-predator-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.38);}.rh-prey-predator-button{min-height:43px;padding:6px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;}.rh-prey-predator-button:hover{border-color:var(--rh-prey-accent);color:#fff;}.rh-prey-predator-button[aria-pressed="true"]{border-color:#fff;background:#92400e;color:#fff;outline:2px solid var(--rh-prey-accent);outline-offset:2px;}.rh-prey-predator-button span{display:block;margin-bottom:4px;color:inherit;font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-prey-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-prey-accent);background:linear-gradient(155deg,rgba(30,41,59,.95),rgba(15,23,42,.96));}.rh-prey-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-prey-detail h3{margin:5px 0 0;color:#f8fafc;font-size:20px;font-weight:950;line-height:1.08;letter-spacing:-.025em;}.rh-prey-chip{display:grid;place-items:center;min-width:47px;height:36px;padding:0 7px;border:1px solid var(--rh-prey-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-prey-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-prey-reading,.rh-prey-predator-card,.rh-prey-context,.rh-prey-question{margin-top:10px;padding:10px;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(2,6,23,.34);}.rh-prey-reading{border-color:rgba(251,191,36,.4);background:rgba(120,53,15,.2);}.rh-prey-reading span,.rh-prey-predator-card span,.rh-prey-context span,.rh-prey-question span{display:block;color:var(--rh-prey-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-prey-reading strong,.rh-prey-predator-card strong{display:block;margin-top:5px;color:#fffbeb;font-size:11px;}.rh-prey-reading p,.rh-prey-predator-card p,.rh-prey-context p,.rh-prey-question p{margin:5px 0 0;color:#fef3c7;font-size:10px;line-height:1.48;}.rh-prey-predator-card{border-color:rgba(248,113,113,.38);background:rgba(127,29,29,.14);}.rh-prey-predator-card span{color:#fca5a5;}.rh-prey-context{border-color:rgba(74,222,128,.34);}.rh-prey-context span{color:#86efac;}.rh-prey-question{border-color:rgba(196,181,253,.38);}.rh-prey-question span{color:#c4b5fd;}.rh-prey-mass-scale{margin-top:10px;}.rh-prey-mass-head{display:flex;justify-content:space-between;gap:8px;color:#94a3b8;font:800 8px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-prey-mass-head strong{color:#f8fafc;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-prey-mass-track{position:relative;height:7px;margin-top:7px;border-radius:999px;background:#020617;}.rh-prey-mass-track span{position:absolute;top:-3px;width:13px;height:13px;border:2px solid #fff;border-radius:50%;background:var(--rh-prey-accent);transform:translateX(-50%);}.rh-prey-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-prey-detail-nav button{min-height:39px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-prey-detail-nav button:hover{border-color:var(--rh-prey-accent);color:#fff;}',
+    '.rh-prey-directory{padding:14px;}.rh-prey-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-prey-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:900;}.rh-prey-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-prey-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.rh-prey-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.48);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-prey-card:hover{transform:translateY(-2px);border-color:var(--rh-prey-accent);background:rgba(30,41,59,.72);}.rh-prey-card[data-active="true"]{border-color:var(--rh-prey-accent);box-shadow:inset 3px 0 var(--rh-prey-accent);}.rh-prey-card-icon{display:grid;place-items:center;width:39px;height:39px;border:1px solid var(--rh-prey-accent);border-radius:10px;background:rgba(2,6,23,.48);color:var(--rh-prey-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-prey-card-copy{min-width:0;}.rh-prey-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25;}.rh-prey-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:9px;line-height:1.25;}.rh-prey-card-mass{white-space:pre-line;color:#fde68a;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right;}.rh-prey-empty{padding:28px;border:1px dashed #64748b;border-radius:12px;color:#cbd5e1;text-align:center;}.rh-prey-empty strong{display:block;color:#f8fafc;font-size:13px;}.rh-prey-empty p{margin:6px 0 0;font-size:10px;}.rh-prey-empty button{min-height:38px;margin-top:12px;padding:7px 11px;border:1px solid var(--rh-prey-accent);border-radius:9px;background:#78350f;color:#fffbeb;font-size:10px;font-weight:900;}.rh-prey-note{padding:10px 12px;border:1px solid rgba(251,191,36,.3);border-radius:11px;background:rgba(120,53,15,.12);color:#fde68a;font-size:10px;line-height:1.5;}.rh-prey-note strong{color:#fffbeb;}',
+    '@media(max-width:980px){.rh-prey-workbench{grid-template-columns:1fr;}.rh-prey-detail-nav{margin-top:14px;}.rh-prey-predator-controls{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:720px){.rh-prey-hero{grid-template-columns:1fr;padding:16px;}.rh-prey-summary{max-width:250px;}.rh-prey-toolbar{grid-template-columns:1fr;}.rh-prey-result-count{justify-self:start;}.rh-prey-stage{min-height:250px;}.rh-prey-web-head{align-items:flex-start;}.rh-prey-tier-badge{max-width:48%;white-space:normal;text-align:center;}.rh-prey-predator-controls{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-prey-directory-grid{grid-template-columns:1fr;}}@media(max-width:460px){.rh-prey-search{display:grid;grid-template-columns:1fr;}.rh-prey-stage{min-height:220px;}.rh-prey-predator-controls{grid-template-columns:1fr;}.rh-prey-detail-nav{grid-template-columns:1fr;}.rh-prey-card{grid-template-columns:auto minmax(0,1fr);}.rh-prey-card-mass{grid-column:2;justify-self:start;text-align:left;}.rh-prey-stage-legend{right:8px;left:8px;text-align:center;}}@media(prefers-reduced-motion:reduce){.rh-prey-group,.rh-prey-card{transition:none!important;}.rh-prey-group:hover,.rh-prey-card:hover{transform:none!important;}}@media(forced-colors:active){.rh-prey-hero,.rh-prey-stat,.rh-prey-toolbar,.rh-prey-group,.rh-prey-web,.rh-prey-detail,.rh-prey-reading,.rh-prey-predator-card,.rh-prey-context,.rh-prey-question,.rh-prey-directory,.rh-prey-card,.rh-prey-empty,.rh-prey-note,.rh-prey-stage-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-prey-kicker,.rh-prey-title,.rh-prey-copy,.rh-prey-stat strong,.rh-prey-stat span,.rh-prey-result-count,.rh-prey-group,.rh-prey-group-code,.rh-prey-section-kicker,.rh-prey-web-title,.rh-prey-tier-badge,.rh-prey-detail-kicker,.rh-prey-detail h3,.rh-prey-chip,.rh-prey-reading span,.rh-prey-reading strong,.rh-prey-reading p,.rh-prey-predator-card span,.rh-prey-predator-card strong,.rh-prey-predator-card p,.rh-prey-context span,.rh-prey-context p,.rh-prey-question span,.rh-prey-question p,.rh-prey-section-head h3,.rh-prey-section-head>span,.rh-prey-card-icon,.rh-prey-card-copy strong,.rh-prey-card-copy span,.rh-prey-card-mass,.rh-prey-empty,.rh-prey-note{color:CanvasText}.rh-prey-group[aria-pressed="true"],.rh-prey-predator-button[aria-pressed="true"],.rh-prey-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-prey-stage{border:1px solid CanvasText;background:Canvas}.rh-prey-link,.rh-prey-node-ring,.rh-prey-shape-fill,.rh-prey-shape-dark,.rh-prey-shape-line,.rh-prey-core{fill:none;stroke:CanvasText}.rh-prey-predator-button,.rh-prey-search button,.rh-prey-search input,.rh-prey-detail-nav button,.rh-prey-empty button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}.rh-prey-mass-track{border:1px solid CanvasText;background:Canvas}.rh-prey-mass-track span{background:Highlight;}}',
+    '.rh-wing-formula-lab{--rh-wing-accent:#60a5fa;display:grid;gap:14px;}.rh-wing-formula-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(96,165,250,.55);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(30,58,138,.62) 58%,rgba(12,74,110,.62));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-wing-formula-hero::after{content:"";position:absolute;z-index:-1;right:-82px;top:-118px;width:310px;height:310px;border:1px solid rgba(147,197,253,.3);border-radius:50%;box-shadow:0 0 0 34px rgba(96,165,250,.04),0 0 0 70px rgba(34,211,238,.025);}.rh-wing-formula-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-wing-formula-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(147,197,253,.7);border-radius:17px;background:rgba(2,6,23,.58);color:#dbeafe;font:950 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-wing-formula-kicker,.rh-wing-formula-section-kicker,.rh-wing-formula-detail-kicker{color:var(--rh-wing-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-wing-formula-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-wing-formula-copy{max-width:760px;margin:7px 0 0;color:#dbeafe;font-size:12px;line-height:1.55;}.rh-wing-formula-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-wing-formula-stat{min-width:96px;padding:10px;border:1px solid rgba(147,197,253,.4);border-radius:11px;background:rgba(2,6,23,.52);text-align:center;}.rh-wing-formula-stat strong{display:block;color:#eff6ff;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-stat span{display:block;margin-top:5px;color:#bfdbfe;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-wing-formula-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-wing-formula-tab{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-wing-formula-tab:hover{transform:translateY(-1px);border-color:var(--rh-wing-accent);color:#f8fafc;}.rh-wing-formula-tab[aria-selected="true"]{border-color:var(--rh-wing-accent);background:rgba(30,64,175,.56);color:#fff;box-shadow:0 0 0 2px rgba(96,165,250,.1);}.rh-wing-formula-code{display:grid;place-items:center;min-width:28px;height:21px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.58);color:var(--rh-wing-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}',
+    '.rh-wing-formula-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.45fr);gap:12px;align-items:stretch;}.rh-wing-formula-plate,.rh-wing-formula-detail,.rh-wing-formula-compare,.rh-wing-formula-mystery,.rh-wing-formula-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-wing-formula-plate{overflow:hidden;}.rh-wing-formula-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.92),rgba(15,23,42,.72));}.rh-wing-formula-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-wing-formula-scale{padding:6px 9px;border:1px solid var(--rh-wing-accent);border-radius:999px;background:rgba(30,64,175,.3);color:#dbeafe;font:900 9px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-wing-formula-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#020617;}.rh-wing-formula-stage svg,.rh-wing-mystery-stage svg{display:block;width:100%;height:100%;}.rh-wing-formula-svg-grid{opacity:.34;}.rh-wing-formula-ruler,.rh-wing-formula-baseline,.rh-wing-formula-shaft,.rh-wing-formula-feather,.rh-wing-formula-reference-line,.rh-wing-formula-current-line{vector-effect:non-scaling-stroke;}.rh-wing-formula-ruler{fill:none;stroke:#64748b;stroke-width:1;stroke-dasharray:4 6;}.rh-wing-formula-baseline{fill:none;stroke:#cbd5e1;stroke-width:2;}.rh-wing-formula-feather{fill:#334155;stroke:#94a3b8;stroke-width:2;transition:fill .18s,stroke .18s,filter .18s;}.rh-wing-formula-shaft{fill:none;stroke:#cbd5e1;stroke-width:1.4;opacity:.8;}.rh-wing-formula-primary[data-selected="true"] .rh-wing-formula-feather{fill:var(--rh-wing-accent);stroke:#fff;stroke-width:4;filter:drop-shadow(0 0 9px var(--rh-wing-accent));}.rh-wing-formula-primary[data-longest="true"] .rh-wing-formula-feather{stroke:#fde68a;}.rh-wing-formula-current-line{fill:none;stroke:#f8fafc;stroke-width:2.5;}.rh-wing-formula-reference-line{fill:none;stroke:#c4b5fd;stroke-width:3;stroke-dasharray:8 7;}.rh-wing-formula-svg-label{fill:#cbd5e1;font:850 10px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-svg-label-strong{fill:#f8fafc;font:950 11px/1 ui-monospace,Menlo,monospace;paint-order:stroke;stroke:#020617;stroke-width:3;}.rh-wing-formula-svg-accent{fill:var(--rh-wing-accent);font:950 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;}',
+    '.rh-wing-formula-legend{position:absolute;left:12px;bottom:10px;display:flex;flex-wrap:wrap;gap:8px;padding:7px 9px;border:1px solid rgba(148,163,184,.4);border-radius:9px;background:rgba(2,6,23,.82);color:#cbd5e1;font-size:9px;font-weight:800;}.rh-wing-formula-legend span{display:inline-flex;align-items:center;gap:5px;}.rh-wing-formula-legend i{display:block;width:19px;height:0;border-top:2px solid #f8fafc;}.rh-wing-formula-legend i[data-reference="true"]{border-color:#c4b5fd;border-top-style:dashed;}.rh-wing-formula-controls{padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.38);}.rh-wing-formula-primary-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;}.rh-wing-formula-primary-button{min-height:42px;padding:5px 3px;border:1px solid #64748b;border-radius:8px;background:#1e293b;color:#cbd5e1;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-primary-button:hover{border-color:var(--rh-wing-accent);color:#fff;}.rh-wing-formula-primary-button[aria-pressed="true"]{border-color:#fff;background:#1d4ed8;color:#fff;outline:2px solid var(--rh-wing-accent);outline-offset:2px;}.rh-wing-formula-primary-button span{display:block;margin-top:4px;font-size:7px;color:inherit;}.rh-wing-formula-adjust{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end;margin-top:11px;}.rh-wing-formula-range{min-width:0;color:#cbd5e1;font-size:10px;font-weight:800;}.rh-wing-formula-range-head{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;}.rh-wing-formula-range-head strong{color:#eff6ff;font:900 10px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-range input{display:block;width:100%;accent-color:var(--rh-wing-accent);}.rh-wing-formula-reset{min-height:37px;padding:7px 10px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-wing-formula-reset:hover{border-color:var(--rh-wing-accent);color:#fff;}',
+    '.rh-wing-formula-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-wing-accent);background:linear-gradient(155deg,rgba(30,41,59,.95),rgba(15,23,42,.96));}.rh-wing-formula-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-wing-formula-detail h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.07;letter-spacing:-.027em;}.rh-wing-formula-chip{display:grid;place-items:center;min-width:46px;height:36px;padding:0 7px;border:1px solid var(--rh-wing-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-wing-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-live{margin-top:12px;padding:11px;border:1px solid rgba(96,165,250,.44);border-radius:11px;background:rgba(30,64,175,.18);}.rh-wing-formula-live span,.rh-wing-formula-reading span,.rh-wing-formula-callout span{display:block;color:var(--rh-wing-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-wing-formula-live strong{display:block;margin-top:6px;color:#eff6ff;font:950 13px/1.35 ui-monospace,Menlo,monospace;word-break:break-word;}.rh-wing-formula-live p,.rh-wing-formula-reading p,.rh-wing-formula-callout p{margin:6px 0 0;color:#dbeafe;font-size:10px;line-height:1.48;}.rh-wing-formula-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;}.rh-wing-formula-metric{min-width:0;padding:9px 6px;border:1px solid rgba(100,116,139,.46);border-radius:9px;background:rgba(2,6,23,.34);text-align:center;}.rh-wing-formula-metric span{display:block;color:#94a3b8;font:800 7px/1.2 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.06em;}.rh-wing-formula-metric strong{display:block;margin-top:5px;color:#f8fafc;font:950 11px/1.2 ui-monospace,Menlo,monospace;}.rh-wing-formula-reading,.rh-wing-formula-callout{margin-top:10px;padding:10px;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(2,6,23,.34);}.rh-wing-formula-callout{border-color:rgba(196,181,253,.42);background:rgba(76,29,149,.16);}.rh-wing-formula-callout span{color:#c4b5fd;}.rh-wing-formula-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-wing-formula-detail-actions button{min-height:38px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-wing-formula-detail-actions button:hover{border-color:var(--rh-wing-accent);color:#fff;}',
+    '.rh-wing-formula-compare,.rh-wing-formula-mystery,.rh-wing-formula-directory{padding:14px;}.rh-wing-formula-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-wing-formula-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:900;}.rh-wing-formula-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-wing-formula-compare-grid{display:grid;grid-template-columns:minmax(220px,.42fr) minmax(0,.58fr);gap:12px;align-items:stretch;}.rh-wing-formula-compare-controls{display:grid;align-content:start;gap:9px;}.rh-wing-formula-compare-controls label{color:#cbd5e1;font-size:10px;font-weight:800;}.rh-wing-formula-compare-controls select{display:block;width:100%;min-height:39px;margin-top:6px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#0f172a;color:#f8fafc;font-size:11px;}.rh-wing-formula-compare-stat{padding:10px;border:1px solid rgba(100,116,139,.44);border-radius:10px;background:rgba(2,6,23,.34);}.rh-wing-formula-compare-stat span{display:block;color:#94a3b8;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-wing-formula-compare-stat strong{display:block;margin-top:5px;color:#f8fafc;font-size:12px;line-height:1.25;}.rh-wing-formula-compare-stat p{margin:5px 0 0;color:#cbd5e1;font-size:10px;line-height:1.45;}.rh-wing-formula-how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}.rh-wing-formula-how article{padding:10px;border:1px solid rgba(100,116,139,.42);border-radius:10px;background:rgba(2,6,23,.3);}.rh-wing-formula-how b{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--rh-wing-accent);border-radius:8px;color:var(--rh-wing-accent);font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-how strong{display:block;margin-top:7px;color:#f8fafc;font-size:10px;}.rh-wing-formula-how p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}',
+    '.rh-wing-formula-mystery-grid{display:grid;grid-template-columns:minmax(0,.58fr) minmax(280px,.42fr);gap:12px;align-items:stretch;}.rh-wing-mystery-stage{min-height:255px;overflow:hidden;border:1px solid rgba(100,116,139,.48);border-radius:12px;background:#020617;}.rh-wing-formula-challenge{display:flex;flex-direction:column;padding:12px;border:1px solid rgba(196,181,253,.4);border-radius:12px;background:rgba(76,29,149,.14);}.rh-wing-formula-challenge>span{color:#c4b5fd;font:900 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-wing-formula-challenge>strong{margin-top:6px;color:#f8fafc;font-size:15px;line-height:1.25;}.rh-wing-formula-challenge>p{margin:5px 0 0;color:#ddd6fe;font-size:10px;line-height:1.48;}.rh-wing-formula-guess-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:11px;}.rh-wing-formula-guess{min-height:38px;padding:7px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-wing-formula-guess:hover{border-color:#c4b5fd;color:#fff;}.rh-wing-formula-guess[data-guess-state="correct"]{border-color:#6ee7b7;background:rgba(6,78,59,.64);color:#ecfdf5;}.rh-wing-formula-guess[data-guess-state="wrong"]{border-color:#fda4af;background:rgba(136,19,55,.48);color:#fff1f2;}.rh-wing-formula-result{margin-top:10px;padding:9px;border:1px solid rgba(148,163,184,.38);border-radius:9px;background:rgba(2,6,23,.38);color:#e2e8f0;font-size:10px;line-height:1.4;}.rh-wing-formula-result[data-result="correct"]{border-color:#6ee7b7;color:#d1fae5;}.rh-wing-formula-new{min-height:38px;margin-top:auto;padding:7px 10px;border:1px solid #c4b5fd;border-radius:9px;background:#4c1d95;color:#f5f3ff;font-size:10px;font-weight:900;}.rh-wing-formula-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.rh-wing-formula-profile-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:72px;padding:10px;border:1px solid rgba(100,116,139,.48);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-wing-formula-profile-card:hover{transform:translateY(-2px);border-color:var(--rh-wing-accent);background:rgba(30,41,59,.72);}.rh-wing-formula-profile-card[data-active="true"]{border-color:var(--rh-wing-accent);box-shadow:inset 3px 0 var(--rh-wing-accent);}.rh-wing-formula-profile-code{display:grid;place-items:center;width:39px;height:34px;border:1px solid var(--rh-wing-accent);border-radius:9px;color:var(--rh-wing-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-wing-formula-profile-copy{min-width:0;}.rh-wing-formula-profile-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.2;}.rh-wing-formula-profile-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:9px;line-height:1.25;}.rh-wing-formula-profile-rank{color:#bfdbfe;font:900 8px/1.3 ui-monospace,Menlo,monospace;text-align:right;}',
+    '.rh-wing-formula-note{padding:10px 12px;border:1px solid rgba(96,165,250,.36);border-radius:11px;background:rgba(30,64,175,.12);color:#bfdbfe;font-size:10px;line-height:1.5;}.rh-wing-formula-note strong{color:#eff6ff;}@media(max-width:980px){.rh-wing-formula-workbench,.rh-wing-formula-mystery-grid{grid-template-columns:1fr;}.rh-wing-formula-detail-actions{margin-top:14px;}.rh-wing-formula-compare-grid{grid-template-columns:1fr;}.rh-wing-formula-compare-controls{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-wing-formula-compare-controls label{grid-column:1/-1;}}@media(max-width:720px){.rh-wing-formula-hero{grid-template-columns:1fr;padding:16px;}.rh-wing-formula-summary{max-width:250px;}.rh-wing-formula-stage{min-height:250px;}.rh-wing-formula-primary-grid{grid-template-columns:repeat(5,minmax(0,1fr));}.rh-wing-formula-metrics,.rh-wing-formula-how{grid-template-columns:1fr;}.rh-wing-formula-directory-grid{grid-template-columns:1fr;}.rh-wing-formula-plate-head{align-items:flex-start;}.rh-wing-formula-scale{max-width:48%;white-space:normal;line-height:1.25;text-align:center;}}@media(max-width:460px){.rh-wing-formula-stage{min-height:220px;}.rh-wing-formula-adjust{grid-template-columns:1fr;}.rh-wing-formula-reset{width:100%;}.rh-wing-formula-compare-controls{grid-template-columns:1fr;}.rh-wing-formula-guess-grid{grid-template-columns:1fr;}.rh-wing-formula-profile-card{grid-template-columns:auto minmax(0,1fr);}.rh-wing-formula-profile-rank{grid-column:2;justify-self:start;text-align:left;}.rh-wing-formula-legend{right:8px;left:8px;justify-content:center;}}@media(prefers-reduced-motion:reduce){.rh-wing-formula-tab,.rh-wing-formula-feather,.rh-wing-formula-profile-card{transition:none!important;}.rh-wing-formula-tab:hover,.rh-wing-formula-profile-card:hover{transform:none!important;}}@media(forced-colors:active){.rh-wing-formula-hero,.rh-wing-formula-stat,.rh-wing-formula-tab,.rh-wing-formula-plate,.rh-wing-formula-detail,.rh-wing-formula-live,.rh-wing-formula-metric,.rh-wing-formula-reading,.rh-wing-formula-callout,.rh-wing-formula-compare,.rh-wing-formula-compare-stat,.rh-wing-formula-how article,.rh-wing-formula-mystery,.rh-wing-mystery-stage,.rh-wing-formula-challenge,.rh-wing-formula-result,.rh-wing-formula-directory,.rh-wing-formula-profile-card,.rh-wing-formula-note,.rh-wing-formula-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-wing-formula-kicker,.rh-wing-formula-title,.rh-wing-formula-copy,.rh-wing-formula-stat strong,.rh-wing-formula-stat span,.rh-wing-formula-tab,.rh-wing-formula-code,.rh-wing-formula-section-kicker,.rh-wing-formula-plate-title,.rh-wing-formula-scale,.rh-wing-formula-detail-kicker,.rh-wing-formula-detail h3,.rh-wing-formula-chip,.rh-wing-formula-live span,.rh-wing-formula-live strong,.rh-wing-formula-live p,.rh-wing-formula-metric span,.rh-wing-formula-metric strong,.rh-wing-formula-reading span,.rh-wing-formula-reading p,.rh-wing-formula-callout span,.rh-wing-formula-callout p,.rh-wing-formula-section-head h3,.rh-wing-formula-section-head>span,.rh-wing-formula-compare-stat span,.rh-wing-formula-compare-stat strong,.rh-wing-formula-compare-stat p,.rh-wing-formula-how b,.rh-wing-formula-how strong,.rh-wing-formula-how p,.rh-wing-formula-challenge>span,.rh-wing-formula-challenge>strong,.rh-wing-formula-challenge>p,.rh-wing-formula-result,.rh-wing-formula-profile-code,.rh-wing-formula-profile-copy strong,.rh-wing-formula-profile-copy span,.rh-wing-formula-profile-rank,.rh-wing-formula-note{color:CanvasText}.rh-wing-formula-tab[aria-selected="true"],.rh-wing-formula-primary-button[aria-pressed="true"],.rh-wing-formula-profile-card[data-active="true"],.rh-wing-formula-guess[data-guess-state="correct"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-wing-formula-stage{border:1px solid CanvasText;background:Canvas}.rh-wing-formula-feather,.rh-wing-formula-shaft,.rh-wing-formula-current-line,.rh-wing-formula-reference-line,.rh-wing-formula-baseline,.rh-wing-formula-ruler{fill:none;stroke:CanvasText}.rh-wing-formula-primary-button,.rh-wing-formula-reset,.rh-wing-formula-detail-actions button,.rh-wing-formula-guess,.rh-wing-formula-new,.rh-wing-formula-compare-controls select{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+    '.rh-habitat-atlas{--rh-habitat-accent:#86efac;display:grid;gap:14px;}.rh-habitat-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(74,222,128,.52);border-radius:19px;background:linear-gradient(118deg,rgba(5,46,22,.9),rgba(15,23,42,.97) 49%,rgba(8,47,73,.74));box-shadow:0 20px 52px rgba(2,6,23,.38),inset 0 1px rgba(255,255,255,.06);}.rh-habitat-hero::after{content:"";position:absolute;z-index:-1;right:-72px;top:-112px;width:296px;height:296px;border:1px solid rgba(134,239,172,.3);border-radius:50%;box-shadow:0 0 0 32px rgba(34,211,238,.045),0 0 0 66px rgba(74,222,128,.025);}.rh-habitat-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-habitat-hero-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border:1px solid rgba(134,239,172,.7);border-radius:16px;background:rgba(2,6,23,.6);color:#bbf7d0;font:950 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.07em;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-habitat-kicker{color:#86efac;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-habitat-title{margin:5px 0 0;color:#f0fdf4;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-habitat-copy{max-width:760px;margin:7px 0 0;color:#d1fae5;font-size:12px;line-height:1.55;}.rh-habitat-summary{display:grid;grid-template-columns:repeat(2,minmax(88px,1fr));gap:7px;}.rh-habitat-stat{min-width:94px;padding:10px;border:1px solid rgba(134,239,172,.38);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-habitat-stat strong{display:block;color:#dcfce7;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-habitat-stat span{display:block;margin-top:5px;color:#a7f3d0;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-habitat-controlbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;padding:11px 12px;border:1px solid rgba(100,116,139,.52);border-radius:14px;background:rgba(15,23,42,.7);}.rh-habitat-control-group{min-width:0;}.rh-habitat-control-label{display:block;margin-bottom:7px;color:#94a3b8;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-habitat-layers,.rh-habitat-seasons{display:flex;gap:7px;min-width:0;overflow-x:auto;padding:2px 2px 5px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-habitat-layer,.rh-habitat-season{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-height:37px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-habitat-layer:hover,.rh-habitat-season:hover{transform:translateY(-1px);border-color:var(--rh-habitat-accent);color:#f0fdf4;}.rh-habitat-layer[aria-selected="true"],.rh-habitat-season[aria-pressed="true"]{border-color:var(--rh-habitat-accent);background:rgba(20,83,45,.78);color:#fff;box-shadow:0 0 0 2px rgba(74,222,128,.08);}.rh-habitat-layer-code{color:var(--rh-habitat-accent);font:950 8px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}.rh-habitat-layer[aria-selected="true"] .rh-habitat-layer-code{color:#dcfce7;}',
+    '.rh-habitat-workbench{display:grid;grid-template-columns:minmax(0,1.48fr) minmax(280px,.52fr);gap:12px;align-items:stretch;}.rh-habitat-plate,.rh-habitat-detail,.rh-habitat-notebook,.rh-habitat-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-habitat-plate{overflow:hidden;}.rh-habitat-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.9),rgba(15,23,42,.72));}.rh-habitat-plate-kicker,.rh-habitat-detail-kicker,.rh-habitat-directory-kicker{color:var(--rh-habitat-accent);font:900 9px/1.15 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-habitat-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.15 ui-sans-serif,system-ui;}.rh-habitat-plate-badges{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;}.rh-habitat-plate-badge{padding:5px 8px;border:1px solid rgba(148,163,184,.48);border-radius:999px;color:#cbd5e1;font:850 9px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-habitat-plate-badge[data-peak="true"]{border-color:var(--rh-habitat-accent);color:#dcfce7;background:rgba(20,83,45,.46);}.rh-habitat-stage{position:relative;aspect-ratio:7/4;min-height:330px;overflow:hidden;background:#020617;}.rh-habitat-stage svg{display:block;width:100%;height:100%;transition:filter .25s;}.rh-habitat-stage[data-season="winter"] svg{filter:saturate(.72) brightness(.96);}.rh-habitat-stage[data-season="fall"] svg{filter:saturate(1.08) sepia(.08);}.rh-hab-land,.rh-hab-water,.rh-hab-ink,.rh-hab-line,.rh-hab-line-thin,.rh-hab-accent,.rh-hab-accent-stroke,.rh-hab-route{vector-effect:non-scaling-stroke;}.rh-hab-land{fill:#365314;stroke:#84cc16;stroke-width:2;stroke-linejoin:round;}.rh-hab-water{fill:#075985;stroke:#38bdf8;stroke-width:2;stroke-linejoin:round;}.rh-hab-ink{fill:#0f172a;stroke:#e2e8f0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-hab-line{fill:none;stroke:#e2e8f0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-hab-line-thin{fill:none;stroke:#94a3b8;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}.rh-hab-accent{fill:var(--rh-habitat-accent);stroke:var(--rh-habitat-accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}.rh-hab-accent-stroke{fill:none;stroke:var(--rh-habitat-accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;}.rh-hab-route{fill:none;stroke:var(--rh-habitat-accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:10 8;animation:rhHabitatRoute 7s linear infinite;}.rh-hab-label{fill:#e2e8f0;font:850 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.07em;}.rh-hab-label-accent{fill:var(--rh-habitat-accent);font:950 14px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}@keyframes rhHabitatRoute{to{stroke-dashoffset:-72;}}',
+    '.rh-habitat-marker-layer{position:absolute;inset:0;pointer-events:none;}.rh-habitat-marker{position:absolute;display:flex;align-items:center;gap:6px;max-width:168px;transform:translate(-12px,-50%);color:#f8fafc;font:850 9px/1.2 ui-sans-serif,system-ui;text-shadow:0 1px 5px #020617;}.rh-habitat-marker-index{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border:2px solid #f8fafc;border-radius:50%;background:var(--rh-habitat-accent);color:#020617;font:950 9px/1 ui-monospace,Menlo,monospace;box-shadow:0 0 0 3px rgba(2,6,23,.72),0 5px 14px rgba(2,6,23,.56);animation:rhHabitatPulse 2.9s ease-in-out infinite;}.rh-habitat-marker-label{padding:4px 6px;border:1px solid rgba(226,232,240,.5);border-radius:6px;background:rgba(2,6,23,.84);white-space:normal;}@keyframes rhHabitatPulse{50%{box-shadow:0 0 0 5px rgba(2,6,23,.66),0 0 0 7px rgba(74,222,128,.18),0 5px 14px rgba(2,6,23,.55);}}.rh-habitat-meters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.42);}.rh-habitat-meter{min-width:0;}.rh-habitat-meter-head{display:flex;justify-content:space-between;gap:6px;color:#94a3b8;font:800 8px/1.15 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.05em;}.rh-habitat-meter-head strong{color:#e2e8f0;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-habitat-meter-track{height:5px;margin-top:5px;border-radius:999px;background:#020617;overflow:hidden;}.rh-habitat-meter-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#0f766e,var(--rh-habitat-accent));}.rh-habitat-plate-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-top:1px solid rgba(100,116,139,.38);color:#94a3b8;font-size:9px;line-height:1.35;}.rh-habitat-plate-foot strong{color:#e2e8f0;}',
+    '.rh-habitat-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-habitat-accent);background:linear-gradient(155deg,rgba(30,41,59,.94),rgba(15,23,42,.94));}.rh-habitat-detail-index{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-habitat-detail-index strong{display:grid;place-items:center;min-width:45px;height:34px;padding:0 6px;border:1px solid var(--rh-habitat-accent);border-radius:10px;background:rgba(2,6,23,.48);color:var(--rh-habitat-accent);font-size:11px;}.rh-habitat-detail h3{margin:13px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.027em;}.rh-habitat-region{margin-top:6px;color:#67e8f9;font-size:10px;font-style:italic;line-height:1.35;}.rh-habitat-climate{margin-top:10px;color:#dbeafe;font-size:11px;line-height:1.52;}.rh-habitat-season-read{margin-top:12px;padding:10px;border:1px solid rgba(134,239,172,.38);border-radius:10px;background:rgba(20,83,45,.22);}.rh-habitat-season-read[data-peak="false"]{border-color:rgba(148,163,184,.38);background:rgba(2,6,23,.34);}.rh-habitat-season-read span,.rh-habitat-question span{display:block;color:var(--rh-habitat-accent);font:900 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-habitat-season-read strong{display:block;margin-top:5px;color:#f0fdf4;font-size:11px;}.rh-habitat-season-read p,.rh-habitat-question p{margin:5px 0 0;color:#d1fae5;font-size:10px;line-height:1.45;}.rh-habitat-evidence{display:grid;gap:5px;margin:12px 0 0;padding:0;list-style:none;}.rh-habitat-evidence li{display:grid;grid-template-columns:23px minmax(0,1fr);align-items:center;gap:7px;color:#cbd5e1;font-size:9px;line-height:1.25;}.rh-habitat-evidence strong{display:grid;place-items:center;width:23px;height:23px;border:1px solid var(--rh-habitat-accent);border-radius:50%;color:var(--rh-habitat-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-habitat-question{margin-top:12px;padding:10px;border:1px solid rgba(103,232,249,.38);border-radius:10px;background:rgba(8,47,73,.28);}.rh-habitat-question span{color:#67e8f9;}.rh-habitat-question p{color:#cffafe;}.rh-habitat-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-habitat-detail-nav button{min-height:38px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-habitat-detail-nav button:hover{border-color:var(--rh-habitat-accent);color:#fff;}',
+    '.rh-habitat-notebook{padding:14px;}.rh-habitat-notebook-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-habitat-notebook-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-habitat-notebook-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-habitat-note-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.rh-habitat-note{min-width:0;padding:10px;border:1px solid rgba(100,116,139,.46);border-radius:10px;background:rgba(2,6,23,.34);}.rh-habitat-note span{display:block;color:var(--rh-habitat-accent);font:900 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-habitat-note p{margin:6px 0 0;color:#cbd5e1;font-size:9px;line-height:1.48;}.rh-habitat-note[data-note="pressure"]{border-color:rgba(251,113,133,.38);}.rh-habitat-note[data-note="pressure"] span{color:#fda4af;}',
+    '.rh-habitat-directory{padding:14px;}.rh-habitat-directory-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-habitat-directory-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-habitat-directory-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-habitat-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-habitat-card{position:relative;display:grid;grid-template-columns:82px minmax(0,1fr);align-items:center;gap:9px;min-height:78px;padding:8px 9px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.36);color:#cbd5e1;text-align:left;overflow:hidden;transition:transform .16s,border-color .16s,background-color .16s;}.rh-habitat-card:hover{transform:translateY(-2px);border-color:var(--rh-habitat-accent);background:rgba(30,41,59,.86);}.rh-habitat-card[data-active="true"]{border-color:var(--rh-habitat-accent);background:rgba(20,83,45,.34);box-shadow:inset 3px 0 var(--rh-habitat-accent);}.rh-habitat-thumb{position:relative;display:block;height:55px;border:1px solid rgba(148,163,184,.34);border-radius:8px;overflow:hidden;background:#020617;}.rh-habitat-thumb svg{display:block;width:100%;height:100%;}.rh-habitat-thumb-index{position:absolute;left:5px;top:4px;color:#f8fafc;font:950 7px/1 ui-monospace,Menlo,monospace;text-shadow:0 1px 4px #020617;}.rh-habitat-card-copy{min-width:0;}.rh-habitat-card-copy strong{display:-webkit-box;color:#f8fafc;font-size:10px;line-height:1.22;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}.rh-habitat-card-copy span{display:block;margin-top:5px;color:#94a3b8;font:800 8px/1.15 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-habitat-card-signal{color:var(--rh-habitat-accent)!important;font-family:ui-monospace,Menlo,monospace!important;text-transform:none!important;letter-spacing:0!important;}',
+    '@media(max-width:980px){.rh-habitat-workbench{grid-template-columns:1fr;}.rh-habitat-detail-nav{margin-top:14px;}.rh-habitat-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:760px){.rh-habitat-hero{grid-template-columns:1fr;padding:16px;}.rh-habitat-summary{max-width:245px;}.rh-habitat-controlbar{grid-template-columns:1fr;}.rh-habitat-layers,.rh-habitat-seasons{width:100%;}.rh-habitat-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-habitat-stage{min-height:235px;}.rh-habitat-marker-label{display:none;}.rh-habitat-marker{max-width:none;}.rh-habitat-meters{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-habitat-plate-head{align-items:flex-start;}.rh-habitat-plate-badges{max-width:45%;}}@media(max-width:460px){.rh-habitat-note-grid,.rh-habitat-directory-grid{grid-template-columns:1fr;}.rh-habitat-card{grid-template-columns:94px minmax(0,1fr);}.rh-habitat-stage{min-height:210px;}.rh-habitat-marker-index{width:21px;height:21px;font-size:8px;}.rh-habitat-plate-badge:first-child{display:none;}.rh-habitat-note-grid{gap:6px;}}@media(prefers-reduced-motion:reduce){.rh-habitat-layer,.rh-habitat-season,.rh-habitat-card,.rh-habitat-stage svg{transition:none!important;}.rh-habitat-layer:hover,.rh-habitat-season:hover,.rh-habitat-card:hover{transform:none!important;}.rh-hab-route,.rh-habitat-marker-index{animation:none!important;}}@media(forced-colors:active){.rh-habitat-hero,.rh-habitat-stat,.rh-habitat-controlbar,.rh-habitat-layer,.rh-habitat-season,.rh-habitat-plate,.rh-habitat-detail,.rh-habitat-notebook,.rh-habitat-note,.rh-habitat-directory,.rh-habitat-card,.rh-habitat-thumb,.rh-habitat-season-read,.rh-habitat-question,.rh-habitat-marker-label,.rh-habitat-marker-index{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-habitat-kicker,.rh-habitat-title,.rh-habitat-copy,.rh-habitat-stat strong,.rh-habitat-stat span,.rh-habitat-control-label,.rh-habitat-layer,.rh-habitat-layer-code,.rh-habitat-season,.rh-habitat-plate-kicker,.rh-habitat-plate-title,.rh-habitat-plate-badge,.rh-habitat-detail-kicker,.rh-habitat-detail-index,.rh-habitat-detail-index strong,.rh-habitat-detail h3,.rh-habitat-region,.rh-habitat-climate,.rh-habitat-season-read span,.rh-habitat-season-read strong,.rh-habitat-season-read p,.rh-habitat-evidence li,.rh-habitat-evidence strong,.rh-habitat-question span,.rh-habitat-question p,.rh-habitat-directory-kicker,.rh-habitat-directory-head h3,.rh-habitat-directory-head>span,.rh-habitat-card-copy strong,.rh-habitat-card-copy span,.rh-habitat-note span,.rh-habitat-note p{color:CanvasText}.rh-habitat-layer[aria-selected="true"],.rh-habitat-season[aria-pressed="true"],.rh-habitat-card[data-active="true"],.rh-habitat-marker-index{border-color:Highlight;background:Highlight;color:HighlightText}.rh-habitat-stage{border:1px solid CanvasText;background:Canvas}.rh-hab-land,.rh-hab-water,.rh-hab-ink,.rh-hab-line,.rh-hab-line-thin,.rh-hab-accent,.rh-hab-accent-stroke,.rh-hab-route{fill:none;stroke:CanvasText}.rh-habitat-meter-track{border:1px solid CanvasText;background:Canvas}.rh-habitat-meter-track span{background:Highlight}.rh-habitat-detail-nav button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+    '.rh-illustration-gallery{--rh-illustration-accent:#fbbf24;display:grid;gap:14px;}.rh-illustration-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.5);border-radius:19px;background:linear-gradient(118deg,rgba(69,26,3,.82),rgba(15,23,42,.96) 48%,rgba(8,47,73,.72));box-shadow:0 20px 50px rgba(2,6,23,.36),inset 0 1px rgba(255,255,255,.06);}.rh-illustration-hero::after{content:"";position:absolute;z-index:-1;right:-66px;top:-100px;width:280px;height:280px;border:1px solid rgba(251,191,36,.28);border-radius:50%;box-shadow:0 0 0 30px rgba(34,211,238,.045),0 0 0 62px rgba(251,191,36,.025);}.rh-illustration-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-illustration-hero-icon{display:grid;place-items:center;flex:0 0 58px;width:58px;height:58px;border:1px solid rgba(251,191,36,.68);border-radius:16px;background:rgba(2,6,23,.6);color:#fde68a;font:950 13px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-illustration-kicker{color:#fbbf24;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-illustration-title{margin:5px 0 0;color:#fafaf9;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-illustration-copy{max-width:760px;margin:7px 0 0;color:#d6d3d1;font-size:12px;line-height:1.55;}.rh-illustration-summary{display:grid;grid-template-columns:repeat(2,minmax(84px,1fr));gap:7px;}.rh-illustration-stat{min-width:90px;padding:10px;border:1px solid rgba(168,162,158,.46);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-illustration-stat strong{display:block;color:#fef3c7;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-illustration-stat span{display:block;margin-top:5px;color:#a8a29e;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-illustration-browser{display:flex;align-items:center;gap:10px;min-width:0;padding:10px 12px;border:1px solid rgba(100,116,139,.52);border-radius:14px;background:rgba(15,23,42,.68);}.rh-illustration-browser-label{flex:0 0 auto;color:#94a3b8;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-illustration-filters{display:flex;gap:7px;min-width:0;overflow-x:auto;padding:2px 2px 5px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-illustration-filter{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;min-height:36px;padding:7px 10px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#cbd5e1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-illustration-filter:hover{transform:translateY(-1px);border-color:#fbbf24;color:#fff7ed;}.rh-illustration-filter[aria-pressed="true"]{border-color:var(--rh-illustration-accent);background:rgba(120,53,15,.64);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.08);}.rh-illustration-filter-count{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:rgba(2,6,23,.55);color:#fef3c7;font:900 8px/1 ui-monospace,Menlo,monospace;}',
+    '.rh-illustration-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,.5fr);gap:12px;align-items:stretch;}.rh-illustration-plate,.rh-illustration-detail,.rh-illustration-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.74);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-illustration-plate{overflow:hidden;}.rh-illustration-plate-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.9),rgba(15,23,42,.7));}.rh-illustration-plate-kicker,.rh-illustration-detail-kicker,.rh-illustration-directory-kicker{color:var(--rh-illustration-accent);font:900 9px/1.15 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-illustration-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.15 ui-sans-serif,system-ui;}.rh-illustration-tools{display:flex;align-items:center;gap:7px;}.rh-illustration-position{padding:5px 8px;border:1px solid rgba(148,163,184,.48);border-radius:999px;color:#cbd5e1;font:850 9px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-illustration-mark-toggle{min-height:32px;padding:6px 9px;border:1px solid var(--rh-illustration-accent);border-radius:9px;background:rgba(69,26,3,.62);color:#fef3c7;font-size:9px;font-weight:900;}.rh-illustration-mark-toggle[aria-pressed="false"]{border-color:#64748b;background:#1e293b;color:#cbd5e1;}.rh-illustration-stage{position:relative;aspect-ratio:8/5;min-height:320px;overflow:hidden;background:#020617;}.rh-illustration-stage svg{display:block;width:100%;height:100%;}.rh-ill-grid{opacity:.24;}.rh-ill-ink,.rh-ill-paper,.rh-ill-muted,.rh-ill-line,.rh-ill-line-thin,.rh-ill-accent,.rh-ill-accent-stroke,.rh-ill-trace{vector-effect:non-scaling-stroke;}.rh-ill-ink{fill:#0f172a;stroke:#e2e8f0;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-paper{fill:#e2e8f0;stroke:#f8fafc;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-muted{fill:rgba(148,163,184,.18);stroke:#94a3b8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-line{fill:none;stroke:#e2e8f0;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-line-thin{fill:none;stroke:#94a3b8;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-accent{fill:var(--rh-illustration-accent);stroke:var(--rh-illustration-accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-accent-stroke{fill:none;stroke:var(--rh-illustration-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;}.rh-ill-trace{fill:none;stroke:var(--rh-illustration-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:11 9;animation:rhIllustrationTrace 7s linear infinite;}.rh-ill-label{fill:#cbd5e1;font:800 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}.rh-ill-label-strong{fill:#f8fafc;font:950 20px/1 ui-sans-serif,system-ui;letter-spacing:-.02em;}.rh-ill-label-accent{fill:var(--rh-illustration-accent);font:950 15px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}@keyframes rhIllustrationTrace{to{stroke-dashoffset:-80;}}',
+    '.rh-illustration-mark-layer{position:absolute;inset:0;pointer-events:none;transition:opacity .18s;}.rh-illustration-stage[data-marks-visible="false"] .rh-illustration-mark-layer{opacity:0;}.rh-illustration-mark{position:absolute;display:flex;align-items:center;gap:6px;max-width:160px;transform:translate(-12px,-50%);color:#f8fafc;font:850 9px/1.2 ui-sans-serif,system-ui;text-shadow:0 1px 5px #020617;}.rh-illustration-mark-index{display:grid;place-items:center;flex:0 0 24px;width:24px;height:24px;border:2px solid #f8fafc;border-radius:50%;background:var(--rh-illustration-accent);color:#020617;font:950 9px/1 ui-monospace,Menlo,monospace;box-shadow:0 0 0 3px rgba(2,6,23,.72),0 5px 14px rgba(2,6,23,.55);animation:rhIllustrationPulse 2.8s ease-in-out infinite;}.rh-illustration-mark-label{padding:4px 6px;border:1px solid rgba(226,232,240,.5);border-radius:6px;background:rgba(2,6,23,.82);white-space:normal;}@keyframes rhIllustrationPulse{50%{box-shadow:0 0 0 5px rgba(2,6,23,.66),0 0 0 7px color-mix(in srgb,var(--rh-illustration-accent) 36%,transparent),0 5px 14px rgba(2,6,23,.55);}}.rh-illustration-plate-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-top:1px solid rgba(100,116,139,.38);color:#94a3b8;font-size:9px;line-height:1.35;}.rh-illustration-plate-foot strong{color:#e2e8f0;}',
+    '.rh-illustration-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-illustration-accent);background:linear-gradient(155deg,rgba(30,41,59,.94),rgba(15,23,42,.94));}.rh-illustration-detail-index{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-illustration-detail-index strong{display:grid;place-items:center;min-width:42px;height:34px;padding:0 6px;border:1px solid var(--rh-illustration-accent);border-radius:10px;background:rgba(2,6,23,.48);color:var(--rh-illustration-accent);font-size:11px;}.rh-illustration-detail h3{margin:13px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.027em;}.rh-illustration-subject{margin-top:6px;color:#67e8f9;font-size:10px;font-style:italic;line-height:1.35;}.rh-illustration-description{margin:12px 0 0;color:#dbeafe;font-size:11px;line-height:1.58;}.rh-illustration-insight{margin-top:11px;padding:10px;border:1px solid rgba(148,163,184,.36);border-radius:10px;background:rgba(2,6,23,.36);}.rh-illustration-insight span{display:block;color:var(--rh-illustration-accent);font:900 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-illustration-insight p{margin:5px 0 0;color:#e2e8f0;font-size:10px;line-height:1.48;}.rh-illustration-insight-symbol{border-color:rgba(192,132,252,.4);background:rgba(88,28,135,.18);}.rh-illustration-insight-symbol span{color:#d8b4fe;}.rh-illustration-field-list{display:grid;gap:5px;margin:12px 0 0;padding:0;list-style:none;}.rh-illustration-field-list li{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:7px;color:#cbd5e1;font-size:9px;line-height:1.25;}.rh-illustration-field-list strong{display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--rh-illustration-accent);border-radius:50%;color:var(--rh-illustration-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-illustration-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:14px;}.rh-illustration-detail-nav button{min-height:38px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-illustration-detail-nav button:hover{border-color:var(--rh-illustration-accent);color:#fff;}',
+    '.rh-illustration-directory{padding:14px;}.rh-illustration-directory-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-illustration-directory-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-illustration-directory-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-illustration-directory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;}.rh-illustration-card{position:relative;display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:9px;min-height:72px;padding:8px 9px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.36);color:#cbd5e1;text-align:left;overflow:hidden;transition:transform .16s,border-color .16s,background-color .16s;}.rh-illustration-card:hover{transform:translateY(-2px);border-color:var(--rh-illustration-accent);background:rgba(30,41,59,.86);}.rh-illustration-card[data-active="true"]{border-color:var(--rh-illustration-accent);background:rgba(69,26,3,.34);box-shadow:inset 3px 0 var(--rh-illustration-accent);}.rh-illustration-thumb-art{position:relative;display:block;height:49px;border:1px solid rgba(148,163,184,.34);border-radius:8px;background:linear-gradient(145deg,rgba(8,47,73,.74),rgba(2,6,23,.94));overflow:hidden;}.rh-illustration-thumb-art svg{display:block;width:100%;height:100%;}.rh-illustration-thumb-number{position:absolute;left:5px;top:4px;color:#f8fafc;font:950 7px/1 ui-monospace,Menlo,monospace;text-shadow:0 1px 4px #020617;}.rh-illustration-card-copy{min-width:0;}.rh-illustration-card-copy strong{display:-webkit-box;color:#f8fafc;font-size:10px;line-height:1.22;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}.rh-illustration-card-copy span{display:block;margin-top:5px;color:#94a3b8;font:800 8px/1.15 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '@media(max-width:980px){.rh-illustration-workbench{grid-template-columns:1fr;}.rh-illustration-detail-nav{margin-top:14px;}.rh-illustration-directory-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}@media(max-width:700px){.rh-illustration-hero{grid-template-columns:1fr;padding:16px;}.rh-illustration-summary{max-width:240px;}.rh-illustration-browser{align-items:flex-start;flex-direction:column;gap:7px;}.rh-illustration-filters{width:100%;}.rh-illustration-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-illustration-stage{min-height:230px;}.rh-illustration-mark-label{display:none;}.rh-illustration-mark{max-width:none;}.rh-illustration-tools{flex-direction:column;align-items:flex-end;}.rh-illustration-plate-head{align-items:flex-start;}}@media(max-width:430px){.rh-illustration-directory{padding:12px;}.rh-illustration-directory-grid{grid-template-columns:1fr;}.rh-illustration-card{grid-template-columns:86px minmax(0,1fr);}.rh-illustration-stage{min-height:205px;}.rh-illustration-mark-index{width:21px;height:21px;font-size:8px;}.rh-illustration-position{display:none;}}@media(prefers-reduced-motion:reduce){.rh-illustration-filter,.rh-illustration-card,.rh-illustration-mark-layer{transition:none!important;}.rh-illustration-filter:hover,.rh-illustration-card:hover{transform:none!important;}.rh-ill-trace,.rh-illustration-mark-index{animation:none!important;}}@media(forced-colors:active){.rh-illustration-hero,.rh-illustration-stat,.rh-illustration-browser,.rh-illustration-filter,.rh-illustration-plate,.rh-illustration-detail,.rh-illustration-directory,.rh-illustration-card,.rh-illustration-thumb-art,.rh-illustration-insight,.rh-illustration-mark-label,.rh-illustration-mark-index{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-illustration-kicker,.rh-illustration-title,.rh-illustration-copy,.rh-illustration-stat strong,.rh-illustration-stat span,.rh-illustration-browser-label,.rh-illustration-filter,.rh-illustration-filter-count,.rh-illustration-plate-kicker,.rh-illustration-plate-title,.rh-illustration-position,.rh-illustration-detail-kicker,.rh-illustration-detail-index,.rh-illustration-detail-index strong,.rh-illustration-detail h3,.rh-illustration-subject,.rh-illustration-description,.rh-illustration-insight span,.rh-illustration-insight p,.rh-illustration-field-list li,.rh-illustration-field-list strong,.rh-illustration-directory-kicker,.rh-illustration-directory-head h3,.rh-illustration-directory-head>span,.rh-illustration-card-copy strong,.rh-illustration-card-copy span{color:CanvasText}.rh-illustration-filter[aria-pressed="true"],.rh-illustration-card[data-active="true"],.rh-illustration-mark-index{border-color:Highlight;background:Highlight;color:HighlightText}.rh-illustration-stage{border:1px solid CanvasText;background:Canvas}.rh-ill-ink,.rh-ill-paper,.rh-ill-muted,.rh-ill-line,.rh-ill-line-thin,.rh-ill-accent,.rh-ill-accent-stroke,.rh-ill-trace{fill:none;stroke:CanvasText}.rh-illustration-mark-toggle,.rh-illustration-detail-nav button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+    '.rh-anatomy-atlas{--rh-anatomy-accent:#fbbf24;display:grid;gap:14px;}.rh-anatomy-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.5);border-radius:18px;background:linear-gradient(120deg,rgba(41,37,36,.9),rgba(15,23,42,.95) 55%,rgba(69,26,3,.56));box-shadow:0 18px 46px rgba(2,6,23,.34),inset 0 1px rgba(255,255,255,.06);}.rh-anatomy-hero::after{content:"";position:absolute;z-index:-1;right:-64px;top:-90px;width:260px;height:260px;border:1px solid rgba(251,191,36,.3);border-radius:50%;box-shadow:0 0 0 28px rgba(251,191,36,.055),0 0 0 58px rgba(251,191,36,.03);}.rh-anatomy-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-anatomy-hero-icon{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border:1px solid rgba(251,191,36,.62);border-radius:15px;background:rgba(2,6,23,.56);font-size:28px;}.rh-anatomy-kicker{color:#fbbf24;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-anatomy-title{margin:5px 0 0;color:#fafaf9;font-size:clamp(22px,2.7vw,34px);font-weight:950;line-height:1.04;letter-spacing:-.03em;}.rh-anatomy-copy{max-width:760px;margin:7px 0 0;color:#d6d3d1;font-size:12px;line-height:1.55;}.rh-anatomy-summary{display:grid;grid-template-columns:repeat(2,minmax(82px,1fr));gap:7px;}.rh-anatomy-stat{min-width:88px;padding:10px;border:1px solid rgba(168,162,158,.45);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-anatomy-stat strong{display:block;color:#fef3c7;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-anatomy-stat span{display:block;margin-top:5px;color:#a8a29e;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-anatomy-tabs{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-anatomy-tab{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:rgba(30,41,59,.84);color:#d6d3d1;font-size:10px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-anatomy-tab:hover{transform:translateY(-1px);border-color:#fbbf24;color:#fef3c7;}.rh-anatomy-tab[aria-selected="true"]{border-color:var(--rh-anatomy-accent);background:rgba(69,26,3,.72);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.1);}',
+    '.rh-anatomy-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr);gap:12px;align-items:stretch;}.rh-anatomy-plate,.rh-anatomy-detail,.rh-anatomy-directory{border:1px solid rgba(100,116,139,.55);border-radius:16px;background:rgba(15,23,42,.72);box-shadow:0 14px 36px rgba(2,6,23,.22),inset 0 1px rgba(255,255,255,.04);}.rh-anatomy-plate{overflow:hidden;}.rh-anatomy-plate-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.88),rgba(15,23,42,.7));}.rh-anatomy-plate-kicker,.rh-anatomy-detail-kicker,.rh-anatomy-directory-kicker{color:var(--rh-anatomy-accent);font:900 9px/1.15 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-anatomy-plate-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.15 ui-sans-serif,system-ui;}.rh-anatomy-plate-metric{flex:0 0 auto;padding:5px 8px;border:1px solid var(--rh-anatomy-accent);border-radius:999px;color:#fef3c7;font:850 9px/1 ui-monospace,Menlo,monospace;}.rh-anatomy-stage{position:relative;aspect-ratio:640/420;min-height:280px;overflow:hidden;background:radial-gradient(circle at 50% 44%,rgba(51,65,85,.48),rgba(2,6,23,.96) 72%);}.rh-anatomy-stage svg{display:block;width:100%;height:100%;}.rh-anatomy-gridline{stroke:rgba(148,163,184,.13);stroke-width:1;}.rh-anatomy-silhouette{fill:#111827;stroke:#64748b;stroke-width:3;}.rh-anatomy-structure{fill:none;stroke:#f8fafc;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;}.rh-anatomy-structure-thin{fill:none;stroke:#cbd5e1;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-anatomy-soft{fill:rgba(148,163,184,.2);stroke:#94a3b8;stroke-width:2;}.rh-anatomy-accent{fill:var(--rh-anatomy-accent);stroke:var(--rh-anatomy-accent);}.rh-anatomy-hotspot{position:absolute;display:grid;place-items:center;width:32px;height:32px;transform:translate(-50%,-50%);border:2px solid #e2e8f0;border-radius:50%;background:#0f172a;color:#fff;font:900 10px/1 ui-monospace,Menlo,monospace;box-shadow:0 5px 14px rgba(2,6,23,.6);transition:transform .15s,background-color .15s,border-color .15s,box-shadow .15s;}.rh-anatomy-hotspot:hover{transform:translate(-50%,-50%) scale(1.08);border-color:var(--rh-anatomy-accent);}.rh-anatomy-hotspot[data-selected="true"]{border-color:#fff;background:var(--rh-anatomy-accent);color:#020617;box-shadow:0 0 0 4px rgba(15,23,42,.8),0 0 0 6px var(--rh-anatomy-accent),0 8px 22px rgba(2,6,23,.6);}.rh-anatomy-plate-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-top:1px solid rgba(100,116,139,.38);color:#94a3b8;font-size:9px;line-height:1.3;}.rh-anatomy-plate-foot strong{color:#e2e8f0;}',
+    '.rh-anatomy-detail{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-anatomy-accent);background:linear-gradient(155deg,rgba(30,41,59,.92),rgba(15,23,42,.92));}.rh-anatomy-detail-index{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-anatomy-detail-index strong{display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--rh-anatomy-accent);border-radius:10px;background:rgba(2,6,23,.48);color:var(--rh-anatomy-accent);font-size:13px;}.rh-anatomy-detail h3{margin:13px 0 0;color:#f8fafc;font-size:20px;font-weight:950;line-height:1.06;letter-spacing:-.025em;}.rh-anatomy-function{margin:9px 0 0;color:#dbeafe;font-size:12px;line-height:1.6;}.rh-anatomy-inquiry{margin-top:auto;padding-top:14px;}.rh-anatomy-inquiry-box{padding:10px;border:1px solid rgba(103,232,249,.38);border-radius:10px;background:rgba(8,47,73,.3);}.rh-anatomy-inquiry-box span{display:block;color:#67e8f9;font:900 8px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-anatomy-inquiry-box p{margin:5px 0 0;color:#cffafe;font-size:10px;line-height:1.45;}.rh-anatomy-detail-nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;}.rh-anatomy-detail-nav button{min-height:36px;padding:7px 9px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;}.rh-anatomy-detail-nav button:hover:not(:disabled){border-color:var(--rh-anatomy-accent);color:#fff;}.rh-anatomy-detail-nav button:disabled{cursor:not-allowed;opacity:.38;}',
+    '.rh-anatomy-directory{padding:14px;}.rh-anatomy-directory-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-anatomy-directory-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-anatomy-directory-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-anatomy-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}.rh-anatomy-structure-card{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px;min-height:52px;padding:8px 9px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.38);color:#cbd5e1;text-align:left;transition:border-color .15s,background-color .15s,transform .15s;}.rh-anatomy-structure-card:hover{transform:translateY(-1px);border-color:var(--rh-anatomy-accent);background:rgba(30,41,59,.82);}.rh-anatomy-structure-card[data-active="true"]{border-color:var(--rh-anatomy-accent);background:rgba(69,26,3,.34);box-shadow:inset 3px 0 var(--rh-anatomy-accent);}.rh-anatomy-structure-card-index{display:grid;place-items:center;width:27px;height:27px;border:1px solid #64748b;border-radius:8px;color:#94a3b8;font:900 9px/1 ui-monospace,Menlo,monospace;}.rh-anatomy-structure-card[data-active="true"] .rh-anatomy-structure-card-index{border-color:var(--rh-anatomy-accent);color:var(--rh-anatomy-accent);}.rh-anatomy-structure-card strong{min-width:0;color:#f8fafc;font-size:10px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-anatomy-structure-card-arrow{color:var(--rh-anatomy-accent);font-size:14px;}',
+    '@media(max-width:900px){.rh-anatomy-workbench{grid-template-columns:1fr;}.rh-anatomy-detail{min-height:270px;}.rh-anatomy-inquiry{margin-top:14px;}}@media(max-width:600px){.rh-anatomy-hero{grid-template-columns:1fr;padding:16px;}.rh-anatomy-summary{max-width:240px;}.rh-anatomy-stage{min-height:220px;}.rh-anatomy-hotspot{width:28px;height:28px;font-size:9px;}.rh-anatomy-directory-grid{grid-template-columns:1fr;}.rh-anatomy-plate-head{align-items:center;}.rh-anatomy-plate-metric{max-width:46%;white-space:normal;text-align:center;line-height:1.2;}}@media(prefers-reduced-motion:reduce){.rh-anatomy-tab,.rh-anatomy-hotspot,.rh-anatomy-structure-card{transition:none!important;}.rh-anatomy-tab:hover,.rh-anatomy-structure-card:hover{transform:none!important;}.rh-anatomy-hotspot:hover{transform:translate(-50%,-50%)!important;}}@media(forced-colors:active){.rh-anatomy-hero,.rh-anatomy-stat,.rh-anatomy-tab,.rh-anatomy-plate,.rh-anatomy-detail,.rh-anatomy-directory,.rh-anatomy-structure-card,.rh-anatomy-hotspot,.rh-anatomy-inquiry-box{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-anatomy-kicker,.rh-anatomy-title,.rh-anatomy-copy,.rh-anatomy-stat strong,.rh-anatomy-stat span,.rh-anatomy-tab,.rh-anatomy-plate-kicker,.rh-anatomy-plate-title,.rh-anatomy-plate-metric,.rh-anatomy-detail-kicker,.rh-anatomy-detail-index,.rh-anatomy-detail-index strong,.rh-anatomy-detail h3,.rh-anatomy-function,.rh-anatomy-inquiry-box span,.rh-anatomy-inquiry-box p,.rh-anatomy-directory-kicker,.rh-anatomy-directory-head h3,.rh-anatomy-directory-head>span,.rh-anatomy-structure-card strong,.rh-anatomy-structure-card-index,.rh-anatomy-structure-card-arrow{color:CanvasText}.rh-anatomy-hotspot[data-selected="true"],.rh-anatomy-structure-card[data-active="true"],.rh-anatomy-tab[aria-selected="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-anatomy-stage{border:1px solid CanvasText;background:Canvas}.rh-anatomy-silhouette,.rh-anatomy-soft{fill:Canvas;stroke:CanvasText}.rh-anatomy-structure,.rh-anatomy-structure-thin,.rh-anatomy-accent{stroke:CanvasText;fill:none}}',
     '.rh-section-intro{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 16px;border:1px solid rgba(100,116,139,.62);border-radius:16px;background:linear-gradient(105deg,rgba(15,23,42,.92),rgba(8,47,73,.42));box-shadow:0 12px 30px rgba(2,6,23,.2);}.rh-section-intro-main{min-width:0;}.rh-section-intro-kicker{margin-bottom:4px;color:#a5f3fc;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-section-intro-title{margin:0;color:#fef3c7;font-size:clamp(19px,2vw,26px);font-weight:900;line-height:1.08;letter-spacing:-.025em;}.rh-section-intro-copy{max-width:720px;margin:6px 0 0;color:#cbd5e1;font-size:12px;line-height:1.45;}.rh-section-intro-side{display:flex;flex-direction:column;align-items:flex-end;gap:7px;min-width:150px;}.rh-section-visited{color:#fef3c7;font:900 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em;}.rh-section-progress-label{color:#94a3b8;font:700 10px/1.2 ui-sans-serif,system-ui;}.rh-section-progress{width:150px;height:5px;border-radius:999px;background:#0f172a;overflow:hidden;}.rh-section-progress>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#22d3ee);}.rh-lab-page{position:relative;}.rh-lab-banner{box-shadow:0 16px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.06)!important;}.rh-roster-toolbar{padding:12px 14px;border:1px solid rgba(100,116,139,.62);border-radius:14px;background:rgba(15,23,42,.72);box-shadow:0 10px 24px rgba(2,6,23,.18);}.rh-roster-context{min-width:220px;flex:1 1 320px;}.rh-roster-kicker{margin-bottom:4px;color:#67e8f9;font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-roster-active{display:inline-flex;align-items:center;min-height:32px;padding:6px 10px;border:1px solid rgba(251,191,36,.58);border-radius:999px;background:rgba(120,53,15,.28);color:#fef3c7;font:800 11px/1.2 ui-sans-serif,system-ui;white-space:nowrap;}',
     '.rh-section-intro-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;width:100%;}.rh-section-intro-action{min-height:32px;padding:6px 9px;border:1px solid rgba(100,116,139,.72);border-radius:9px;background:rgba(15,23,42,.84);color:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;transition:background-color .16s,border-color .16s,color .16s,transform .16s;}.rh-section-intro-action:hover:not(:disabled){border-color:#67e8f9;background:rgba(8,47,73,.88);color:#ecfeff;transform:translateY(-1px);}.rh-section-intro-action:disabled{cursor:not-allowed;opacity:.42;}.rh-section-intro-action-primary{border-color:rgba(251,191,36,.7);background:rgba(120,53,15,.48);color:#fef3c7;}.rh-section-intro-action-primary:hover:not(:disabled){border-color:#fde68a;background:rgba(146,64,14,.72);color:#fff7ed;}',
     '.rh-hub-flight-history-trend{max-width:58%;color:#94a3b8;font:800 8px/1.2 ui-monospace,Menlo,monospace;text-align:right;}.rh-hub-flight-history-trend[data-trend-state="up"]{color:#6ee7b7;}.rh-hub-flight-history-trend[data-trend-state="down"]{color:#fca5a5;}.rh-hub-flight-history-trend[data-trend-state="flat"]{color:#cbd5e1;}',
@@ -87,10 +157,12 @@
     '.rh-lab-page-roster table th:first-child,.rh-lab-page-roster table td:first-child{position:sticky;left:0;background:rgba(15,23,42,.98);box-shadow:6px 0 12px rgba(2,6,23,.22);}.rh-lab-page-roster table th:first-child{z-index:3;}.rh-lab-page-roster table td:first-child{z-index:2;}.rh-lab-page-roster table tbody tr:hover td:first-child{background:#1e293b;}',
     '.rh-deep-science{border-radius:18px!important;background:linear-gradient(145deg,rgba(15,23,42,.84),rgba(30,41,59,.54))!important;}.rh-deep-science button{min-height:72px;border-radius:12px!important;}',
     '[data-raptorhunt-root="true"] [role="tabpanel"]{scroll-margin-top:68px;}',
-    '@media(max-width:900px){.rh-hero-grid{grid-template-columns:1fr;}.rh-flight-brief{max-width:none;}.rh-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-quick-grid{grid-template-columns:1fr 1fr;}.rh-quick-card-primary{grid-column:1/-1;}.rh-category-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+    '@media(max-width:900px){.rh-hero-grid{grid-template-columns:1fr;}.rh-flight-brief{max-width:none;}.rh-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-quick-grid{grid-template-columns:1fr 1fr;}.rh-quick-card-primary{grid-column:1/-1;}.rh-category-grid,.rh-collection-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-collection-hero{grid-template-columns:1fr;}.rh-collection-progress-card{max-width:none;}}',
     '@media(max-width:600px){.rh-nav-topbar{top:4px;align-items:stretch;flex-wrap:wrap;padding:8px;}.rh-nav-search{order:3;flex-basis:100%;width:100%!important;}.rh-command-deck{padding:18px!important;border-radius:18px!important;}.rh-hero-title{font-size:28px!important;}.rh-hero-lede{font-size:13px!important;}.rh-hero-actions{display:grid;grid-template-columns:1fr;}.rh-hero-action{width:100%;}.rh-flight-brief{padding:10px!important;}.rh-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-stat-card{min-height:78px!important;}.rh-quick-grid{grid-template-columns:1fr;}.rh-quick-card-primary{grid-column:auto;}.rh-quick-card{min-height:132px;}.rh-category-section{padding:14px 0 14px 14px;overflow:hidden;}.rh-category-heading{padding-right:14px;}.rh-category-grid{display:flex;gap:10px;overflow-x:auto;padding:2px 14px 10px 1px;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-category-card{flex:0 0 min(78vw,290px);min-height:142px;scroll-snap-align:start;}.rh-deep-science>div:last-child{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:8px;}.rh-deep-science button{flex:0 0 min(66vw,240px);scroll-snap-align:start;}.rh-command-deck::after{background-size:24px 24px;}.rh-section-intro{grid-template-columns:1fr;gap:11px;padding:13px 14px;}.rh-section-intro-side{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 10px;min-width:0;}.rh-section-progress{width:100%;grid-column:1/-1;}.rh-roster-toolbar{align-items:stretch!important;}.rh-roster-active{width:max-content;max-width:100%;overflow:hidden;text-overflow:ellipsis;}}',
+    '@media(max-width:600px){.rh-collection-hero{padding:17px;}.rh-collection-title-row{align-items:flex-start;}.rh-collection-icon{flex-basis:48px;width:48px;height:48px;border-radius:13px;font-size:25px;}.rh-collection-title{font-size:25px;}.rh-collection-actions{display:grid;grid-template-columns:1fr;}.rh-collection-action{width:100%;}.rh-collection-directory{padding:14px;}.rh-collection-grid{grid-template-columns:1fr;}.rh-collection-card{min-height:80px;}}',
     '@media(max-width:600px){.rh-section-intro-actions{justify-content:flex-start;}.rh-section-intro-action{flex:1 1 auto;}}',
-    '@media(prefers-reduced-motion:reduce){.rh-hero-action,.rh-quick-card,.rh-quick-arrow,.rh-category-card{transition:none!important;}.rh-hero-action:hover,.rh-quick-card:hover,.rh-category-card:hover{transform:none!important;}}'
+    '@media(prefers-reduced-motion:reduce){.rh-hero-action,.rh-quick-card,.rh-quick-arrow,.rh-category-card,.rh-collection-action,.rh-collection-card,.rh-collection-card-arrow{transition:none!important;}.rh-hero-action:hover,.rh-quick-card:hover,.rh-category-card:hover,.rh-collection-action:hover,.rh-collection-card:hover{transform:none!important;}.rh-collection-card:hover .rh-collection-card-arrow{transform:translateY(-50%);}}',
+    '@media(forced-colors:active){.rh-collection-hero,.rh-collection-progress-card,.rh-collection-directory,.rh-collection-card,.rh-collection-card-icon,.rh-collection-progress-track{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-collection-kicker,.rh-collection-directory-kicker,.rh-collection-title,.rh-collection-desc,.rh-collection-progress-head,.rh-collection-progress-head strong,.rh-collection-progress-copy,.rh-collection-progress-copy strong,.rh-collection-next span,.rh-collection-next strong,.rh-collection-directory-head h2,.rh-collection-directory-head>span,.rh-collection-card-index,.rh-collection-card-copy strong,.rh-collection-card-copy>span,.rh-collection-card-status,.rh-collection-card-arrow{color:CanvasText}.rh-collection-progress-track>span{background:Highlight}.rh-collection-action{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-collection-card[data-section-state="next"],.rh-collection-card[data-section-state="visited"]{border-color:Highlight;}}'
   ].join('');
   if (document.head) document.head.appendChild(st);
 })();
@@ -155,8 +227,24 @@
     '.rh-flight-state{position:absolute;z-index:13;top:64px;left:10px;display:inline-flex;align-items:center;gap:6px;min-height:25px;padding:5px 8px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.84);color:#e2e8f0;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 5px 14px rgba(0,0,0,.24);pointer-events:none;}.rh-flight-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#94a3b8;box-shadow:0 0 8px currentColor;}.rh-flight-state[data-flight-state="glide"]{border-color:rgba(103,232,249,.68);color:#cffafe;}.rh-flight-state[data-flight-state="glide"]::before{background:#67e8f9;}.rh-flight-state[data-flight-state="climb"],.rh-flight-state[data-flight-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-state[data-flight-state="climb"]::before,.rh-flight-state[data-flight-state="thermal"]::before{background:#4ade80;}.rh-flight-state[data-flight-state="thermal"]::after{content:" · LIFT";font-size:8px;letter-spacing:.06em;color:#86efac;}.rh-flight-state[data-flight-state="dive"],.rh-flight-state[data-flight-state="descent"]{border-color:rgba(251,191,36,.82);color:#fef3c7;}.rh-flight-state[data-flight-state="dive"]::before,.rh-flight-state[data-flight-state="descent"]::before{background:#fbbf24;}.rh-flight-state[data-flight-state="pull-up"]{border-color:rgba(244,114,182,.78);color:#fce7f3;}.rh-flight-state[data-flight-state="pull-up"]::before{background:#f472b6;}.rh-flight-state[data-flight-state="landed"],.rh-flight-state[data-flight-state="stunned"]{border-color:rgba(251,146,60,.78);color:#ffedd5;}.rh-flight-state[data-flight-state="landed"]::before,.rh-flight-state[data-flight-state="stunned"]::before{background:#fb923c;}.rh-flight-state[data-flight-state="paused"]{border-color:rgba(148,163,184,.78);color:#e2e8f0;}.rh-flight-state[data-flight-state="paused"]::before{background:#cbd5e1;}',
     '.rh-flight-wind{position:absolute;z-index:13;top:94px;left:10px;display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:4px 7px;border:1px solid rgba(103,232,249,.48);border-radius:7px;background:rgba(2,6,23,.72);color:#bae6fd;font:800 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;box-shadow:0 4px 12px rgba(0,0,0,.2);pointer-events:none;}.rh-flight-wind::before{content:"↗";color:#67e8f9;font-size:11px;}.rh-flight-wind[data-wind-state="thermal"]{border-color:rgba(74,222,128,.72);color:#dcfce7;}.rh-flight-wind[data-wind-state="thermal"]::before{content:"↑";color:#4ade80;}',
     '.rh-flight-altitude-gauge{position:absolute;z-index:13;top:50%;right:10px;display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateY(-50%);pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.8));}.rh-flight-altitude-label{color:#bae6fd;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.12em;}.rh-flight-altitude-track{position:relative;width:8px;height:112px;border:1px solid rgba(148,163,184,.72);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-flight-altitude-track::before,.rh-flight-altitude-track::after{content:"";position:absolute;left:12px;width:5px;border-top:1px solid rgba(148,163,184,.62);}.rh-flight-altitude-track::before{top:25%;}.rh-flight-altitude-track::after{top:50%;}.rh-flight-altitude-fill{position:absolute;right:0;bottom:0;left:0;height:0;border-radius:inherit;background:linear-gradient(0deg,#f97316,#fbbf24 48%,#67e8f9);transition:height .18s linear,background .18s linear;}.rh-flight-altitude-marker{position:absolute;left:50%;bottom:0;width:16px;height:3px;transform:translate(-50%,50%);border-radius:99px;background:#fff7ed;box-shadow:0 0 8px rgba(251,191,36,.85);transition:bottom .18s linear,background .18s linear;}.rh-flight-altitude-value{min-width:36px;color:#f8fafc;font:800 9px/1 ui-monospace,Menlo,monospace;text-align:center;white-space:nowrap;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-track{border-color:rgba(248,113,113,.92);}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-fill{background:#f87171;}.rh-flight-altitude-gauge[data-altitude-state="low"] .rh-flight-altitude-marker{background:#fecaca;box-shadow:0 0 10px rgba(248,113,113,.9);}.rh-flight-altitude-gauge[data-altitude-state="high"] .rh-flight-altitude-track{border-color:rgba(103,232,249,.82);}',
+    '.rh-talon-ratio-panel{display:grid;gap:10px;padding:11px 12px;border:1px solid rgba(251,146,60,.42);border-radius:11px;background:linear-gradient(110deg,rgba(67,20,7,.5),rgba(15,23,42,.78));}.rh-talon-ratio-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#fed7aa;font:800 10px/1.25 ui-sans-serif,system-ui;letter-spacing:.04em;text-transform:uppercase;}.rh-talon-ratio-head strong{color:#fef3c7;font:800 9px/1.25 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}',
+    '.rh-talon-ratio-row{display:grid;gap:5px;}.rh-talon-ratio-label{display:flex;align-items:baseline;justify-content:space-between;gap:8px;color:#fed7aa;font:800 10px/1.1 ui-sans-serif,system-ui;}.rh-talon-ratio-label span{letter-spacing:.05em;text-transform:uppercase;}.rh-talon-ratio-label strong{color:#fff7ed;font:900 12px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-talon-ratio-track{position:relative;height:10px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-talon-ratio-track::after{content:"";position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:2px;background:#fef3c7;box-shadow:0 0 0 1px rgba(15,23,42,.75),0 0 8px rgba(254,243,199,.72);}.rh-talon-ratio-row[data-ratio-kind="grip"] .rh-talon-ratio-track::after{left:66.6667%;}.rh-talon-ratio-row[data-ratio-kind="reach"] .rh-talon-ratio-track::after{left:33.3333%;}.rh-talon-ratio-fill{display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#fed7aa);transition:width .2s ease,background .2s ease;}.rh-talon-ratio-row[data-ratio-state="clear"] .rh-talon-ratio-fill{background:linear-gradient(90deg,#34d399,#a7f3d0);}.rh-talon-ratio-row[data-ratio-state="partial"] .rh-talon-ratio-fill{background:linear-gradient(90deg,#f59e0b,#fde68a);}.rh-talon-ratio-row[data-ratio-state="risk"] .rh-talon-ratio-fill{background:linear-gradient(90deg,#f87171,#fecaca);}.rh-talon-ratio-caption{color:#cbd5e1;font:700 9px/1.2 ui-sans-serif,system-ui;}.rh-talon-ratio-scale{display:flex;justify-content:space-between;color:#94a3b8;font:700 8px/1 ui-monospace,Menlo,monospace;}.rh-talon-ratio-row[data-ratio-state="clear"] .rh-talon-ratio-caption{color:#bbf7d0;}.rh-talon-ratio-row[data-ratio-state="risk"] .rh-talon-ratio-caption{color:#fecaca;}@media(max-width:520px){.rh-talon-ratio-panel{padding:10px;}.rh-talon-ratio-head strong{flex-basis:100%;}.rh-talon-ratio-label strong{font-size:11px;}}@media(prefers-reduced-motion:reduce){.rh-talon-ratio-fill{transition:none;}}@media(forced-colors:active){.rh-talon-ratio-panel,.rh-talon-ratio-track{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-talon-ratio-head,.rh-talon-ratio-head strong,.rh-talon-ratio-label,.rh-talon-ratio-label strong,.rh-talon-ratio-caption,.rh-talon-ratio-scale{color:CanvasText}.rh-talon-ratio-track::after{background:CanvasText;box-shadow:none}.rh-talon-ratio-fill{background:Highlight!important;}',
+    '.rh-vision-field-map{display:grid;gap:9px;padding:11px 12px;border:1px solid rgba(129,140,248,.42);border-radius:11px;background:linear-gradient(110deg,rgba(30,27,75,.48),rgba(15,23,42,.78));}.rh-vision-field-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#c7d2fe;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-vision-field-head strong{display:block;margin-top:3px;color:#eef2ff;font:900 12px/1.1 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;}.rh-vision-field-legend{display:flex;align-items:center;gap:9px;flex-wrap:wrap;color:#cbd5e1;font:700 9px/1.1 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;}.rh-vision-field-legend-item{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}.rh-vision-field-swatch{width:9px;height:9px;border:1px solid rgba(255,255,255,.42);border-radius:3px;background:#f59e0b;}.rh-vision-field-swatch-binocular{background:#fde047;}',
+    '.rh-vision-field-row{display:grid;grid-template-columns:minmax(126px,1.1fr) minmax(180px,2fr) minmax(118px,.9fr);align-items:center;gap:8px;padding:7px 8px;border:1px solid rgba(100,116,139,.4);border-radius:8px;background:rgba(2,6,23,.34);}.rh-vision-field-label{min-width:0;}.rh-vision-field-label strong{display:block;color:#f8fafc;font:900 10px/1.1 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-vision-field-label span{display:block;margin-top:3px;color:#a5b4fc;font:700 9px/1 ui-monospace,Menlo,monospace;}',
+    '.rh-flight-tradeoff-profile{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;padding:8px 9px;border:1px solid rgba(103,232,249,.42);border-radius:9px;background:rgba(8,47,73,.28);color:#cbd5e1;}.rh-flight-tradeoff-profile-kicker{color:#67e8f9;font:900 8px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-flight-tradeoff-profile-name{min-width:0;color:#f8fafc;font:900 11px/1.1 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-tradeoff-profile-stats{color:#bae6fd;font:800 9px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-flight-tradeoff-profile[data-profile-load="speed"]{border-color:rgba(251,146,60,.72);background:rgba(124,45,18,.26);}.rh-flight-tradeoff-profile[data-profile-load="lift"]{border-color:rgba(52,211,153,.62);background:rgba(6,78,59,.26);}.rh-flight-tradeoff-profile[data-profile-aspect="soar"] .rh-flight-tradeoff-profile-stats{color:#fde68a;}.rh-flight-tradeoff-profile[data-profile-aspect="agile"] .rh-flight-tradeoff-profile-stats{color:#a5f3fc;}.rh-flight-tradeoff-map{overflow:hidden;isolation:isolate;background:radial-gradient(circle at 50% 45%,rgba(30,64,175,.17),rgba(2,6,23,.7) 70%);}.rh-flight-map-guide{position:absolute;z-index:0;pointer-events:none;border-color:rgba(148,163,184,.28);}.rh-flight-map-guide-x{top:0;bottom:0;left:50%;border-left:1px dashed rgba(148,163,184,.32);}.rh-flight-map-guide-y{top:50%;right:0;left:0;border-top:1px dashed rgba(148,163,184,.32);}.rh-flight-map-quadrant{position:absolute;z-index:0;max-width:100px;color:rgba(186,230,253,.62);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;pointer-events:none;}.rh-flight-map-quadrant-soar{top:10px;left:42px;}.rh-flight-map-quadrant-speed{top:10px;right:10px;color:rgba(254,215,170,.72);}.rh-flight-map-quadrant-agile{bottom:28px;left:42px;color:rgba(167,243,208,.66);}.rh-flight-map-quadrant-burst{right:10px;bottom:28px;color:rgba(253,186,116,.66);}.rh-flight-map-point{z-index:2;}.rh-flight-map-point-selected{padding:2px 5px;border:1px solid #67e8f9;border-radius:999px;background:rgba(8,47,73,.86);box-shadow:0 0 0 2px rgba(103,232,249,.2),0 0 12px rgba(103,232,249,.48);}.rh-flight-map-point-selected::after{content:"SELECTED";display:block;margin-top:2px;color:#cffafe;font:900 7px/1 ui-sans-serif,system-ui;letter-spacing:.1em;}',
+    '.rh-flight-tradeoff-note{margin-top:5px;color:#94a3b8;font:700 9px/1.3 ui-sans-serif,system-ui;}.rh-flight-tradeoff-note strong{color:#e0f2fe;}.rh-flight-map-axis-label{position:absolute;z-index:1;color:#94a3b8;font:700 8px/1 ui-monospace,Menlo,monospace;pointer-events:none;}.rh-flight-map-axis-x0{right:8px;bottom:6px;}.rh-flight-map-axis-x9{right:49%;bottom:6px;}.rh-flight-map-axis-x18{left:8px;bottom:6px;}.rh-flight-map-axis-y0{right:8px;bottom:8px;}.rh-flight-map-axis-y6{top:49%;right:8px;}.rh-flight-map-axis-y12{top:8px;right:8px;}@media(max-width:620px){.rh-flight-tradeoff-profile{grid-template-columns:auto minmax(0,1fr);}.rh-flight-tradeoff-profile-stats{grid-column:2;}.rh-flight-map-quadrant{font-size:7px;}.rh-flight-map-quadrant-soar{left:32px;}.rh-flight-map-quadrant-agile{left:32px;}}@media(max-width:430px){.rh-flight-tradeoff-profile{grid-template-columns:1fr;gap:4px;}.rh-flight-tradeoff-profile-stats{grid-column:auto;white-space:normal;}.rh-flight-map-quadrant{max-width:78px;font-size:6px;}.rh-flight-map-axis-label{font-size:7px;}}@media(forced-colors:active){.rh-flight-tradeoff-profile,.rh-flight-tradeoff-map{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-tradeoff-profile-kicker,.rh-flight-tradeoff-profile-name,.rh-flight-tradeoff-profile-stats,.rh-flight-tradeoff-note,.rh-flight-tradeoff-note strong,.rh-flight-map-quadrant,.rh-flight-map-axis-label{color:CanvasText}.rh-flight-map-guide{border-color:CanvasText}.rh-flight-map-point-selected{border-color:CanvasText;background:Canvas;box-shadow:none}.rh-flight-map-point-selected::after{color:CanvasText;}',
+    '.rh-stoop-impact-panel{display:grid;gap:9px;padding:11px 12px;border:1px solid rgba(248,113,113,.44);border-radius:11px;background:linear-gradient(110deg,rgba(127,29,29,.28),rgba(15,23,42,.8));}.rh-stoop-impact-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}.rh-stoop-impact-kicker{color:#fca5a5;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-stoop-impact-title{display:block;margin-top:3px;color:#fff1f2;font:900 12px/1.15 ui-sans-serif,system-ui;}.rh-stoop-impact-value{color:#fef3c7;font:900 15px/1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-stoop-impact-track{position:relative;height:78px;border:1px solid rgba(148,163,184,.62);border-radius:9px;background:linear-gradient(180deg,rgba(2,6,23,.86),rgba(15,23,42,.62));overflow:visible;}.rh-stoop-impact-track::before{content:"";position:absolute;inset:8px 0 22px;background:repeating-linear-gradient(90deg,rgba(148,163,184,.2) 0,rgba(148,163,184,.2) 1px,transparent 1px,transparent 10%);pointer-events:none;}.rh-stoop-impact-current{position:absolute;top:5px;bottom:20px;width:2px;transform:translateX(-50%);background:#fef3c7;box-shadow:0 0 0 1px rgba(127,29,29,.8),0 0 10px rgba(254,243,199,.85);z-index:3;}.rh-stoop-impact-current-dot{position:absolute;left:50%;top:21px;width:10px;height:10px;transform:translate(-50%,-50%);border:2px solid #fff7ed;border-radius:50%;background:#f97316;box-shadow:0 0 0 3px rgba(249,115,22,.24),0 0 12px rgba(249,115,22,.85);}.rh-stoop-impact-current-label{position:absolute;top:0;left:50%;transform:translateX(-50%);color:#fff7ed;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}.rh-stoop-impact-marker{position:absolute;bottom:0;width:1px;height:25px;transform:translateX(-50%);background:#94a3b8;z-index:2;}.rh-stoop-impact-marker-label{position:absolute;bottom:27px;left:50%;transform:translateX(-50%);color:#cbd5e1;font:800 8px/1.1 ui-sans-serif,system-ui;text-align:center;white-space:nowrap;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(-84%);}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{bottom:42px;transform:translateX(-16%);color:#fed7aa;}.rh-stoop-impact-marker[data-impact-marker="peregrine"]{background:#fbbf24;}.rh-stoop-impact-marker[data-impact-marker="peregrine"] .rh-stoop-impact-marker-label{color:#fde68a;}.rh-stoop-impact-marker[data-impact-marker="harpy"]{background:#f87171;}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{color:#fecaca;}.rh-stoop-impact-axis{display:flex;justify-content:space-between;color:#94a3b8;font:700 8px/1 ui-monospace,Menlo,monospace;}.rh-stoop-impact-note{color:#cbd5e1;font:700 9px/1.3 ui-sans-serif,system-ui;}.rh-stoop-impact-note strong{color:#fecaca;}',
+    '.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{font-size:7px;}@media(max-width:520px){.rh-stoop-impact-panel{padding:10px;}.rh-stoop-impact-track{height:72px;}.rh-stoop-impact-marker-label{font-size:7px;}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{bottom:39px;}}@media(max-width:430px){.rh-stoop-impact-head{gap:5px;}.rh-stoop-impact-title{font-size:11px;}.rh-stoop-impact-value{font-size:13px;}.rh-stoop-impact-marker-label{font-size:6px;}.rh-stoop-impact-axis{font-size:7px;}}@media(forced-colors:active){.rh-stoop-impact-panel,.rh-stoop-impact-track{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-stoop-impact-kicker,.rh-stoop-impact-title,.rh-stoop-impact-value,.rh-stoop-impact-marker-label,.rh-stoop-impact-axis,.rh-stoop-impact-note,.rh-stoop-impact-note strong{color:CanvasText}.rh-stoop-impact-track::before{background:repeating-linear-gradient(90deg,CanvasText 0,CanvasText 1px,transparent 1px,transparent 10%);opacity:.5}.rh-stoop-impact-current,.rh-stoop-impact-marker{background:Highlight;box-shadow:none}.rh-stoop-impact-current-dot{border-color:CanvasText;background:Highlight;box-shadow:none;}',
     '.rh-flight-metric{min-width:84px;padding:7px 10px;text-align:center;border-right:1px solid rgba(100,116,139,.55);}',
+    '.rh-silent-stack-node[data-silent-tone="violet"]{border-color:rgba(167,139,250,.62);background:rgba(76,29,149,.22);}.rh-silent-stack-node[data-silent-tone="indigo"]{border-color:rgba(129,140,248,.62);background:rgba(49,46,129,.24);}.rh-silent-stack-node[data-silent-tone="purple"]{border-color:rgba(192,132,252,.62);background:rgba(88,28,135,.22);}.rh-silent-stack-node[data-silent-tone="emerald"]{border-color:rgba(52,211,153,.62);background:rgba(6,78,59,.24);}.rh-silent-stack-node[data-silent-tone="emerald"] .rh-silent-stack-node-step,.rh-silent-stack-node[data-silent-tone="emerald"] .rh-silent-stack-node-label{color:#a7f3d0;}',
+    '.rh-silent-stack-arrow{display:flex;align-items:center;justify-content:center;flex:0 0 14px;color:#a78bfa;font:900 16px/1 ui-sans-serif,system-ui;}.rh-silent-stack-foot{color:#cbd5e1;font:700 9px/1.3 ui-sans-serif,system-ui;}.rh-silent-stack-foot strong{color:#ddd6fe;}',
+    '@media(max-width:720px){.rh-silent-stack-flow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}.rh-silent-stack-arrow{display:none;}}@media(max-width:430px){.rh-silent-stack-flow{grid-template-columns:1fr;}.rh-silent-stack-node{padding:7px;}}',
+    '@media(forced-colors:active){.rh-silent-stack,.rh-silent-stack-node{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-silent-stack-head,.rh-silent-stack-head strong,.rh-silent-stack-node-step,.rh-silent-stack-node-title,.rh-silent-stack-node-label,.rh-silent-stack-node-copy,.rh-silent-stack-arrow,.rh-silent-stack-foot,.rh-silent-stack-foot strong{color:CanvasText;}}',
+    '.rh-silent-stack{display:grid;gap:9px;padding:11px 12px;border:1px solid rgba(167,139,250,.42);border-radius:11px;background:linear-gradient(110deg,rgba(49,46,129,.42),rgba(15,23,42,.8));}.rh-silent-stack-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#c4b5fd;font:800 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-silent-stack-head strong{display:block;margin-top:3px;color:#f5f3ff;font:900 12px/1.1 ui-sans-serif,system-ui;letter-spacing:0;text-transform:none;}.rh-silent-stack-flow{display:flex;align-items:stretch;gap:6px;}.rh-silent-stack-node{display:grid;align-content:start;gap:4px;min-width:0;flex:1 1 0;padding:8px;border:1px solid rgba(148,163,184,.42);border-radius:9px;background:rgba(2,6,23,.42);}.rh-silent-stack-node-step{color:#a5b4fc;font:900 8px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;}.rh-silent-stack-node-title{color:#f8fafc;font:900 11px/1.1 ui-sans-serif,system-ui;}.rh-silent-stack-node-label{color:#c4b5fd;font:800 9px/1.1 ui-sans-serif,system-ui;}.rh-silent-stack-node-copy{color:#cbd5e1;font:600 9px/1.3 ui-sans-serif,system-ui;}',
+    '.rh-vision-field-track{position:relative;height:10px;border:1px solid rgba(148,163,184,.62);border-radius:999px;background:rgba(2,6,23,.78);overflow:visible;}.rh-vision-field-total{position:relative;display:block;height:100%;max-width:100%;border-radius:inherit;background:linear-gradient(90deg,#64748b,#cbd5e1);}.rh-vision-field-row[data-vision-color="indigo"] .rh-vision-field-total{background:linear-gradient(90deg,#6366f1,#c4b5fd);}.rh-vision-field-row[data-vision-color="amber"] .rh-vision-field-total{background:linear-gradient(90deg,#d97706,#fcd34d);}.rh-vision-field-row[data-vision-color="orange"] .rh-vision-field-total{background:linear-gradient(90deg,#ea580c,#fdba74);}.rh-vision-field-row[data-vision-color="red"] .rh-vision-field-total{background:linear-gradient(90deg,#dc2626,#fca5a5);}.rh-vision-field-binocular{position:absolute;top:-2px;bottom:-2px;left:50%;display:block;min-width:4px;transform:translateX(-50%);border:1px solid #fef3c7;border-radius:999px;background:#fde047;box-shadow:0 0 0 1px rgba(15,23,42,.78),0 0 8px rgba(253,224,71,.68);}',
+    '.rh-vision-field-values{display:flex;justify-content:flex-end;gap:7px;flex-wrap:wrap;color:#cbd5e1;font:800 9px/1.1 ui-monospace,Menlo,monospace;text-align:right;}.rh-vision-field-values strong{color:#fef3c7;}.rh-vision-field-note{color:#a5b4fc;font:700 9px/1.25 ui-sans-serif,system-ui;}@media(max-width:720px){.rh-vision-field-row{grid-template-columns:minmax(0,1fr) auto;}.rh-vision-field-track{grid-column:1/-1;grid-row:2;}.rh-vision-field-values{align-items:flex-end;}.rh-vision-field-note{font-size:8px;}}@media(max-width:430px){.rh-vision-field-head strong{font-size:11px;}.rh-vision-field-legend{gap:6px;font-size:8px;}.rh-vision-field-row{padding:7px;}.rh-vision-field-label strong{font-size:9px;}}@media(forced-colors:active){.rh-vision-field-map,.rh-vision-field-row,.rh-vision-field-track{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-vision-field-head,.rh-vision-field-head strong,.rh-vision-field-legend,.rh-vision-field-label strong,.rh-vision-field-label span,.rh-vision-field-values,.rh-vision-field-values strong,.rh-vision-field-note{color:CanvasText}.rh-vision-field-total{background:Highlight!important}.rh-vision-field-binocular{border-color:CanvasText;background:CanvasText;box-shadow:none}.rh-vision-field-swatch{border-color:CanvasText;background:Highlight}.rh-vision-field-swatch-binocular{background:CanvasText;}',
     '.rh-flight-metric:last-child{border-right:0;}.rh-flight-metric-label{display:block;color:#a5f3fc;font:800 9px/1.1 ui-sans-serif,system-ui;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-metric-value{display:block;margin-top:3px;color:#fff;font:800 13px/1.1 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-flight-energy-bars{display:grid;gap:2px;margin-top:4px;}.rh-flight-energy-track{display:block;height:3px;border-radius:999px;background:rgba(15,23,42,.92);overflow:hidden;}.rh-flight-energy-fill{display:block;width:0;height:100%;border-radius:inherit;transition:width .16s linear,background-color .16s linear;}.rh-flight-energy-fill-calories{background:#fbbf24;}.rh-flight-energy-fill-stamina{background:#67e8f9;}.rh-flight-metric[data-energy-state="low"] .rh-flight-energy-fill-calories{background:#fb923c;}.rh-flight-metric[data-energy-state="critical"] .rh-flight-energy-fill-calories{background:#f87171;}.rh-flight-metric[data-energy-state="fatigued"] .rh-flight-energy-fill-stamina{background:#facc15;}',
+    '.rh-flight-readout{display:grid;gap:9px;padding:10px 12px;border-top:1px solid rgba(103,232,249,.35);border-bottom:1px solid rgba(100,116,139,.45);background:linear-gradient(100deg,rgba(8,47,73,.78),rgba(2,6,23,.96));color:#e0f2fe;}.rh-flight-readout-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;}.rh-flight-readout-kicker{color:#67e8f9;font:900 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.12em;text-transform:uppercase;}.rh-flight-readout-title{display:block;margin-top:3px;color:#f8fafc;font:900 12px/1.2 ui-sans-serif,system-ui;}.rh-flight-readout-copy{margin-top:2px;color:#94a3b8;font:600 10px/1.3 ui-sans-serif,system-ui;}.rh-flight-readout-state{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:4px 8px;border:1px solid rgba(103,232,249,.5);border-radius:999px;background:rgba(8,47,73,.72);color:#cffafe;font:900 9px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;}.rh-flight-readout-state::before{content:"";width:6px;height:6px;border-radius:50%;background:#67e8f9;box-shadow:0 0 8px currentColor;}.rh-flight-readout-state[data-readout-state="paused"]{border-color:rgba(148,163,184,.72);background:rgba(51,65,85,.65);color:#e2e8f0;}.rh-flight-readout-state[data-readout-state="paused"]::before{background:#cbd5e1;}.rh-flight-readout-state[data-readout-state="success"]{border-color:rgba(52,211,153,.72);background:rgba(6,78,59,.58);color:#d1fae5;}.rh-flight-readout-state[data-readout-state="success"]::before{background:#34d399;}.rh-flight-readout-state[data-readout-state="failed"]{border-color:rgba(248,113,113,.75);background:rgba(127,29,29,.56);color:#fee2e2;}.rh-flight-readout-state[data-readout-state="failed"]::before{background:#f87171;}.rh-flight-readout-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;}.rh-flight-readout-item{min-width:0;padding:7px 8px;border:1px solid rgba(100,116,139,.48);border-radius:8px;background:rgba(2,6,23,.42);}.rh-flight-readout-item[data-readout-kind="target"]{border-color:rgba(251,191,36,.46);}.rh-flight-readout-item[data-readout-kind="strike"]{border-color:rgba(52,211,153,.42);}.rh-flight-readout-label{display:block;color:#a5f3fc;font:800 8px/1.1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-readout-value{display:block;margin-top:3px;color:#f8fafc;font:900 11px/1.15 ui-monospace,Menlo,monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-readout-detail{display:block;margin-top:3px;color:#94a3b8;font:600 9px/1.2 ui-sans-serif,system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.rh-flight-readout-lock{display:grid;gap:5px;padding:7px 8px;border:1px solid rgba(167,139,250,.3);border-radius:8px;background:rgba(49,46,129,.2);}.rh-flight-readout-lock-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#c4b5fd;font:800 9px/1.1 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-readout-lock-head strong{color:#f5f3ff;font:900 10px/1 ui-monospace,Menlo,monospace;letter-spacing:0;text-transform:none;}.rh-flight-readout-lock-row{display:grid;grid-template-columns:42px minmax(0,1fr) 34px;align-items:center;gap:6px;color:#cbd5e1;font:800 8px/1 ui-sans-serif,system-ui;text-transform:uppercase;}.rh-flight-readout-lock-track{height:6px;border:1px solid rgba(148,163,184,.5);border-radius:999px;background:rgba(2,6,23,.72);overflow:hidden;}.rh-flight-readout-lock-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#4ade80);transition:width .16s linear;}.rh-flight-readout-lock-row output{color:#f8fafc;font:900 9px/1 ui-monospace,Menlo,monospace;text-align:right;}.dark [data-raptorhunt-root="true"] .rh-flight-readout{border-color:rgba(103,232,249,.35);}.dark [data-raptorhunt-root="true"] .rh-flight-readout-copy,.dark [data-raptorhunt-root="true"] .rh-flight-readout-detail{color:#a5b4c8;}@media(max-width:760px){.rh-flight-readout{padding:9px 10px;}.rh-flight-readout-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-flight-readout-value{font-size:10px;}}@media(max-width:430px){.rh-flight-readout-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-flight-readout-lock-row{grid-template-columns:38px minmax(0,1fr) 30px;gap:5px;}.rh-flight-readout-copy{font-size:9px;}.rh-flight-readout-state{font-size:8px;}}@media(prefers-reduced-motion:reduce){.rh-flight-readout-lock-fill{transition:none;}}@media(forced-colors:active){.rh-flight-readout,.rh-flight-readout-item,.rh-flight-readout-lock{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-kicker,.rh-flight-readout-title,.rh-flight-readout-copy,.rh-flight-readout-label,.rh-flight-readout-value,.rh-flight-readout-detail,.rh-flight-readout-lock-head,.rh-flight-readout-lock-head strong,.rh-flight-readout-lock-row,.rh-flight-readout-lock-row output{color:CanvasText}.rh-flight-readout-state{border-color:CanvasText;background:Canvas;color:CanvasText}.rh-flight-readout-lock-track{border-color:CanvasText;background:Canvas}.rh-flight-readout-lock-fill{background:Highlight!important;}',
     '.rh-flight-metric[data-raptor-weather="true"]{transition:background-color .25s,border-color .25s;}.rh-flight-metric[data-raptor-weather="true"][data-day-period="night"]{background:rgba(49,46,129,.28);}.rh-flight-metric[data-raptor-weather="true"][data-day-period="dawn"],.rh-flight-metric[data-raptor-weather="true"][data-day-period="dusk"]{background:rgba(120,53,15,.24);}.rh-flight-metric[data-raptor-weather="true"][data-cloud-band="overcast"]{border-bottom:2px solid rgba(148,163,184,.8);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="rain"]{border-bottom:2px solid rgba(56,189,248,.85);}.rh-flight-metric[data-raptor-weather="true"][data-precipitation="snow"]{border-bottom:2px solid rgba(226,232,240,.95);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="success"]{background:rgba(6,78,59,.45);}.rh-flight-metric[data-raptor-mission-metric="true"][data-mission-state="failed"]{background:rgba(127,29,29,.42);}',
     '.rh-flight-settings{position:relative;}.rh-flight-settings>summary{list-style:none;}.rh-flight-settings>summary::-webkit-details-marker{display:none;}.rh-flight-settings-panel{position:absolute;right:0;bottom:calc(100% + 10px);z-index:30;display:flex;flex-wrap:wrap;gap:8px;width:min(330px,calc(100vw - 24px));padding:10px;border:1px solid #67e8f9;border-radius:11px;background:rgba(2,6,23,.98);box-shadow:0 18px 50px rgba(0,0,0,.45);}.rh-flight-quality{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:1 1 100%;color:#cffafe;font:800 11px/1.2 ui-sans-serif,system-ui;}.rh-flight-quality select{min-height:44px;border:1px solid #67e8f9;border-radius:9px;background:#0f172a;padding:8px 30px 8px 10px;color:#fff;font:800 12px/1.2 ui-sans-serif,system-ui;}',
     '.rh-flight-performance{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:1 1 100%;padding:7px 8px;border:1px solid rgba(100,116,139,.65);border-radius:8px;background:rgba(15,23,42,.7);color:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;}.rh-flight-performance[data-performance-state="good"]{border-color:rgba(52,211,153,.75);color:#bbf7d0;}.rh-flight-performance[data-performance-state="warn"]{border-color:rgba(251,191,36,.85);color:#fef3c7;}.rh-flight-performance-label{color:#a5f3fc;text-transform:uppercase;letter-spacing:.08em;}.rh-flight-performance-value{font-family:ui-monospace,Menlo,monospace;white-space:nowrap;}',
@@ -1238,7 +1326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
   // FIELD ID QUIZ — gamified retrieval practice
   // ───────────────────────────────────────────────────────────
-  // 18 questions across 3 difficulty bands.
+  // 70 questions across 3 difficulty bands.
   // Fields: id, q, options (array of 4), correctIdx, explanation, difficulty
   var QUIZ_QUESTIONS = [
     // EASY (silhouette + obvious)
@@ -3821,6 +3909,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     ]
   };
 
+  // Spatial metadata for the interactive field plates. Percent coordinates
+  // align each numbered control with the corresponding structure above.
+  var ANATOMY_VISUALS = [
+    {
+      kind: 'skeleton', plate: 'Flight frame', metric: '14 cervical vertebrae',
+      prompt: 'Trace how a rigid body core and flexible wing joints transfer flight-muscle force.',
+      accent: '#fbbf24',
+      hotspots: [[78, 21], [68, 28], [55, 35], [52, 51], [47, 37], [42, 58], [29, 35], [12, 27], [50, 77], [27, 61]]
+    },
+    {
+      kind: 'wing', plate: 'Airfoil map', metric: '10 primary feathers',
+      prompt: 'Follow lift from the inner secondaries to thrust and steering at the slotted primaries.',
+      accent: '#67e8f9',
+      hotspots: [[82, 31], [55, 44], [35, 59], [24, 39], [43, 29], [48, 52], [69, 42], [20, 47]]
+    },
+    {
+      kind: 'talon', plate: 'Capture mechanics', metric: 'Passive tendon lock',
+      prompt: 'Compare the rear hallux with the forward toes to infer where penetration and restraint occur.',
+      accent: '#fb923c',
+      hotspots: [[29, 73], [65, 73], [82, 71], [59, 60], [74, 53], [49, 22], [46, 46], [53, 60]]
+    },
+    {
+      kind: 'eye', plate: 'Optical cross-section', metric: '2 foveae per eye',
+      prompt: 'Trace light from the cornea to the retina, then locate the structures that sharpen and protect vision.',
+      accent: '#a78bfa',
+      hotspots: [[78, 49], [69, 50], [60, 50], [28, 50], [35, 44], [52, 28], [73, 32], [39, 61], [49, 66]]
+    },
+    {
+      kind: 'ear', plate: 'Acoustic geometry', metric: 'Asymmetric openings',
+      prompt: 'Use the vertical offset between ear openings to explain how an owl locates prey in darkness.',
+      accent: '#c4b5fd',
+      hotspots: [[50, 51], [66, 43], [34, 57], [75, 53], [25, 47], [50, 17], [50, 66], [62, 61]]
+    },
+    {
+      kind: 'beak', plate: 'Feeding tool', metric: 'Tomial tooth in falcons',
+      prompt: 'Follow airflow through the cere and nares, then compare tearing and dispatch structures.',
+      accent: '#fda4af',
+      hotspots: [[73, 41], [68, 59], [55, 38], [59, 33], [77, 52], [49, 58], [42, 62], [61, 64]]
+    },
+    {
+      kind: 'organs', plate: 'Metabolic systems', metric: '8–9 air sacs',
+      prompt: 'Trace oxygen and energy through the compact organ system that sustains powered flight.',
+      accent: '#6ee7b7',
+      hotspots: [[48, 38], [39, 38], [67, 47], [54, 25], [50, 46], [54, 60], [40, 56], [66, 59], [51, 79], [37, 72], [63, 72]]
+    }
+  ];
+
   // ───────────────────────────────────────────────────────────
   // NEW v0.40: PREY ATLAS — 50+ prey species raptors hunt
   // ───────────────────────────────────────────────────────────
@@ -3893,6 +4028,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     ]
   };
 
+  // Ecological group and predator vocabulary for the visual Prey Atlas.
+  var PREY_ATLAS_GROUPS = [
+    { id: 'rodents', label: 'Rodents', code: 'ROD', start: 0, end: 11, accent: '#fbbf24', ground: '#713f12', icon: 'R' },
+    { id: 'lagomorphs', label: 'Rabbits & hares', code: 'LAG', start: 12, end: 14, accent: '#fde68a', ground: '#365314', icon: 'H' },
+    { id: 'birds', label: 'Birds', code: 'BRD', start: 15, end: 29, accent: '#7dd3fc', ground: '#164e63', icon: 'B' },
+    { id: 'herps', label: 'Reptiles & amphibians', code: 'HER', start: 30, end: 35, accent: '#86efac', ground: '#14532d', icon: 'S' },
+    { id: 'fish', label: 'Fish', code: 'FSH', start: 36, end: 41, accent: '#67e8f9', ground: '#075985', icon: 'F' },
+    { id: 'insects', label: 'Insects', code: 'INS', start: 42, end: 45, accent: '#bef264', ground: '#3f6212', icon: 'I' },
+    { id: 'carrion', label: 'Carrion', code: 'CAR', start: 46, end: 48, accent: '#fca5a5', ground: '#7f1d1d', icon: 'C' },
+    { id: 'specialists', label: 'Specialized prey', code: 'SPC', start: 49, end: 54, accent: '#c4b5fd', ground: '#4c1d95', icon: 'X' }
+  ];
+
+  var PREY_PREDATOR_LIBRARY = [
+    { id: 'red-tail', code: 'RTHA', label: 'Red-tailed hawk', aliases: ['red-tail','red-tailed'] },
+    { id: 'kestrel', code: 'AMKE', label: 'American kestrel', aliases: ['kestrel'] },
+    { id: 'harrier', code: 'NOHA', label: 'Northern harrier', aliases: ['harrier','marsh hawk'] },
+    { id: 'barn-owl', code: 'BANO', label: 'Barn owl', aliases: ['barn owl'] },
+    { id: 'short-eared', code: 'SEOW', label: 'Short-eared owl', aliases: ['short-eared'] },
+    { id: 'rough-leg', code: 'RLHA', label: 'Rough-legged hawk', aliases: ['rough-leg','rough-legged'] },
+    { id: 'screech', code: 'EASO', label: 'Screech owl', aliases: ['screech owl'] },
+    { id: 'sharp-shinned', code: 'SSHA', label: 'Sharp-shinned hawk', aliases: ['sharp-shinned','sharp-shin'] },
+    { id: 'coopers', code: 'COHA', label: 'Cooper\'s hawk', aliases: ['cooper'] },
+    { id: 'great-horned', code: 'GHOW', label: 'Great horned owl', aliases: ['great horned','great-horned'] },
+    { id: 'golden-eagle', code: 'GOEA', label: 'Golden eagle', aliases: ['golden eagle'] },
+    { id: 'ferruginous', code: 'FEHA', label: 'Ferruginous hawk', aliases: ['ferruginous'] },
+    { id: 'prairie-falcon', code: 'PRFA', label: 'Prairie falcon', aliases: ['prairie falcon'] },
+    { id: 'peregrine', code: 'PEFA', label: 'Peregrine falcon', aliases: ['peregrine'] },
+    { id: 'bald-eagle', code: 'BAEA', label: 'Bald eagle', aliases: ['bald eagle'] },
+    { id: 'goshawk', code: 'NOGO', label: 'Northern goshawk', aliases: ['goshawk'] },
+    { id: 'broad-winged', code: 'BWHA', label: 'Broad-winged hawk', aliases: ['broad-winged','broad-winged hawk'] },
+    { id: 'red-shouldered', code: 'RSHA', label: 'Red-shouldered hawk', aliases: ['red-shouldered'] },
+    { id: 'osprey', code: 'OSPR', label: 'Osprey', aliases: ['osprey'] },
+    { id: 'kite', code: 'KITE', label: 'Kite', aliases: ['kite'] },
+    { id: 'vulture', code: 'TUVU', label: 'Vulture', aliases: ['vulture'] },
+    { id: 'condor', code: 'CACO', label: 'California condor', aliases: ['condor'] },
+    { id: 'harpy', code: 'HAEA', label: 'Harpy eagle', aliases: ['harpy'] },
+    { id: 'caracara', code: 'CRCA', label: 'Crested caracara', aliases: ['caracara'] },
+    { id: 'gyrfalcon', code: 'GYRF', label: 'Gyrfalcon', aliases: ['gyrfalcon'] },
+    { id: 'snail-kite', code: 'SNKI', label: 'Snail kite', aliases: ['snail kite'] }
+  ];
+
+
   // ───────────────────────────────────────────────────────────
   // NEW v0.40: FOSSIL RECORD — paleontology of raptors
   // ───────────────────────────────────────────────────────────
@@ -3922,6 +4099,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       { event: 'Anthropocene extinctions', when: '1500-present', summary: 'Mauritius kestrel, Haast\'s eagle, several others lost due to human colonization. Current extinction rate ~100-1000x background.' }
     ]
   };
+
+
+
+  // Visual reconstruction vocabulary for the interactive Deep Time Navigator.
+  var FOSSIL_ERAS = [
+    { id: 'all', label: 'All deep time', code: 'ALL', accent: '#fbbf24' },
+    { id: 'origins', label: 'Origins of birds', code: 'J-K', accent: '#fb923c' },
+    { id: 'cretaceous', label: 'Cretaceous worlds', code: 'K', accent: '#facc15' },
+    { id: 'radiation', label: 'Raptor radiation', code: 'PAL', accent: '#67e8f9' },
+    { id: 'giants', label: 'Giants & recent loss', code: 'NEO', accent: '#c4b5fd' }
+  ];
+
+  var FOSSIL_VISUALS = [
+    { kind: 'archaeopteryx', code: 'ARCH', era: 'origins', ageMa: 150, shape: 'longtail', spanM: .5, accent: '#fb923c', role: 'transition', roleLabel: 'Transitional evidence', setting: 'Lagoon island', lineage: 'Feathered theropod near the avian stem', evidence: 'Flight feathers with dinosaur-like tail and claws', marks: ['Asymmetric flight feathers', 'Long segmented bony tail', 'Clawed wing fingers'] },
+    { kind: 'confuciusornis', code: 'CONF', era: 'origins', ageMa: 125, shape: 'earlybird', spanM: .7, accent: '#f59e0b', role: 'transition', roleLabel: 'Transitional evidence', setting: 'Volcanic lake forest', lineage: 'Early beaked bird', evidence: 'Toothless beak paired with primitive shoulder anatomy', marks: ['Toothless beak', 'True flight-feather fan', 'Paired display tail feathers'] },
+    { kind: 'enantiornithes', code: 'ENAN', era: 'origins', ageMa: 92, shape: 'smallbird', spanM: .6, accent: '#fbbf24', role: 'side', roleLabel: 'Extinct side branch', setting: 'Cretaceous forests worldwide', lineage: 'Diverse avian branch lost at K-Pg', evidence: 'Modern-looking flight form on a lineage with reversed shoulder joints', marks: ['Compact flight skeleton', 'Clawed perching feet', 'Reversed shoulder articulation'] },
+    { kind: 'hesperornis', code: 'HESP', era: 'cretaceous', ageMa: 72, shape: 'diver', spanM: .35, accent: '#fde047', role: 'extreme', roleLabel: 'Extreme adaptation', setting: 'Western Interior Seaway', lineage: 'Flightless toothed diving bird', evidence: 'Reduced wings and powerful hind limbs show aquatic specialization', marks: ['Long toothed jaw', 'Vestigial wings', 'Powerful rear-set legs'] },
+    { kind: 'ichthyornis', code: 'ICHT', era: 'cretaceous', ageMa: 80, shape: 'gull', spanM: .9, accent: '#facc15', role: 'transition', roleLabel: 'Transitional evidence', setting: 'Cretaceous inland sea', lineage: 'Near-modern flying bird with teeth', evidence: 'Modern breast and wings coexist with a toothed jaw', marks: ['Toothed narrow beak', 'Keeled breastbone', 'Long marine flight wings'] },
+    { kind: 'kpg-boundary', code: 'KPG', era: 'cretaceous', ageMa: 66, shape: 'boundary', spanM: 0, accent: '#f87171', role: 'boundary', roleLabel: 'Extinction boundary', setting: 'Global impact winter', lineage: 'Evolutionary bottleneck', evidence: 'Abrupt turnover separates surviving crown birds from lost lineages', marks: ['Impact ejecta layer', 'Charcoal and shocked minerals', 'Survivor bottleneck signal'] },
+    { kind: 'lithornis', code: 'LITH', era: 'radiation', ageMa: 55, shape: 'groundbird', spanM: 1.1, accent: '#6ee7b7', role: 'radiation', roleLabel: 'Post-extinction radiation', setting: 'Warm Paleogene woodland', lineage: 'Early crown-bird radiation', evidence: 'Ground-adapted form appears soon after the K-Pg bottleneck', marks: ['Long running legs', 'Compact rounded wings', 'Tinamou-like skull'] },
+    { kind: 'vanolimicola', code: 'VANO', era: 'radiation', ageMa: 51.5, shape: 'raptor', spanM: 1.0, accent: '#67e8f9', role: 'radiation', roleLabel: 'Raptor radiation', setting: 'Eocene European forest', lineage: 'Early hawk-like lineage', evidence: 'Grasping foot and hooked profile point toward predatory specialization', marks: ['Hooked predatory beak', 'Grasping foot geometry', 'Broad maneuvering wing'] },
+    { kind: 'telmavis', code: 'TELM', era: 'radiation', ageMa: 40, shape: 'eagle', spanM: 1.8, accent: '#38bdf8', role: 'radiation', roleLabel: 'Raptor radiation', setting: 'Eocene European woodland', lineage: 'Pre-modern accipitrid', evidence: 'Large soaring frame previews later eagle-like niches', marks: ['Broad slotted wing', 'Deep flight-muscle keel', 'Robust grasping talons'] },
+    { kind: 'argentavis', code: 'ARGE', era: 'giants', ageMa: 6, shape: 'giantsoarer', spanM: 7, accent: '#c4b5fd', role: 'extreme', roleLabel: 'Extreme adaptation', setting: 'Miocene Argentine pampas', lineage: 'Giant teratorn-grade soarer', evidence: 'Seven-meter wingspan pushed soaring flight near its physical limits', marks: ['Seven-meter wing span', 'Long soaring primaries', 'Massive shoulder girdle'] },
+    { kind: 'pelagornis', code: 'PELA', era: 'giants', ageMa: 25, shape: 'seabird', spanM: 6, accent: '#a5b4fc', role: 'extreme', roleLabel: 'Extreme adaptation', setting: 'Oligocene open ocean', lineage: 'Independent marine giant', evidence: 'Pseudo-teeth and ultra-long wings evolved outside raptor lineages', marks: ['Bony pseudo-teeth', 'Six-meter narrow wings', 'Pelagic soaring frame'] },
+    { kind: 'teratornis', code: 'TERA', era: 'giants', ageMa: .012, shape: 'teratorn', spanM: 3.5, accent: '#d8b4fe', role: 'extreme', roleLabel: 'Megafaunal specialist', setting: 'Pleistocene western grassland', lineage: 'Condor-relative scavenger-predator', evidence: 'Large soaring scavenger disappeared with ice-age megafauna', marks: ['Broad three-meter wings', 'Deep carrion-adapted bill', 'Heavy soaring skeleton'] },
+    { kind: 'haasts-eagle', code: 'HAAE', era: 'giants', ageMa: .0006, shape: 'eagle', spanM: 3, accent: '#f0abfc', role: 'extreme', roleLabel: 'Island apex adaptation', setting: 'Holocene New Zealand forest', lineage: 'Giant eagle specialized on moa', evidence: 'Rapid island gigantism produced the largest known eagle', marks: ['Oversized killing talons', 'Powerful short wings', 'Deep moa-strike pelvis'] },
+    { kind: 'giant-owl', code: 'ORNI', era: 'giants', ageMa: .1, shape: 'owl', spanM: 1.5, accent: '#e9d5ff', role: 'side', roleLabel: 'Island side branch', setting: 'Pleistocene Cuban savanna', lineage: 'Giant mostly terrestrial owl', evidence: 'Island isolation favored long legs, size, and reduced flight', marks: ['Large forward-facing eyes', 'Long terrestrial legs', 'Reduced rounded wings'] }
+  ];
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.40: POPULATION + DEMOGRAPHICS
@@ -4116,6 +4321,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
     ]
   };
+
+  // Visual ecology metadata for the Habitat Atlas biome plates.
+  var HABITAT_VISUALS = [
+    { kind: 'deciduous', short: 'Deciduous forest', accent: '#86efac', sky: '#164e63', ground: '#365314', metrics: [90, 28, 42, 52], structure: ['Upper canopy', 'Forest edge', 'Leaf-litter floor'], structurePoints: [[43, 25], [76, 55], [46, 82]], raptorPoints: [[35, 25], [67, 43], [25, 54]], preyLabels: ['Tree squirrel', 'Songbird', 'Meadow vole'], preyPoints: [[54, 76], [74, 48], [35, 85]], pressureLabels: ['Fragmented edge', 'Rodenticide pathway', 'Suburban expansion'], pressurePoints: [[80, 68], [58, 85], [16, 63]], peak: ['spring', 'fall'], seasonNotes: ['Courtship calls and nest building make woodland raptors easier to detect.', 'Dense foliage shifts observation toward calls, alarm notes, and edge flights.', 'Broad-wing migration and leaf color open long views through the canopy.', 'Resident owls and accipiters concentrate around persistent prey.'], question: 'How does a broken canopy change both ambush cover and prey movement?' },
+    { kind: 'boreal', short: 'Boreal forest', accent: '#bae6fd', sky: '#1e3a8a', ground: '#14532d', metrics: [96, 18, 34, 18], structure: ['Conifer crown', 'Snow corridor', 'Bog opening'], structurePoints: [[42, 24], [57, 76], [78, 61]], raptorPoints: [[38, 28], [68, 37], [25, 54]], preyLabels: ['Snowshoe hare', 'Red squirrel', 'Lemming'], preyPoints: [[54, 78], [73, 55], [31, 85]], pressureLabels: ['Drying forest', 'Beetle outbreak', 'Forestry edge'], pressurePoints: [[72, 30], [46, 48], [18, 67]], peak: ['winter'], seasonNotes: ['Territorial goshawks return while snow still structures the forest floor.', 'Long daylight supports nesting, but the dense canopy hides most movement.', 'Juveniles disperse and conifer edges become productive listening stations.', 'Irruptive owls and exposed tracks make this the signature field season.'], question: 'Which prey cycle could turn a quiet boreal winter into an owl irruption?' },
+    { kind: 'grassland', short: 'Plains grassland', accent: '#fde047', sky: '#0e7490', ground: '#713f12', metrics: [8, 94, 18, 58], structure: ['Open flight lane', 'Native grass cover', 'Prairie-dog colony'], structurePoints: [[52, 30], [39, 73], [72, 78]], raptorPoints: [[39, 28], [67, 39], [24, 49]], preyLabels: ['Prairie dog', 'Ground squirrel', 'Vole'], preyPoints: [[70, 80], [45, 79], [28, 84]], pressureLabels: ['Cropland conversion', 'Wind corridor', 'Colony removal'], pressurePoints: [[17, 72], [78, 36], [61, 82]], peak: ['spring', 'fall', 'winter'], seasonNotes: ['Nesting buteos and displaying harriers use the broad horizon.', 'Heat shimmer favors early-morning routes and active-insect prey.', 'Migration rides open-country lift along ridges and field edges.', 'Rough-legged hawks join residents over exposed rodent habitat.'], question: 'Why does a small patch of native grass matter in a mostly converted landscape?' },
+    { kind: 'mountain', short: 'Western mountain', accent: '#c4b5fd', sky: '#1e3a8a', ground: '#3f3f46', metrics: [48, 82, 22, 24], structure: ['Alpine ridge', 'Treeline mosaic', 'Mountain pass'], structurePoints: [[52, 24], [36, 63], [72, 48]], raptorPoints: [[48, 24], [70, 39], [28, 52]], preyLabels: ['Marmot', 'Ground squirrel', 'Grouse'], preyPoints: [[55, 78], [72, 75], [31, 68]], pressureLabels: ['Lead exposure', 'Turbine siting', 'Rising treeline'], pressurePoints: [[62, 80], [82, 49], [37, 57]], peak: ['fall'], seasonNotes: ['Snow retreat opens nesting cliffs and high-elevation prey patches.', 'Thermals connect valley floors with hunting ridges.', 'Mountain passes funnel migrants into countable flight lines.', 'Golden eagles remain visible while smaller migrants leave high country.'], question: 'How can one mountain pass concentrate birds from a very broad landscape?' },
+    { kind: 'coastal', short: 'Coastal edge', accent: '#67e8f9', sky: '#075985', ground: '#334155', metrics: [18, 88, 96, 64], structure: ['Sea cliff', 'Tidal edge', 'Nearshore current'], structurePoints: [[27, 48], [55, 73], [76, 67]], raptorPoints: [[34, 31], [66, 37], [21, 52]], preyLabels: ['Salmon', 'Waterfowl', 'Seabird'], preyPoints: [[69, 76], [48, 61], [80, 47]], pressureLabels: ['Fishing line', 'Plastic nest material', 'Mercury pathway'], pressurePoints: [[55, 79], [31, 58], [75, 70]], peak: ['fall', 'winter'], seasonNotes: ['Ospreys return to platforms as fish move toward shallow water.', 'Nesting activity is high, but busy recreation can disturb shorelines.', 'Coastal headlands funnel migrants and merlins follow shorebird flocks.', 'Salmon runs and waterfowl concentrations draw large eagles.'], question: 'Where do wind, fish movement, and cliff geometry create the best lookout?' },
+    { kind: 'tundra', short: 'Arctic tundra', accent: '#e0f2fe', sky: '#1e3a8a', ground: '#334155', metrics: [0, 100, 38, 8], structure: ['Open tundra', 'Snow polygon', 'Low-shrub patch'], structurePoints: [[48, 47], [67, 73], [28, 69]], raptorPoints: [[43, 27], [70, 38], [23, 51]], preyLabels: ['Lemming', 'Ptarmigan', 'Arctic hare'], preyPoints: [[53, 80], [73, 66], [27, 76]], pressureLabels: ['Early snowmelt', 'Permafrost thaw', 'Prey-cycle disruption'], pressurePoints: [[75, 58], [41, 83], [23, 72]], peak: ['summer'], seasonNotes: ['Returning migrants arrive before the ground is fully exposed.', 'Continuous daylight compresses courtship, nesting, and fledging into weeks.', 'Young birds leave as rapidly shortening days close the food window.', 'Most raptors depart; winter observations shift south during irruptions.'], question: 'How could earlier snowmelt break the timing between nesting and lemming abundance?' },
+    { kind: 'wetland', short: 'Wetland & swamp', accent: '#5eead4', sky: '#155e75', ground: '#134e4a', metrics: [52, 62, 100, 46], structure: ['Cypress crown', 'Open-water lane', 'Reed margin'], structurePoints: [[32, 31], [68, 64], [50, 76]], raptorPoints: [[34, 25], [69, 37], [22, 52]], preyLabels: ['Fish', 'Apple snail', 'Marsh vole'], preyPoints: [[70, 76], [51, 80], [29, 82]], pressureLabels: ['Drainage ditch', 'Nutrient runoff', 'Mercury buildup'], pressurePoints: [[18, 69], [59, 73], [78, 81]], peak: ['winter', 'spring'], seasonNotes: ['High water and nesting activity make flight lanes easy to read.', 'Dense vegetation hides prey while thermals favor soaring eagles.', 'Drawdown exposes feeding margins and concentrates fish.', 'Migrants and resident fish-eaters gather where open water persists.'], question: 'What happens to specialist predators when one wetland prey species disappears?' },
+    { kind: 'desert', short: 'Desert southwest', accent: '#fdba74', sky: '#9a3412', ground: '#713f12', metrics: [6, 98, 4, 38], structure: ['Rock lookout', 'Saguaro cavity', 'Dry wash'], structurePoints: [[67, 37], [31, 53], [53, 78]], raptorPoints: [[41, 29], [71, 42], [23, 48]], preyLabels: ['Kangaroo rat', 'Lizard', 'Jackrabbit'], preyPoints: [[48, 82], [69, 72], [28, 78]], pressureLabels: ['Solar footprint', 'Extreme heat', 'Habitat conversion'], pressurePoints: [[79, 67], [56, 38], [18, 72]], peak: ['winter', 'spring'], seasonNotes: ['Courtship and mild temperatures create the best broad daylight window.', 'Shift visits to dawn and dusk as heat suppresses prey and observer activity.', 'Monsoon pulses trigger insects and short bursts of prey abundance.', 'Cool days support cooperative Harris hawk hunts and long roadside surveys.'], question: 'How do shade, elevation, and time of day reshape the same desert food web?' },
+    { kind: 'tropical', short: 'Tropical coast', accent: '#f0abfc', sky: '#0f766e', ground: '#14532d', metrics: [88, 34, 78, 54], structure: ['Emergent canopy', 'Mangrove roots', 'Hammock opening'], structurePoints: [[48, 24], [70, 76], [28, 61]], raptorPoints: [[42, 27], [67, 39], [22, 51]], preyLabels: ['Apple snail', 'Tree frog', 'Coastal fish'], preyPoints: [[60, 80], [35, 69], [76, 70]], pressureLabels: ['Hurricane damage', 'Invasive species', 'Coastal development'], pressurePoints: [[73, 31], [46, 77], [17, 68]], peak: ['winter', 'spring'], seasonNotes: ['Dry-season water levels expose prey and concentrate observers.', 'Nesting and northbound movement overlap before summer storms.', 'Heat, rain, and hurricanes make access and visibility unpredictable.', 'Post-storm habitat changes can create both openings and severe losses.'], question: 'Which habitat layers recover first after a hurricane, and which raptors can adapt?' },
+    { kind: 'urban', short: 'Urban & suburban', accent: '#fda4af', sky: '#172554', ground: '#334155', metrics: [34, 52, 18, 100], structure: ['High-rise cliff', 'Park canopy', 'Green corridor'], structurePoints: [[69, 31], [35, 67], [55, 78]], raptorPoints: [[68, 26], [40, 45], [24, 56]], preyLabels: ['Rock pigeon', 'Rat', 'Tree squirrel'], preyPoints: [[65, 63], [49, 84], [28, 74]], pressureLabels: ['Glass collision', 'Rodenticide pathway', 'Traffic corridor'], pressurePoints: [[78, 47], [50, 83], [19, 80]], peak: ['spring', 'fall'], seasonNotes: ['Nest ledges and territorial behavior make breeding pairs conspicuous.', 'Leaf cover hides park hunters while fledglings explore buildings.', 'Green corridors funnel migrants through a dense built environment.', 'Bare trees reveal resident red-tails, Cooper hawks, and owls.'], question: 'Which urban structure acts like a cliff, and which one acts like a forest edge?' },
+    { kind: 'agriculture', short: 'Agricultural matrix', accent: '#facc15', sky: '#0e7490', ground: '#854d0e', metrics: [12, 92, 16, 88], structure: ['Field mosaic', 'Hedgerow refuge', 'Utility perch'], structurePoints: [[52, 67], [28, 58], [76, 41]], raptorPoints: [[43, 28], [70, 40], [24, 50]], preyLabels: ['Field vole', 'Rabbit', 'Grasshopper'], preyPoints: [[51, 82], [73, 76], [29, 81]], pressureLabels: ['Pesticide pathway', 'Hedgerow loss', 'Turbine corridor'], pressurePoints: [[54, 78], [23, 60], [82, 43]], peak: ['fall', 'winter'], seasonNotes: ['Planting and mowing rapidly change cover and prey exposure.', 'Tall crops reduce visibility; dawn edges remain productive.', 'Harvest exposes rodents and creates major short-term hunting windows.', 'Open fields concentrate rough-legs, harriers, and perched red-tails.'], question: 'Why can harvest briefly increase hunting success while reducing long-term habitat quality?' },
+    { kind: 'riparian', short: 'River corridor', accent: '#7dd3fc', sky: '#155e75', ground: '#365314', metrics: [68, 58, 92, 56], structure: ['Cottonwood canopy', 'River channel', 'Floodplain edge'], structurePoints: [[35, 31], [63, 70], [77, 55]], raptorPoints: [[39, 26], [68, 38], [23, 51]], preyLabels: ['River fish', 'Frog', 'Songbird'], preyPoints: [[68, 78], [49, 79], [28, 67]], pressureLabels: ['Water diversion', 'Runoff plume', 'Dam barrier'], pressurePoints: [[78, 65], [55, 76], [18, 60]], peak: ['spring', 'fall', 'winter'], seasonNotes: ['High flows, returning fish, and nesting birds energize the corridor.', 'Shade and water make rivers productive even in hot landscapes.', 'Linear tree cover guides migrants through otherwise open terrain.', 'Open water and fish carcasses concentrate eagles where rivers remain ice-free.'], question: 'How does a narrow river corridor connect habitats that are far apart?' }
+  ];
+
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.41: LESSON PLAN LIBRARY — classroom activities
@@ -4462,6 +4684,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
     ]
   };
+
+
+  var MYSTERY_VISUALS = [
+    { kind: 'red-tail', code: 'RTHA', shape: 'buteo', habitat: 'meadow', scene: 'Open meadow', time: 'Midday thermal', light: 'day', flight: 'soar', accent: '#fb923c', sky: '#075985', ground: '#365314', correct: [0], signature: 'Rufous tail', x: 520, y: 205, scale: 1.05, markers: [[590,210],[405,185],[740,355],[170,380]] },
+    { kind: 'kestrel', code: 'AMKE', shape: 'falcon', habitat: 'wire', scene: 'Agricultural edge', time: 'Late afternoon', light: 'day', flight: 'perched', accent: '#f59e0b', sky: '#1d4ed8', ground: '#3f6212', correct: [0], signature: 'Tail bob on wire', x: 555, y: 245, scale: .82, markers: [[575,285],[620,205],[515,330]] },
+    { kind: 'coopers', code: 'COHA', shape: 'accipiter', habitat: 'forest', scene: 'Dense woodland', time: 'Morning chase', light: 'day', flight: 'dash', accent: '#60a5fa', sky: '#164e63', ground: '#14532d', correct: [1], signature: 'Short wing, long tail', x: 500, y: 235, scale: .9, markers: [[500,312],[388,218],[690,360]] },
+    { kind: 'bald-eagle', code: 'BAEA', shape: 'eagle', habitat: 'river', scene: 'Alaskan salmon river', time: 'November daylight', light: 'day', flight: 'perched', accent: '#f8fafc', sky: '#0c4a6e', ground: '#1e3a2f', correct: [0], signature: 'White head, dark body', x: 590, y: 220, scale: 1.22, markers: [[610,176],[575,280],[320,390]] },
+    { kind: 'rough-leg', code: 'RLHA', shape: 'buteo', habitat: 'snow', scene: 'Snow-covered field', time: 'Winter morning', light: 'day', flight: 'hover', accent: '#e2e8f0', sky: '#475569', ground: '#cbd5e1', correct: [1], signature: 'Dark belly band', x: 510, y: 205, scale: 1, markers: [[500,246],[410,178],[730,365]] },
+    { kind: 'harrier', code: 'NOHA', shape: 'harrier', habitat: 'marsh', scene: 'Midwestern marsh', time: 'January dusk', light: 'twilight', flight: 'low', accent: '#c4b5fd', sky: '#312e81', ground: '#3f6212', correct: [0], signature: 'Low V-wing flight', x: 520, y: 260, scale: .92, markers: [[455,205],[535,244],[720,365],[250,372]] },
+    { kind: 'osprey', code: 'OSPR', shape: 'osprey', habitat: 'river', scene: 'Pacific salmon stream', time: 'Overcast day', light: 'day', flight: 'hunt', accent: '#67e8f9', sky: '#155e75', ground: '#14532d', correct: [0], signature: 'White underwing, M profile', x: 510, y: 205, scale: 1.02, markers: [[510,236],[385,198],[265,375]] },
+    { kind: 'elf-owl', code: 'ELOW', shape: 'owl', habitat: 'desert', scene: 'Sonoran desert', time: 'Twilight', light: 'twilight', flight: 'perched', accent: '#fbbf24', sky: '#581c87', ground: '#92400e', correct: [0], signature: 'Tiny tufted owl', x: 560, y: 250, scale: .7, markers: [[555,210],[635,305],[270,350]] },
+    { kind: 'harpy', code: 'HAEA', shape: 'eagle', habitat: 'rainforest', scene: 'Panamanian canopy', time: 'Humid daylight', light: 'day', flight: 'perched', accent: '#86efac', sky: '#065f46', ground: '#14532d', correct: [0], signature: 'Massive canopy talons', x: 565, y: 215, scale: 1.28, markers: [[550,325],[600,174],[235,205],[710,375]] },
+    { kind: 'snowy', code: 'SNOW', shape: 'owl', habitat: 'coast', scene: 'Massachusetts dune', time: 'February morning', light: 'day', flight: 'perched', accent: '#f8fafc', sky: '#0369a1', ground: '#a16207', correct: [0], signature: 'Large white owl', x: 565, y: 250, scale: 1.02, markers: [[570,210],[595,286],[260,360],[780,355]] },
+    { kind: 'barred', code: 'BDOW', shape: 'owl', habitat: 'conifer', scene: 'Vermont conifers', time: 'Dawn', light: 'twilight', flight: 'perched', accent: '#d6d3d1', sky: '#334155', ground: '#14532d', correct: [0], signature: 'Rounded, barred owl', x: 560, y: 240, scale: .95, markers: [[555,198],[570,285],[235,260]] },
+    { kind: 'plains-falcon', code: 'GYRF', shape: 'falcon', habitat: 'plains', scene: 'Winter Great Plains', time: 'Bright winter day', light: 'day', flight: 'stoop', accent: '#bfdbfe', sky: '#1e40af', ground: '#713f12', correct: [1,2], signature: 'Pale high-speed falcon', x: 535, y: 205, scale: 1.02, markers: [[525,195],[440,158],[705,350],[245,365]] }
+  ];
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.41: REGIONAL FIELD GUIDES — North America by region
@@ -5780,6 +6018,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     ]
   };
 
+  // Schematic palettes and field marks for the interactive Age & Plumage laboratory.
+  var AGE_PLUMAGE_VISUALS = [
+    { kind: 'bald-eagle', code: 'BAEA', family: 'eagle', accent: '#fde68a', maturityYears: 5, variation: 'Intermediate eagles can show irregular white anywhere on the body; no single patch proves exact age.', stages: [
+      { head: '#594537', body: '#3f3028', wing: '#30251f', tail: '#4b3a30', pattern: 'speckle', tailPattern: 'banded', marks: ['Dark brown head', 'Irregular pale mottling', 'Dark mottled tail'] },
+      { head: '#8b7965', body: '#3f3028', wing: '#342821', tail: '#9a8a76', pattern: 'mixed', tailPattern: 'mixed', marks: ['Paling head', 'Patchy white body marks', 'Mixed brown-white tail'] },
+      { head: '#f8fafc', body: '#352923', wing: '#2b211d', tail: '#f8fafc', pattern: 'clean', tailPattern: 'clean', marks: ['White head', 'Uniform dark body', 'White tail'] }
+    ] },
+    { kind: 'golden-eagle', code: 'GOEA', family: 'eagle', accent: '#fbbf24', maturityYears: 5, variation: 'White wing and tail patches shrink irregularly through successive molts.', stages: [
+      { head: '#6b4f2f', body: '#33251c', wing: '#2b2019', tail: '#f1f5f9', pattern: 'patches', tailPattern: 'banded', marks: ['Dark crown', 'White wing patches', 'White tail base'] },
+      { head: '#8a693e', body: '#36281f', wing: '#2f241c', tail: '#75614c', pattern: 'mixed', tailPattern: 'banded', marks: ['Golden nape emerging', 'Reduced wing patches', 'Shrinking white tail base'] },
+      { head: '#a77a3f', body: '#30231b', wing: '#271d18', tail: '#30231b', pattern: 'clean', tailPattern: 'clean', marks: ['Golden nape', 'Uniform dark wings', 'Dark adult tail'] }
+    ] },
+    { kind: 'red-tail', code: 'RTHA', family: 'buteo', accent: '#fb923c', maturityYears: 2, variation: 'Light and dark morphs alter body color, but tail pattern remains the most useful age cue.', stages: [
+      { head: '#735438', body: '#d6c4a8', wing: '#5c402d', tail: '#b9a58b', pattern: 'streaks', tailPattern: 'banded', marks: ['Brown head', 'Vertical chest streaks', 'Finely banded brown tail'] },
+      { head: '#725036', body: '#d8c8ad', wing: '#583c2a', tail: '#b96b3e', pattern: 'mixed', tailPattern: 'mixed', marks: ['Adult-like head', 'Belly band forming', 'Mixed banded-rufous tail'] },
+      { head: '#6b4a32', body: '#e3d3b8', wing: '#513624', tail: '#b94e2f', pattern: 'bars', tailPattern: 'clean', marks: ['Pale head', 'Dark belly band', 'Solid rufous tail'] }
+    ] },
+    { kind: 'coopers', code: 'COHA', family: 'accipiter', accent: '#6ee7b7', maturityYears: 2, variation: 'Juvenile Cooper\'s and sharp-shinned hawks overlap; head projection and tail shape must support plumage clues.', stages: [
+      { head: '#6b4b34', body: '#ded2bc', wing: '#5a3f2d', tail: '#67513f', pattern: 'streaks', tailPattern: 'banded', marks: ['Brown hood', 'Vertical chest streaks', 'Broadly banded long tail'] },
+      { head: '#64748b', body: '#d6c7b0', wing: '#52606f', tail: '#596574', pattern: 'mixed', tailPattern: 'banded', marks: ['Gray entering crown', 'Mixed streaks and bars', 'Rounded banded tail'] },
+      { head: '#475569', body: '#d8b39b', wing: '#465569', tail: '#4b596b', pattern: 'bars', tailPattern: 'banded', marks: ['Dark gray cap', 'Horizontal rufous bars', 'Rounded white-tipped tail'] }
+    ] },
+    { kind: 'sharp-shinned', code: 'SSHA', family: 'accipiter', accent: '#a7f3d0', maturityYears: 2, variation: 'Size is unreliable alone; use the small rounded head and squarer tail together with plumage.', stages: [
+      { head: '#694a33', body: '#d8ccb8', wing: '#543b2b', tail: '#65503f', pattern: 'streaks', tailPattern: 'banded', marks: ['Small brown head', 'Vertical chest streaks', 'Square-ended banded tail'] },
+      { head: '#64748b', body: '#d6c5ae', wing: '#526071', tail: '#566273', pattern: 'mixed', tailPattern: 'banded', marks: ['Gray crown emerging', 'Streak-to-bar transition', 'Square tail tip'] },
+      { head: '#475569', body: '#d9b09a', wing: '#465568', tail: '#4a5869', pattern: 'bars', tailPattern: 'banded', marks: ['Rounded gray head', 'Fine horizontal bars', 'Square white-tipped tail'] }
+    ] },
+    { kind: 'peregrine', code: 'PEFA', family: 'falcon', accent: '#60a5fa', maturityYears: 3, variation: 'Fresh juveniles are warm brown; wear and molt gradually reveal slate upperparts and finer barring.', stages: [
+      { head: '#4b362b', body: '#d6c1a2', wing: '#513b30', tail: '#594235', pattern: 'streaks', tailPattern: 'banded', marks: ['Brown hood and malar', 'Vertical chest streaks', 'Brown banded tail'] },
+      { head: '#3f4654', body: '#c9b59e', wing: '#465263', tail: '#4c5665', pattern: 'mixed', tailPattern: 'banded', marks: ['Dark malar retained', 'Mixed streaks and bars', 'Slate feathers entering tail'] },
+      { head: '#293548', body: '#d5c7b7', wing: '#40536c', tail: '#3f5067', pattern: 'bars', tailPattern: 'banded', marks: ['Black hood and mustache', 'Fine horizontal barring', 'Slate banded tail'] }
+    ] },
+    { kind: 'merlin', code: 'MERL', family: 'falcon', accent: '#93c5fd', maturityYears: 2, variation: 'Adult males become bluer than females; geography also changes overall darkness.', stages: [
+      { head: '#62442f', body: '#d1b792', wing: '#5b402e', tail: '#624737', pattern: 'streaks', tailPattern: 'banded', marks: ['Brown crown', 'Warm vertical streaking', 'Strong tail bands'] },
+      { head: '#526071', body: '#ceb697', wing: '#506071', tail: '#536172', pattern: 'mixed', tailPattern: 'banded', marks: ['Cooler crown', 'Streaks becoming finer', 'Gray entering tail'] },
+      { head: '#44566d', body: '#d6bea0', wing: '#455a73', tail: '#475b73', pattern: 'bars', tailPattern: 'banded', marks: ['Blue-gray crown', 'Fine dark markings', 'Narrow pale tail bands'] }
+    ] },
+    { kind: 'kestrel', code: 'AMKE', family: 'falcon', accent: '#f9a8d4', maturityYears: 1, variation: 'Young birds quickly resemble adults; sex-specific wing and back colors are more useful than age after the first molt.', stages: [
+      { head: '#70839c', body: '#d49a68', wing: '#8b5d3b', tail: '#a96740', pattern: 'speckle', tailPattern: 'banded', marks: ['Twin dark face marks', 'Warm spotted back', 'Banded rufous tail'] },
+      { head: '#758ca8', body: '#d99b67', wing: '#647b99', tail: '#b56a3f', pattern: 'speckle', tailPattern: 'banded', marks: ['Adult face pattern', 'Sex colors emerging', 'Adult-like tail'] },
+      { head: '#7d91aa', body: '#df9b64', wing: '#607a9a', tail: '#ba6b3d', pattern: 'speckle', tailPattern: 'banded', marks: ['Two black mustaches', 'Sex-specific wing color', 'Rufous barred tail'] }
+    ] },
+    { kind: 'great-horned', code: 'GHOW', family: 'owl', accent: '#c4b5fd', maturityYears: 2, variation: 'Down disappears within months; after that, molt and wear often matter more than calendar age.', stages: [
+      { head: '#b7a78f', body: '#c9bca5', wing: '#a4937d', tail: '#9d8c77', pattern: 'down', tailPattern: 'soft', marks: ['Rounded downy head', 'Fluffy pale body', 'Short soft tail'] },
+      { head: '#806d59', body: '#a58e73', wing: '#7a6652', tail: '#765f4c', pattern: 'mixed', tailPattern: 'banded', marks: ['Ear tufts emerging', 'Mixed down and bars', 'Adult tail bands forming'] },
+      { head: '#665442', body: '#9a8167', wing: '#6f5a46', tail: '#6e5845', pattern: 'bars', tailPattern: 'banded', marks: ['Prominent ear tufts', 'Dense horizontal barring', 'Broad barred tail'] }
+    ] },
+    { kind: 'barred', code: 'BDOW', family: 'owl', accent: '#d8b4fe', maturityYears: 2, variation: 'Young birds become adult-like rapidly; retained down around the head is the clearest early clue.', stages: [
+      { head: '#c6b9a4', body: '#d2c6b3', wing: '#aa9981', tail: '#9b8973', pattern: 'down', tailPattern: 'soft', marks: ['Round downy face', 'Pale fluffy chest', 'Short soft tail'] },
+      { head: '#8c7c68', body: '#b4a18a', wing: '#87745f', tail: '#806c58', pattern: 'mixed', tailPattern: 'banded', marks: ['Facial rings forming', 'Mixed vertical and horizontal marks', 'Tail bands appearing'] },
+      { head: '#786653', body: '#ad957b', wing: '#77614e', tail: '#715b49', pattern: 'bars', tailPattern: 'banded', marks: ['Dark concentric face', 'Barred chest with streaked belly', 'Evenly barred tail'] }
+    ] },
+    { kind: 'snowy', code: 'SNOW', family: 'owl', accent: '#e0f2fe', maturityYears: 2, variation: 'Adult females remain barred while many adult males whiten substantially; sex and age must be considered together.', stages: [
+      { head: '#e2e8f0', body: '#e5e7eb', wing: '#dce3ea', tail: '#dfe6ec', pattern: 'bars', tailPattern: 'banded', marks: ['Dark crown marks', 'Heavy body barring', 'Strong tail bars'] },
+      { head: '#f1f5f9', body: '#edf2f7', wing: '#e6edf3', tail: '#edf2f7', pattern: 'mixed', tailPattern: 'banded', marks: ['Paler crown', 'Reduced dark barring', 'Fading tail bars'] },
+      { head: '#ffffff', body: '#f8fafc', wing: '#f1f5f9', tail: '#ffffff', pattern: 'clean', tailPattern: 'clean', marks: ['White face', 'Male white or female barred', 'Mostly white tail'] }
+    ] },
+    { kind: 'goshawk', code: 'NOGO', family: 'accipiter', accent: '#94a3b8', maturityYears: 2, variation: 'The bold white eyebrow develops with the adult gray plumage and becomes a major field mark.', stages: [
+      { head: '#654832', body: '#d6c6ad', wing: '#533b2c', tail: '#604938', pattern: 'streaks', tailPattern: 'banded', marks: ['Brown head', 'Heavy vertical streaking', 'Brown banded long tail'] },
+      { head: '#5b6573', body: '#d1c5b5', wing: '#536171', tail: '#566372', pattern: 'mixed', tailPattern: 'banded', marks: ['Eyebrow emerging', 'Mixed streaks and bars', 'Gray entering tail'] },
+      { head: '#3f4c5e', body: '#c8ccd1', wing: '#46566a', tail: '#48576a', pattern: 'bars', tailPattern: 'banded', marks: ['Bold white eyebrow', 'Fine gray barring', 'Gray banded long tail'] }
+    ] },
+    { kind: 'osprey', code: 'OSPR', family: 'osprey', accent: '#7dd3fc', maturityYears: 3, variation: 'Juveniles often show buff edging on upperwing feathers; head-stripe strength varies among individuals.', stages: [
+      { head: '#f8fafc', body: '#f1f5f9', wing: '#705845', tail: '#6b5341', pattern: 'speckle', tailPattern: 'banded', marks: ['Soft dark eye stripe', 'Buff-edged wing coverts', 'Finely banded tail'] },
+      { head: '#ffffff', body: '#f8fafc', wing: '#5d493a', tail: '#5f4a3a', pattern: 'mixed', tailPattern: 'banded', marks: ['Dark eye stripe sharpening', 'Buff edges wearing away', 'Adult tail pattern forming'] },
+      { head: '#ffffff', body: '#f8fafc', wing: '#49382e', tail: '#513e32', pattern: 'clean', tailPattern: 'banded', marks: ['Bold dark eye stripe', 'Dark upperwing pattern', 'Clean white underparts'] }
+    ] },
+    { kind: 'harpy', code: 'HAEA', family: 'harpy', accent: '#a5b4fc', maturityYears: 5, variation: 'The crown and upperparts darken gradually over several years; intermediate birds can look patchy.', stages: [
+      { head: '#f1f5f9', body: '#f8fafc', wing: '#cbd5e1', tail: '#cbd5e1', pattern: 'clean', tailPattern: 'banded', marks: ['Pale crest', 'Mostly white body', 'Light gray banded tail'] },
+      { head: '#94a3b8', body: '#e2e8f0', wing: '#7c8796', tail: '#7f8997', pattern: 'mixed', tailPattern: 'banded', marks: ['Darkening crest', 'Gray breast band forming', 'Stronger tail bands'] },
+      { head: '#475569', body: '#f1f5f9', wing: '#4b5563', tail: '#566171', pattern: 'bars', tailPattern: 'banded', marks: ['Dark split crest', 'Bold gray breast band', 'Dark barred tail'] }
+    ] }
+  ];
+
+
   // ───────────────────────────────────────────────────────────
   // NEW v0.46: MOLT ATLAS — annual feather replacement
   // ───────────────────────────────────────────────────────────
@@ -5805,6 +6118,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     ]
   };
 
+  // Species-specific calendar and visual profiles for the Molt Atlas.
+  var MOLT_VISUALS = [
+    { kind: 'peregrine', code: 'PEFA', accent: '#67e8f9', sky: '#0c4a6e', ground: '#312e81', activeMonths: [5,6,7,8,9], peakMonths: [6,7], primaryMonths: [5,5,6,6,7,7,8,8,9,9], bodyMonths: [5,6], tailMonths: [8,9], wing: 'Long, pointed high-speed wing', pace: 'Five-month sequential molt', tradeoff: 'Maintains pursuit flight while replacing the most aerodynamically demanding feathers.', question: 'Why would replacing both outermost primaries at once be especially costly for a peregrine?' },
+    { kind: 'bald-eagle', code: 'BAEA', accent: '#fde68a', sky: '#1e3a8a', ground: '#422006', activeMonths: [0,1,2,3,4,5,6,7,8,9,10,11], peakMonths: [3,4,5,6,7,8], primaryMonths: [3,4,5,6,7,8,9,10,0,2], bodyMonths: [3,4,5,6], tailMonths: [7,8,9], wing: 'Broad soaring wing with slotted tips', pace: 'Extended, sometimes multi-year cycle', tradeoff: 'Large feather mass slows replacement but spreads the aerodynamic cost across time.', question: 'How does a long lifespan change the advantage of a slower, multi-year molt?' },
+    { kind: 'red-tail', code: 'RTHA', accent: '#fb923c', sky: '#164e63', ground: '#7c2d12', activeMonths: [4,5,6,7,8,9], peakMonths: [5,6,7], primaryMonths: [4,4,5,5,6,6,7,8,8,9], bodyMonths: [4,5], tailMonths: [8,9], wing: 'Broad buteo wing built for soaring', pace: 'Six-month summer sequence', tradeoff: 'Thermal soaring reduces the need for continuous powered flight during peak molt.', question: 'How might abundant summer thermals buffer the cost of a growing primary?' },
+    { kind: 'coopers', code: 'COHA', accent: '#a7f3d0', sky: '#14532d', ground: '#1c1917', activeMonths: [4,5,6,7,8], peakMonths: [4,5,6], primaryMonths: [4,4,5,5,6,6,7,7,8,8], bodyMonths: [4,5], tailMonths: [7,8], wing: 'Short rounded wing and long steering tail', pace: 'Compressed five-month sequence', tradeoff: 'Forest maneuvering makes feather symmetry and tail condition especially important.', question: 'Why does a forest ambush hunter need exceptionally balanced replacement across both wings?' },
+    { kind: 'great-horned', code: 'GHOW', accent: '#c4b5fd', sky: '#312e81', ground: '#292524', activeMonths: [4,5,6,7,8], peakMonths: [5,6], primaryMonths: [4,4,5,5,6,6,7,7,8,8], bodyMonths: [4,5,6], tailMonths: [7,8], wing: 'Broad silent-flight wing', pace: 'Breeding-season overlap', tradeoff: 'Soft feather surfaces must be renewed without losing the acoustic advantage of quiet flight.', question: 'What is the hidden cost if worn velvet surfaces make an owl only slightly louder?' },
+    { kind: 'kestrel', code: 'AMKE', accent: '#f9a8d4', sky: '#1e3a8a', ground: '#713f12', activeMonths: [5,6,7,8], peakMonths: [6,7], primaryMonths: [5,5,5,6,6,6,7,7,8,8], bodyMonths: [5,6], tailMonths: [7,8], wing: 'Compact pointed hovering wing', pace: 'Fast four-month sequence', tradeoff: 'Small feather mass speeds renewal, but hovering still demands a highly functional wing.', question: 'Why can a smaller raptor finish molt faster without making molt energetically cheap?' },
+    { kind: 'snowy', code: 'SNOW', accent: '#e0f2fe', sky: '#1e3a8a', ground: '#334155', activeMonths: [5,6,7,8,9], peakMonths: [6,7,8], primaryMonths: [5,5,6,6,7,7,8,8,9,9], bodyMonths: [5,6,7], tailMonths: [8,9], wing: 'Broad Arctic wing with dense insulation', pace: 'Five-month Arctic sequence', tradeoff: 'Flight-feather renewal overlaps body-plumage changes and a very short Arctic food season.', question: 'How might a poor lemming year constrain both reproduction and feather replacement?' },
+    { kind: 'osprey', code: 'OSPR', accent: '#7dd3fc', sky: '#075985', ground: '#164e63', activeMonths: [4,5,6,7,8], peakMonths: [5,6,7], primaryMonths: [4,4,5,5,6,6,7,7,8,8], bodyMonths: [4,5], tailMonths: [7,8], wing: 'Long fish-hunting wing', pace: 'Post-breeding five-month sequence', tradeoff: 'Sequential renewal protects the lift and control needed to pull prey from water.', question: 'Which feather failure would be most dangerous during a heavy fish carry?' }
+  ];
+
+
   // ───────────────────────────────────────────────────────────
   // NEW v0.46: WING FORMULA + AERODYNAMIC DATA
   // ───────────────────────────────────────────────────────────
@@ -5818,7 +6144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     species: [
       { species: 'Peregrine falcon', formula: 'P10 > P9 > P8 > P7 > P6...', highAspect: 'Yes (~8)', notes: 'Long pointed wing. P10 (outermost) longest.' },
       { species: 'Cooper\'s hawk', formula: 'P3 > P4 > P5 > P2 > P6...', highAspect: 'No (~5)', notes: 'P3 longest; P2 longer than P6. Diagnostic for Cooper\'s vs sharp-shin.' },
-      { species: 'Sharp-shinned hawk', formula: 'P3 > P4 > P5 > P2 > P6...', highAspect: 'No (~5)', notes: 'Very similar to Cooper\'s. P3 longest. P2 shorter than P6 — diagnostic.' },
+      { species: 'Sharp-shinned hawk', formula: 'P3 > P4 > P5 > P6 > P2...', highAspect: 'No (~5)', notes: 'Very similar to Cooper\'s. P3 longest. P2 shorter than P6 — diagnostic.' },
       { species: 'Red-tailed hawk', formula: 'P3 > P4 > P5 > P6 > P2...', highAspect: 'Moderate (~6)', notes: 'P3 longest; broad pattern' },
       { species: 'Bald eagle', formula: 'P4 > P3 > P5 > P6 > P2...', highAspect: 'Moderate (~6)', notes: 'P4 longest; slotted tips characteristic' },
       { species: 'Vulture (Turkey)', formula: 'P3 > P4 > P5 > P6 > P7...', highAspect: 'Low (~5.5)', notes: 'Long P5-P7 for slotted lift' },
@@ -5826,6 +6152,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       { species: 'Great horned owl', formula: 'P7 > P6 > P5 > P4 > P8...', highAspect: 'Low (~4-5)', notes: 'Broad short wings; lower aspect ratio for forest hunting' }
     ]
   };
+
+  // Normalized teaching profiles for the interactive Wing Formula laboratory.
+  // Values are relative indices, not specimen measurements; wear, age, sex, and technique can shift field readings.
+  var WING_FORMULA_VISUALS = [
+    { kind: 'peregrine', code: 'PEFA', accent: '#60a5fa', lengths: [64,68,72,77,83,88,92,96,98,100], family: 'Falcon', shape: 'Pointed pursuit wing', flight: 'High-speed pursuit and stooping', diagnostic: 'Strong outer-primary emphasis; P10 forms the longest tip.' },
+    { kind: 'coopers', code: 'COHA', accent: '#6ee7b7', lengths: [88,94,100,98,96,91,84,76,68,60], family: 'Accipiter', shape: 'Rounded forest wing', flight: 'Rapid acceleration and obstacle-rich maneuvering', diagnostic: 'P3 is longest and P2 remains longer than P6.' },
+    { kind: 'sharp-shinned', code: 'SSHA', accent: '#a7f3d0', lengths: [85,88,100,98,96,91,82,74,66,58], family: 'Accipiter', shape: 'Compact rounded wing', flight: 'Tight pursuit through dense cover', diagnostic: 'P3 is longest, but P2 falls shorter than P6 in this teaching profile.' },
+    { kind: 'red-tail', code: 'RTHA', accent: '#fb923c', lengths: [84,89,100,98,96,93,87,80,72,64], family: 'Buteo', shape: 'Broad soaring wing', flight: 'Thermal soaring with short powered attacks', diagnostic: 'P3 leads a broad central plateau through P6.' },
+    { kind: 'bald-eagle', code: 'BAEA', accent: '#fde68a', lengths: [84,90,98,100,96,93,88,80,72,66], family: 'Eagle', shape: 'Broad slotted wing', flight: 'Efficient soaring and heavy-load lift', diagnostic: 'P4 is longest; separated outer tips support low-speed lift.' },
+    { kind: 'turkey-vulture', code: 'TUVU', accent: '#fca5a5', lengths: [83,88,100,98,96,94,92,86,78,71], family: 'Vulture', shape: 'Long slotted soaring wing', flight: 'Low-energy soaring in weak thermals', diagnostic: 'A long P3-P7 plateau creates a broad, fingered hand wing.' },
+    { kind: 'kestrel', code: 'AMKE', accent: '#f9a8d4', lengths: [62,65,69,74,80,86,92,96,100,98], family: 'Falcon', shape: 'Compact pointed wing', flight: 'Hovering, acceleration, and short pursuit', diagnostic: 'P9 narrowly exceeds P10 at the pointed wingtip.' },
+    { kind: 'great-horned', code: 'GHOW', accent: '#c4b5fd', lengths: [76,82,90,94,96,98,100,92,84,72], family: 'Owl', shape: 'Broad silent-flight wing', flight: 'Slow, quiet flight and woodland maneuvering', diagnostic: 'P7 is longest within a broad central arc; outer primaries shorten quickly.' }
+  ];
+
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.46: DATA REFERENCE TABLES
@@ -6116,7 +6456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.48: ILLUSTRATION GALLERY — 20 sketches
   // ───────────────────────────────────────────────────────────
   var ILLUSTRATIONS = {
-    intro: 'Hand-drawn illustration gallery. Each illustration captures a key biological or behavioral moment.',
+    intro: 'Illustrated field-guide gallery. Each original vector plate captures a key biological, behavioral, historical, or conservation moment.',
     images: [
       { title: 'Peregrine Stoop Trajectory', subject: 'Falco peregrinus', description: 'A peregrine descending in a log spiral, tracking prey at high speed. Wings tucked. 14g forces compress face muscles.', symbolism: 'Pure speed + lethal precision.' },
       { title: 'Owl Asymmetric Ear Plan', subject: 'Tyto alba', description: 'Top-down view showing left ear opening (downward-angled) + right ear opening (upward-angled). Sound triangulation diagram.', symbolism: 'Engineering elegance — how asymmetry solves 3D localization.' },
@@ -6140,6 +6480,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       { title: 'Citizens at Hawk Mountain', subject: 'Volunteer counters', description: 'Modern hawkwatch site with binoculars + counting clipboards. Multi-decade legacy.', symbolism: 'Citizen science in action.' }
     ]
   };
+
+  // Code-native field-guide art direction for the 20 gallery plates.
+  var ILLUSTRATION_VISUALS = [
+    { kind: 'stoop', category: 'Flight Science', accent: '#fbbf24', sky: '#0c4a6e', ground: '#451a03', lens: 'Follow the curved intercept path: the falcon keeps prey visually stable while gravity and tucked wings build speed.', marks: [{ label: 'Log-spiral path', x: 29, y: 24 }, { label: 'Tucked flight form', x: 61, y: 34 }, { label: 'Intercept point', x: 76, y: 76 }] },
+    { kind: 'sound', category: 'Sensory Worlds', accent: '#67e8f9', sky: '#172554', ground: '#312e81', lens: 'Compare the vertically offset ear openings. The timing difference between them reveals both direction and elevation.', marks: [{ label: 'Higher ear opening', x: 57, y: 36 }, { label: 'Lower ear opening', x: 39, y: 49 }, { label: 'Sound source', x: 76, y: 76 }] },
+    { kind: 'wing', category: 'Flight Science', accent: '#a7f3d0', sky: '#064e3b', ground: '#0f172a', lens: 'Read each separated primary as a small wing. The slots weaken the single large wingtip vortex that would otherwise waste lift.', marks: [{ label: 'Splayed primaries', x: 76, y: 31 }, { label: 'Load-bearing span', x: 45, y: 47 }, { label: 'Reduced vortices', x: 78, y: 69 }] },
+    { kind: 'talon', category: 'Anatomy & Diet', accent: '#fb7185', sky: '#3f1d2e', ground: '#1c1917', lens: 'Trace the opposing hallux and front toes. Their curved geometry closes force around prey instead of merely pressing down.', marks: [{ label: 'Opposing hallux', x: 25, y: 69 }, { label: 'Flexor tendons', x: 47, y: 31 }, { label: 'Force concentration', x: 69, y: 72 }] },
+    { kind: 'uv', category: 'Sensory Worlds', accent: '#e879f9', sky: '#312e81', ground: '#052e16', lens: 'The ultraviolet trail is not a literal glowing line to humans; it represents wavelengths a kestrel can use as a search cue.', marks: [{ label: 'UV scan cone', x: 47, y: 36 }, { label: 'Scent-mark trail', x: 52, y: 72 }, { label: 'Vole activity', x: 76, y: 70 }] },
+    { kind: 'pellet', category: 'Anatomy & Diet', accent: '#fdba74', sky: '#422006', ground: '#1c1917', lens: 'Separate digestible tissue from indigestible fur and bone. The pellet preserves a compact record of prey number and type.', marks: [{ label: 'Compressed fur matrix', x: 36, y: 35 }, { label: 'Rodent skull', x: 53, y: 53 }, { label: 'Long bones', x: 66, y: 67 }] },
+    { kind: 'kettle', category: 'Ecology & Migration', accent: '#fbbf24', sky: '#075985', ground: '#78350f', lens: 'Watch birds circle inside rising warm air, then peel away in the shared direction of travel without spending energy on flapping.', marks: [{ label: 'Thermal core', x: 49, y: 56 }, { label: 'Circling flock', x: 55, y: 28 }, { label: 'Glide departure', x: 78, y: 40 }] },
+    { kind: 'recovery', category: 'Conservation', accent: '#4ade80', sky: '#064e3b', ground: '#422006', lens: 'Read the plate left to right: intensive care created a bridge from four known birds to a self-sustaining wild population.', marks: [{ label: '1974 bottleneck', x: 20, y: 30 }, { label: 'Hands-on recovery', x: 48, y: 59 }, { label: 'Wild return', x: 78, y: 28 }] },
+    { kind: 'nest', category: 'Ecology & Migration', accent: '#f59e0b', sky: '#164e63', ground: '#3f2a16', lens: 'Layered sticks show annual additions. The structure is both nursery and long-term architectural record of the pair bond.', marks: [{ label: 'Annual stick layers', x: 49, y: 55 }, { label: 'Reinforced fork', x: 38, y: 77 }, { label: 'Active nest cup', x: 59, y: 42 }] },
+    { kind: 'snow', category: 'Sensory Worlds', accent: '#bae6fd', sky: '#1e3a8a', ground: '#0f172a', lens: 'Sound bends through the snowpack while prey remains invisible. The owl commits only after resolving a moving acoustic target.', marks: [{ label: 'Facial sound dish', x: 35, y: 32 }, { label: 'Snowpack boundary', x: 51, y: 59 }, { label: 'Subnivean tunnel', x: 67, y: 76 }] },
+    { kind: 'strike', category: 'Ecology & Migration', accent: '#fb7185', sky: '#0c4a6e', ground: '#312e81', lens: 'Velocity, timing, and prey evasion converge in a fraction of a second. The feather burst marks impact, not a prolonged chase.', marks: [{ label: 'Closing vector', x: 37, y: 31 }, { label: 'Impact zone', x: 65, y: 56 }, { label: 'Evasive roll', x: 76, y: 67 }] },
+    { kind: 'forest', category: 'Flight Science', accent: '#86efac', sky: '#14532d', ground: '#1c1917', lens: 'Short rounded wings and a long steering tail trade top speed for rapid turns through a visually cluttered forest corridor.', marks: [{ label: 'Compressed wingbeat', x: 48, y: 44 }, { label: 'Steering tail', x: 60, y: 54 }, { label: 'Weaving route', x: 72, y: 34 }] },
+    { kind: 'migration', category: 'Ecology & Migration', accent: '#67e8f9', sky: '#155e75', ground: '#365314', lens: 'Topography funnels many independent travelers into visible aerial rivers. Count rate changes with wind, hour, and cloud cover.', marks: [{ label: 'Coastal funnel', x: 34, y: 65 }, { label: 'Raptor columns', x: 56, y: 35 }, { label: 'Southbound flow', x: 78, y: 62 }] },
+    { kind: 'history', category: 'People & Culture', accent: '#fcd34d', sky: '#3f2a16', ground: '#1c1917', lens: 'The living eagle and regimental standard show how a wild animal became a portable civic symbol during wartime.', marks: [{ label: 'Old Abe', x: 56, y: 30 }, { label: 'Regimental standard', x: 42, y: 55 }, { label: '1864 campaign', x: 74, y: 77 }] },
+    { kind: 'urban', category: 'People & Culture', accent: '#fca5a5', sky: '#172554', ground: '#1e293b', lens: 'The cornice behaves like a cliff ledge while the park supplies prey. Urban success depends on this paired habitat geometry.', marks: [{ label: 'Cliff-like cornice', x: 65, y: 43 }, { label: 'Red-tail lookout', x: 70, y: 30 }, { label: 'Central Park prey base', x: 41, y: 76 }] },
+    { kind: 'condor', category: 'Conservation', accent: '#f97316', sky: '#431407', ground: '#292524', lens: 'The empty canyon below the final bird makes absence visible. Captive breeding temporarily moved the entire species behind human care.', marks: [{ label: 'Last wild bird', x: 51, y: 31 }, { label: 'Empty range', x: 47, y: 70 }, { label: '1987 threshold', x: 78, y: 78 }] },
+    { kind: 'falconry', category: 'People & Culture', accent: '#fbbf24', sky: '#1e3a8a', ground: '#422006', lens: 'Horse, hunter, and eagle form one mobile hunting system adapted to open terrain and a long tradition of reciprocal training.', marks: [{ label: 'Golden eagle partner', x: 61, y: 36 }, { label: 'Berkutchi glove', x: 52, y: 48 }, { label: 'Altai landscape', x: 28, y: 65 }] },
+    { kind: 'scholar', category: 'People & Culture', accent: '#c4b5fd', sky: '#4c1d95', ground: '#422006', lens: 'Observation, manuscript, and living falcon share the frame: a shift from inherited claims toward recorded natural history.', marks: [{ label: 'Living specimen', x: 70, y: 31 }, { label: 'Open manuscript', x: 50, y: 66 }, { label: 'Measured observation', x: 27, y: 42 }] },
+    { kind: 'carson', category: 'Conservation', accent: '#a7f3d0', sky: '#134e4a', ground: '#292524', lens: 'A fragile shell connects an invisible chemical pathway to visible reproductive failure, turning evidence into public action.', marks: [{ label: 'Thinned eggshell', x: 51, y: 54 }, { label: 'Chemical pathway', x: 25, y: 34 }, { label: 'Recovery horizon', x: 76, y: 30 }] },
+    { kind: 'citizen', category: 'Conservation', accent: '#67e8f9', sky: '#075985', ground: '#365314', lens: 'Many small observations become a long trend line. The plate links field identification, shared protocols, and conservation evidence.', marks: [{ label: 'Volunteer counters', x: 39, y: 55 }, { label: 'Standardized tally', x: 70, y: 56 }, { label: 'Migration sample', x: 57, y: 27 }] }
+  ];
+
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.48: SONG SCRIPTS — songs + poems + slogans
@@ -6381,9 +6746,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.50: MASTER INDEX — comprehensive section finder
   // ───────────────────────────────────────────────────────────
   var MASTER_INDEX = {
-    intro: 'The complete tool index. 80+ sections organized by category. Use as a master reference.',
+    intro: 'The complete tool index, organized by topic collection. Use it as a master reference.',
     categories: [
-      { name: '🎯 Hands-on Labs', sections: ['Hunt Sim (3D)', 'Talon Mechanics', 'Vision Lab', 'Flight Physics', 'Stoop Calculator', 'Silent Flight', 'Day Eye vs Night Eye', 'Hearing Lab', 'Pellet Lab', 'Spiral Trajectory', 'Acuity Demo', 'Predictor', 'Wing Formula', 'Math Lab', 'Wing Loading Lab'] },
+      { name: '🎯 Hands-on Labs', sections: ['Hunt Sim (3D)', 'Strategy Designer', 'Talon Mechanics', 'Vision Lab', 'Flight Physics', 'Stoop Calculator', 'Silent Flight', 'Day Eye vs Night Eye', 'Hearing Lab', 'Pellet Lab', 'Spiral Trajectory', 'Acuity Demo', 'Predictor', 'Wing Formula', 'Math Lab', 'Wing Loading Lab'] },
       { name: '🦅 Species Information', sections: ['Species Roster', 'Species Deep Profiles (20)', 'Anatomy Atlas', 'Anatomy', 'Age & Plumage Guide', 'Comparative Anatomy', 'Roster Duel', 'Field ID', 'Field ID Quiz', 'ID Mystery Cases'] },
       { name: '🌳 Behavior & Ecology', sections: ['Hunting Strategies', 'Behavior Repertoire', 'Lifecycle', 'Pellet ID Key', 'Nest-Build Cookbook', 'Prey Atlas', 'Ecology & Food Webs', 'Calls & Vocalizations', 'Audio Guide', 'Molt Atlas'] },
       { name: '🌍 Conservation', sections: ['Conservation', 'Recovery Case Studies', 'Climate Change Impact', 'Threats Database', 'Habitat Restoration Cookbook', 'Population & Demographics', 'IUCN Status Atlas', 'Public Engagement'] },
@@ -6446,7 +6811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     quests: [
       { name: '🌱 First Steps', goal: 'Visit 5 different sections', xp: 50, badge: 'Curious Apprentice', tip: 'Start with Hub, then Hunt Sim, then any 3 others.' },
       { name: '🦅 Species Master', goal: 'View all 20 species deep profiles', xp: 200, badge: 'Species Scholar', tip: 'Use the Species Roster to navigate.' },
-      { name: '🎯 Hunter\'s Eye', goal: 'Achieve >80% on Field ID Quiz (28 questions)', xp: 250, badge: 'Sharp Identifier', tip: 'Practice in Field ID + Mystery Cases first.' },
+      { name: '🎯 Hunter\'s Eye', goal: 'Achieve >80% on the 70-question Field ID Quiz', xp: 250, badge: 'Sharp Identifier', tip: 'Practice in Field ID + Mystery Cases first.' },
       { name: '📚 Glossary Maven', goal: 'Mark 50+ glossary terms as "known" in flashcards', xp: 150, badge: 'Vocabulary Expert', tip: 'Use flashcards mode in Glossary.' },
       { name: '🌐 World Traveler', goal: 'View all 15 World Tour destinations', xp: 100, badge: 'Globe-Trotter', tip: 'Click through each destination in World Tour.' },
       { name: '🏛 Conservation Hero', goal: 'Read all 16 Mythbusters + all 12 expert spotlights', xp: 200, badge: 'Conservation Advocate', tip: 'Bookmark key facts for sharing.' },
@@ -6957,7 +7322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ═══════════════════════════════════════════════════════════
   window.StemLab.registerTool('raptorHunt', {
     title: 'Raptor Hunt: Predator Physics + Biology',
-    description: 'Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 8 species roster from peregrine to harpy.',
+    description: 'Three.js stoop simulator + deep science of raptor hunt mechanics: talon grip force, vision, flight physics, silent flight, and the DDT-era recovery story. 20-species roster from peregrine to harpy.',
     category: 'science',
     icon: '🦅',
     render: function(ctx) {
@@ -7187,6 +7552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'hub', label: 'Hub', icon: '🦅' },
         { id: 'roster', label: __alloT('stem.raptorhunt.species_roster', 'Species Roster'), icon: '📋' },
         { id: 'hunt', label: __alloT('stem.raptorhunt.hunt_sim_3d', 'Hunt Sim (3D)'), icon: '🎯' },
+        { id: 'strategyHunt', label: __alloT('stem.raptorhunt.strategy_designer', 'Strategy Designer'), icon: '🧭' },
         { id: 'talons', label: __alloT('stem.raptorhunt.talon_mechanics', 'Talon Mechanics'), icon: '🪝' },
         { id: 'vision', label: __alloT('stem.raptorhunt.vision_lab', 'Vision Lab'), icon: '👁️' },
         { id: 'flight', label: __alloT('stem.raptorhunt.flight_physics', 'Flight Physics'), icon: '🪶' },
@@ -7289,7 +7655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { id: 'species', label: __alloT('stem.raptorhunt.species_id', 'Species & ID'), icon: '🦅', desc: __alloT('stem.raptorhunt.identify_compare_profile_quiz', 'Identify, compare, profile + quiz'), color: 'amber',
           sections: ['roster', 'species20', 'comparative', 'fieldid', 'mystery', 'quiz', 'agecoloration', 'molt', 'wingformula', 'banding_codes'] },
         { id: 'labs', label: __alloT('stem.raptorhunt.labs_physics', 'Labs & Physics'), icon: '🔬', desc: __alloT('stem.raptorhunt.hands_on_simulations_calculations', 'Hands-on simulations + calculations'), color: 'cyan',
-          sections: ['hunt', 'talons', 'vision', 'flight', 'stoop', 'silent', 'hearing', 'spiral', 'acuity', 'predictor', 'mathlab', 'flight_dynamics', 'anatomy'] },
+          sections: ['hunt', 'strategyHunt', 'talons', 'vision', 'flight', 'stoop', 'silent', 'hearing', 'spiral', 'acuity', 'predictor', 'mathlab', 'flight_dynamics', 'anatomy'] },
         { id: 'biology', label: __alloT('stem.raptorhunt.behavior_biology', 'Behavior & Biology'), icon: '🐭', desc: __alloT('stem.raptorhunt.how_raptors_live_hunt_and_grow', 'How raptors live, hunt, and grow'), color: 'emerald',
           sections: ['senses', 'lifecycle', 'behavior', 'hunting', 'anatomyatlas', 'physiology', 'preyatlas', 'calls', 'audioguide', 'ecology', 'evolution'] },
         { id: 'conservation', label: __alloT('stem.raptorhunt.conservation_2', 'Conservation'), icon: '🌍', desc: __alloT('stem.raptorhunt.threats_recovery_and_what_to_do', 'Threats, recovery, and what to do'), color: 'teal',
@@ -7370,6 +7736,139 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         return null;
       }
 
+      var contentSectionCount = SECTIONS.filter(function(section) { return section.id !== 'hub'; }).length;
+      var speciesCount = SPECIES.length;
+      var quizQuestionCount = QUIZ_QUESTIONS.length;
+      var interactiveSectionIds = {
+        hunt: true, strategyHunt: true, talons: true, vision: true, flight: true,
+        stoop: true, silent: true, hearing: true, pellet: true, spiral: true,
+        acuity: true, predictor: true, mathlab: true, flight_dynamics: true,
+        anatomy: true, quiz: true, mystery: true, scenarios: true, rescue: true,
+        wingformula: true
+      };
+
+      function openCollectionSection(sid) {
+        var section = findSection(sid);
+        if (!section) return;
+        setRH(function(cur) {
+          var visited = Object.assign({}, cur.visited || {});
+          visited[sid] = (visited[sid] || 0) + 1;
+          var recent = (cur.recentlyViewed || []).filter(function(id) { return id !== sid; });
+          recent.push(sid);
+          if (recent.length > 20) recent = recent.slice(-20);
+          return Object.assign({}, cur, {
+            activeSection: sid,
+            activeCategory: SECTION_TO_CATEGORY[sid] || cur.activeCategory,
+            sectionSearch: '',
+            visited: visited,
+            recentlyViewed: recent
+          });
+        });
+        rhAnnounce(section.label + ' opened');
+      }
+
+      function renderCategoryLanding(category) {
+        var visited = rh.visited || {};
+        var sections = category.sections.map(findSection).filter(Boolean);
+        var visitedCount = sections.filter(function(section) { return (visited[section.id] || 0) > 0; }).length;
+        var progress = sections.length ? Math.round((visitedCount / sections.length) * 100) : 0;
+        var recent = Array.isArray(rh.recentlyViewed) ? rh.recentlyViewed.slice().reverse() : [];
+        var resumeSection = null;
+        for (var i = 0; i < recent.length; i++) {
+          if (category.sections.indexOf(recent[i]) !== -1) {
+            resumeSection = findSection(recent[i]);
+            if (resumeSection) break;
+          }
+        }
+        resumeSection = resumeSection || sections[0];
+        var hasProgress = visitedCount > 0;
+        var titleId = 'rh-collection-title-' + category.id;
+        return h('div', {
+          className: 'rh-collection-page',
+          'data-raptor-category-landing': category.id,
+          'data-collection-tone': category.color
+        },
+          h('section', { className: 'rh-collection-hero', 'aria-labelledby': titleId },
+            h('div', { className: 'rh-collection-main' },
+              h('div', { className: 'rh-collection-kicker' }, __alloT('stem.raptorhunt.topic_collection', 'Topic collection')),
+              h('div', { className: 'rh-collection-title-row' },
+                h('div', { className: 'rh-collection-icon', 'aria-hidden': 'true' }, category.icon),
+                h('div', null,
+                  h('h1', { id: titleId, className: 'rh-collection-title' }, category.label),
+                  h('p', { className: 'rh-collection-desc' }, category.desc + '. Choose a station below or continue where you left off.')
+                )
+              ),
+              h('div', { className: 'rh-collection-actions' },
+                resumeSection && h('button', {
+                  type: 'button',
+                  onClick: function() { openCollectionSection(resumeSection.id); },
+                  className: 'rh-collection-action rh-collection-action-primary',
+                  'data-raptor-category-primary': hasProgress ? 'continue' : 'start',
+                  'aria-label': (hasProgress ? 'Continue with ' : 'Start with ') + resumeSection.label
+                }, (hasProgress ? 'Continue: ' : 'Start: ') + resumeSection.label + '  →'),
+                h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    setRH(function(cur) { return Object.assign({}, cur, { activeSection: 'hub', activeCategory: null, sectionSearch: '' }); });
+                    rhAnnounce('All topic collections');
+                  },
+                  className: 'rh-collection-action rh-collection-action-secondary'
+                }, 'All collections')
+              )
+            ),
+            h('aside', { className: 'rh-collection-progress-card', 'aria-label': category.label + ' collection progress' },
+              h('div', { className: 'rh-collection-progress-head' },
+                h('span', null, __alloT('stem.raptorhunt.collection_progress', 'Collection progress')),
+                h('strong', null, progress + '%')
+              ),
+              h('div', { className: 'rh-collection-progress-track', role: 'progressbar', 'aria-label': category.label + ' sections visited', 'aria-valuenow': visitedCount, 'aria-valuemin': 0, 'aria-valuemax': sections.length },
+                h('span', { style: { width: progress + '%' } })
+              ),
+              h('div', { className: 'rh-collection-progress-copy' },
+                h('strong', null, visitedCount + ' of ' + sections.length),
+                h('span', null, visitedCount === 1 ? 'station explored' : 'stations explored')
+              ),
+              resumeSection && h('div', { className: 'rh-collection-next' },
+                h('span', null, hasProgress ? 'Resume station' : 'Recommended start'),
+                h('strong', null, resumeSection.icon + ' ' + resumeSection.label)
+              )
+            )
+          ),
+          h('section', { className: 'rh-collection-directory', 'aria-labelledby': 'rh-collection-directory-title-' + category.id },
+            h('div', { className: 'rh-collection-directory-head' },
+              h('div', null,
+                h('div', { className: 'rh-collection-directory-kicker' }, __alloT('stem.raptorhunt.field_stations', 'Field stations')),
+                h('h2', { id: 'rh-collection-directory-title-' + category.id }, 'Explore ' + category.label)
+              ),
+              h('span', null, sections.length + (sections.length === 1 ? ' station' : ' stations'))
+            ),
+            h('div', { className: 'rh-collection-grid' }, sections.map(function(section, index) {
+              var sectionVisited = (visited[section.id] || 0) > 0;
+              var sectionType = interactiveSectionIds[section.id] ? 'Interactive lab' : 'Field guide';
+              var sectionState = sectionVisited ? 'visited' : (resumeSection && resumeSection.id === section.id ? 'next' : 'new');
+              return h('button', {
+                key: section.id,
+                type: 'button',
+                onClick: function() { openCollectionSection(section.id); },
+                className: 'rh-collection-card',
+                'data-raptor-category-section': section.id,
+                'data-section-state': sectionState,
+                'aria-label': section.label + '. ' + sectionType + '. ' + (sectionVisited ? 'Previously opened.' : 'Not opened yet.')
+              },
+                h('span', { className: 'rh-collection-card-index', 'aria-hidden': 'true' }, String(index + 1).padStart(2, '0')),
+                h('span', { className: 'rh-collection-card-icon', 'aria-hidden': 'true' }, section.icon),
+                h('span', { className: 'rh-collection-card-copy' },
+                  h('strong', null, section.label),
+                  h('span', null, sectionType)
+                ),
+                h('span', { className: 'rh-collection-card-status' }, sectionVisited ? 'Opened ✓' : (sectionState === 'next' ? 'Start here' : 'New')),
+                h('span', { className: 'rh-collection-card-arrow', 'aria-hidden': 'true' }, '→')
+              );
+            }))
+          )
+        );
+      }
+
 
 
       // ────────────────────────────────────────────────────────
@@ -7377,7 +7876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       function renderHub() {
         var hubVisited = rh.visited || {};
-        var hubVisitedCount = Object.keys(hubVisited).filter(function(k) { return hubVisited[k] > 0; }).length;
+        var hubVisitedCount = Object.keys(hubVisited).filter(function(k) { return k !== 'hub' && findSection(k) && hubVisited[k] > 0; }).length;
         var hubSpecies = sp || findSpecies('peregrine');
         var hubHuntStats = huntStats[selectedSpecies] || { catches: 0, attempts: 0, bestRun: 0 };
         var hubSuccess = hubHuntStats.attempts ? Math.round((hubHuntStats.catches / hubHuntStats.attempts) * 100) + '% success' : 'ready to fly';
@@ -7388,24 +7887,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           { label: __alloT('stem.raptorhunt.selected_species', 'Selected species'), value: hubSpecies.name, note: hubSpecies.family },
           { label: __alloT('stem.raptorhunt.flight_profile', 'Flight profile'), value: (hubSpecies.stoopMph || 0) + ' mph stoop', note: (hubSpecies.visualAcuityX || 1) + 'x human acuity' },
           { label: __alloT('stem.raptorhunt.hunt_record', 'Hunt record'), value: (hubHuntStats.catches || 0) + ' catches', note: hubSuccess },
-          { label: __alloT('stem.raptorhunt.tour_progress_2', 'Tour progress'), value: hubVisitedCount + '/' + SECTIONS.length, note: __alloT('stem.raptorhunt.sections_opened', 'sections opened') }
+          { label: __alloT('stem.raptorhunt.tour_progress_2', 'Tour progress'), value: hubVisitedCount + '/' + contentSectionCount, note: __alloT('stem.raptorhunt.sections_opened', 'sections opened') }
         ];
         function openHubSection(sid) {
-          var sec = findSection(sid);
+          openCollectionSection(sid);
+        }
+        function openHubCategory(categoryId) {
+          var category = CATEGORIES.find(function(item) { return item.id === categoryId; });
+          if (!category) return;
           setRH(function(cur) {
-            var visited = Object.assign({}, cur.visited || {});
-            visited[sid] = (visited[sid] || 0) + 1;
-            var recent = (cur.recentlyViewed || []).slice();
-            recent.push(sid);
-            if (recent.length > 20) recent = recent.slice(-20);
-            return Object.assign({}, cur, {
-              activeSection: sid,
-              visited: visited,
-              recentlyViewed: recent,
-              activeCategory: SECTION_TO_CATEGORY[sid] || cur.activeCategory
-            });
+            return Object.assign({}, cur, { activeSection: 'hub', activeCategory: categoryId, sectionSearch: '' });
           });
-          rhAnnounce((sec ? sec.label : sid) + ' opened');
+          rhAnnounce(category.label + ' collection opened');
         }
         return h('div', { className: 'space-y-4' },
           h('section', { className: 'rh-command-deck bg-gradient-to-br from-amber-950/60 via-slate-900/70 to-cyan-950/45 border border-amber-700/40 rounded-xl p-5 shadow-lg shadow-amber-950/20', 'data-raptorhunt-command': 'true', 'aria-labelledby': 'rh-command-title' },
@@ -7415,7 +7908,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'rh-hero-eyebrow' }, __alloT('stem.raptorhunt.field_station', 'Interactive field station')),
                 h('h2', { id: 'rh-command-title', className: 'rh-hero-title text-xl font-bold text-amber-200' }, __alloT('stem.raptorhunt.raptor_hunt_predator_physics_biology', 'Raptor Hunt: Predator Physics + Biology')),
                 h('div', { className: 'rh-hero-lede text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.hunt_as_a_peregrine_at_240_mph_crush_b', 'Hunt as a peregrine at 240 mph. Crush bones at 530 psi as a harpy. See vole urine trails in UV like a kestrel. Glide silently on owl feathers. Then study the biology that makes it all possible.')),
-                h('div', { className: 'text-xs text-amber-300/80 mt-2 font-semibold' }, __alloT('stem.raptorhunt.25_sections_20_species_6_interactive_l', '100+ sections · 25 species · 6 interactive labs · 3D flight missions · 70-question quiz')),
+                h('div', { className: 'text-xs text-amber-300/80 mt-2 font-semibold' }, CATEGORIES.length + ' collections · ' + contentSectionCount + ' sections · ' + speciesCount + ' species · 3D flight missions · ' + quizQuestionCount + '-question quiz'),
                 h('div', { className: 'rh-hero-actions' },
                   h('button', {
                     type: 'button',
@@ -7496,7 +7989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 return h('button', {
                   key: c.id,
                   type: 'button',
-                  onClick: function() { openHubSection(c.sections[0]); },
+                  onClick: function() { openHubCategory(c.id); },
                   className: 'rh-category-card text-left border active:scale-[0.98] ' + theme.card,
                   'aria-label': c.label + ', ' + categoryVisited + ' of ' + c.sections.length + ' sections visited'
                 },
@@ -7538,7 +8031,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('span', { className: 'rh-quick-number', 'aria-hidden': 'true' }, '02'),
               h('div', { className: 'text-3xl mb-2' }, '📋'),
               h('div', { className: 'font-bold text-amber-200' }, __alloT('stem.raptorhunt.species_roster_2', 'Species Roster')),
-              h('div', { className: 'text-xs text-amber-100/80 mt-1 pr-6' }, __alloT('stem.raptorhunt.20_species_peregrine_harpy_golden_bald', '20 species: peregrine, harpy, golden, bald, red-tail, goshawk, owl, osprey, kestrel, Cooper\'s, snowy, gyrfalcon, kite. Mass, talon force, vision, hunt style.')),
+              h('div', { className: 'text-xs text-amber-100/80 mt-1 pr-6' }, 'Compare ' + speciesCount + ' species by mass, talon force, vision, habitat, and hunting style.'),
               h('span', { className: 'rh-quick-arrow', 'aria-hidden': 'true' }, '→')
             ),
             h('button', {
@@ -8481,6 +8974,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var flightRecord = flightSession
           ? (huntStats[flightSession.speciesId] || { catches: 0, attempts: 0, bestRun: 0 })
           : null;
+        var readoutTargetState = simUI.targetState || 'search';
+        var readoutTargetLabels = {
+          search: 'Scanning',
+          align: 'Align target',
+          close: 'Close distance',
+          stoop: 'Dive window',
+          ready: 'Strike ready',
+          recovering: 'Recovering',
+          off: 'Assist off'
+        };
+        var readoutTargetLabel = readoutTargetLabels[readoutTargetState] || 'Scanning';
+        var readoutAim = Math.round(Math.max(0, Math.min(1, Number(simUI.targetAlign) || 0)) * 100);
+        var readoutRange = Math.round(Math.max(0, Math.min(1, Number(simUI.targetRange) || 0)) * 100);
+        var readoutState = simUI.paused
+          ? 'paused'
+          : simUI.missionState === 'success'
+            ? 'success'
+            : simUI.missionState === 'failed'
+              ? 'failed'
+              : readoutTargetState;
+        var readoutStateLabel = simUI.paused
+          ? 'Paused'
+          : simUI.missionState === 'success'
+            ? 'Mission complete'
+            : simUI.missionState === 'failed'
+              ? 'Mission ended'
+              : readoutTargetLabel;
+        var readoutCards = [
+          ['Status', simUI.paused ? 'Paused' : 'Airborne', simUI.missionState === 'active' ? 'Live mission' : 'Review run', 'status'],
+          ['Target', readoutTargetLabel, simUI.targetHint || 'Scan ahead for prey', 'target'],
+          ['Strike', simUI.strikeReady === false ? 'Recovering' : (readoutTargetState === 'ready' ? 'Ready' : 'Build lock'), simUI.strikeReady === false ? 'Cooldown active' : 'F key / Strike', 'strike'],
+          ['Camera', simUI.camera === 'fp' ? 'First person' : 'Chase view', simUI.zoom ? 'Acuity zoom on' : 'Wide field', 'camera'],
+          ['Assist', simUI.assist ? 'Target assist' : 'Manual scan', simUI.assist ? 'Guidance on' : 'Guidance off', 'assist'],
+          ['Renderer', simUI.fps > 0 ? simUI.fps + ' FPS' : 'Measuring', graphicsQuality + ' quality', 'renderer']
+        ];
         function holdFlightButton(label, keyName, extraClass, ariaLabel) {
           function setHeld(pressed, element) {
             sendHuntCommand('hold', { key: keyName, pressed: pressed });
@@ -8988,6 +9516,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           h('button', { type: 'button', onClick: advanceHuntMission, className: 'rh-flight-btn' }, 'Next mission'),
                           h('button', { type: 'button', onClick: editHuntFlight, className: 'rh-flight-btn' }, 'Change setup')
                         )
+                      )
+                    )
+                  ),
+                  h('section', {
+                    className: 'rh-flight-readout',
+                    'data-raptor-flight-readout': 'true',
+                    'data-readout-state': readoutState,
+                    role: 'region',
+                    'aria-labelledby': 'rh-flight-readout-title'
+                  },
+                    h('div', { className: 'rh-flight-readout-head' },
+                      h('div', { className: 'min-w-0' },
+                        h('div', { className: 'rh-flight-readout-kicker' }, 'Flight instruments'),
+                        h('strong', { id: 'rh-flight-readout-title', className: 'rh-flight-readout-title' }, flightSpecies.name + ' · ' + flightMission.name),
+                        h('div', { className: 'rh-flight-readout-copy' }, simUI.targetHint || 'Scan ahead for prey')
+                      ),
+                      h('span', { className: 'rh-flight-readout-state', 'data-readout-state': readoutState }, readoutStateLabel)
+                    ),
+                    h('div', { className: 'rh-flight-readout-grid', role: 'list', 'aria-label': 'Current flight instruments' },
+                      readoutCards.map(function(card) {
+                        return h('div', {
+                          key: card[0],
+                          className: 'rh-flight-readout-item',
+                          'data-readout-kind': card[3],
+                          role: 'listitem',
+                          'aria-label': card[0] + ': ' + card[1] + '. ' + card[2]
+                        },
+                          h('span', { className: 'rh-flight-readout-label' }, card[0]),
+                          h('strong', { className: 'rh-flight-readout-value' }, card[1]),
+                          h('span', { className: 'rh-flight-readout-detail' }, card[2])
+                        );
+                      })
+                    ),
+                    h('div', { className: 'rh-flight-readout-lock', role: 'group', 'aria-label': 'Target lock progress' },
+                      h('div', { className: 'rh-flight-readout-lock-head' },
+                        h('span', null, 'Target lock'),
+                        h('strong', null, readoutAim + '% aim · ' + readoutRange + '% range')
+                      ),
+                      h('div', { className: 'rh-flight-readout-lock-row' },
+                        h('span', null, 'Aim'),
+                        h('span', { className: 'rh-flight-readout-lock-track', 'aria-hidden': 'true' }, h('span', { className: 'rh-flight-readout-lock-fill', style: { width: readoutAim + '%' } })),
+                        h('output', null, readoutAim + '%')
+                      ),
+                      h('div', { className: 'rh-flight-readout-lock-row' },
+                        h('span', null, 'Range'),
+                        h('span', { className: 'rh-flight-readout-lock-track', 'aria-hidden': 'true' }, h('span', { className: 'rh-flight-readout-lock-fill', style: { width: readoutRange + '%' } })),
+                        h('output', null, readoutRange + '%')
                       )
                     )
                   ),
@@ -14394,6 +14969,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             // Verdict logic
             var gripRatio = predator.talonForcePsi / prey.skullPsi;
             var reachRatio = predator.talonLengthMm / prey.vitalDepthMm;
+            var gripGaugePct = Math.max(0, Math.min(100, (gripRatio / 3) * 100));
+            var reachGaugePct = Math.max(0, Math.min(100, (reachRatio / 3) * 100));
+            var gripGaugeState = gripRatio >= 2 ? 'clear' : gripRatio >= 1 ? 'partial' : 'risk';
+            var reachGaugeState = reachRatio >= 1 ? 'clear' : reachRatio >= 0.8 ? 'partial' : 'risk';
             var verdict, verdictColor, verdictEmoji, verdictDetail;
             if (gripRatio >= 2 && reachRatio >= 1) {
               verdict = 'CLEAN KILL'; verdictEmoji = '⚡'; verdictColor = 'emerald';
@@ -14468,6 +15047,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   'Grip ratio: ' + gripRatio.toFixed(2) + '× · Reach ratio: ' + reachRatio.toFixed(2) + '× (need both ≥ ~1.0 for clean kill)'
                 )
               ),
+              // Visual ratio check: the fill uses a shared 0–3× scale and the marker shows the clean-kill threshold.
+              h('div', {
+                className: 'rh-talon-ratio-panel',
+                'data-raptor-talon-ratios': 'true',
+                role: 'group',
+                'aria-label': 'Predator to prey mechanics comparison'
+              },
+                h('div', { className: 'rh-talon-ratio-head' },
+                  h('span', null, 'Mechanics check'),
+                  h('strong', null, 'Clean-kill markers: 1× reach · 2× grip')
+                ),
+                [
+                  { key: 'grip', label: 'Grip force', ratio: gripRatio, pct: gripGaugePct, state: gripGaugeState, threshold: '2× clean-kill threshold' },
+                  { key: 'reach', label: 'Talon reach', ratio: reachRatio, pct: reachGaugePct, state: reachGaugeState, threshold: '1× vital-depth threshold' }
+                ].map(function(metric) {
+                  return h('div', {
+                    key: metric.key,
+                    className: 'rh-talon-ratio-row',
+                    'data-ratio-kind': metric.key,
+                    'data-ratio-state': metric.state
+                  },
+                    h('div', { className: 'rh-talon-ratio-label' },
+                      h('span', null, metric.label),
+                      h('strong', null, metric.ratio.toFixed(2) + '×')
+                    ),
+                    h('div', {
+                      className: 'rh-talon-ratio-track',
+                      role: 'meter',
+                      'aria-label': metric.label,
+                      'aria-valuemin': 0,
+                      'aria-valuemax': 3,
+                      'aria-valuenow': Math.max(0, Math.min(3, metric.ratio)),
+                      'aria-valuetext': metric.label + ' ratio ' + metric.ratio.toFixed(2) + ' times'
+                    },
+                      h('span', { className: 'rh-talon-ratio-fill', style: { width: metric.pct + '%' } })
+                    ),
+                    h('div', { className: 'rh-talon-ratio-scale', 'aria-hidden': 'true' },
+                      h('span', null, '0×'),
+                      h('span', null, '3×')
+                    ),
+                    h('div', { className: 'rh-talon-ratio-caption' }, metric.threshold)
+                  );
+                })
+              ),
               // Verdict
               h('div', { className: 'bg-' + verdictColor + '-900/40 border-2 border-' + verdictColor + '-500 rounded-xl p-4 text-center' },
                 h('div', { className: 'text-4xl mb-1' }, verdictEmoji),
@@ -14487,6 +15110,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: VISION
       // ────────────────────────────────────────────────────────
       function renderVision() {
+        var visionFieldMax = Math.max.apply(null, VISION_FACTS.speciesComparison.map(function(item) { return item.fieldDeg; }));
         return h('div', { className: 'rh-lab-page rh-lab-page-vision space-y-4' },
           h('div', { className: 'rh-lab-banner rh-lab-banner-vision bg-gradient-to-br from-indigo-900/40 to-violet-900/40 border border-indigo-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-indigo-200 mb-2 tracking-tight' }, VISION_FACTS.header),
@@ -14507,6 +15131,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'text-xs font-mono text-amber-300 w-32 text-right' }, item.acuity + '× · ' + item.fovea + ' fovea · ' + item.fieldDeg + '°')
               );
             })
+          ),
+          // Field balance map: make the total scanning arc and depth-locked overlap legible at a glance.
+          h('div', {
+            className: 'rh-vision-field-map',
+            'data-raptor-vision-field-map': 'true',
+            role: 'region',
+            'aria-label': 'Visual field balance comparison'
+          },
+            h('div', { className: 'rh-vision-field-head' },
+              h('div', null,
+                h('span', null, 'Field balance'),
+                h('strong', null, 'Scan wide · lock deep')
+              ),
+              h('div', { className: 'rh-vision-field-legend', 'aria-label': 'Visual field legend' },
+                h('span', { className: 'rh-vision-field-legend-item' },
+                  h('span', { className: 'rh-vision-field-swatch', 'aria-hidden': 'true' }),
+                  'Total field'
+                ),
+                h('span', { className: 'rh-vision-field-legend-item' },
+                  h('span', { className: 'rh-vision-field-swatch rh-vision-field-swatch-binocular', 'aria-hidden': 'true' }),
+                  'Binocular overlap'
+                )
+              )
+            ),
+            VISION_FACTS.speciesComparison.map(function(item, i) {
+              var totalPct = Math.max(0, Math.min(100, (item.fieldDeg / visionFieldMax) * 100));
+              var binocularPct = Math.max(0, Math.min(100, (item.binocularDeg / item.fieldDeg) * 100));
+              return h('div', {
+                key: i,
+                className: 'rh-vision-field-row',
+                'data-vision-field-row': item.name,
+                'data-vision-color': item.color
+              },
+                h('div', { className: 'rh-vision-field-label' },
+                  h('strong', null, item.name),
+                  h('span', null, item.acuity + '× acuity')
+                ),
+                h('div', {
+                  className: 'rh-vision-field-track',
+                  role: 'img',
+                  'aria-label': item.name + ' visual field: ' + item.fieldDeg + ' degrees total, ' + item.binocularDeg + ' degrees binocular overlap'
+                },
+                  h('span', { className: 'rh-vision-field-total', style: { width: totalPct + '%' } },
+                    h('span', { className: 'rh-vision-field-binocular', style: { width: binocularPct + '%' } })
+                  )
+                ),
+                h('div', { className: 'rh-vision-field-values' },
+                  h('strong', null, item.fieldDeg + '° total'),
+                  h('span', null, item.binocularDeg + '° depth')
+                )
+              );
+            }),
+            h('div', { className: 'rh-vision-field-note' }, 'Bar width = total scanning field; bright center = binocular overlap for depth.')
           ),
           // Key points
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -14620,6 +15297,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: FLIGHT
       // ────────────────────────────────────────────────────────
       function renderFlight() {
+        var selectedFlightProfile = findSpecies(rh.selectedSpecies || 'peregrine');
+        var profileLoadState = selectedFlightProfile.wingLoading >= 8 ? 'speed' : selectedFlightProfile.wingLoading <= 4 ? 'lift' : 'balanced';
+        var profileAspectState = selectedFlightProfile.aspectRatio >= 8 ? 'soar' : selectedFlightProfile.aspectRatio <= 5.5 ? 'agile' : 'mixed';
+        var profileLoadText = profileLoadState === 'speed' ? 'High-load speed' : profileLoadState === 'lift' ? 'Low-load lift' : 'Mid-load balance';
+        var profileAspectText = profileAspectState === 'soar' ? 'High-AR glide' : profileAspectState === 'agile' ? 'Low-AR agility' : 'Mid-AR versatility';
         return h('div', { className: 'rh-lab-page rh-lab-page-flight space-y-4' },
           h('div', { className: 'rh-lab-banner rh-lab-banner-flight bg-gradient-to-br from-cyan-900/40 to-sky-900/40 border border-cyan-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-cyan-200 mb-2 tracking-tight' }, FLIGHT_FACTS.header),
@@ -14629,7 +15311,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded-xl p-4' },
             h('div', { className: 'text-sm font-bold text-amber-300 mb-3' }, __alloT('stem.raptorhunt.wing_loading_aspect_ratio_species_map', '✈ Wing Loading × Aspect Ratio (species map)')),
             h('div', { className: 'text-xs text-slate-400 mb-3' }, __alloT('stem.raptorhunt.x_wing_loading_kg_m_high_fast_heavy_y_', 'X: wing loading (kg/m², high = fast/heavy). Y: aspect ratio (high = soaring efficient, low = forest agile).')),
-            h('div', { className: 'relative bg-slate-950/60 rounded-lg border border-slate-700/40', style: { height: '320px' } },
+          h('div', {
+            className: 'rh-flight-tradeoff-profile',
+            'data-raptor-flight-profile': 'true',
+            'data-profile-load': profileLoadState,
+            'data-profile-aspect': profileAspectState,
+            role: 'region',
+            'aria-label': 'Selected flight profile'
+          },
+            h('span', { className: 'rh-flight-tradeoff-profile-kicker' }, 'Selected profile'),
+            h('strong', { className: 'rh-flight-tradeoff-profile-name' }, selectedFlightProfile.emoji + ' ' + selectedFlightProfile.name),
+            h('span', { className: 'rh-flight-tradeoff-profile-stats' }, profileLoadText + ' · ' + profileAspectText + ' · ' + selectedFlightProfile.wingLoading.toFixed(1) + ' kg/m² · AR ' + selectedFlightProfile.aspectRatio.toFixed(1))
+          ),
+          h('div', { className: 'rh-flight-tradeoff-map relative bg-slate-950/60 rounded-lg border border-slate-700/40', 'data-raptor-flight-tradeoff-map': 'true', role: 'img', 'aria-label': 'Wing loading versus aspect ratio species map', style: { height: '320px' } },
+            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-soar', 'aria-hidden': 'true' }, 'SOAR + CLIMB'),
+            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-speed', 'aria-hidden': 'true' }, 'FAST + GLIDE'),
+            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-agile', 'aria-hidden': 'true' }, 'SLOW + AGILE'),
+            h('div', { className: 'rh-flight-map-quadrant rh-flight-map-quadrant-burst', 'aria-hidden': 'true' }, 'BURST + TURN'),
+            h('div', { className: 'rh-flight-map-guide rh-flight-map-guide-x', 'aria-hidden': 'true' }),
+            h('div', { className: 'rh-flight-map-guide rh-flight-map-guide-y', 'aria-hidden': 'true' }),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x0', 'aria-hidden': 'true' }, '18'),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x9', 'aria-hidden': 'true' }, '9'),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-x18', 'aria-hidden': 'true' }, '0'),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y0', 'aria-hidden': 'true' }, '0'),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y6', 'aria-hidden': 'true' }, '6'),
+            h('span', { className: 'rh-flight-map-axis-label rh-flight-map-axis-y12', 'aria-hidden': 'true' }, '12'),
               // Axes
               h('div', { className: 'absolute bottom-0 left-0 right-0 border-t border-slate-700/40' }),
               h('div', { className: 'absolute top-0 bottom-0 left-0 border-r border-slate-700/40' }),
@@ -14642,18 +15348,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var col = sp2.isOwl ? '#a5b4fc' :
                           sp2.family === 'Falconidae' ? '#fb923c' :
                           sp2.family === 'Pandionidae' ? '#67e8f9' : '#fde047';
+                var isProfile = sp2.id === selectedFlightProfile.id;
                 return h('div', {
                   key: i,
-                  className: 'absolute transition-all',
+                  className: 'rh-flight-map-point absolute transition-all' + (isProfile ? ' z-10' : ''),
+                  'data-map-selected': isProfile ? 'true' : 'false',
                   style: { left: x + '%', top: y + '%', transform: 'translate(-50%, -50%)' }
                 },
-                  h('div', { className: 'flex flex-col items-center cursor-help', title: sp2.name + ' (loading ' + sp2.wingLoading + ' / AR ' + sp2.aspectRatio + ')' },
+                  h('div', { className: 'flex flex-col items-center cursor-help' + (isProfile ? ' rh-flight-map-point-selected' : ''), title: sp2.name + ' (loading ' + sp2.wingLoading + ' / AR ' + sp2.aspectRatio + ')' },
                     h('div', { className: 'text-xl', style: { textShadow: '0 0 6px #000' } }, sp2.emoji),
                     h('div', { className: 'text-[9px] font-mono', style: { color: col, textShadow: '0 0 4px #000' } }, sp2.name.split(' ')[0])
                   )
                 );
               })
             )
+          ),
+          h('div', { className: 'rh-flight-tradeoff-note' },
+            h('strong', null, 'Read the map: '),
+            'move right for more speed and stall resistance; move up for longer, more efficient glides. The highlighted profile is the species currently selected in Raptor Hunt.'
           ),
           // Flight type cards
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
@@ -14805,6 +15517,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var tToTerminal = vTerminal / 9.81;
         // KE at terminal
         var ke = 0.5 * v.mass * vTerminal * vTerminal;
+        var impactScaleMax = 12000;
+        function impactScalePct(joules) {
+          return Math.max(0, Math.min(100, (Math.log(Math.max(1, joules)) / Math.log(impactScaleMax)) * 100));
+        }
         return h('div', { className: 'space-y-4' },
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 to-red-900/40 border border-orange-700/40 rounded-xl p-4' },
             h('div', { className: 'text-lg font-bold text-orange-200 mb-2 tracking-tight' }, STOOP_FACTS.header),
@@ -14886,6 +15602,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'text-xs text-yellow-200' }, __alloT('stem.raptorhunt.kinetic_energy', 'Kinetic Energy')),
               h('div', { className: 'text-3xl font-bold text-amber-300 my-1 tracking-tight' }, ke.toFixed(0)),
               h('div', { className: 'text-xs text-slate-400' }, __alloT('stem.raptorhunt.joules_at_impact', 'joules at impact'))
+            )
+          ),
+          h('div', {
+            className: 'rh-stoop-impact-panel',
+            'data-raptor-stoop-impact': 'true',
+            role: 'region',
+            'aria-label': 'Impact energy comparison'
+          },
+            h('div', { className: 'rh-stoop-impact-head' },
+              h('div', null,
+                h('span', { className: 'rh-stoop-impact-kicker' }, 'Impact scale'),
+                h('strong', { className: 'rh-stoop-impact-title' }, 'Where does this dive land?')
+              ),
+              h('span', { className: 'rh-stoop-impact-value' }, ke.toFixed(0) + ' J')
+            ),
+            h('div', {
+              className: 'rh-stoop-impact-track',
+              role: 'meter',
+              'aria-label': 'Current kinetic energy at impact',
+              'aria-valuemin': 0,
+              'aria-valuemax': impactScaleMax,
+              'aria-valuenow': Math.max(0, Math.min(impactScaleMax, ke)),
+              'aria-valuetext': ke.toFixed(0) + ' joules at impact'
+            },
+              h('span', { className: 'rh-stoop-impact-current', style: { left: impactScalePct(ke) + '%' } },
+                h('span', { className: 'rh-stoop-impact-current-dot', 'aria-hidden': 'true' }),
+                h('span', { className: 'rh-stoop-impact-current-label' }, 'Current')
+              ),
+              [
+                { id: 'baseball', label: 'Baseball', value: 120 },
+                { id: 'bullet', label: '.22 bullet', value: 150 },
+                { id: 'peregrine', label: 'Peregrine', value: 5000 },
+                { id: 'harpy', label: 'Harpy', value: 10000 }
+              ].map(function(marker) {
+                return h('span', { key: marker.id, className: 'rh-stoop-impact-marker', 'data-impact-marker': marker.id, style: { left: impactScalePct(marker.value) + '%' }, 'aria-hidden': 'true' },
+                  h('span', { className: 'rh-stoop-impact-marker-label' }, marker.label)
+                );
+              })
+            ),
+            h('div', { className: 'rh-stoop-impact-axis', 'aria-hidden': 'true' },
+              h('span', null, '1 J'),
+              h('span', null, '10 J'),
+              h('span', null, '100 J'),
+              h('span', null, '1 kJ'),
+              h('span', null, '10 kJ')
+            ),
+            h('div', { className: 'rh-stoop-impact-note' },
+              h('strong', null, 'Log scale: '),
+              'the everyday references stay visible while the raptor energy jumps into the thousands of joules.'
             )
           ),
           h('div', { className: 'bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 text-xs text-slate-300' },
@@ -15044,6 +15809,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 )
               )
             )
+          ),
+          h('div', { className: 'rh-silent-stack', 'data-raptor-silent-stack': 'true', role: 'region', 'aria-label': 'Owl silent-flight mechanism sequence' },
+            h('div', { className: 'rh-silent-stack-head' },
+              h('div', null, h('span', null, 'Signal path'), h('strong', null, 'From airflow to stealth')),
+              h('span', null, '3 features / 1 hunt advantage')
+            ),
+            h('div', { className: 'rh-silent-stack-flow' }, [
+              { step: '01', title: 'Break', label: 'Comb edge', copy: 'Splits the flow transition', tone: 'violet' },
+              { step: '02', title: 'Absorb', label: 'Soft fringe', copy: 'Soaks up trailing vortices', tone: 'indigo' },
+              { step: '03', title: 'Dampen', label: 'Velvet surface', copy: 'Quiets feather friction', tone: 'purple' },
+              { step: '04', title: 'Shift', label: 'Above prey band', copy: 'Mouse hears less', tone: 'emerald' }
+            ].map(function(stage, i) {
+              var node = h('div', { key: stage.step, className: 'rh-silent-stack-node', 'data-silent-tone': stage.tone },
+                h('span', { className: 'rh-silent-stack-node-step' }, stage.step),
+                h('strong', { className: 'rh-silent-stack-node-title' }, stage.title),
+                h('span', { className: 'rh-silent-stack-node-label' }, stage.label),
+                h('span', { className: 'rh-silent-stack-node-copy' }, stage.copy)
+              );
+              if (i === 0) return node;
+              return [h('span', { key: 'arrow-' + stage.step, className: 'rh-silent-stack-arrow', 'aria-hidden': 'true' }, '>'), node];
+            })
+            ),
+            h('div', { className: 'rh-silent-stack-foot' }, h('strong', null, 'Airflow enters at left. '), 'Each feature removes a different part of the noise pathway before it reaches the prey.')
           ),
           // Frequency callout
           h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded-xl p-4' },
@@ -16320,7 +17108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.field_id_quiz_2', 'Field ID Quiz')),
                   h('div', { className: 'text-sm text-amber-100/80 mt-1' }, __alloT('stem.raptorhunt.active_retrieval_practice_across_silho', 'Active retrieval practice across silhouettes, behavior, talon mechanics, vision, flight physics, and conservation. Each question has a detailed explanation — wrong answers are the best teachers.')),
-                  h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, __alloT('stem.raptorhunt.18_questions_3_difficulty_bands_explan', '18 questions · 3 difficulty bands · explanations included'))
+                  h('div', { className: 'text-xs text-amber-300/70 mt-2 italic' }, quizQuestionCount + ' questions · 3 difficulty bands · explanations included')
                 )
               )
             ),
@@ -18442,8 +19230,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   h('rect', { x: 0, y: 0, width: 600, height: 320, fill: 'url(#mdSky)' }),
                   // Distant tree line
                   h('rect', { x: 0, y: 130, width: 600, height: 20, fill: '#1e3a2a' }),
-                  [80, 180, 280, 360, 440, 520].forEach,
-                  // (use map for actual rendering)
                   [80, 180, 280, 360, 440, 520].map(function(tx, i) {
                     return h('path', { key: 'tree' + i, d: 'M ' + (tx - 8) + ' 150 L ' + tx + ' 125 L ' + (tx + 8) + ' 150 Z', fill: '#14532d' });
                   }),
@@ -20649,44 +21435,165 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: ANATOMY ATLAS (v0.40)
       // ────────────────────────────────────────────────────────
       function renderAnatomyAtlas() {
-        var viewIdx = rh.anatomyView == null ? 0 : rh.anatomyView;
-        function setView(i) { setRH({ anatomyView: i }); }
+        var requestedView = rh.anatomyView == null ? 0 : Number(rh.anatomyView);
+        var viewIdx = requestedView >= 0 && requestedView < ANATOMY_ATLAS.views.length ? requestedView : 0;
         var v = ANATOMY_ATLAS.views[viewIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-stone-700/40 to-amber-900/40 border border-stone-600/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🦴'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.anatomy_atlas', 'Anatomy Atlas')),
-                h('div', { className: 'text-sm text-stone-300 mt-1' }, ANATOMY_ATLAS.intro)
+        var visual = ANATOMY_VISUALS[viewIdx] || ANATOMY_VISUALS[0];
+        var requestedFocus = rh.anatomyFocus == null ? 0 : Number(rh.anatomyFocus);
+        var focusIdx = requestedFocus >= 0 && requestedFocus < v.keyStructures.length ? requestedFocus : 0;
+        var selectedStructure = v.keyStructures[focusIdx];
+        var totalStructures = ANATOMY_ATLAS.views.reduce(function(total, view) { return total + view.keyStructures.length; }, 0);
+        function setView(i) {
+          setRH({ anatomyView: i, anatomyFocus: 0 });
+          rhAnnounce(ANATOMY_ATLAS.views[i].name + ' anatomy plate opened');
+        }
+        function setFocus(i) {
+          setRH({ anatomyFocus: i });
+          rhAnnounce(v.keyStructures[i].name + ' selected');
+        }
+        function renderAnatomyPlate() {
+          var kind = visual.kind;
+          var drawing;
+          if (kind === 'skeleton') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M64 118 C164 88 248 112 302 162 C357 126 432 135 470 168 C493 128 545 130 559 165 C568 192 538 217 493 202 C462 277 381 310 308 290 C243 278 204 246 174 218 L72 187 C45 176 43 137 64 118 Z' }),
+            h('circle', { className: 'rh-anatomy-structure', cx: 501, cy: 88, r: 27 }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M527 82 L579 95 L530 104' }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M479 111 C445 130 426 160 404 184 C374 219 336 238 296 235' }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M407 178 L348 147 L300 175 M407 178 L269 145 L169 116 L74 112 M269 145 L178 181 L82 185' }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M348 147 L331 217 L300 175 M348 147 L382 207 C362 244 323 254 292 230' }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M296 235 L268 258 L218 278 M305 239 L321 303 L306 355 M333 238 L365 300 L374 352' }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M306 355 L280 372 M306 355 L307 380 M306 355 L333 372 M374 352 L351 372 M374 352 L378 379 M374 352 L400 368' })
+          );
+          else if (kind === 'wing') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M65 301 C153 247 198 180 254 135 C345 91 450 61 588 62 C553 101 530 137 517 166 C546 153 571 155 594 166 C559 194 526 218 490 232 C519 234 542 244 557 258 C485 309 370 330 270 306 C187 332 115 325 65 301 Z' }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M91 298 C180 259 226 203 279 157 C365 111 452 88 574 72' }),
+            [0, 1, 2, 3, 4, 5].map(function(i) { return h('path', { key: 'p' + i, className: 'rh-anatomy-structure-thin', d: 'M' + (382 + i * 20) + ' ' + (114 + i * 11) + ' L' + (567 - i * 7) + ' ' + (73 + i * 29) }); }),
+            [0, 1, 2, 3, 4].map(function(i) { return h('path', { key: 's' + i, className: 'rh-anatomy-structure-thin', d: 'M' + (174 + i * 43) + ' ' + (247 - i * 27) + ' L' + (201 + i * 46) + ' ' + (305 - i * 5) }); }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M190 194 C218 166 244 149 270 139 L238 207 Z', opacity: .7 })
+          );
+          else if (kind === 'talon') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M267 38 C307 25 363 29 389 52 L376 184 C369 217 350 235 325 240 C294 232 273 211 267 181 Z' }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M303 45 C302 120 306 187 324 240 M340 44 C342 123 340 190 329 240' }),
+            h('ellipse', { className: 'rh-anatomy-soft', cx: 327, cy: 251, rx: 72, ry: 40 }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M302 253 C245 268 195 302 168 349 C155 371 124 369 117 346 C114 329 134 318 153 327 M321 260 C333 305 336 340 321 369 C311 389 336 406 354 388 M343 254 C397 273 435 309 450 349 C458 371 489 372 498 350 C503 334 488 321 469 328 M351 240 C409 228 452 241 478 266 C496 283 520 269 516 247' }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M108 346 C117 322 139 317 155 327 C138 329 126 342 123 357 Z M449 349 C462 324 482 322 499 339 C481 333 468 346 463 363 Z', opacity: .8 })
+          );
+          else if (kind === 'eye') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('ellipse', { className: 'rh-anatomy-silhouette', cx: 320, cy: 210, rx: 235, ry: 137 }),
+            h('path', { className: 'rh-anatomy-soft', d: 'M484 115 C552 145 569 202 538 258 C521 289 495 306 466 317 C501 275 511 236 507 207 C511 172 503 141 484 115 Z' }),
+            h('ellipse', { className: 'rh-anatomy-structure', cx: 435, cy: 210, rx: 51, ry: 86 }),
+            h('ellipse', { className: 'rh-anatomy-accent', cx: 456, cy: 210, rx: 18, ry: 52, opacity: .72 }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M132 136 C84 175 80 241 130 283 M150 153 C118 184 116 235 149 267 M315 154 C304 191 303 229 316 269' }),
+            h('circle', { className: 'rh-anatomy-accent', cx: 223, cy: 186, r: 8 }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M285 263 C302 250 319 260 329 287 C310 280 294 284 281 299 Z', opacity: .65 })
+          );
+          else if (kind === 'ear') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M190 88 L255 118 C295 91 350 91 390 118 L454 88 L438 170 C462 211 451 289 406 330 C358 373 286 373 238 330 C193 290 181 213 204 170 Z' }),
+            h('ellipse', { className: 'rh-anatomy-soft', cx: 269, cy: 218, rx: 90, ry: 119 }),
+            h('ellipse', { className: 'rh-anatomy-soft', cx: 375, cy: 218, rx: 90, ry: 119 }),
+            h('circle', { className: 'rh-anatomy-accent', cx: 284, cy: 194, r: 18, opacity: .72 }),
+            h('circle', { className: 'rh-anatomy-accent', cx: 360, cy: 194, r: 18, opacity: .72 }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M409 166 C438 181 443 221 418 244 M235 212 C207 228 205 265 232 284' }),
+            h('path', { className: 'rh-anatomy-structure-thin', d: 'M465 155 C510 171 526 204 520 237 M483 129 C548 151 570 197 560 249 M177 202 C144 219 134 249 142 279' })
+          );
+          else if (kind === 'beak') drawing = h('g', { 'data-anatomy-drawing': kind },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M123 92 C220 42 355 65 425 139 C459 175 470 235 446 283 C417 342 347 369 273 353 C197 337 139 283 121 220 C107 171 106 125 123 92 Z' }),
+            h('path', { className: 'rh-anatomy-soft', d: 'M399 139 C476 129 548 151 599 188 C553 190 528 208 510 239 C488 276 454 287 420 273 C450 239 451 188 399 139 Z' }),
+            h('path', { className: 'rh-anatomy-structure', d: 'M398 142 C481 131 551 153 599 188 C545 190 527 211 508 242 M508 242 C487 281 449 297 405 276' }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M370 131 C402 123 430 131 451 149 L418 179 C398 163 379 154 357 155 Z', opacity: .72 }),
+            h('ellipse', { className: 'rh-anatomy-silhouette', cx: 408, cy: 148, rx: 12, ry: 8 }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M504 238 L526 231 L516 256 Z' })
+          );
+          else drawing = h('g', { 'data-anatomy-drawing': 'organs' },
+            h('path', { className: 'rh-anatomy-silhouette', d: 'M254 45 C300 22 365 28 401 65 C431 96 432 137 415 170 C454 208 466 267 444 320 C422 372 370 395 319 391 C263 387 215 356 199 306 C182 254 194 203 226 169 C209 122 218 76 254 45 Z' }),
+            h('path', { className: 'rh-anatomy-soft', d: 'M246 133 C272 111 302 120 315 151 C318 184 300 208 268 210 C238 196 229 160 246 133 Z M335 128 C367 108 397 124 406 157 C404 190 383 209 352 205 C326 187 320 151 335 128 Z' }),
+            h('path', { className: 'rh-anatomy-accent', d: 'M304 137 C318 119 346 124 351 146 C356 168 334 194 320 204 C303 187 287 164 290 148 C292 140 297 136 304 137 Z', opacity: .8 }),
+            h('ellipse', { className: 'rh-anatomy-soft', cx: 347, cy: 242, rx: 82, ry: 43 }),
+            h('ellipse', { className: 'rh-anatomy-soft', cx: 345, cy: 302, rx: 47, ry: 40 }),
+            h('ellipse', { className: 'rh-anatomy-accent', cx: 273, cy: 294, rx: 18, ry: 34, opacity: .55 }),
+            h('ellipse', { className: 'rh-anatomy-accent', cx: 410, cy: 294, rx: 18, ry: 34, opacity: .55 }),
+            [ [241, 193, 20], [426, 202, 22], [244, 250, 17], [422, 252, 18] ].map(function(sac, i) { return h('circle', { key: 'sac' + i, className: 'rh-anatomy-structure-thin', cx: sac[0], cy: sac[1], r: sac[2] }); })
+          );
+          var titleId = 'rh-anatomy-svg-title-' + kind;
+          var descId = 'rh-anatomy-svg-desc-' + kind;
+          return h('svg', { viewBox: '0 0 640 420', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet' },
+            h('title', { id: titleId }, v.name + ' anatomical field plate'),
+            h('desc', { id: descId }, 'A simplified educational schematic. Use the numbered controls to inspect each labeled structure.'),
+            h('g', { 'aria-hidden': 'true' },
+              [80, 160, 240, 320, 400, 480, 560].map(function(x) { return h('line', { key: 'gx' + x, className: 'rh-anatomy-gridline', x1: x, y1: 0, x2: x, y2: 420 }); }),
+              [70, 140, 210, 280, 350].map(function(y) { return h('line', { key: 'gy' + y, className: 'rh-anatomy-gridline', x1: 0, y1: y, x2: 640, y2: y }); })
+            ),
+            drawing,
+            h('text', { x: 20, y: 28, fill: '#94a3b8', fontSize: 11, fontWeight: 800, letterSpacing: 2 }, visual.plate.toUpperCase()),
+            h('text', { x: 620, y: 401, fill: '#64748b', fontSize: 9, textAnchor: 'end' }, 'SCHEMATIC · NOT TO SCALE')
+          );
+        }
+        return h('div', { className: 'rh-anatomy-atlas', 'data-raptor-anatomy-atlas': 'true', 'data-anatomy-view': visual.kind, style: { '--rh-anatomy-accent': visual.accent } },
+          h('section', { className: 'rh-anatomy-hero', 'aria-labelledby': 'rh-anatomy-title' },
+            h('div', { className: 'rh-anatomy-hero-main' },
+              h('div', { className: 'rh-anatomy-hero-icon', 'aria-hidden': 'true' }, '🦴'),
+              h('div', null,
+                h('div', { className: 'rh-anatomy-kicker' }, __alloT('stem.raptorhunt.interactive_field_plate', 'Interactive field plate')),
+                h('h2', { id: 'rh-anatomy-title', className: 'rh-anatomy-title' }, __alloT('stem.raptorhunt.anatomy_atlas', 'Anatomy Atlas')),
+                h('p', { className: 'rh-anatomy-copy' }, 'Explore spatial relationships across skeletal, sensory, feeding, and metabolic systems. Select a numbered hotspot or use the complete structure directory below.')
+              )
+            ),
+            h('div', { className: 'rh-anatomy-summary', 'aria-label': 'Atlas inventory' },
+              h('div', { className: 'rh-anatomy-stat' }, h('strong', null, ANATOMY_ATLAS.views.length), h('span', null, 'system plates')),
+              h('div', { className: 'rh-anatomy-stat' }, h('strong', null, totalStructures), h('span', null, 'structures'))
+            )
+          ),
+          h('div', { className: 'rh-anatomy-tabs', role: 'tablist', 'aria-label': 'Choose an anatomy system' },
+            ANATOMY_ATLAS.views.map(function(view, i) {
+              var selected = viewIdx === i;
+              return h('button', { key: i, id: 'rh-anatomy-tab-' + i, type: 'button', role: 'tab', 'aria-selected': selected, 'aria-controls': 'rh-anatomy-workbench', onClick: function() { setView(i); }, className: 'rh-anatomy-tab' },
+                h('span', { 'aria-hidden': 'true' }, view.icon), view.name
+              );
+            })
+          ),
+          h('div', { id: 'rh-anatomy-workbench', className: 'rh-anatomy-workbench', role: 'tabpanel', 'aria-labelledby': 'rh-anatomy-tab-' + viewIdx },
+            h('section', { className: 'rh-anatomy-plate', 'aria-labelledby': 'rh-anatomy-plate-title' },
+              h('div', { className: 'rh-anatomy-plate-head' },
+                h('div', null, h('div', { className: 'rh-anatomy-plate-kicker' }, v.icon + ' Active field plate'), h('strong', { id: 'rh-anatomy-plate-title', className: 'rh-anatomy-plate-title' }, v.name)),
+                h('span', { className: 'rh-anatomy-plate-metric' }, visual.metric)
+              ),
+              h('div', { className: 'rh-anatomy-stage', 'data-raptor-anatomy-stage': visual.kind },
+                renderAnatomyPlate(),
+                v.keyStructures.map(function(structure, i) {
+                  var point = visual.hotspots[i] || [50, 50];
+                  var selected = focusIdx === i;
+                  return h('button', { key: i, type: 'button', className: 'rh-anatomy-hotspot', style: { left: point[0] + '%', top: point[1] + '%' }, onClick: function() { setFocus(i); }, 'data-selected': selected, 'aria-pressed': selected, 'aria-label': 'Select structure ' + (i + 1) + ': ' + structure.name, title: structure.name }, String(i + 1).padStart(2, '0'));
+                })
+              ),
+              h('div', { className: 'rh-anatomy-plate-foot' }, h('span', null, h('strong', null, 'How to read:'), ' choose a numbered hotspot to connect location with function.'), h('span', null, 'Educational schematic'))
+            ),
+            h('aside', { className: 'rh-anatomy-detail', 'data-raptor-anatomy-detail': 'true', 'aria-labelledby': 'rh-anatomy-detail-title' },
+              h('div', { className: 'rh-anatomy-detail-kicker' }, 'Selected structure'),
+              h('div', { className: 'rh-anatomy-detail-index' }, h('span', null, 'Structure ' + (focusIdx + 1) + ' of ' + v.keyStructures.length), h('strong', { 'aria-hidden': 'true' }, String(focusIdx + 1).padStart(2, '0'))),
+              h('h3', { id: 'rh-anatomy-detail-title' }, selectedStructure.name),
+              h('p', { className: 'rh-anatomy-function' }, selectedStructure.function),
+              h('div', { className: 'rh-anatomy-inquiry' },
+                h('div', { className: 'rh-anatomy-inquiry-box' }, h('span', null, 'Inquiry lens'), h('p', null, visual.prompt)),
+                h('div', { className: 'rh-anatomy-detail-nav' },
+                  h('button', { type: 'button', onClick: function() { setFocus(focusIdx - 1); }, disabled: focusIdx === 0, 'aria-label': 'Previous anatomical structure' }, '← Previous'),
+                  h('button', { type: 'button', onClick: function() { setFocus(focusIdx + 1); }, disabled: focusIdx === v.keyStructures.length - 1, 'aria-label': 'Next anatomical structure' }, 'Next →')
+                )
               )
             )
           ),
-          // View picker
-          h('div', { className: 'flex flex-wrap gap-1' },
-            ANATOMY_ATLAS.views.map(function(view, i) {
-              var sel = viewIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setView(i); },
-                className: 'px-3 py-1.5 rounded text-xs ' + (sel ? 'bg-stone-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-stone-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, view.icon + ' ' + view.name);
-            })
-          ),
-          // Active view
-          h('div', { className: 'bg-slate-800/40 border border-stone-600/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-stone-200 tracking-tight' }, v.icon + ' ' + v.name),
-            h('div', { className: 'text-sm text-slate-100 italic leading-relaxed' }, v.description),
-            h('div', { className: 'space-y-2' },
-              h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.key_structures', 'Key Structures')),
-              v.keyStructures.map(function(s, i) {
-                return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-3' },
-                  h('div', { className: 'text-sm font-bold text-amber-300 mb-1' }, s.name),
-                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, s.function)
-                );
-              })
-            )
+          h('section', { className: 'rh-anatomy-directory', 'aria-labelledby': 'rh-anatomy-directory-title' },
+            h('div', { className: 'rh-anatomy-directory-head' },
+              h('div', null, h('div', { className: 'rh-anatomy-directory-kicker' }, 'Complete view index'), h('h3', { id: 'rh-anatomy-directory-title' }, v.name + ' structures')),
+              h('span', null, v.keyStructures.length + ' labeled structures')
+            ),
+            h('div', { className: 'rh-anatomy-directory-grid' }, v.keyStructures.map(function(structure, i) {
+              var selected = focusIdx === i;
+              return h('button', { key: i, type: 'button', onClick: function() { setFocus(i); }, className: 'rh-anatomy-structure-card', 'data-active': selected, 'aria-pressed': selected, 'aria-label': 'Open ' + structure.name },
+                h('span', { className: 'rh-anatomy-structure-card-index', 'aria-hidden': 'true' }, String(i + 1).padStart(2, '0')),
+                h('strong', null, structure.name),
+                h('span', { className: 'rh-anatomy-structure-card-arrow', 'aria-hidden': 'true' }, '→')
+              );
+            }))
           )
         );
       }
@@ -20695,119 +21602,426 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: PREY ATLAS (v0.40)
       // ────────────────────────────────────────────────────────
       function renderPreyAtlas() {
-        var preySearch = (rh.preySearch || '').toLowerCase();
-        function setPreySearch(s) { setRH({ preySearch: s }); }
-        var filtered = preySearch
-          ? PREY_ATLAS.prey.filter(function(p) {
-              return p.name.toLowerCase().indexOf(preySearch) !== -1
-                || p.predators.toLowerCase().indexOf(preySearch) !== -1
-                || p.habitat.toLowerCase().indexOf(preySearch) !== -1;
-            })
-          : PREY_ATLAS.prey;
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🐭'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.prey_atlas_2', 'Prey Atlas')),
-                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, PREY_ATLAS.intro + ' (' + PREY_ATLAS.prey.length + ' prey entries)')
-              )
+        var preySearchRaw = rh.preySearch || '';
+        var preySearch = preySearchRaw.toLowerCase().trim();
+        var requestedGroup = rh.preyAtlasGroup || (preySearch ? 'all' : 'rodents');
+        var groupExists = requestedGroup === 'all' || PREY_ATLAS_GROUPS.some(function(group) { return group.id === requestedGroup; });
+        var groupId = groupExists ? requestedGroup : 'rodents';
+        var requestedIdx = rh.preyAtlasIdx == null ? 0 : Number(rh.preyAtlasIdx);
+        var selectedIdx = isFinite(requestedIdx) && requestedIdx >= 0 && requestedIdx < PREY_ATLAS.prey.length ? Math.round(requestedIdx) : 0;
+        var prey = PREY_ATLAS.prey[selectedIdx];
+
+        function groupForIndex(index) {
+          return PREY_ATLAS_GROUPS.filter(function(group) { return index >= group.start && index <= group.end; })[0] || PREY_ATLAS_GROUPS[0];
+        }
+
+        function commonName(item) {
+          return item.name.replace(/\s*\([^)]*\)/g, '').trim();
+        }
+
+        function resolvePredators(text) {
+          var lower = text.toLowerCase();
+          var matches = PREY_PREDATOR_LIBRARY.filter(function(predator) {
+            return predator.aliases.some(function(alias) { return lower.indexOf(alias) !== -1; });
+          });
+          if (!matches.length) {
+            var generic = lower.indexOf('owl') !== -1 ? { id: 'owl', code: 'OWL', label: 'Owl guild' }
+              : lower.indexOf('falcon') !== -1 ? { id: 'falcon', code: 'FAL', label: 'Falcon guild' }
+              : lower.indexOf('eagle') !== -1 ? { id: 'eagle', code: 'EAG', label: 'Eagle guild' }
+              : lower.indexOf('hawk') !== -1 ? { id: 'hawk', code: 'HAWK', label: 'Hawk guild' }
+              : { id: 'raptor', code: 'RAPT', label: 'Raptor guild' };
+            matches = [generic];
+          }
+          return matches.slice(0, 8);
+        }
+
+        function massEstimate(mass) {
+          if (/varies/i.test(mass)) return null;
+          var values = (mass.match(/\d+(?:\.\d+)?/g) || []).map(Number);
+          if (!values.length) return null;
+          var value = values.reduce(function(sum, number) { return sum + number; }, 0) / values.length;
+          return /kg/i.test(mass) ? value * 1000 : value;
+        }
+
+        function massTier(grams) {
+          if (grams == null) return { id: 'variable', label: 'Variable mass', position: 50 };
+          if (grams < 10) return { id: 'micro', label: 'Micro prey', position: 10 };
+          if (grams < 100) return { id: 'small', label: 'Small prey', position: 28 };
+          if (grams < 500) return { id: 'medium', label: 'Medium prey', position: 48 };
+          if (grams < 2000) return { id: 'large', label: 'Large prey', position: 68 };
+          return { id: 'very-large', label: 'Very large / carrion', position: 90 };
+        }
+
+        function preyKind(index, item) {
+          var group = groupForIndex(index).id;
+          var lower = item.name.toLowerCase();
+          if (group === 'rodents') return 'rodent';
+          if (group === 'lagomorphs') return 'rabbit';
+          if (group === 'birds') return 'bird';
+          if (group === 'fish') return 'fish';
+          if (group === 'insects') return 'insect';
+          if (group === 'carrion') return 'carrion';
+          if (group === 'herps') return lower.indexOf('snake') !== -1 ? 'snake' : lower.indexOf('frog') !== -1 ? 'frog' : 'lizard';
+          if (lower.indexOf('snail') !== -1) return 'snail';
+          if (lower.indexOf('sloth') !== -1 || lower.indexOf('monkey') !== -1) return 'primate';
+          if (lower.indexOf('iguana') !== -1) return 'lizard';
+          if (lower.indexOf('tortoise') !== -1) return 'tortoise';
+          return 'rodent';
+        }
+
+        function renderPreyShape(kind, x, y, scale) {
+          var transform = 'translate(' + x + ' ' + y + ') scale(' + scale + ')';
+          if (kind === 'rabbit') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: -4, cy: 8, rx: 44, ry: 27 }), h('circle', { className: 'rh-prey-shape-fill', cx: 34, cy: -4, r: 20 }), h('ellipse', { className: 'rh-prey-shape-fill', cx: 28, cy: -35, rx: 8, ry: 25, transform: 'rotate(-10 28 -35)' }), h('ellipse', { className: 'rh-prey-shape-fill', cx: 43, cy: -34, rx: 8, ry: 25, transform: 'rotate(10 43 -34)' }), h('circle', { cx: 41, cy: -8, r: 3, fill: '#020617' }), h('circle', { cx: -47, cy: 3, r: 11, fill: '#f8fafc' }));
+          if (kind === 'bird') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: 0, cy: 5, rx: 40, ry: 27, transform: 'rotate(-8)' }), h('circle', { className: 'rh-prey-shape-fill', cx: 36, cy: -12, r: 18 }), h('path', { d: 'M53 -15 L75 -8 L54 -2 Z', fill: '#fde68a', stroke: '#fffbeb', strokeWidth: 2 }), h('path', { className: 'rh-prey-shape-dark', d: 'M-30 2 Q0 -35 25 8 Q0 27 -30 2 Z' }), h('path', { className: 'rh-prey-shape-fill', d: 'M-38 1 L-70 -15 L-61 11 L-76 27 Z' }), h('circle', { cx: 41, cy: -16, r: 3, fill: '#020617' }));
+          if (kind === 'fish') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: 5, cy: 0, rx: 48, ry: 25 }), h('path', { className: 'rh-prey-shape-fill', d: 'M-38 0 L-76 -30 L-70 0 L-76 30 Z' }), h('path', { className: 'rh-prey-shape-dark', d: 'M5 -24 L25 -46 L31 -18 Z' }), h('circle', { cx: 38, cy: -7, r: 4, fill: '#020617' }), h('path', { className: 'rh-prey-shape-line', d: 'M-5 -20 Q8 0 -5 20' }));
+          if (kind === 'snake') return h('g', { transform: transform }, h('path', { className: 'rh-prey-shape-line', d: 'M-72 18 C-50 -25 -23 36 0 -5 C22 -42 42 25 67 -10', strokeWidth: 15 }), h('circle', { className: 'rh-prey-shape-fill', cx: 69, cy: -11, r: 12 }), h('circle', { cx: 74, cy: -14, r: 2.5, fill: '#020617' }));
+          if (kind === 'frog') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: 0, cy: 4, rx: 37, ry: 28 }), h('circle', { className: 'rh-prey-shape-fill', cx: -21, cy: -21, r: 13 }), h('circle', { className: 'rh-prey-shape-fill', cx: 21, cy: -21, r: 13 }), h('circle', { cx: -22, cy: -23, r: 4, fill: '#020617' }), h('circle', { cx: 22, cy: -23, r: 4, fill: '#020617' }), h('path', { className: 'rh-prey-shape-line', d: 'M-27 17 L-62 35 M27 17 L62 35 M-26 6 L-55 -2 M26 6 L55 -2' }));
+          if (kind === 'lizard') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: 0, cy: 0, rx: 43, ry: 16 }), h('circle', { className: 'rh-prey-shape-fill', cx: 42, cy: -2, r: 14 }), h('path', { className: 'rh-prey-shape-line', d: 'M-40 0 Q-78 -30 -86 5 M-24 -9 L-43 -31 M-20 9 L-43 31 M22 -9 L38 -30 M22 9 L40 29' }), h('circle', { cx: 48, cy: -6, r: 3, fill: '#020617' }));
+          if (kind === 'insect') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-dark', cx: 0, cy: 0, rx: 12, ry: 32 }), h('circle', { className: 'rh-prey-shape-fill', cx: 0, cy: -30, r: 11 }), h('ellipse', { cx: -28, cy: -5, rx: 27, ry: 14, fill: 'rgba(255,255,255,.35)', stroke: '#fffbeb', strokeWidth: 2, transform: 'rotate(-25 -28 -5)' }), h('ellipse', { cx: 28, cy: -5, rx: 27, ry: 14, fill: 'rgba(255,255,255,.35)', stroke: '#fffbeb', strokeWidth: 2, transform: 'rotate(25 28 -5)' }), h('path', { className: 'rh-prey-shape-line', d: 'M-8 5 L-34 25 M8 5 L34 25 M-7 15 L-25 42 M7 15 L25 42' }));
+          if (kind === 'carrion') return h('g', { transform: transform }, h('path', { className: 'rh-prey-shape-fill', d: 'M-65 -12 Q-12 -42 47 -14 L67 8 Q34 31 -12 23 Q-47 28 -65 -12 Z' }), h('path', { className: 'rh-prey-shape-line', d: 'M-32 -12 Q-4 11 28 -12 M-22 -19 L-3 20 M4 -22 L13 20 M29 -17 L26 16' }), h('circle', { cx: -36, cy: -15, r: 4, fill: '#020617' }));
+          if (kind === 'snail') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: 8, cy: 17, rx: 58, ry: 14 }), h('circle', { className: 'rh-prey-shape-dark', cx: -8, cy: -4, r: 35 }), h('path', { className: 'rh-prey-shape-line', d: 'M-8 -4 C15 -25 24 16 -4 18 C-26 18 -29 -10 -10 -15' }), h('circle', { className: 'rh-prey-shape-fill', cx: 58, cy: 4, r: 13 }), h('path', { className: 'rh-prey-shape-line', d: 'M60 -7 L69 -26 M52 -8 L51 -28' }));
+          if (kind === 'tortoise') return h('g', { transform: transform }, h('path', { className: 'rh-prey-shape-dark', d: 'M-51 10 Q-42 -40 8 -42 Q53 -34 58 9 Q25 28 -51 10 Z' }), h('path', { className: 'rh-prey-shape-line', d: 'M-27 -25 L35 4 M18 -31 L-12 16 M-46 -2 L53 -3' }), h('circle', { className: 'rh-prey-shape-fill', cx: 64, cy: 3, r: 15 }), h('path', { className: 'rh-prey-shape-fill', d: 'M-45 8 l-22 18 h26 M34 12 l22 20 h-27' }));
+          if (kind === 'primate') return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-dark', cx: 0, cy: 8, rx: 31, ry: 40 }), h('circle', { className: 'rh-prey-shape-fill', cx: 0, cy: -37, r: 25 }), h('circle', { className: 'rh-prey-shape-fill', cx: -24, cy: -37, r: 9 }), h('circle', { className: 'rh-prey-shape-fill', cx: 24, cy: -37, r: 9 }), h('path', { className: 'rh-prey-shape-line', d: 'M-24 2 L-60 28 M24 2 L60 28 M-17 42 L-35 72 M17 42 L35 72 M28 20 Q72 5 68 -38' }), h('circle', { cx: -8, cy: -40, r: 3, fill: '#020617' }), h('circle', { cx: 8, cy: -40, r: 3, fill: '#020617' }));
+          return h('g', { transform: transform }, h('ellipse', { className: 'rh-prey-shape-fill', cx: -5, cy: 7, rx: 43, ry: 25 }), h('circle', { className: 'rh-prey-shape-fill', cx: 35, cy: -5, r: 19 }), h('circle', { className: 'rh-prey-shape-fill', cx: 25, cy: -22, r: 9 }), h('circle', { className: 'rh-prey-shape-fill', cx: 43, cy: -20, r: 9 }), h('path', { className: 'rh-prey-shape-line', d: 'M-45 5 Q-78 -25 -91 1' }), h('circle', { cx: 41, cy: -9, r: 3, fill: '#020617' }));
+        }
+
+        var indexed = PREY_ATLAS.prey.map(function(item, index) { return { item: item, index: index, group: groupForIndex(index) }; });
+        var filtered = indexed.filter(function(entry) {
+          var groupMatch = groupId === 'all' || entry.group.id === groupId;
+          var searchMatch = !preySearch || (entry.item.name + ' ' + entry.item.predators + ' ' + entry.item.habitat + ' ' + entry.item.strategy).toLowerCase().indexOf(preySearch) !== -1;
+          return groupMatch && searchMatch;
+        });
+        var activeGroup = groupForIndex(selectedIdx);
+        var predators = resolvePredators(prey.predators);
+        var requestedPredator = rh.preyPredatorFocus == null ? 0 : Number(rh.preyPredatorFocus);
+        var predatorFocus = isFinite(requestedPredator) && requestedPredator >= 0 && requestedPredator < predators.length ? Math.round(requestedPredator) : 0;
+        var focusedPredator = predators[predatorFocus];
+        var grams = massEstimate(prey.mass);
+        var tier = massTier(grams);
+        var shape = preyKind(selectedIdx, prey);
+
+        function setSearch(value) {
+          var lower = value.toLowerCase().trim();
+          var match = lower ? PREY_ATLAS.prey.findIndex(function(item) { return (item.name + ' ' + item.predators + ' ' + item.habitat + ' ' + item.strategy).toLowerCase().indexOf(lower) !== -1; }) : 0;
+          setRH({ preySearch: value, preyAtlasGroup: lower ? 'all' : 'rodents', preyAtlasIdx: match >= 0 ? match : selectedIdx, preyPredatorFocus: 0 });
+        }
+
+        function setGroup(id) {
+          var next = id === 'all' ? 0 : PREY_ATLAS_GROUPS.filter(function(group) { return group.id === id; })[0].start;
+          setRH({ preyAtlasGroup: id, preySearch: '', preyAtlasIdx: next, preyPredatorFocus: 0 });
+          rhAnnounce((id === 'all' ? 'All prey groups' : PREY_ATLAS_GROUPS.filter(function(group) { return group.id === id; })[0].label) + ' opened');
+        }
+
+        function setPrey(index) {
+          setRH({ preyAtlasIdx: index, preyPredatorFocus: 0 });
+          rhAnnounce(commonName(PREY_ATLAS.prey[index]) + ' food web opened');
+        }
+
+        function setPredator(index) {
+          setRH({ preyPredatorFocus: index });
+          rhAnnounce(predators[index].label + ' predator link selected');
+        }
+
+        function stepPrey(direction) {
+          var next = (selectedIdx + direction + PREY_ATLAS.prey.length) % PREY_ATLAS.prey.length;
+          setRH({ preyAtlasIdx: next, preyAtlasGroup: groupForIndex(next).id, preySearch: '', preyPredatorFocus: 0 });
+        }
+
+        function renderFoodWeb() {
+          var titleId = 'rh-prey-web-title-' + selectedIdx;
+          var descId = 'rh-prey-web-desc-' + selectedIdx;
+          var markerId = 'rh-prey-arrow-' + selectedIdx;
+          var positions = [[144,118],[322,72],[518,72],[696,118],[720,310],[540,390],[300,390],[120,310]];
+          var shortName = commonName(prey).split(' ').slice(0, 3).join(' ');
+          return h('svg', { viewBox: '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-prey-network-drawing': shape },
+            h('title', { id: titleId }, commonName(prey) + ' predator-prey food web'),
+            h('desc', { id: descId }, predators.map(function(item) { return item.label; }).join(', ') + ' connect to the selected prey. Habitat: ' + prey.habitat),
+            h('defs', null,
+              h('linearGradient', { id: 'rh-prey-bg-' + selectedIdx, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#020617' }), h('stop', { offset: '56%', stopColor: '#0f172a' }), h('stop', { offset: '100%', stopColor: activeGroup.ground })),
+              h('pattern', { id: 'rh-prey-grid-' + selectedIdx, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .1 })),
+              h('marker', { id: markerId, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: activeGroup.accent }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: 480, fill: 'url(#rh-prey-bg-' + selectedIdx + ')' }),
+            h('rect', { className: 'rh-prey-grid', x: 0, y: 0, width: 840, height: 480, fill: 'url(#rh-prey-grid-' + selectedIdx + ')' }),
+            activeGroup.id === 'fish' && [355,380,405].map(function(y) { return h('path', { key: y, d: 'M0 ' + y + ' Q80 ' + (y-12) + ' 160 ' + y + ' T320 ' + y + ' T480 ' + y + ' T640 ' + y + ' T840 ' + y, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, opacity: .18 }); }),
+            predators.map(function(predator, i) { var pos = positions[i]; return h('line', { key: 'link-' + predator.id, className: 'rh-prey-link', x1: pos[0], y1: pos[1], x2: 386 + (420-pos[0])*.1, y2: 230 + (240-pos[1])*.1, markerEnd: 'url(#' + markerId + ')' }); }),
+            h('circle', { className: 'rh-prey-core', cx: 420, cy: 242, r: 112 }),
+            h('g', { 'data-prey-shape': shape }, renderPreyShape(shape, 420, 230, 1.08)),
+            h('text', { className: 'rh-prey-core-label', x: 420, y: 329 }, shortName),
+            predators.map(function(predator, i) { var pos = positions[i]; return h('g', { key: predator.id, 'data-prey-predator-node': predator.id }, h('circle', { className: 'rh-prey-node-ring', cx: pos[0], cy: pos[1], r: 27 }), h('text', { className: 'rh-prey-node-code', x: pos[0], y: pos[1] + 3 }, predator.code), h('text', { className: 'rh-prey-node-label', x: pos[0], y: pos[1] + 43 }, predator.label)); }),
+            h('text', { className: 'rh-prey-svg-label', x: 22, y: 28 }, 'PREDATOR LINK MAP · ' + activeGroup.code),
+            h('text', { className: 'rh-prey-svg-accent', x: 22, y: 55 }, predators.length + ' RESOLVED PREDATOR ' + (predators.length === 1 ? 'LINK' : 'LINKS')),
+            h('text', { className: 'rh-prey-svg-label', x: 818, y: 460, textAnchor: 'end' }, 'ARROWS SHOW HUNTING PRESSURE · SCHEMATIC')
+          );
+        }
+
+        return h('div', { className: 'rh-prey-lab', 'data-raptor-prey-atlas': 'true', 'data-prey-group': activeGroup.id, 'data-prey-index': selectedIdx, 'data-prey-mass-tier': tier.id, style: { '--rh-prey-accent': activeGroup.accent } },
+          h('section', { className: 'rh-prey-hero', 'aria-labelledby': 'rh-prey-title' },
+            h('div', { className: 'rh-prey-hero-main' }, h('div', { className: 'rh-prey-hero-icon', 'aria-hidden': 'true' }, 'PREY\nWEB'), h('div', null, h('div', { className: 'rh-prey-kicker' }, 'Interactive trophic-network field station'), h('h2', { id: 'rh-prey-title', className: 'rh-prey-title' }, __alloT('stem.raptorhunt.prey_atlas_2', 'Prey Atlas')), h('p', { className: 'rh-prey-copy' }, PREY_ATLAS.intro + ' Filter by prey guild, inspect predator links, and read each capture strategy in ecological context.'))),
+            h('div', { className: 'rh-prey-summary', 'aria-label': 'Prey Atlas inventory' }, h('div', { className: 'rh-prey-stat' }, h('strong', null, PREY_ATLAS.prey.length), h('span', null, 'prey records')), h('div', { className: 'rh-prey-stat' }, h('strong', null, PREY_ATLAS_GROUPS.length), h('span', null, 'ecological guilds')))
+          ),
+          h('div', { className: 'rh-prey-toolbar' },
+            h('div', { className: 'rh-prey-search' }, h('input', { type: 'search', value: preySearchRaw, onChange: function(event) { setSearch(event.target.value); }, placeholder: __alloT('stem.raptorhunt.search_prey_predator_or_habitat', 'Search prey, predator, habitat, or strategy...'), 'aria-label': __alloT('stem.raptorhunt.search_prey_atlas', 'Search prey atlas') }), preySearchRaw && h('button', { type: 'button', onClick: function() { setSearch(''); } }, 'Clear search')),
+            h('div', { className: 'rh-prey-result-count', role: 'status', 'aria-live': 'polite' }, filtered.length + ' of ' + PREY_ATLAS.prey.length + ' records')
+          ),
+          h('div', { className: 'rh-prey-groups', role: 'group', 'aria-label': 'Filter prey by ecological guild' },
+            h('button', { type: 'button', className: 'rh-prey-group', onClick: function() { setGroup('all'); }, 'aria-pressed': groupId === 'all', 'data-prey-group-filter': 'all' }, h('span', { className: 'rh-prey-group-code', 'aria-hidden': 'true' }, 'ALL'), 'All prey'),
+            PREY_ATLAS_GROUPS.map(function(group) { return h('button', { key: group.id, type: 'button', className: 'rh-prey-group', onClick: function() { setGroup(group.id); }, 'aria-pressed': groupId === group.id, 'data-prey-group-filter': group.id }, h('span', { className: 'rh-prey-group-code', 'aria-hidden': 'true' }, group.code), group.label + ' · ' + (group.end - group.start + 1)); })
+          ),
+          h('div', { className: 'rh-prey-workbench' },
+            h('section', { className: 'rh-prey-web', 'aria-labelledby': 'rh-prey-web-title' },
+              h('div', { className: 'rh-prey-web-head' }, h('div', null, h('div', { className: 'rh-prey-section-kicker' }, activeGroup.label), h('strong', { id: 'rh-prey-web-title', className: 'rh-prey-web-title' }, commonName(prey) + ' food web')), h('span', { className: 'rh-prey-tier-badge' }, tier.label + ' · ' + prey.mass)),
+              h('div', { className: 'rh-prey-stage', 'data-raptor-prey-stage': shape }, renderFoodWeb(), h('div', { className: 'rh-prey-stage-legend', 'aria-hidden': 'true' }, 'Predator nodes → selected prey · ' + activeGroup.label.toLowerCase())),
+              h('div', { className: 'rh-prey-predator-controls', role: 'group', 'aria-label': 'Inspect predator links' }, predators.map(function(predator, i) { return h('button', { key: predator.id, type: 'button', className: 'rh-prey-predator-button', onClick: function() { setPredator(i); }, 'aria-pressed': predatorFocus === i, 'data-predator-control': predator.id }, h('span', null, predator.code), predator.label); }))
+            ),
+            h('aside', { className: 'rh-prey-detail', 'data-raptor-prey-detail': 'true', 'aria-labelledby': 'rh-prey-detail-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-prey-detail-head' }, h('div', null, h('div', { className: 'rh-prey-detail-kicker' }, activeGroup.label + ' · prey record ' + (selectedIdx + 1)), h('h3', { id: 'rh-prey-detail-title' }, commonName(prey))), h('span', { className: 'rh-prey-chip' }, activeGroup.code)),
+              h('div', { className: 'rh-prey-reading' }, h('span', null, 'Mass and prey tier'), h('strong', null, prey.mass + ' · ' + tier.label), h('p', null, 'Mass categories provide a visual comparison only; prey handling also depends on behavior, terrain, and raptor size.')),
+              h('div', { className: 'rh-prey-mass-scale' }, h('div', { className: 'rh-prey-mass-head' }, h('span', null, 'Micro'), h('strong', null, tier.label), h('span', null, 'Very large')), h('div', { className: 'rh-prey-mass-track', role: 'meter', 'aria-label': 'Relative prey mass tier', 'aria-valuenow': tier.position, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('span', { style: { left: tier.position + '%' } }))),
+              h('div', { className: 'rh-prey-predator-card' }, h('span', null, 'Selected predator link'), h('strong', null, focusedPredator.label), h('p', null, prey.predators)),
+              h('div', { className: 'rh-prey-context' }, h('span', null, 'Capture strategy'), h('p', null, prey.strategy)),
+              h('div', { className: 'rh-prey-context' }, h('span', null, 'Habitat context'), h('p', null, prey.habitat + ' ' + prey.notes)),
+              h('div', { className: 'rh-prey-question' }, h('span', null, 'Field reasoning prompt'), h('p', null, 'Which trait of ' + focusedPredator.label.toLowerCase() + ' best matches this prey\'s habitat and escape behavior?')),
+              h('div', { className: 'rh-prey-detail-nav' }, h('button', { type: 'button', onClick: function() { stepPrey(-1); }, 'aria-label': 'Previous prey record' }, '← Previous prey'), h('button', { type: 'button', onClick: function() { stepPrey(1); }, 'aria-label': 'Next prey record' }, 'Next prey →'))
             )
           ),
-          // Search
-          h('div', { className: 'flex items-center gap-2' },
-            h('input', {
-              type: 'text',
-              placeholder: __alloT('stem.raptorhunt.search_prey_predator_or_habitat', 'Search prey, predator, or habitat...'),
-              value: preySearch,
-              onChange: function(e) { setPreySearch(e.target.value); },
-              className: 'flex-1 px-3 py-2 bg-slate-800/60 border border-amber-700/40 rounded text-sm text-slate-100',
-              'aria-label': __alloT('stem.raptorhunt.search_prey_atlas', 'Search prey atlas')
-            }),
-            preySearch && h('button', {
-              onClick: function() { setPreySearch(''); },
-              className: 'transition-colors px-3 py-2 bg-slate-700 text-slate-200 rounded text-xs hover:bg-slate-600 active:scale-[0.97]',
-              'aria-label': __alloT('stem.raptorhunt.clear_search', 'Clear search')
-            }, __alloT('stem.raptorhunt.clear', 'Clear')),
-            h('div', { className: 'text-xs text-amber-200 font-mono' }, filtered.length + ' shown')
+          h('section', { className: 'rh-prey-directory', 'aria-labelledby': 'rh-prey-directory-title' },
+            h('div', { className: 'rh-prey-section-head' }, h('div', null, h('div', { className: 'rh-prey-section-kicker' }, groupId === 'all' ? 'All ecological guilds' : PREY_ATLAS_GROUPS.filter(function(group) { return group.id === groupId; })[0].label), h('h3', { id: 'rh-prey-directory-title' }, 'Browse prey records')), h('span', null, filtered.length + ' visible')),
+            filtered.length ? h('div', { className: 'rh-prey-directory-grid' }, filtered.map(function(entry) { var selected = entry.index === selectedIdx; var entryTier = massTier(massEstimate(entry.item.mass)); return h('button', { key: entry.index, type: 'button', className: 'rh-prey-card', onClick: function() { setPrey(entry.index); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + commonName(entry.item) + ' prey record', style: { '--rh-prey-accent': entry.group.accent } }, h('span', { className: 'rh-prey-card-icon', 'aria-hidden': 'true' }, entry.group.code), h('span', { className: 'rh-prey-card-copy' }, h('strong', null, commonName(entry.item)), h('span', null, entry.group.label + ' · ' + entry.item.habitat)), h('span', { className: 'rh-prey-card-mass' }, entry.item.mass + '\n' + entryTier.label)); })) : h('div', { className: 'rh-prey-empty', role: 'status' }, h('strong', null, 'No prey records match'), h('p', null, 'Try a species, predator, habitat, or broader ecological term.'), h('button', { type: 'button', onClick: function() { setSearch(''); } }, 'Clear filters'))
           ),
-          // Prey grid
-          h('div', { className: 'grid md:grid-cols-2 gap-2' },
-            filtered.map(function(p, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-amber-300' }, p.name),
-                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, p.mass)
-                ),
-                h('div', { className: 'text-xs text-red-200/90 mb-1' }, __alloT('stem.raptorhunt.predators', '🎯 Predators: '), h('span', { className: 'text-slate-200' }, p.predators)),
-                h('div', { className: 'text-xs text-emerald-200/90 mb-1' }, __alloT('stem.raptorhunt.strategy', '⚡ Strategy: '), h('span', { className: 'text-slate-200' }, p.strategy)),
-                h('div', { className: 'text-xs text-cyan-200/90 mb-1' }, __alloT('stem.raptorhunt.habitat', '🌿 Habitat: '), h('span', { className: 'text-slate-200' }, p.habitat)),
-                h('div', { className: 'text-[10px] italic text-purple-200/80 mt-1' }, p.notes)
-              );
-            })
-          )
+          h('div', { className: 'rh-prey-note', role: 'note' }, h('strong', null, 'Network-reading note: '), 'Predator nodes are resolved from the atlas text and show documented associations, not a complete diet or a measure of interaction strength.')
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: FOSSIL RECORD (v0.40)
       // ────────────────────────────────────────────────────────
       function renderFossils() {
-        var fossilTab = rh.fossilTab || 'fossils';
-        function setFossilTab(t) { setRH({ fossilTab: t }); }
-        var tabs = [
-          { id: 'fossils', label: __alloT('stem.raptorhunt.famous_fossils', '🦴 Famous Fossils') },
-          { id: 'events', label: __alloT('stem.raptorhunt.key_events', '📅 Key Events') }
+        var modes = [
+          { id: 'fossils', label: 'Fossil reconstructions' },
+          { id: 'events', label: 'Evolutionary turning points' }
         ];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-stone-800/40 to-amber-900/40 border border-stone-600/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🦖'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.fossil_record_2', 'Fossil Record')),
-                h('div', { className: 'text-sm text-stone-300 mt-1' }, FOSSIL_RECORD.intro)
+        var lenses = [
+          { id: 'anatomy', code: 'BONE', label: 'Anatomy' },
+          { id: 'ecology', code: 'WORLD', label: 'Ancient world' },
+          { id: 'evolution', code: 'TREE', label: 'Evolution' },
+          { id: 'scale', code: 'SIZE', label: 'Scale' }
+        ];
+        var roleOptions = [
+          { id: 'transition', label: 'Transitional evidence' },
+          { id: 'side', label: 'Extinct side branch' },
+          { id: 'boundary', label: 'Extinction boundary' },
+          { id: 'radiation', label: 'Lineage radiation' },
+          { id: 'extreme', label: 'Extreme adaptation' }
+        ];
+        var requestedMode = rh.fossilTab || 'fossils';
+        var mode = modes.some(function(item) { return item.id === requestedMode; }) ? requestedMode : 'fossils';
+        var requestedEra = rh.fossilEra || 'all';
+        var eraId = FOSSIL_ERAS.some(function(item) { return item.id === requestedEra; }) ? requestedEra : 'all';
+        var requestedLens = rh.fossilLens || 'anatomy';
+        var lensId = lenses.some(function(item) { return item.id === requestedLens; }) ? requestedLens : 'anatomy';
+        var chronology = FOSSIL_VISUALS.map(function(visual, index) {
+          return { visual: visual, record: FOSSIL_RECORD.fossils[index], index: index };
+        }).sort(function(a, b) { return b.visual.ageMa - a.visual.ageMa; });
+        var filtered = chronology.filter(function(entry) { return eraId === 'all' || entry.visual.era === eraId; });
+        var requestedIdx = rh.fossilIdx == null ? 0 : Number(rh.fossilIdx);
+        var fossilIdx = isFinite(requestedIdx) && requestedIdx >= 0 && requestedIdx < FOSSIL_RECORD.fossils.length ? Math.round(requestedIdx) : 0;
+        if (eraId !== 'all' && FOSSIL_VISUALS[fossilIdx].era !== eraId) fossilIdx = filtered[0].index;
+        var record = FOSSIL_RECORD.fossils[fossilIdx];
+        var visual = FOSSIL_VISUALS[fossilIdx];
+        var chronologyPosition = chronology.map(function(entry) { return entry.index; }).indexOf(fossilIdx);
+        var requestedCompare = rh.fossilCompareIdx == null ? chronology[(chronologyPosition + 1) % chronology.length].index : Number(rh.fossilCompareIdx);
+        var compareIdx = isFinite(requestedCompare) && requestedCompare >= 0 && requestedCompare < FOSSIL_RECORD.fossils.length ? Math.round(requestedCompare) : chronology[(chronologyPosition + 1) % chronology.length].index;
+        if (compareIdx === fossilIdx) compareIdx = chronology[(chronologyPosition + 1) % chronology.length].index;
+        var compareRecord = FOSSIL_RECORD.fossils[compareIdx];
+        var compareVisual = FOSSIL_VISUALS[compareIdx];
+        var requestedMystery = rh.fossilMysteryIdx == null ? 9 : Number(rh.fossilMysteryIdx);
+        var mysteryIdx = isFinite(requestedMystery) && requestedMystery >= 0 && requestedMystery < FOSSIL_RECORD.fossils.length ? Math.round(requestedMystery) : 9;
+        var mysteryVisual = FOSSIL_VISUALS[mysteryIdx];
+        var mysteryGuess = rh.fossilMysteryGuess == null ? null : String(rh.fossilMysteryGuess);
+        var mysteryAnswered = mysteryGuess != null;
+        var mysteryCorrect = mysteryAnswered && mysteryGuess === mysteryVisual.role;
+        var activeLens = lenses.filter(function(item) { return item.id === lensId; })[0];
+        var depthPosition = Math.max(0, Math.min(100, visual.ageMa / 150 * 100));
+        var spanPosition = Math.max(0, Math.min(100, visual.spanM / 7 * 100));
+
+        function shortName(item) {
+          var value = item.name.replace(/\s*\([^)]*\)/g, '').trim();
+          return value.length > 31 ? value.slice(0, 29) + '…' : value;
+        }
+
+        function setMode(id) {
+          setRH({ fossilTab: id });
+          rhAnnounce(id === 'events' ? 'Evolutionary turning points opened' : 'Fossil reconstructions opened');
+        }
+
+        function setEra(id) {
+          var eraEntries = id === 'all' ? chronology : chronology.filter(function(entry) { return entry.visual.era === id; });
+          setRH({ fossilEra: id, fossilIdx: eraEntries[0].index });
+          rhAnnounce(FOSSIL_ERAS.filter(function(item) { return item.id === id; })[0].label + ' time filter selected');
+        }
+
+        function setFossil(index) {
+          setRH({ fossilIdx: index, fossilLens: lensId });
+          rhAnnounce(FOSSIL_RECORD.fossils[index].name + ' reconstruction opened');
+        }
+
+        function setLens(id) {
+          setRH({ fossilLens: id });
+          rhAnnounce(lenses.filter(function(item) { return item.id === id; })[0].label + ' evidence lens selected');
+        }
+
+        function stepFossil(direction) {
+          var nextPosition = (chronologyPosition + direction + chronology.length) % chronology.length;
+          setRH({ fossilIdx: chronology[nextPosition].index, fossilEra: 'all' });
+        }
+
+        function setGuess(id) {
+          setRH({ fossilMysteryGuess: id });
+          rhAnnounce(id === mysteryVisual.role ? 'Correct evolutionary interpretation' : 'That interpretation does not best fit this evidence');
+        }
+
+        function nextMystery() {
+          setRH({ fossilMysteryIdx: (mysteryIdx + 5) % FOSSIL_VISUALS.length, fossilMysteryGuess: null });
+          rhAnnounce('New fossil evidence challenge loaded');
+        }
+
+        function lensEvidence(profile, item) {
+          if (lensId === 'ecology') return [item.period, profile.setting, item.location.split('(')[0].trim()];
+          if (lensId === 'evolution') return [profile.roleLabel, profile.lineage, profile.evidence];
+          if (lensId === 'scale') return [profile.spanM ? profile.spanM + ' m span' : 'Global event', item.size, item.age];
+          return profile.marks;
+        }
+
+        function renderSkeleton(profile) {
+          var kind = profile.shape;
+          if (kind === 'boundary') {
+            return h('g', { 'data-fossil-shape': kind },
+              h('path', { className: 'rh-fossil-feather', d: 'M80 310 Q230 205 410 285 Q590 365 760 260 L760 390 L80 390 Z' }),
+              h('path', { className: 'rh-fossil-bone-thin', d: 'M92 328 Q232 230 411 301 Q588 368 748 279' }),
+              h('circle', { cx: 456, cy: 287, r: 62, fill: 'none', stroke: profile.accent, strokeWidth: 8, opacity: .68 }),
+              h('circle', { cx: 456, cy: 287, r: 35, fill: 'none', stroke: '#f5f5f4', strokeWidth: 3, opacity: .7 }),
+              h('path', { className: 'rh-fossil-bone', d: 'M655 70 L538 195 M642 70 L675 57 L665 91 Z' }),
+              h('path', { className: 'rh-fossil-bone-thin', d: 'M135 180 q28 -24 55 0 q28 -30 58 2 M177 181 L170 238 M228 183 L239 241' }),
+              h('path', { className: 'rh-fossil-feather', d: 'M121 179 Q188 126 262 181 Q220 207 190 201 Q157 208 121 179 Z' })
+            );
+          }
+
+          var wing = kind === 'giantsoarer' ? 335 : kind === 'seabird' ? 350 : kind === 'teratorn' ? 310 : kind === 'eagle' ? 295 : kind === 'raptor' ? 270 : kind === 'gull' ? 280 : kind === 'owl' ? 250 : kind === 'smallbird' ? 205 : kind === 'earlybird' ? 225 : kind === 'longtail' ? 250 : kind === 'groundbird' ? 135 : kind === 'diver' ? 72 : 230;
+          var bodyY = kind === 'diver' || kind === 'groundbird' ? 225 : 240;
+          var headY = kind === 'diver' ? 121 : kind === 'owl' ? 169 : 181;
+          var headR = kind === 'owl' ? 49 : kind === 'diver' ? 24 : 30;
+          var bodyRx = kind === 'diver' ? 48 : kind === 'groundbird' ? 62 : 72;
+          var bodyRy = kind === 'diver' ? 105 : kind === 'groundbird' ? 82 : 92;
+          var narrow = kind === 'seabird' || kind === 'giantsoarer' || kind === 'gull';
+          var tail = kind === 'longtail' ? 146 : kind === 'earlybird' ? 104 : kind === 'owl' ? 55 : 82;
+          var shoulderY = bodyY - 45;
+          var wristY = narrow ? bodyY - 22 : bodyY + 5;
+          return h('g', { 'data-fossil-shape': kind },
+            kind !== 'diver' && h('path', { className: 'rh-fossil-feather', d: 'M365 ' + shoulderY + ' Q' + (420-wing*.58) + ' ' + (bodyY-115) + ' ' + (420-wing) + ' ' + wristY + ' Q' + (420-wing*.62) + ' ' + (bodyY+42) + ' 370 ' + (bodyY+32) + ' Z' }),
+            kind !== 'diver' && h('path', { className: 'rh-fossil-feather', d: 'M475 ' + shoulderY + ' Q' + (420+wing*.58) + ' ' + (bodyY-115) + ' ' + (420+wing) + ' ' + wristY + ' Q' + (420+wing*.62) + ' ' + (bodyY+42) + ' 470 ' + (bodyY+32) + ' Z' }),
+            h('path', { className: 'rh-fossil-feather', d: 'M386 ' + (bodyY+55) + ' L' + (420-tail*.25) + ' ' + (bodyY+tail) + ' L420 ' + (bodyY+tail*.78) + ' L' + (420+tail*.25) + ' ' + (bodyY+tail) + ' L454 ' + (bodyY+55) + ' Z' }),
+            h('ellipse', { className: 'rh-fossil-feather', cx: 420, cy: bodyY, rx: bodyRx, ry: bodyRy }),
+            h('path', { className: 'rh-fossil-bone', d: 'M420 ' + (headY+headR) + ' L420 ' + (bodyY+bodyRy-8) }),
+            [-52,-30,-8,14,36,58].map(function(offset, i) { return h('path', { key: 'rib-' + i, className: 'rh-fossil-bone-thin', d: 'M420 ' + (bodyY+offset) + ' Q' + (420-bodyRx*.8) + ' ' + (bodyY+offset+14) + ' 420 ' + (bodyY+offset+34) + ' Q' + (420+bodyRx*.8) + ' ' + (bodyY+offset+14) + ' 420 ' + (bodyY+offset) }); }),
+            kind !== 'diver' && h('path', { className: 'rh-fossil-bone', d: 'M372 ' + shoulderY + ' L' + (420-wing*.45) + ' ' + (bodyY-76) + ' L' + (420-wing) + ' ' + wristY }),
+            kind !== 'diver' && h('path', { className: 'rh-fossil-bone', d: 'M468 ' + shoulderY + ' L' + (420+wing*.45) + ' ' + (bodyY-76) + ' L' + (420+wing) + ' ' + wristY }),
+            kind !== 'diver' && [-.86,-.68,-.5,-.32].map(function(ratio, i) { return h('path', { key: 'lf-' + i, className: 'rh-fossil-bone-thin', d: 'M' + (420+wing*ratio) + ' ' + (wristY-4) + ' L' + (420+wing*ratio*.76) + ' ' + (bodyY+55+i*4) }); }),
+            kind !== 'diver' && [.32,.5,.68,.86].map(function(ratio, i) { return h('path', { key: 'rf-' + i, className: 'rh-fossil-bone-thin', d: 'M' + (420+wing*ratio) + ' ' + (wristY-4) + ' L' + (420+wing*ratio*.76) + ' ' + (bodyY+67-i*4) }); }),
+            h('circle', { className: 'rh-fossil-feather', cx: 420, cy: headY, r: headR }),
+            kind === 'owl' && h('g', null, h('circle', { className: 'rh-fossil-bone-thin', cx: 402, cy: headY, r: 14 }), h('circle', { className: 'rh-fossil-bone-thin', cx: 438, cy: headY, r: 14 })),
+            h('path', { className: 'rh-fossil-bone-thin', d: 'M' + (420+headR*.52) + ' ' + (headY-3) + ' L' + (420+headR+42) + ' ' + (headY+7) + ' L' + (420+headR*.5) + ' ' + (headY+15) }),
+            (kind === 'longtail' || kind === 'gull' || kind === 'diver' || kind === 'seabird') && h('path', { className: 'rh-fossil-bone-thin', d: 'M' + (420+headR+8) + ' ' + (headY+4) + ' l28 5 l-27 7', strokeDasharray: '3 3' }),
+            kind === 'longtail' && [0,1,2,3,4,5].map(function(i) { return h('circle', { key: 'tail-' + i, cx: 420, cy: bodyY+74+i*21, r: 5, fill: '#f5f5f4' }); }),
+            kind === 'earlybird' && h('path', { className: 'rh-fossil-bone-thin', d: 'M405 ' + (bodyY+76) + ' L392 ' + (bodyY+tail+35) + ' M435 ' + (bodyY+76) + ' L448 ' + (bodyY+tail+35) }),
+            h('path', { className: 'rh-fossil-bone', d: 'M397 ' + (bodyY+bodyRy-13) + ' L' + (kind === 'groundbird' || kind === 'diver' ? 384 : 392) + ' ' + (bodyY+bodyRy+55) + ' L365 ' + (bodyY+bodyRy+70) + ' M443 ' + (bodyY+bodyRy-13) + ' L' + (kind === 'groundbird' || kind === 'diver' ? 456 : 448) + ' ' + (bodyY+bodyRy+55) + ' L475 ' + (bodyY+bodyRy+70) }),
+            h('circle', { cx: 411, cy: headY-4, r: 4, fill: '#0c0a09', stroke: '#f5f5f4', strokeWidth: 2 })
+          );
+        }
+
+        function renderFossilPlate(profile, item, options) {
+          options = options || {};
+          var compact = !!options.compact;
+          var identity = options.identity || profile.kind;
+          var titleId = 'rh-fossil-svg-title-' + identity;
+          var descId = 'rh-fossil-svg-desc-' + identity;
+          var evidence = lensEvidence(profile, item);
+          var callouts = [
+            { x: 420, y: 174, lx: 68, ly: 92 },
+            { x: profile.shape === 'boundary' ? 456 : 225, y: profile.shape === 'boundary' ? 287 : 188, lx: 68, ly: 238 },
+            { x: 420, y: profile.shape === 'boundary' ? 332 : 343, lx: 650, ly: 376 }
+          ];
+          return h('svg', { viewBox: '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-fossil-reconstruction': identity },
+            h('title', { id: titleId }, item.name + ' fossil reconstruction plate'),
+            h('desc', { id: descId }, profile.marks.join(', ') + '. Schematic evidence reconstruction, not a complete articulated specimen.'),
+            h('defs', null,
+              h('linearGradient', { id: 'rh-fossil-bg-' + identity, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#0c0a09' }), h('stop', { offset: '56%', stopColor: '#292524' }), h('stop', { offset: '100%', stopColor: profile.accent, stopOpacity: .28 })),
+              h('pattern', { id: 'rh-fossil-grid-' + identity, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#e7e5e4', strokeWidth: 1, opacity: .09 }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: 480, fill: 'url(#rh-fossil-bg-' + identity + ')' }),
+            h('rect', { className: 'rh-fossil-grid', x: 0, y: 0, width: 840, height: 480, fill: 'url(#rh-fossil-grid-' + identity + ')' }),
+            [105,142,388,420].map(function(y) { return h('path', { key: y, className: 'rh-fossil-strata', d: 'M0 ' + y + ' Q160 ' + (y-15) + ' 320 ' + y + ' T640 ' + y + ' T840 ' + y }); }),
+            h('ellipse', { className: 'rh-fossil-slab-shadow', cx: 420, cy: 265, rx: compact ? 295 : 340, ry: compact ? 160 : 180 }),
+            renderSkeleton(profile),
+            !compact && callouts.map(function(callout, i) { return h('g', { key: i, className: 'rh-fossil-evidence-callout', 'data-active': true, 'data-fossil-evidence-mark': i + 1 }, h('path', { className: 'rh-fossil-callout-line', d: 'M' + callout.x + ' ' + callout.y + ' Q' + ((callout.x+callout.lx)/2) + ' ' + (callout.ly-15) + ' ' + callout.lx + ' ' + callout.ly }), h('circle', { className: 'rh-fossil-callout-dot', cx: callout.x, cy: callout.y, r: 6 }), h('text', { className: 'rh-fossil-callout-label', x: callout.lx, y: callout.ly-7 }, evidence[i])); }),
+            h('text', { className: 'rh-fossil-svg-label', x: 22, y: 28 }, compact ? 'UNKNOWN EVOLUTIONARY ROLE · EVIDENCE ONLY' : 'DEEP TIME RECONSTRUCTION · ' + profile.code),
+            h('text', { className: 'rh-fossil-svg-accent', x: 22, y: 55 }, compact ? 'CLASSIFY THE FOSSIL' : item.age + ' · ' + item.period.toUpperCase()),
+            h('text', { className: 'rh-fossil-svg-label', x: 818, y: 460, textAnchor: 'end' }, 'SCHEMATIC · INCOMPLETE FOSSILS REQUIRE INFERENCE')
+          );
+        }
+
+        return h('div', { className: 'rh-fossil-lab', 'data-raptor-fossil-navigator': 'true', 'data-fossil-mode': mode, 'data-fossil-era': eraId, 'data-fossil-kind': visual.kind, 'data-fossil-lens': lensId, style: { '--rh-fossil-accent': visual.accent } },
+          h('section', { className: 'rh-fossil-hero', 'aria-labelledby': 'rh-fossil-title' },
+            h('div', { className: 'rh-fossil-hero-main' }, h('div', { className: 'rh-fossil-hero-icon', 'aria-hidden': 'true' }, 'DEEP\nTIME'), h('div', null, h('div', { className: 'rh-fossil-kicker' }, 'Interactive paleontology evidence station'), h('h2', { id: 'rh-fossil-title', className: 'rh-fossil-title' }, __alloT('stem.raptorhunt.fossil_record_2', 'Fossil Record')), h('p', { className: 'rh-fossil-copy' }, FOSSIL_RECORD.intro + ' Navigate specimens in chronological order, change the evidence lens, and separate observation from evolutionary interpretation.'))),
+            h('div', { className: 'rh-fossil-summary', 'aria-label': 'Deep Time Navigator inventory' }, h('div', { className: 'rh-fossil-stat' }, h('strong', null, FOSSIL_RECORD.fossils.length), h('span', null, 'fossil specimens')), h('div', { className: 'rh-fossil-stat' }, h('strong', null, '150M'), h('span', null, 'year window')), h('div', { className: 'rh-fossil-stat' }, h('strong', null, FOSSIL_RECORD.keyEvents.length), h('span', null, 'turning points')))
+          ),
+          h('div', { className: 'rh-fossil-modebar', role: 'group', 'aria-label': 'Choose fossil record view' }, modes.map(function(item) { return h('button', { key: item.id, type: 'button', className: 'rh-fossil-mode', onClick: function() { setMode(item.id); }, 'aria-pressed': mode === item.id, 'data-fossil-mode-control': item.id }, item.label); })),
+          mode === 'events' ? h('section', { className: 'rh-fossil-events', 'aria-labelledby': 'rh-fossil-events-title' },
+            h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, 'Five changes that redirected avian history'), h('h3', { id: 'rh-fossil-events-title' }, 'Evolutionary turning points')), h('span', null, '≈165 million years → present')),
+            h('div', { className: 'rh-fossil-events-intro' }, 'Read this rail as a sequence of constraints and opportunities: flight originated, extinction filtered lineages, ecological space reopened, giant forms evolved, and human pressure accelerated recent loss.'),
+            h('div', { className: 'rh-fossil-event-rail' }, FOSSIL_RECORD.keyEvents.map(function(item, i) { var accents = ['#fb923c','#f87171','#67e8f9','#c4b5fd','#f472b6']; return h('article', { key: i, className: 'rh-fossil-event', 'data-fossil-event': i + 1, style: { '--event-accent': accents[i] } }, h('div', { className: 'rh-fossil-event-head' }, h('strong', null, item.event), h('span', null, item.when)), h('p', null, item.summary)); }))
+          ) : h(React.Fragment, null,
+            h('div', { className: 'rh-fossil-filters', role: 'group', 'aria-label': 'Filter specimens by deep-time chapter' }, FOSSIL_ERAS.map(function(era) { return h('button', { key: era.id, type: 'button', className: 'rh-fossil-filter', onClick: function() { setEra(era.id); }, 'aria-pressed': eraId === era.id, 'data-fossil-era-filter': era.id }, h('span', { className: 'rh-fossil-filter-code', 'aria-hidden': 'true' }, era.code), era.label); })),
+            h('section', { className: 'rh-fossil-chronology', 'aria-labelledby': 'rh-fossil-chronology-title' },
+              h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, 'Oldest to youngest · ordered by estimated age'), h('h3', { id: 'rh-fossil-chronology-title' }, 'Deep-time specimen rail')), h('span', null, shortName(record) + ' · ' + record.age)),
+              h('div', { className: 'rh-fossil-time-window' }, h('div', { className: 'rh-fossil-time-nodes' }, chronology.map(function(entry) { var active = entry.index === fossilIdx; var inFilter = eraId === 'all' || entry.visual.era === eraId; return h('button', { key: entry.index, type: 'button', className: 'rh-fossil-time-node', onClick: function() { setFossil(entry.index); }, 'aria-pressed': active, 'data-in-filter': inFilter, 'data-fossil-time-node': entry.visual.kind, style: { '--node-accent': entry.visual.accent } }, h('span', { className: 'rh-fossil-time-code' }, entry.visual.code), h('span', { className: 'rh-fossil-time-age' }, entry.record.age), h('span', { className: 'rh-fossil-time-name' }, shortName(entry.record))); }))),
+              h('label', { className: 'rh-fossil-scrubber' }, h('span', { className: 'rh-fossil-scrubber-head' }, h('span', null, 'Move through ordered specimens'), h('strong', null, (chronologyPosition + 1) + ' / ' + chronology.length)), h('input', { type: 'range', min: 0, max: chronology.length - 1, step: 1, value: chronologyPosition, onChange: function(event) { setFossil(chronology[Number(event.target.value)].index); }, 'aria-label': 'Deep-time specimen position', 'aria-valuetext': record.name + ', ' + record.age }), h('span', { className: 'rh-fossil-scrubber-labels', 'aria-hidden': 'true' }, h('span', null, 'Late Jurassic'), h('span', null, 'Present')))
+            ),
+            h('div', { className: 'rh-fossil-workbench' },
+              h('section', { className: 'rh-fossil-plate', 'aria-labelledby': 'rh-fossil-plate-title' },
+                h('div', { className: 'rh-fossil-plate-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, activeLens.label + ' evidence lens'), h('strong', { id: 'rh-fossil-plate-title', className: 'rh-fossil-plate-title' }, shortName(record) + ' reconstruction')), h('span', { className: 'rh-fossil-age-badge' }, record.age + ' · ' + record.period)),
+                h('div', { className: 'rh-fossil-stage', 'data-raptor-fossil-stage': visual.shape }, renderFossilPlate(visual, record, { identity: visual.kind }), h('div', { className: 'rh-fossil-stage-legend', 'aria-hidden': 'true' }, activeLens.code + ' lens · three evidence callouts')),
+                h('div', { className: 'rh-fossil-lenses', role: 'group', 'aria-label': 'Choose evidence lens' }, lenses.map(function(item) { return h('button', { key: item.id, type: 'button', className: 'rh-fossil-lens', onClick: function() { setLens(item.id); }, 'aria-pressed': lensId === item.id, 'data-fossil-lens-control': item.id }, h('span', null, item.code), item.label); }))
+              ),
+              h('aside', { className: 'rh-fossil-detail', 'data-raptor-fossil-detail': 'true', 'aria-labelledby': 'rh-fossil-detail-title', 'aria-live': 'polite' },
+                h('div', { className: 'rh-fossil-detail-head' }, h('div', null, h('div', { className: 'rh-fossil-detail-kicker' }, visual.roleLabel), h('h3', { id: 'rh-fossil-detail-title' }, shortName(record))), h('span', { className: 'rh-fossil-chip' }, visual.code)),
+                h('div', { className: 'rh-fossil-reading' }, h('span', null, activeLens.label + ' reading'), h('strong', null, lensEvidence(visual, record)[0]), h('p', null, lensId === 'anatomy' ? record.significance : lensId === 'ecology' ? visual.setting + '. Fossils preserve organisms and environments unevenly, so absence is not proof of absence.' : lensId === 'evolution' ? visual.evidence : 'Scale estimates combine incomplete bones with comparison to related taxa and should be read as ranges.')),
+                h('div', { className: 'rh-fossil-place' }, h('span', null, 'Stratigraphic context'), h('strong', null, record.period + ' · ' + record.age), h('p', null, record.location)),
+                h('div', { className: 'rh-fossil-interpretation' }, h('span', null, 'Evidence → interpretation'), h('strong', null, visual.lineage), h('p', null, record.interpretation)),
+                h('div', { className: 'rh-fossil-scale' }, h('span', null, 'Teaching-scale comparison'), h('div', { className: 'rh-fossil-scale-bars' }, h('div', { className: 'rh-fossil-scale-row' }, h('span', null, visual.code), h('span', { className: 'rh-fossil-scale-track' }, h('span', { style: { width: spanPosition + '%' } })), h('b', null, visual.spanM ? visual.spanM + ' m' : 'event')), h('div', { className: 'rh-fossil-scale-row' }, h('span', null, 'Human'), h('span', { className: 'rh-fossil-scale-track' }, h('span', { style: { width: (1.7 / 7 * 100) + '%' } })), h('b', null, '1.7 m'))), h('div', { className: 'rh-fossil-time-depth' }, h('div', { className: 'rh-fossil-depth-head' }, h('span', null, 'Present'), h('strong', null, record.age), h('span', null, '150 Ma')), h('div', { className: 'rh-fossil-depth-track', role: 'meter', 'aria-label': 'Age relative to the 150 million year timeline', 'aria-valuenow': Math.round(depthPosition), 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('span', { style: { left: depthPosition + '%' } })))),
+                h('div', { className: 'rh-fossil-detail-nav' }, h('button', { type: 'button', onClick: function() { stepFossil(-1); } }, '← Older specimen'), h('button', { type: 'button', onClick: function() { stepFossil(1); } }, 'Younger specimen →'))
+              )
+            ),
+            h('section', { className: 'rh-fossil-compare', 'aria-labelledby': 'rh-fossil-compare-title' },
+              h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, 'Keep claims tied to evidence'), h('h3', { id: 'rh-fossil-compare-title' }, 'Compare across deep time')), h('span', null, Math.abs(visual.ageMa - compareVisual.ageMa).toFixed(visual.ageMa < 1 || compareVisual.ageMa < 1 ? 3 : 1) + ' million years apart')),
+              h('div', { className: 'rh-fossil-compare-grid' },
+                h('div', { className: 'rh-fossil-compare-control' }, h('label', null, 'Comparison specimen', h('select', { value: compareIdx, onChange: function(event) { setRH({ fossilCompareIdx: Number(event.target.value) }); }, 'aria-label': 'Choose fossil comparison specimen' }, chronology.map(function(entry) { return entry.index === fossilIdx ? null : h('option', { key: entry.index, value: entry.index }, shortName(entry.record) + ' · ' + entry.record.age); }))), h('p', null, 'Compare age, body plan, and evolutionary role. Similar shapes can evolve independently in unrelated lineages.')),
+                h('article', { className: 'rh-fossil-compare-card', 'data-current': 'true' }, h('div', { className: 'rh-fossil-compare-card-head' }, h('strong', null, shortName(record)), h('span', null, visual.code)), h('b', null, record.age + ' · ' + visual.roleLabel), h('p', null, visual.evidence)),
+                h('article', { className: 'rh-fossil-compare-card' }, h('div', { className: 'rh-fossil-compare-card-head' }, h('strong', null, shortName(compareRecord)), h('span', null, compareVisual.code)), h('b', null, compareRecord.age + ' · ' + compareVisual.roleLabel), h('p', null, compareVisual.evidence))
+              )
+            ),
+            h('section', { className: 'rh-fossil-directory', 'aria-labelledby': 'rh-fossil-directory-title' },
+              h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, FOSSIL_ERAS.filter(function(item) { return item.id === eraId; })[0].label), h('h3', { id: 'rh-fossil-directory-title' }, 'Browse fossil evidence cards')), h('span', null, filtered.length + ' visible')),
+              h('div', { className: 'rh-fossil-directory-grid' }, filtered.map(function(entry) { var active = entry.index === fossilIdx; return h('button', { key: entry.index, type: 'button', className: 'rh-fossil-card', onClick: function() { setFossil(entry.index); }, 'data-active': active, 'aria-current': active ? 'true' : undefined, 'aria-label': 'Open ' + entry.record.name + ' fossil reconstruction', style: { '--card-accent': entry.visual.accent } }, h('span', { className: 'rh-fossil-card-code', 'aria-hidden': 'true' }, entry.visual.code), h('span', { className: 'rh-fossil-card-copy' }, h('strong', null, shortName(entry.record)), h('span', null, entry.record.period + ' · ' + entry.visual.roleLabel)), h('span', { className: 'rh-fossil-card-age' }, entry.record.age)); }))
+            ),
+            h('section', { className: 'rh-fossil-challenge', 'aria-labelledby': 'rh-fossil-challenge-title', 'data-fossil-challenge': mysteryCorrect ? 'correct' : mysteryAnswered ? 'incorrect' : 'open' },
+              h('div', { className: 'rh-fossil-section-head' }, h('div', null, h('div', { className: 'rh-fossil-section-kicker' }, 'Evolutionary reasoning challenge'), h('h3', { id: 'rh-fossil-challenge-title' }, 'Classify the evidence pattern')), h('span', null, FOSSIL_RECORD.fossils[mysteryIdx].age)),
+              h('div', { className: 'rh-fossil-challenge-grid' },
+                h('div', { className: 'rh-fossil-mystery-plate' }, renderFossilPlate(mysteryVisual, FOSSIL_RECORD.fossils[mysteryIdx], { compact: true, identity: 'mystery-' + mysteryIdx })),
+                h('div', { className: 'rh-fossil-quiz' }, h('span', null, 'Interpretation withheld'), h('strong', null, shortName(FOSSIL_RECORD.fossils[mysteryIdx])), h('p', null, mysteryVisual.evidence + '. Which broad evolutionary role best fits the pattern?'), h('div', { className: 'rh-fossil-guess-grid', role: 'group', 'aria-label': 'Choose the fossil evolutionary role' }, roleOptions.map(function(option) { var state = mysteryAnswered && option.id === mysteryGuess ? (mysteryCorrect ? 'correct' : 'wrong') : undefined; return h('button', { key: option.id, type: 'button', className: 'rh-fossil-guess', onClick: function() { setGuess(option.id); }, 'data-guess-state': state, 'data-fossil-role-guess': option.id, 'aria-pressed': mysteryGuess === option.id }, option.label); })), mysteryAnswered && h('div', { className: 'rh-fossil-result', 'data-result': mysteryCorrect ? 'correct' : 'incorrect', role: 'status' }, mysteryCorrect ? 'Correct interpretation. ' + mysteryVisual.roleLabel + ': ' + mysteryVisual.lineage + '.' : 'Not the strongest fit. Recheck the specimen age, lineage, and whether the form survived or represents an independent extreme.'), h('button', { type: 'button', className: 'rh-fossil-new', onClick: nextMystery }, 'Load another fossil'))
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1 bg-slate-900/60 rounded-lg p-1', role: 'tablist' },
-            tabs.map(function(t) {
-              var active = fossilTab === t.id;
-              return h('button', {
-                key: t.id,
-                onClick: function() { setFossilTab(t.id); },
-                className: 'px-3 py-1.5 rounded text-xs font-bold ' + (active
-                  ? 'bg-stone-600 text-white'
-                  : 'transition-colors text-stone-200 hover:text-white'),
-                role: 'tab',
-                'aria-selected': active
-              }, t.label);
-            })
-          ),
-          fossilTab === 'fossils' && h('div', { className: 'space-y-2' },
-            FOSSIL_RECORD.fossils.map(function(f, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border-l-4 border-amber-600 rounded-r-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-amber-300' }, f.name),
-                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, f.age)
-                ),
-                h('div', { className: 'text-xs italic text-purple-200/80 mb-1' }, f.period + ' · ' + f.size),
-                h('div', { className: 'text-xs text-slate-300 mb-1' }, '📍 ' + f.location),
-                h('div', { className: 'text-xs text-emerald-100/90 mb-1 leading-relaxed' }, '🔍 ' + f.significance),
-                h('div', { className: 'text-[10px] italic text-amber-200/80 mt-1' }, '💡 ' + f.interpretation)
-              );
-            })
-          ),
-          fossilTab === 'events' && h('div', { className: 'space-y-3' },
-            FOSSIL_RECORD.keyEvents.map(function(e, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-amber-300' }, e.event),
-                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, e.when)
-                ),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, e.summary)
-              );
-            })
-          )
+          h('div', { className: 'rh-fossil-note', role: 'note' }, h('strong', null, 'Paleontology note: '), 'Reconstruction combines preserved anatomy, rock context, comparison, and explicit uncertainty. A fossil can illuminate bird evolution without being a direct ancestor of modern raptors.')
         );
       }
 
@@ -20910,65 +22124,340 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: HABITAT ATLAS (v0.41)
       // ────────────────────────────────────────────────────────
       function renderHabitats() {
-        var habIdx = rh.habitatIdx == null ? 0 : rh.habitatIdx;
-        function setHabIdx(i) { setRH({ habitatIdx: i }); }
+        var requestedIdx = rh.habitatIdx == null ? 0 : Number(rh.habitatIdx);
+        var habIdx = isFinite(requestedIdx) && requestedIdx >= 0 && requestedIdx < HABITAT_ATLAS.habitats.length ? requestedIdx : 0;
         var hab = HABITAT_ATLAS.habitats[habIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-green-900/40 to-emerald-900/40 border border-green-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🏞'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-green-200 tracking-tight' }, __alloT('stem.raptorhunt.habitat_atlas_2', 'Habitat Atlas')),
-                h('div', { className: 'text-sm text-green-100/85 mt-1' }, HABITAT_ATLAS.intro)
+        var visual = HABITAT_VISUALS[habIdx] || HABITAT_VISUALS[0];
+        var layers = [
+          { id: 'landscape', label: 'Habitat structure', code: 'LAND' },
+          { id: 'raptors', label: 'Raptor niches', code: 'AIR' },
+          { id: 'prey', label: 'Prey pathways', code: 'FOOD' },
+          { id: 'pressures', label: 'Conservation pressure', code: 'RISK' }
+        ];
+        var seasons = [
+          { id: 'spring', label: 'Spring' },
+          { id: 'summer', label: 'Summer' },
+          { id: 'fall', label: 'Fall' },
+          { id: 'winter', label: 'Winter' }
+        ];
+        var requestedLayer = rh.habitatLayer || 'landscape';
+        var activeLayer = layers.some(function(layer) { return layer.id === requestedLayer; }) ? requestedLayer : 'landscape';
+        var requestedSeason = rh.habitatSeason || 'fall';
+        var activeSeason = seasons.some(function(season) { return season.id === requestedSeason; }) ? requestedSeason : 'fall';
+        var activeLayerMeta = layers.filter(function(layer) { return layer.id === activeLayer; })[0];
+        var seasonIdx = seasons.map(function(season) { return season.id; }).indexOf(activeSeason);
+        var isPeak = visual.peak.indexOf(activeSeason) >= 0;
+        var raptorAssociations = HABITAT_ATLAS.habitats.reduce(function(total, habitat) { return total + habitat.keySpecies.length; }, 0);
+        var metricLabels = ['Canopy', 'Open sky', 'Surface water', 'Human footprint'];
+
+        function setHabIdx(i) {
+          setRH({ habitatIdx: i });
+          rhAnnounce(HABITAT_ATLAS.habitats[i].name + ' habitat plate opened');
+        }
+
+        function setHabitatLayer(id) {
+          setRH({ habitatLayer: id });
+          rhAnnounce(layers.filter(function(layer) { return layer.id === id; })[0].label + ' layer shown');
+        }
+
+        function setHabitatSeason(id) {
+          setRH({ habitatSeason: id });
+          rhAnnounce(id.charAt(0).toUpperCase() + id.slice(1) + ' field season selected');
+        }
+
+        function layerEvidence() {
+          if (activeLayer === 'raptors') return visual.raptorPoints.map(function(point, i) { return { label: hab.keySpecies[i] || hab.keySpecies[0], point: point }; });
+          if (activeLayer === 'prey') return visual.preyPoints.map(function(point, i) { return { label: visual.preyLabels[i], point: point }; });
+          if (activeLayer === 'pressures') return visual.pressurePoints.map(function(point, i) { return { label: visual.pressureLabels[i], point: point }; });
+          return visual.structurePoints.map(function(point, i) { return { label: visual.structure[i], point: point }; });
+        }
+
+        function birdGlyph(x, y, scale, rotation, key, highlighted) {
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') rotate(' + (rotation || 0) + ') scale(' + scale + ')' },
+            h('path', { className: highlighted ? 'rh-hab-accent' : 'rh-hab-ink', d: 'M-42 0 C-28 -20 -11 -21 0 -4 C11 -21 28 -20 42 0 C26 -7 17 4 0 11 C-17 4 -26 -7 -42 0 Z' }),
+            h('path', { className: 'rh-hab-line-thin', d: 'M-7 8 L0 21 L7 8' })
+          );
+        }
+
+        function preyGlyph(x, y, scale, key, aquatic) {
+          if (aquatic) return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('path', { className: 'rh-hab-accent', d: 'M-31 0 C-17 -17 13 -17 31 0 C13 17 -17 17 -31 0 Z M31 0 L50 -16 L50 16 Z' }),
+            h('circle', { className: 'rh-hab-ink', cx: -15, cy: -3, r: 2.5 })
+          );
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('ellipse', { className: 'rh-hab-accent', cx: 0, cy: 0, rx: 24, ry: 13 }),
+            h('circle', { className: 'rh-hab-accent', cx: -22, cy: -7, r: 8 }),
+            h('path', { className: 'rh-hab-accent-stroke', d: 'M22 0 C43 -20 49 1 56 5 M-27 -12 L-34 -26 M-18 -14 L-21 -29' })
+          );
+        }
+
+        function treeGlyph(x, y, scale, conifer, key) {
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('rect', { className: 'rh-hab-ink', x: -9, y: -36, width: 18, height: 110, rx: 5 }),
+            conifer
+              ? h('g', null,
+                  h('path', { className: 'rh-hab-land', d: 'M0 -130 L-55 -42 L55 -42 Z' }),
+                  h('path', { className: 'rh-hab-land', d: 'M0 -95 L-66 -1 L66 -1 Z' }),
+                  h('path', { className: 'rh-hab-land', d: 'M0 -56 L-72 42 L72 42 Z' })
+                )
+              : h('g', null,
+                  h('circle', { className: 'rh-hab-land', cx: -35, cy: -53, r: 47 }),
+                  h('circle', { className: 'rh-hab-land', cx: 25, cy: -66, r: 54 }),
+                  h('circle', { className: 'rh-hab-land', cx: 48, cy: -27, r: 43 }),
+                  h('circle', { className: 'rh-hab-land', cx: -12, cy: -15, r: 54 })
+                )
+          );
+        }
+
+        function renderSeasonAtmosphere() {
+          if (activeSeason === 'winter') return h('g', { 'data-habitat-atmosphere': 'winter' },
+            [72,143,226,312,398,491,579,664,751].map(function(x, i) { return h('circle', { key: 'snow' + i, className: 'rh-hab-accent', cx: x, cy: 64 + (i % 4) * 72, r: 3 + (i % 2), opacity: .62 }); }),
+            h('path', { d: 'M0 384 C160 350 286 403 430 368 C585 331 693 375 840 342 L840 480 L0 480 Z', fill: '#e0f2fe', opacity: .12 })
+          );
+          if (activeSeason === 'fall') return h('g', { 'data-habitat-atmosphere': 'fall' },
+            [96,178,262,355,447,546,637,725].map(function(x, i) { return h('path', { key: 'leaf' + i, className: 'rh-hab-accent', d: 'M' + x + ' ' + (89 + (i % 3) * 63) + ' q12 -10 20 1 q-8 15 -20 8 q-9 -9 0 -10 Z', opacity: .55 }); })
+          );
+          if (activeSeason === 'spring') return h('g', { 'data-habitat-atmosphere': 'spring' },
+            [115,210,316,423,532,638,746].map(function(x, i) { return h('circle', { key: 'bud' + i, className: 'rh-hab-accent', cx: x, cy: 303 - (i % 3) * 47, r: 5, opacity: .54 }); })
+          );
+          return h('g', { 'data-habitat-atmosphere': 'summer' },
+            h('circle', { className: 'rh-hab-accent', cx: 742, cy: 73, r: 32, opacity: .38 }),
+            [0,1,2,3,4,5,6,7].map(function(i) { var angle = i * Math.PI / 4; return h('line', { key: 'ray' + i, className: 'rh-hab-accent-stroke', x1: 742 + Math.cos(angle) * 42, y1: 73 + Math.sin(angle) * 42, x2: 742 + Math.cos(angle) * 57, y2: 73 + Math.sin(angle) * 57, opacity: .52 }); })
+          );
+        }
+
+        function renderHabitatScene() {
+          var kind = visual.kind;
+          var scene;
+          if (kind === 'deciduous') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-land', d: 'M0 319 C132 269 252 333 382 287 C529 236 650 298 840 240 L840 480 L0 480 Z' }),
+            h('path', { className: 'rh-hab-water', d: 'M0 422 C129 387 248 429 361 398 C482 365 571 401 705 371 C761 359 802 345 840 322 L840 480 L0 480 Z', opacity: .72 }),
+            [[104,349,.74],[226,336,.91],[363,324,1.02],[511,337,.82],[655,310,.98],[772,315,.72]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], false, 'dec-tree-' + i); }),
+            h('path', { className: 'rh-hab-route', d: 'M77 218 C214 171 325 214 447 164 C557 119 679 166 770 112' })
+          );
+          else if (kind === 'boreal') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-line-thin', d: 'M0 235 L151 98 L269 224 L411 73 L548 238 L699 107 L840 231' }),
+            h('path', { className: 'rh-hab-land', d: 'M0 338 C139 298 245 349 367 313 C511 271 676 331 840 279 L840 480 L0 480 Z' }),
+            [[84,365,.66],[179,350,.82],[281,371,.7],[397,341,.94],[528,365,.72],[646,337,.9],[765,357,.68]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], true, 'boreal-tree-' + i); }),
+            h('path', { className: 'rh-hab-water', d: 'M554 390 C629 356 702 371 840 341 L840 480 L570 480 Z', opacity: .55 })
+          );
+          else if (kind === 'grassland') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-land', d: 'M0 246 C158 205 262 282 408 238 C565 191 681 251 840 211 L840 480 L0 480 Z' }),
+            [42,91,153,219,284,351,421,493,562,629,697,761,813].map(function(x, i) { return h('path', { key: 'grass' + i, className: 'rh-hab-line-thin', d: 'M' + x + ' 438 C' + (x-11) + ' 398 ' + (x-8) + ' ' + (354-(i%3)*18) + ' ' + (x-3) + ' ' + (328-(i%3)*18) + ' M' + x + ' 438 C' + (x+13) + ' 398 ' + (x+10) + ' ' + (365-(i%2)*25) + ' ' + (x+5) + ' ' + (337-(i%2)*24) }); }),
+            h('ellipse', { className: 'rh-hab-ink', cx: 613, cy: 405, rx: 58, ry: 17 }),
+            h('ellipse', { className: 'rh-hab-ink', cx: 702, cy: 421, rx: 43, ry: 13 }),
+            h('path', { className: 'rh-hab-line', d: 'M756 287 L756 411 M756 287 L711 315 M756 287 L798 324 M756 287 L763 231' })
+          );
+          else if (kind === 'mountain') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-ink', d: 'M0 367 L178 153 L291 285 L440 68 L602 296 L720 167 L840 339 L840 480 L0 480 Z' }),
+            h('path', { className: 'rh-hab-accent', d: 'M127 214 L178 153 L224 207 L193 198 L174 219 L155 199 Z M380 142 L440 68 L503 147 L466 132 L438 159 L414 133 Z M681 213 L720 167 L758 222 L735 210 L719 226 L704 209 Z', opacity: .54 }),
+            h('path', { className: 'rh-hab-land', d: 'M0 390 C164 341 278 413 425 362 C577 309 708 383 840 341 L840 480 L0 480 Z', opacity: .72 }),
+            [[118,410,.42],[256,397,.5],[555,406,.45],[688,388,.52]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], true, 'mountain-tree-' + i); }),
+            h('path', { className: 'rh-hab-route', d: 'M102 248 C247 204 334 235 444 166 C569 89 658 154 765 120' })
+          );
+          else if (kind === 'coastal') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-ink', d: 'M0 138 L214 166 L287 269 L268 480 L0 480 Z' }),
+            h('path', { className: 'rh-hab-land', d: 'M0 137 C91 111 176 125 234 163 L282 273 L0 302 Z', opacity: .72 }),
+            h('rect', { className: 'rh-hab-water', x: 270, y: 254, width: 570, height: 226 }),
+            [0,1,2,3].map(function(i) { return h('path', { key: 'wave' + i, className: i === 1 ? 'rh-hab-accent-stroke' : 'rh-hab-line-thin', d: 'M' + (292+i*19) + ' ' + (307+i*43) + ' C' + (420+i*20) + ' ' + (283+i*43) + ' ' + (542+i*12) + ' ' + (337+i*35) + ' ' + (820-i*7) + ' ' + (302+i*41) }); }),
+            h('path', { className: 'rh-hab-line', d: 'M122 164 L122 298 M92 298 L152 298 M104 164 L140 164 L133 127 L111 127 Z' }),
+            h('path', { className: 'rh-hab-route', d: 'M73 86 C227 43 354 98 489 62 C613 29 709 73 795 46' })
+          );
+          else if (kind === 'tundra') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-line-thin', d: 'M0 266 C153 222 258 281 393 243 C531 204 681 259 840 215' }),
+            h('path', { className: 'rh-hab-land', d: 'M0 327 C149 291 272 341 410 306 C560 267 690 321 840 279 L840 480 L0 480 Z', opacity: .62 }),
+            h('path', { className: 'rh-hab-water', d: 'M432 369 C550 330 678 367 840 324 L840 480 L461 480 Z', opacity: .42 }),
+            [76,162,251,347,448,551,654,758].map(function(x, i) { return h('path', { key: 'shrub' + i, className: 'rh-hab-line-thin', d: 'M' + x + ' 412 L' + (x-19) + ' ' + (385-(i%2)*12) + ' M' + x + ' 412 L' + (x+20) + ' ' + (381-(i%3)*9) + ' M' + x + ' 412 L' + (x+2) + ' ' + (367-(i%2)*15) }); }),
+            h('ellipse', { className: 'rh-hab-ink', cx: 576, cy: 421, rx: 35, ry: 11 }),
+            h('ellipse', { className: 'rh-hab-ink', cx: 691, cy: 400, rx: 28, ry: 9 })
+          );
+          else if (kind === 'wetland') scene = h('g', { 'data-habitat-drawing': kind },
+            h('rect', { className: 'rh-hab-water', x: 0, y: 286, width: 840, height: 194 }),
+            h('path', { className: 'rh-hab-land', d: 'M0 340 C139 307 239 360 355 324 C486 282 611 341 840 285 L840 480 L0 480 Z', opacity: .38 }),
+            [[116,350,.83],[279,365,.65],[716,345,.82]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], false, 'wet-tree-' + i); }),
+            [41,72,195,228,382,417,527,559,655,681,785,812].map(function(x, i) { return h('path', { key: 'reed' + i, className: 'rh-hab-line', d: 'M' + x + ' 448 L' + (x+(i%2?8:-7)) + ' ' + (328-(i%3)*18) + ' M' + (x+(i%2?8:-7)) + ' ' + (328-(i%3)*18) + ' q16 -9 22 4 q-12 12 -22 1' }); }),
+            [0,1,2].map(function(i) { return h('path', { key: 'ripple' + i, className: 'rh-hab-line-thin', d: 'M' + (323+i*128) + ' ' + (394+i*15) + ' q49 -16 99 0 q-49 17 -99 0' }); })
+          );
+          else if (kind === 'desert') scene = h('g', { 'data-habitat-drawing': kind },
+            h('circle', { className: 'rh-hab-accent', cx: 713, cy: 85, r: 43, opacity: .5 }),
+            h('path', { className: 'rh-hab-ink', d: 'M0 309 L98 239 L98 196 L242 196 L242 252 L351 323 L468 237 L468 183 L626 183 L626 246 L840 318 L840 480 L0 480 Z' }),
+            h('path', { className: 'rh-hab-land', d: 'M0 353 C136 319 252 369 383 333 C519 296 687 355 840 304 L840 480 L0 480 Z', opacity: .48 }),
+            h('g', { transform: 'translate(290 338)' }, h('path', { className: 'rh-hab-accent-stroke', d: 'M0 80 L0 -75 M0 -35 L-39 -56 L-39 -17 M0 5 L40 -17 L40 -55' })),
+            h('g', { transform: 'translate(689 374) scale(.72)' }, h('path', { className: 'rh-hab-accent-stroke', d: 'M0 80 L0 -75 M0 -35 L-39 -56 L-39 -17 M0 5 L40 -17 L40 -55' })),
+            h('path', { className: 'rh-hab-line-thin', d: 'M84 427 C202 389 313 438 435 406 C566 372 697 422 804 388' })
+          );
+          else if (kind === 'tropical') scene = h('g', { 'data-habitat-drawing': kind },
+            h('rect', { className: 'rh-hab-water', x: 0, y: 349, width: 840, height: 131, opacity: .7 }),
+            [[67,361,.75],[173,340,.96],[296,371,.72],[424,329,1.08],[566,361,.8],[692,336,.98],[795,370,.7]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], false, 'tropical-tree-' + i); }),
+            h('path', { className: 'rh-hab-land', d: 'M0 225 C122 177 213 231 329 187 C454 139 580 204 685 164 C741 143 791 142 840 151 L840 353 C719 327 626 365 520 329 C384 283 267 342 142 298 C95 282 47 283 0 292 Z', opacity: .62 }),
+            h('path', { className: 'rh-hab-line', d: 'M560 226 C565 310 552 369 531 438 M606 216 C595 300 602 367 630 438' }),
+            h('path', { className: 'rh-hab-route', d: 'M77 111 C199 70 305 126 420 84 C551 35 684 94 776 53' })
+          );
+          else if (kind === 'urban') scene = h('g', { 'data-habitat-drawing': kind },
+            [[24,185,119,295],[157,114,104,366],[275,208,93,272],[382,76,144,404],[541,153,102,327],[656,104,150,376]].map(function(b, i) { return h('g', { key: 'building' + i }, h('rect', { className: 'rh-hab-ink', x: b[0], y: b[1], width: b[2], height: b[3] }), [0,1,2].map(function(row) { return [0,1].map(function(col) { return h('rect', { key: 'window' + row + col, className: (row+col+i)%3===0 ? 'rh-hab-accent' : 'rh-hab-line-thin', x: b[0]+18+col*39, y: b[1]+31+row*58, width: 17, height: 26, opacity: .48 }); }); })); }),
+            h('path', { className: 'rh-hab-land', d: 'M40 427 C151 345 252 392 351 349 C460 303 555 370 646 329 L646 480 L40 480 Z', opacity: .58 }),
+            treeGlyph(189, 425, .56, false, 'urban-tree-1'),
+            treeGlyph(504, 423, .49, false, 'urban-tree-2'),
+            h('path', { className: 'rh-hab-route', d: 'M72 257 C205 207 302 254 415 199 C540 138 681 190 781 143' })
+          );
+          else if (kind === 'agriculture') scene = h('g', { 'data-habitat-drawing': kind },
+            h('path', { className: 'rh-hab-land', d: 'M0 248 C162 211 291 270 429 233 C568 196 689 247 840 211 L840 480 L0 480 Z' }),
+            [0,1,2,3,4,5,6].map(function(i) { return h('path', { key: 'row' + i, className: i===2 ? 'rh-hab-accent-stroke' : 'rh-hab-line-thin', d: 'M' + (-60+i*146) + ' 480 L' + (245+i*86) + ' 249' }); }),
+            h('rect', { className: 'rh-hab-ink', x: 96, y: 271, width: 139, height: 111 }),
+            h('path', { className: 'rh-hab-accent', d: 'M78 273 L164 205 L251 273 Z' }),
+            h('rect', { className: 'rh-hab-ink', x: 132, y: 322, width: 44, height: 60 }),
+            h('rect', { className: 'rh-hab-ink', x: 673, y: 232, width: 67, height: 143, rx: 12 }),
+            h('path', { className: 'rh-hab-line', d: 'M656 236 Q706 181 757 236' }),
+            [309,362,421,479,536,592].map(function(x, i) { return treeGlyph(x, 382, .3+(i%2)*.06, false, 'hedge-' + i); })
+          );
+          else scene = h('g', { 'data-habitat-drawing': 'riparian' },
+            h('path', { className: 'rh-hab-land', d: 'M0 266 C148 219 275 283 410 244 C557 202 682 261 840 213 L840 480 L0 480 Z' }),
+            h('path', { className: 'rh-hab-water', d: 'M338 232 C441 278 400 326 514 349 C635 373 691 417 840 392 L840 480 L524 480 C489 437 372 421 337 366 C301 309 272 270 338 232 Z' }),
+            [[83,365,.72],[202,350,.88],[324,375,.59],[508,339,.72],[650,330,.86],[781,345,.67]].map(function(t, i) { return treeGlyph(t[0], t[1], t[2], false, 'river-tree-' + i); }),
+            [0,1,2].map(function(i) { return h('path', { key: 'current' + i, className: i===1 ? 'rh-hab-accent-stroke' : 'rh-hab-line-thin', d: 'M' + (358+i*52) + ' ' + (283+i*56) + ' C' + (430+i*51) + ' ' + (306+i*55) + ' ' + (485+i*59) + ' ' + (347+i*48) + ' ' + (568+i*63) + ' ' + (365+i*45) }); })
+          );
+
+          var evidence = layerEvidence();
+          var aquaticPrey = kind === 'coastal' || kind === 'wetland' || kind === 'riparian' || kind === 'tropical';
+          var layerDrawing = activeLayer === 'raptors'
+            ? h('g', { 'data-habitat-layer-drawing': 'raptors' }, evidence.map(function(item, i) { return birdGlyph(item.point[0] * 8.4, item.point[1] * 4.8, .55 - i * .06, i % 2 ? 7 : -7, 'layer-bird-' + i, true); }))
+            : activeLayer === 'prey'
+              ? h('g', { 'data-habitat-layer-drawing': 'prey' }, evidence.map(function(item, i) { return preyGlyph(item.point[0] * 8.4, item.point[1] * 4.8, .52 - i * .05, 'layer-prey-' + i, aquaticPrey && i !== 1); }))
+              : activeLayer === 'pressures'
+                ? h('g', { 'data-habitat-layer-drawing': 'pressures' }, evidence.map(function(item, i) { var x = item.point[0] * 8.4; var y = item.point[1] * 4.8; return h('g', { key: 'risk-' + i, transform: 'translate(' + x + ' ' + y + ')' }, h('path', { d: 'M0 -26 L24 19 L-24 19 Z', fill: '#7f1d1d', stroke: '#fecaca', strokeWidth: 3 }), h('text', { x: 0, y: 11, textAnchor: 'middle', fill: '#fff', fontSize: 23, fontWeight: 950 }, '!')); }))
+                : h('g', { 'data-habitat-layer-drawing': 'landscape' }, evidence.map(function(item, i) { return h('circle', { key: 'structure-' + i, className: i === 0 ? 'rh-hab-accent-stroke' : 'rh-hab-line-thin', cx: item.point[0] * 8.4, cy: item.point[1] * 4.8, r: 19 + i * 4, strokeDasharray: i ? '5 6' : undefined, opacity: .86 }); }));
+
+          var titleId = 'rh-habitat-svg-title-' + kind;
+          var descId = 'rh-habitat-svg-desc-' + kind;
+          var bgId = 'rh-habitat-bg-' + kind;
+          var gridId = 'rh-habitat-grid-' + kind;
+          return h('svg', { viewBox: '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet' },
+            h('title', { id: titleId }, hab.name + ' ecological cross-section'),
+            h('desc', { id: descId }, activeLayerMeta.label + ' layer for ' + activeSeason + '. Three numbered evidence markers connect the landscape to the field notes.'),
+            h('defs', null,
+              h('linearGradient', { id: bgId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: visual.sky }), h('stop', { offset: '100%', stopColor: visual.ground })),
+              h('pattern', { id: gridId, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .11 }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: 480, fill: 'url(#' + bgId + ')' }),
+            h('rect', { x: 0, y: 0, width: 840, height: 480, fill: 'url(#' + gridId + ')' }),
+            scene,
+            renderSeasonAtmosphere(),
+            layerDrawing,
+            h('text', { className: 'rh-hab-label', x: 22, y: 28 }, 'ECOSYSTEM PLATE ' + String(habIdx + 1).padStart(2, '0') + ' · ' + activeLayerMeta.code),
+            h('text', { className: 'rh-hab-label', x: 818, y: 460, textAnchor: 'end' }, activeSeason.toUpperCase() + ' FIELD VIEW · ILLUSTRATED MODEL')
+          );
+        }
+
+        function renderHabitatThumbnail(index) {
+          var thumb = HABITAT_VISUALS[index];
+          var shapes = [
+            'M0 38 C18 24 33 36 46 27 C59 18 69 28 84 19 L84 56 L0 56 Z',
+            'M0 42 L18 23 L31 37 L49 12 L66 38 L84 24 L84 56 L0 56 Z',
+            'M0 34 C22 20 37 39 55 25 C68 17 76 22 84 18 L84 56 L0 56 Z'
+          ];
+          return h('span', { className: 'rh-habitat-thumb', style: { '--rh-habitat-accent': thumb.accent }, 'aria-hidden': 'true' },
+            h('svg', { viewBox: '0 0 84 56', preserveAspectRatio: 'none' },
+              h('defs', null, h('linearGradient', { id: 'rh-hab-thumb-' + index, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: thumb.sky }), h('stop', { offset: '100%', stopColor: thumb.ground }))),
+              h('rect', { width: 84, height: 56, fill: 'url(#rh-hab-thumb-' + index + ')' }),
+              h('path', { d: shapes[index % shapes.length], fill: thumb.ground, stroke: thumb.accent, strokeWidth: 1.4 }),
+              h('path', { d: 'M16 16 C24 7 31 11 38 18 C45 11 53 7 62 16 C52 13 45 20 38 23 C31 20 24 13 16 16 Z', fill: '#e2e8f0', stroke: thumb.accent, strokeWidth: 1 })
+            ),
+            h('span', { className: 'rh-habitat-thumb-index' }, String(index + 1).padStart(2, '0'))
+          );
+        }
+
+        var evidence = layerEvidence();
+        return h('div', { className: 'rh-habitat-atlas', 'data-raptor-habitat-atlas': 'true', 'data-habitat-kind': visual.kind, 'data-habitat-layer': activeLayer, 'data-habitat-season': activeSeason, style: { '--rh-habitat-accent': visual.accent } },
+          h('section', { className: 'rh-habitat-hero', 'aria-labelledby': 'rh-habitat-title' },
+            h('div', { className: 'rh-habitat-hero-main' },
+              h('div', { className: 'rh-habitat-hero-icon', 'aria-hidden': 'true' }, 'ECO'),
+              h('div', null,
+                h('div', { className: 'rh-habitat-kicker' }, 'Interactive ecosystem cross-sections'),
+                h('h2', { id: 'rh-habitat-title', className: 'rh-habitat-title' }, __alloT('stem.raptorhunt.habitat_atlas_2', 'Habitat Atlas')),
+                h('p', { className: 'rh-habitat-copy' }, HABITAT_ATLAS.intro + ' Switch evidence layers and field seasons to see how the same place changes ecological meaning.')
+              )
+            ),
+            h('div', { className: 'rh-habitat-summary', 'aria-label': 'Habitat atlas inventory' },
+              h('div', { className: 'rh-habitat-stat' }, h('strong', null, HABITAT_ATLAS.habitats.length), h('span', null, 'biome plates')),
+              h('div', { className: 'rh-habitat-stat' }, h('strong', null, raptorAssociations), h('span', null, 'raptor links'))
+            )
+          ),
+          h('section', { className: 'rh-habitat-controlbar', 'aria-label': 'Habitat atlas controls' },
+            h('div', { className: 'rh-habitat-control-group' },
+              h('span', { className: 'rh-habitat-control-label' }, 'Evidence layer'),
+              h('div', { className: 'rh-habitat-layers', role: 'tablist', 'aria-label': 'Choose an ecological evidence layer' },
+                layers.map(function(layer) {
+                  var selected = layer.id === activeLayer;
+                  return h('button', { key: layer.id, id: 'rh-habitat-layer-' + layer.id, type: 'button', role: 'tab', className: 'rh-habitat-layer', onClick: function() { setHabitatLayer(layer.id); }, 'aria-selected': selected, 'aria-controls': 'rh-habitat-stage' },
+                    h('span', { className: 'rh-habitat-layer-code', 'aria-hidden': 'true' }, layer.code), layer.label
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'rh-habitat-control-group' },
+              h('span', { className: 'rh-habitat-control-label' }, 'Field season'),
+              h('div', { className: 'rh-habitat-seasons', role: 'group', 'aria-label': 'Choose a field season' },
+                seasons.map(function(season) { var selected = season.id === activeSeason; return h('button', { key: season.id, type: 'button', className: 'rh-habitat-season', onClick: function() { setHabitatSeason(season.id); }, 'aria-pressed': selected, 'data-habitat-season-choice': season.id }, season.label); })
               )
             )
           ),
-          // Habitat picker
-          h('div', { className: 'flex flex-wrap gap-1' },
-            HABITAT_ATLAS.habitats.map(function(b, i) {
-              var sel = habIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setHabIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-green-700 text-white font-bold' : 'transition-colors bg-slate-800/60 text-green-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, b.name);
-            })
+          h('div', { className: 'rh-habitat-workbench' },
+            h('section', { className: 'rh-habitat-plate', 'aria-labelledby': 'rh-habitat-plate-title' },
+              h('div', { className: 'rh-habitat-plate-head' },
+                h('div', null, h('div', { className: 'rh-habitat-plate-kicker' }, activeLayerMeta.label), h('strong', { id: 'rh-habitat-plate-title', className: 'rh-habitat-plate-title' }, hab.name)),
+                h('div', { className: 'rh-habitat-plate-badges' },
+                  h('span', { className: 'rh-habitat-plate-badge' }, visual.short),
+                  h('span', { className: 'rh-habitat-plate-badge', 'data-peak': isPeak }, isPeak ? 'Peak field window' : 'Off-peak read')
+                )
+              ),
+              h('div', { id: 'rh-habitat-stage', className: 'rh-habitat-stage', role: 'tabpanel', 'aria-labelledby': 'rh-habitat-layer-' + activeLayer, 'data-raptor-habitat-stage': visual.kind, 'data-season': activeSeason },
+                renderHabitatScene(),
+                h('div', { className: 'rh-habitat-marker-layer', 'aria-hidden': 'true' },
+                  evidence.map(function(item, i) { return h('div', { key: i, className: 'rh-habitat-marker', style: { left: item.point[0] + '%', top: item.point[1] + '%' }, 'data-habitat-evidence': item.label }, h('span', { className: 'rh-habitat-marker-index' }, String(i + 1).padStart(2, '0')), h('span', { className: 'rh-habitat-marker-label' }, item.label)); })
+                )
+              ),
+              h('div', { className: 'rh-habitat-meters', 'aria-label': 'Habitat structure profile' },
+                metricLabels.map(function(label, i) { var value = visual.metrics[i]; return h('div', { key: label, className: 'rh-habitat-meter', role: 'meter', 'aria-label': label + ' intensity', 'aria-valuenow': value, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('div', { className: 'rh-habitat-meter-head' }, h('span', null, label), h('strong', null, value)), h('div', { className: 'rh-habitat-meter-track' }, h('span', { style: { width: value + '%' } }))); })
+              ),
+              h('div', { className: 'rh-habitat-plate-foot' }, h('span', null, h('strong', null, 'How to read:'), ' switch layers to connect physical structure with predators, prey, and pressure.'), h('span', null, 'Relative indices · 0-100'))
+            ),
+            h('aside', { className: 'rh-habitat-detail', 'data-raptor-habitat-detail': 'true', 'aria-labelledby': 'rh-habitat-detail-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-habitat-detail-kicker' }, 'Active ecosystem plate'),
+              h('div', { className: 'rh-habitat-detail-index' }, h('span', null, activeLayerMeta.label), h('strong', null, String(habIdx + 1).padStart(2, '0') + ' / ' + HABITAT_ATLAS.habitats.length)),
+              h('h3', { id: 'rh-habitat-detail-title' }, hab.name),
+              h('div', { className: 'rh-habitat-region' }, hab.states),
+              h('p', { className: 'rh-habitat-climate' }, hab.climate),
+              h('div', { className: 'rh-habitat-season-read', 'data-peak': isPeak },
+                h('span', null, activeSeason + ' field read'),
+                h('strong', null, isPeak ? 'Peak observation window' : 'Useful off-peak conditions'),
+                h('p', null, visual.seasonNotes[seasonIdx])
+              ),
+              h('ol', { className: 'rh-habitat-evidence', 'aria-label': activeLayerMeta.label + ' evidence' }, evidence.map(function(item, i) { return h('li', { key: i }, h('strong', null, String(i + 1).padStart(2, '0')), h('span', null, item.label)); })),
+              h('div', { className: 'rh-habitat-question' }, h('span', null, 'Field question'), h('p', null, visual.question)),
+              h('div', { className: 'rh-habitat-detail-nav' },
+                h('button', { type: 'button', onClick: function() { setHabIdx((habIdx - 1 + HABITAT_ATLAS.habitats.length) % HABITAT_ATLAS.habitats.length); }, 'aria-label': 'Previous habitat plate' }, '← Previous'),
+                h('button', { type: 'button', onClick: function() { setHabIdx((habIdx + 1) % HABITAT_ATLAS.habitats.length); }, 'aria-label': 'Next habitat plate' }, 'Next →')
+              )
+            )
           ),
-          // Active habitat
-          h('div', { className: 'bg-slate-800/40 border border-green-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-green-300 tracking-tight' }, hab.name),
-            h('div', { className: 'text-xs italic text-amber-200/80' }, '📍 ' + hab.states),
-            h('div', { className: 'text-xs italic text-cyan-200/80 mb-2' }, '🌡 ' + hab.climate),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.vegetation', '🌳 Vegetation')),
-              h('div', { className: 'text-emerald-100/90' }, hab.trees)
-            ),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.key_raptor_species', '🦅 Key Raptor Species')),
-              h('div', { className: 'text-amber-100/90' }, hab.keySpecies.join(' · '))
-            ),
-            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.prey_base', '🐭 Prey Base')),
-              h('div', { className: 'text-purple-100/90' }, hab.preyBase)
-            ),
-            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.best_viewing', '👀 Best Viewing')),
-              h('div', { className: 'text-cyan-100/90' }, hab.bestViewing)
-            ),
-            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.challenges_2', '⚠ Challenges')),
-              h('div', { className: 'text-rose-100/90' }, hab.challenges)
-            ),
-            h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.seasonal_patterns', '📅 Seasonal Patterns')),
-              h('div', { className: 'text-yellow-100/90' }, hab.seasonal)
+          h('section', { className: 'rh-habitat-notebook', 'aria-labelledby': 'rh-habitat-notebook-title' },
+            h('div', { className: 'rh-habitat-notebook-head' }, h('div', null, h('div', { className: 'rh-habitat-directory-kicker' }, 'Field notebook'), h('h3', { id: 'rh-habitat-notebook-title' }, 'Evidence beyond the plate')), h('span', null, '4 context reads')),
+            h('div', { className: 'rh-habitat-note-grid' },
+              h('div', { className: 'rh-habitat-note' }, h('span', null, 'Vegetation structure'), h('p', null, hab.trees)),
+              h('div', { className: 'rh-habitat-note' }, h('span', null, 'Prey base'), h('p', null, hab.preyBase)),
+              h('div', { className: 'rh-habitat-note' }, h('span', null, 'Best viewing'), h('p', null, hab.bestViewing)),
+              h('div', { className: 'rh-habitat-note', 'data-note': 'pressure' }, h('span', null, 'Conservation pressure'), h('p', null, hab.challenges))
+            )
+          ),
+          h('section', { className: 'rh-habitat-directory', 'aria-labelledby': 'rh-habitat-directory-title' },
+            h('div', { className: 'rh-habitat-directory-head' }, h('div', null, h('div', { className: 'rh-habitat-directory-kicker' }, 'North American habitat index'), h('h3', { id: 'rh-habitat-directory-title' }, 'Compare ecosystem signatures')), h('span', null, HABITAT_ATLAS.habitats.length + ' biome plates')),
+            h('div', { className: 'rh-habitat-directory-grid' },
+              HABITAT_ATLAS.habitats.map(function(item, index) { var itemVisual = HABITAT_VISUALS[index]; var selected = index === habIdx; return h('button', { key: index, type: 'button', className: 'rh-habitat-card', onClick: function() { setHabIdx(index); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open habitat plate ' + String(index + 1).padStart(2, '0') + ': ' + item.name, style: { '--rh-habitat-accent': itemVisual.accent } }, renderHabitatThumbnail(index), h('span', { className: 'rh-habitat-card-copy' }, h('strong', null, item.name), h('span', null, item.keySpecies.length + ' raptor associations'), h('span', { className: 'rh-habitat-card-signal' }, 'Canopy ' + itemVisual.metrics[0] + ' · Water ' + itemVisual.metrics[2]))); })
             )
           )
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: LESSON PLAN LIBRARY (v0.41)
       // ────────────────────────────────────────────────────────
       function renderLessons() {
@@ -21054,84 +22543,323 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: ID MYSTERY CASES (v0.41)
       // ────────────────────────────────────────────────────────
       function renderMystery() {
-        var caseIdx = rh.caseIdx == null ? 0 : rh.caseIdx;
-        function setCaseIdx(i) { setRH({ caseIdx: i }); }
-        var caseRevealed = rh.caseRevealed || {};
-        function toggleReveal() {
-          var newRev = Object.assign({}, caseRevealed);
-          newRev[caseIdx] = !newRev[caseIdx];
-          setRH({ caseRevealed: newRev });
-        }
+        var requestedCaseIdx = rh.caseIdx == null ? 0 : Number(rh.caseIdx);
+        var caseIdx = isFinite(requestedCaseIdx) && requestedCaseIdx >= 0 && requestedCaseIdx < MYSTERY_CASES.cases.length ? Math.round(requestedCaseIdx) : 0;
+        var caseRevealed = rh.caseRevealed && typeof rh.caseRevealed === 'object' ? rh.caseRevealed : {};
+        var guessMap = rh.mysteryGuesses && typeof rh.mysteryGuesses === 'object' ? rh.mysteryGuesses : {};
+        var clueMap = rh.mysteryClues && typeof rh.mysteryClues === 'object' ? rh.mysteryClues : {};
+        var confidenceMap = rh.mysteryConfidence && typeof rh.mysteryConfidence === 'object' ? rh.mysteryConfidence : {};
         var c = MYSTERY_CASES.cases[caseIdx];
-        var revealed = caseRevealed[caseIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🕵'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.id_mystery_cases_2', 'ID Mystery Cases')),
-                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, MYSTERY_CASES.intro)
+        var visual = MYSTERY_VISUALS[caseIdx];
+        var rawGuess = guessMap[caseIdx];
+        var selectedGuess = rawGuess == null ? null : Number(rawGuess);
+        if (!isFinite(selectedGuess) || selectedGuess < 0 || selectedGuess >= c.possibleSpecies.length) selectedGuess = null;
+        var rawClues = clueMap[caseIdx] == null ? 1 : Number(clueMap[caseIdx]);
+        var clueCount = Math.max(1, Math.min(c.clues.length, isFinite(rawClues) ? Math.round(rawClues) : 1));
+        var rawConfidence = confidenceMap[caseIdx] == null ? 2 : Number(confidenceMap[caseIdx]);
+        var confidence = Math.max(1, Math.min(3, isFinite(rawConfidence) ? Math.round(rawConfidence) : 2));
+        var submitted = !!caseRevealed[caseIdx] && selectedGuess != null;
+        var correct = submitted && visual.correct.indexOf(selectedGuess) !== -1;
+        var confidenceOptions = [
+          { value: 1, label: 'Cautious' },
+          { value: 2, label: 'Working' },
+          { value: 3, label: 'Certain' }
+        ];
+
+        function guessFor(index) {
+          var value = guessMap[index];
+          var number = value == null ? null : Number(value);
+          return isFinite(number) && number >= 0 && number < MYSTERY_CASES.cases[index].possibleSpecies.length ? number : null;
+        }
+
+        function attempted(index) {
+          return !!caseRevealed[index] && guessFor(index) != null;
+        }
+
+        function correctFor(index) {
+          var guess = guessFor(index);
+          return attempted(index) && MYSTERY_VISUALS[index].correct.indexOf(guess) !== -1;
+        }
+
+        var attemptedCount = MYSTERY_CASES.cases.filter(function(item, index) { return attempted(index); }).length;
+        var solvedCount = MYSTERY_CASES.cases.filter(function(item, index) { return correctFor(index); }).length;
+        var accuracy = attemptedCount ? Math.round(solvedCount / attemptedCount * 100) : 0;
+        var evidenceScore = submitted ? (correct ? Math.min(100, 60 + clueCount * 7 + confidence * 4) : Math.min(68, 18 + clueCount * 7 + confidence * 4)) : 0;
+        var calibration = correct
+          ? (confidence === 3 ? 'Confidence matches the evidence.' : confidence === 2 ? 'Good identification; one more diagnostic cue would justify high confidence.' : 'Correct but underconfident; name the decisive field mark.')
+          : (confidence === 3 ? 'Overconfident call. Reweight structure and habitat before committing.' : confidence === 2 ? 'Reasonable hypothesis, but the diagnostic clue points elsewhere.' : 'A cautious miss is useful: compare the alternatives before retrying.');
+
+        function updateMap(key, current, value) {
+          var next = Object.assign({}, current);
+          next[caseIdx] = value;
+          var patch = {};
+          patch[key] = next;
+          setRH(patch);
+        }
+
+        function selectCase(index) {
+          setRH({ caseIdx: index });
+          rhAnnounce('Field case ' + (index + 1) + ' opened');
+        }
+
+        function revealNextClue() {
+          if (clueCount >= c.clues.length) return;
+          updateMap('mysteryClues', clueMap, clueCount + 1);
+          rhAnnounce('Evidence clue ' + (clueCount + 1) + ' revealed');
+        }
+
+        function chooseSuspect(index) {
+          if (submitted) return;
+          updateMap('mysteryGuesses', guessMap, index);
+          rhAnnounce(c.possibleSpecies[index] + ' selected as identification');
+        }
+
+        function chooseConfidence(value) {
+          if (submitted) return;
+          updateMap('mysteryConfidence', confidenceMap, value);
+          rhAnnounce(confidenceOptions[value - 1].label + ' confidence selected');
+        }
+
+        function submitIdentification() {
+          if (selectedGuess == null) return;
+          updateMap('caseRevealed', caseRevealed, true);
+          rhAnnounce(visual.correct.indexOf(selectedGuess) !== -1 ? 'Correct field identification' : 'Identification needs reassessment');
+        }
+
+        function retryCase() {
+          var nextReveal = Object.assign({}, caseRevealed);
+          var nextGuesses = Object.assign({}, guessMap);
+          nextReveal[caseIdx] = false;
+          nextGuesses[caseIdx] = null;
+          setRH({ caseRevealed: nextReveal, mysteryGuesses: nextGuesses });
+          rhAnnounce('Case reopened for another identification');
+        }
+
+        function nextCase() {
+          var nextIndex = (caseIdx + 1) % MYSTERY_CASES.cases.length;
+          setRH({ caseIdx: nextIndex });
+          rhAnnounce('Field case ' + (nextIndex + 1) + ' opened');
+        }
+
+        function answerState(index) {
+          if (!submitted) return undefined;
+          if (visual.correct.indexOf(index) !== -1) return 'correct';
+          if (selectedGuess === index) return 'incorrect';
+          return undefined;
+        }
+
+        function renderEnvironment(profile) {
+          var nodes = [
+            h('rect', { key: 'ground', x: 0, y: 335, width: 900, height: 165, fill: profile.ground }),
+            h('path', { key: 'horizon', className: 'rh-mystery-horizon', d: 'M0 336 Q150 310 300 336 T600 336 T900 336' })
+          ];
+          if (profile.light === 'twilight') {
+            [[90,70],[180,118],[300,64],[700,92],[810,52],[760,160]].forEach(function(point, i) {
+              nodes.push(h('circle', { key: 'star-' + i, className: 'rh-mystery-sky-star', cx: point[0], cy: point[1], r: i % 2 ? 2 : 3 }));
+            });
+            nodes.push(h('circle', { key: 'moon', className: 'rh-mystery-sun', cx: 130, cy: 100, r: 26 }));
+          } else {
+            nodes.push(h('circle', { key: 'sun', className: 'rh-mystery-sun', cx: 765, cy: 92, r: 34 }));
+          }
+          if (profile.habitat === 'river' || profile.habitat === 'coast' || profile.habitat === 'marsh') {
+            nodes.push(h('path', { key: 'water', d: 'M0 365 Q180 332 360 370 T720 366 T900 358 L900 500 L0 500 Z', fill: profile.habitat === 'marsh' ? '#164e63' : '#075985', opacity: .82 }));
+            [382,414,448].forEach(function(y, i) {
+              nodes.push(h('path', { key: 'wave-' + i, className: 'rh-mystery-water-line', d: 'M' + (20 + i * 35) + ' ' + y + ' Q140 ' + (y - 13) + ' 260 ' + y + ' T500 ' + y + ' T860 ' + y }));
+            });
+          }
+          if (profile.habitat === 'forest' || profile.habitat === 'rainforest' || profile.habitat === 'conifer') {
+            [40,135,760,835].forEach(function(x, i) {
+              var tall = profile.habitat === 'rainforest' ? 250 : 205;
+              nodes.push(h('rect', { key: 'trunk-' + i, x: x, y: 335 - tall, width: 22 + i % 2 * 7, height: tall + 90, fill: '#422006', opacity: .9 }));
+              nodes.push(h('path', { key: 'tree-' + i, className: 'rh-mystery-tree', d: profile.habitat === 'conifer' ? 'M' + (x - 52) + ' 310 L' + (x + 12) + ' ' + (75 + i * 16) + ' L' + (x + 76) + ' 310 Z' : 'M' + (x - 66) + ' 142 Q' + (x + 10) + ' 58 ' + (x + 90) + ' 142 Q' + (x + 60) + ' 230 ' + x + ' 222 Q' + (x - 70) + ' 220 ' + (x - 66) + ' 142 Z' }));
+            });
+          }
+          if (profile.habitat === 'desert') {
+            nodes.push(h('path', { key: 'dunes', d: 'M0 390 Q170 315 355 382 T710 372 T900 360 L900 500 L0 500 Z', fill: '#b45309', opacity: .82 }));
+            nodes.push(h('path', { key: 'cactus', d: 'M245 360 L245 230 Q245 212 260 212 Q275 212 275 230 L275 274 L300 274 L300 245 Q300 232 312 232 Q324 232 324 245 L324 295 Q324 310 309 310 L275 310 L275 360 Z', fill: '#166534', stroke: '#86efac', strokeOpacity: .35 }));
+          }
+          if (profile.habitat === 'wire') {
+            nodes.push(h('path', { key: 'pole-left', className: 'rh-mystery-wire', d: 'M110 165 L110 430 M70 190 L150 190' }));
+            nodes.push(h('path', { key: 'pole-right', className: 'rh-mystery-wire', d: 'M795 155 L795 430 M755 180 L835 180' }));
+            nodes.push(h('path', { key: 'wire-top', className: 'rh-mystery-wire', d: 'M70 190 Q450 216 835 180' }));
+          }
+          if (profile.habitat === 'meadow' || profile.habitat === 'plains' || profile.habitat === 'snow') {
+            var lineColor = profile.habitat === 'snow' ? '#f8fafc' : '#84cc16';
+            nodes.push(h('path', { key: 'field', d: 'M0 400 Q160 345 330 390 T660 380 T900 370 L900 500 L0 500 Z', fill: lineColor, opacity: profile.habitat === 'snow' ? .82 : .18 }));
+          }
+          if (profile.flight === 'perched') {
+            nodes.push(h('path', { key: 'perch', className: 'rh-mystery-branch', d: 'M' + (profile.x - 112) + ' ' + (profile.y + 104) + ' Q' + profile.x + ' ' + (profile.y + 88) + ' ' + (profile.x + 145) + ' ' + (profile.y + 111) }));
+          }
+          return h('g', { 'data-mystery-environment': profile.habitat }, nodes);
+        }
+
+        function renderFlyingBird(profile) {
+          var wingPath;
+          if (profile.shape === 'falcon') wingPath = 'M0 0 C-35 -24 -78 -46 -165 -68 L-105 5 L-38 38 Q0 55 38 38 L105 5 L165 -68 C78 -46 35 -24 0 0 Z';
+          else if (profile.shape === 'accipiter') wingPath = 'M0 2 C-42 -34 -92 -42 -145 -18 Q-108 25 -45 44 Q0 58 45 44 Q108 25 145 -18 C92 -42 42 -34 0 2 Z';
+          else if (profile.shape === 'harrier') wingPath = 'M0 18 C-48 -6 -102 -62 -164 -58 Q-119 -8 -42 45 Q0 62 42 45 Q119 -8 164 -58 C102 -62 48 -6 0 18 Z';
+          else if (profile.shape === 'osprey') wingPath = 'M0 12 C-34 -20 -82 -10 -142 -58 L-190 -38 Q-112 14 -55 46 Q0 62 55 46 Q112 14 190 -38 L142 -58 C82 -10 34 -20 0 12 Z';
+          else if (profile.shape === 'owl') wingPath = 'M0 5 C-58 -40 -126 -38 -174 12 Q-112 50 -42 48 Q0 62 42 48 Q112 50 174 12 C126 -38 58 -40 0 5 Z';
+          else wingPath = 'M0 5 C-48 -40 -118 -54 -188 -18 Q-132 38 -48 50 Q0 65 48 50 Q132 38 188 -18 C118 -54 48 -40 0 5 Z';
+          var rotation = profile.flight === 'stoop' ? -28 : profile.flight === 'low' ? 3 : 0;
+          return h('g', { transform: 'translate(' + profile.x + ' ' + profile.y + ') rotate(' + rotation + ') scale(' + profile.scale + ')', 'data-mystery-silhouette': profile.kind },
+            h('path', { className: 'rh-mystery-bird-fill', d: wingPath }),
+            h('ellipse', { className: 'rh-mystery-bird-fill', cx: 0, cy: 22, rx: profile.shape === 'eagle' ? 35 : 27, ry: 50 }),
+            h('circle', { className: 'rh-mystery-bird-fill', cx: 8, cy: -20, r: profile.shape === 'owl' ? 28 : 20 }),
+            profile.shape === 'owl' && h('path', { className: 'rh-mystery-bird-detail', d: 'M-12 -37 Q8 -18 28 -37 M-8 -20 Q8 -6 24 -20' }),
+            h('path', { className: 'rh-mystery-bird-fill', d: profile.shape === 'accipiter' ? 'M-22 62 L-34 145 L0 128 L34 145 L22 62 Z' : 'M-24 60 L-42 112 L0 98 L42 112 L24 60 Z' }),
+            profile.kind === 'red-tail' && h('path', { className: 'rh-mystery-bird-detail', d: 'M-35 107 Q0 88 35 107' }),
+            profile.kind === 'rough-leg' && h('path', { className: 'rh-mystery-bird-detail', d: 'M-27 30 Q0 46 27 30' }),
+            profile.shape === 'osprey' && h('path', { className: 'rh-mystery-bird-detail', d: 'M-170 -39 L-135 -28 M170 -39 L135 -28' }),
+            profile.shape === 'eagle' && [-170,-152,-134,134,152,170].map(function(x, i) { return h('path', { key: i, className: 'rh-mystery-bird-detail', d: 'M' + x + ' -18 l' + (x < 0 ? -22 : 22) + ' ' + (i % 2 ? 10 : 2) }); }),
+            h('circle', { className: 'rh-mystery-eye', cx: 15, cy: -25, r: 4 })
+          );
+        }
+
+        function renderPerchedBird(profile) {
+          return h('g', { transform: 'translate(' + profile.x + ' ' + profile.y + ') scale(' + profile.scale + ')', 'data-mystery-silhouette': profile.kind },
+            h('path', { className: 'rh-mystery-bird-fill', d: 'M-38 -38 Q-58 10 -42 72 Q-28 106 0 108 Q34 106 45 68 Q55 12 32 -42 Q0 -66 -38 -38 Z' }),
+            h('circle', { className: 'rh-mystery-bird-fill', cx: profile.shape === 'owl' ? 0 : 8, cy: -58, r: profile.shape === 'owl' ? 35 : profile.shape === 'eagle' ? 31 : 27 }),
+            profile.shape === 'owl' && h('g', null,
+              h('circle', { className: 'rh-mystery-bird-detail', cx: -13, cy: -61, r: 10 }),
+              h('circle', { className: 'rh-mystery-bird-detail', cx: 13, cy: -61, r: 10 }),
+              profile.kind === 'elf-owl' && h('path', { className: 'rh-mystery-bird-fill', d: 'M-25 -83 L-12 -111 L-2 -86 M25 -83 L12 -111 L2 -86' })
+            ),
+            h('path', { className: 'rh-mystery-bird-detail', d: 'M-28 -4 Q5 18 32 4 Q24 62 0 83 Q-23 57 -28 -4' }),
+            h('path', { className: 'rh-mystery-bird-fill', d: 'M-25 86 L-18 143 L0 120 L19 143 L26 86 Z' }),
+            h('path', { className: 'rh-mystery-bird-detail', d: 'M-18 102 L-20 118 M18 102 L21 118' }),
+            profile.kind === 'bald-eagle' && h('path', { d: 'M-22 -77 Q8 -96 33 -68 Q28 -37 1 -31 Q-22 -40 -22 -77 Z', fill: '#f8fafc', stroke: '#f8fafc' }),
+            profile.kind === 'snowy' && h('path', { d: 'M-38 -40 Q0 -75 38 -40 L43 68 Q0 100 -42 70 Z', fill: '#f8fafc', opacity: .82 }),
+            profile.kind === 'barred' && [-10,12,34,56].map(function(y, i) { return h('path', { key: i, className: 'rh-mystery-bird-detail', d: 'M-30 ' + y + ' Q0 ' + (y + 12) + ' 32 ' + y }); }),
+            h('circle', { className: 'rh-mystery-eye', cx: profile.shape === 'owl' ? 13 : 16, cy: -62, r: 4 })
+          );
+        }
+
+        function renderMysteryScene(profile, record) {
+          var titleId = 'rh-mystery-scene-title-' + caseIdx;
+          var descId = 'rh-mystery-scene-desc-' + caseIdx;
+          return h('svg', { viewBox: '0 0 900 500', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-mystery-scene': profile.habitat, 'data-mystery-shape': profile.shape, 'data-mystery-flight': profile.flight },
+            h('title', { id: titleId }, 'Field observation plate for Case ' + record.number),
+            h('desc', { id: descId }, record.observations + ' Schematic field scene designed for identification practice.'),
+            h('defs', null,
+              h('linearGradient', { id: 'rh-mystery-sky-' + caseIdx, x1: '0%', y1: '0%', x2: '0%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#020617' }), h('stop', { offset: '72%', stopColor: profile.sky }), h('stop', { offset: '100%', stopColor: profile.ground, stopOpacity: .7 }))
+            ),
+            h('rect', { x: 0, y: 0, width: 900, height: 500, fill: 'url(#rh-mystery-sky-' + caseIdx + ')' }),
+            renderEnvironment(profile),
+            profile.flight === 'perched' ? renderPerchedBird(profile) : renderFlyingBird(profile),
+            profile.markers.slice(0, clueCount).map(function(point, i) {
+              return h('g', { key: i, className: 'rh-mystery-evidence-marker', 'data-mystery-evidence-marker': i + 1 },
+                h('path', { d: 'M' + point[0] + ' ' + point[1] + ' l' + (i % 2 ? -32 : 32) + ' ' + (i % 3 ? -26 : 26) }),
+                h('circle', { cx: point[0], cy: point[1], r: 14 }),
+                h('text', { x: point[0], y: point[1] + 1 }, i + 1)
+              );
+            }),
+            h('text', { className: 'rh-mystery-svg-label', x: 22, y: 28 }, 'FIELD OBSERVATION / CASE ' + String(record.number).padStart(2, '0')),
+            h('text', { className: 'rh-mystery-svg-accent', x: 22, y: 56 }, profile.scene.toUpperCase()),
+            h('text', { className: 'rh-mystery-svg-label', x: 878, y: 474, textAnchor: 'end' }, 'SCHEMATIC PLATE / VERIFY MULTIPLE FIELD MARKS')
+          );
+        }
+
+        return h('div', { className: 'rh-mystery-lab', 'data-raptor-mystery-lab': 'true', 'data-mystery-case': visual.kind, 'data-mystery-status': submitted ? (correct ? 'correct' : 'incorrect') : 'investigating', 'data-mystery-clues': clueCount, style: { '--rh-mystery-accent': visual.accent } },
+          h('section', { className: 'rh-mystery-hero', 'aria-labelledby': 'rh-mystery-title' },
+            h('div', { className: 'rh-mystery-hero-main' },
+              h('div', { className: 'rh-mystery-hero-icon', 'aria-hidden': 'true' }, 'FIELD\nCASE'),
+              h('div', null,
+                h('div', { className: 'rh-mystery-kicker' }, 'Interactive identification casework'),
+                h('h2', { id: 'rh-mystery-title', className: 'rh-mystery-title' }, __alloT('stem.raptorhunt.id_mystery_cases_2', 'ID Mystery Cases')),
+                h('p', { className: 'rh-mystery-copy' }, MYSTERY_CASES.intro + ' Gather evidence deliberately, commit to a suspect, and calibrate confidence before opening the field verdict.')
               )
+            ),
+            h('div', { className: 'rh-mystery-summary', 'aria-label': 'Casework progress' },
+              h('div', { className: 'rh-mystery-stat' }, h('strong', null, MYSTERY_CASES.cases.length), h('span', null, 'field cases')),
+              h('div', { className: 'rh-mystery-stat' }, h('strong', null, solvedCount), h('span', null, 'identified')),
+              h('div', { className: 'rh-mystery-stat' }, h('strong', null, accuracy + '%'), h('span', null, 'accuracy'))
             )
           ),
-          // Case picker
-          h('div', { className: 'flex flex-wrap gap-1' },
-            MYSTERY_CASES.cases.map(function(cs, i) {
-              var sel = caseIdx === i;
-              var solved = caseRevealed[i];
-              return h('button', {
-                key: i,
-                onClick: function() { setCaseIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : (solved ? 'bg-emerald-900/60 text-emerald-200' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60 active:scale-[0.97]')),
-                'aria-pressed': sel
-              }, '#' + cs.number + (solved ? ' ✓' : ''));
+          h('nav', { className: 'rh-mystery-case-rail', 'aria-label': 'Choose identification case' },
+            MYSTERY_CASES.cases.map(function(item, index) {
+              var profile = MYSTERY_VISUALS[index];
+              var status = attempted(index) ? (correctFor(index) ? 'correct' : 'incorrect') : (index === caseIdx ? 'active' : 'open');
+              return h('button', { key: index, type: 'button', className: 'rh-mystery-case-tab', onClick: function() { selectCase(index); }, 'aria-pressed': index === caseIdx, 'aria-current': index === caseIdx ? 'page' : undefined, 'data-mystery-case-tab': profile.kind, 'data-status': status, style: { '--tab-accent': profile.accent } },
+                h('span', { className: 'rh-mystery-case-number' }, String(item.number).padStart(2, '0')),
+                h('span', { className: 'rh-mystery-case-level' }, item.difficulty),
+                h('span', { className: 'rh-mystery-case-name' }, profile.scene)
+              );
             })
           ),
-          // Active case
-          h('div', { className: 'bg-slate-800/40 border border-purple-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'flex items-baseline justify-between' },
-              h('div', { className: 'text-lg font-bold text-purple-300 tracking-tight' }, 'Case #' + c.number),
-              h('div', { className: 'text-xs font-mono px-2 py-1 rounded ' + (c.difficulty === 'Easy' ? 'bg-emerald-900/40 text-emerald-300' : c.difficulty === 'Medium' ? 'bg-amber-900/40 text-amber-300' : c.difficulty === 'Hard' ? 'bg-rose-900/40 text-rose-300' : 'bg-purple-900/40 text-purple-300') }, c.difficulty)
+          h('div', { className: 'rh-mystery-workbench' },
+            h('section', { className: 'rh-mystery-scene-panel', 'aria-labelledby': 'rh-mystery-scene-heading' },
+              h('div', { className: 'rh-mystery-scene-head' },
+                h('div', null, h('div', { className: 'rh-mystery-section-kicker' }, 'Observation plate ' + visual.code), h('strong', { id: 'rh-mystery-scene-heading', className: 'rh-mystery-scene-title' }, 'Case ' + c.number + ': unidentified raptor')),
+                h('span', { className: 'rh-mystery-difficulty' }, c.difficulty + ' case')
+              ),
+              h('div', { className: 'rh-mystery-scene-stage', 'data-raptor-mystery-stage': visual.shape },
+                renderMysteryScene(visual, c),
+                h('div', { className: 'rh-mystery-hud', 'aria-hidden': 'true' }, h('span', null, visual.time), h('span', null, clueCount + ' evidence marker' + (clueCount === 1 ? '' : 's')))
+              ),
+              h('div', { className: 'rh-mystery-observation' }, h('span', null, 'Field notes / observation only'), h('p', null, c.observations))
             ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.observations', '👀 Observations')),
-              h('div', { className: 'text-sm text-slate-100 leading-relaxed' }, c.observations)
+            h('aside', { className: 'rh-mystery-dossier', 'aria-labelledby': 'rh-mystery-dossier-title' },
+              h('div', { className: 'rh-mystery-dossier-head' },
+                h('div', null, h('div', { className: 'rh-mystery-dossier-kicker' }, submitted ? (correct ? 'Identification confirmed' : 'Identification challenged') : 'Active investigation'), h('h3', { id: 'rh-mystery-dossier-title' }, 'Case dossier')),
+                h('span', { className: 'rh-mystery-case-chip' }, visual.code)
+              ),
+              h('div', { className: 'rh-mystery-meta' },
+                h('div', null, h('span', null, 'Scene'), h('strong', null, visual.scene)),
+                h('div', null, h('span', null, 'Conditions'), h('strong', null, visual.time))
+              ),
+              h('div', { className: 'rh-mystery-progress' },
+                h('div', { className: 'rh-mystery-progress-head' }, h('span', null, 'Evidence gathered'), h('strong', null, clueCount + ' / ' + c.clues.length)),
+                h('div', { className: 'rh-mystery-progress-track', role: 'progressbar', 'aria-label': 'Evidence clues revealed', 'aria-valuenow': clueCount, 'aria-valuemin': 0, 'aria-valuemax': c.clues.length }, h('span', { style: { width: (clueCount / c.clues.length * 100) + '%' } }))
+              ),
+              h('div', { className: 'rh-mystery-note', style: { marginTop: 'auto' } }, h('strong', null, 'Field rule: '), 'A confident identification should combine structure, behavior, habitat, season, and range. One dramatic feature can mislead.')
+            )
+          ),
+          h('section', { className: 'rh-mystery-evidence', 'aria-labelledby': 'rh-mystery-evidence-title' },
+            h('div', { className: 'rh-mystery-section-head' }, h('div', null, h('div', { className: 'rh-mystery-section-kicker' }, 'Progressive evidence collection'), h('h3', { id: 'rh-mystery-evidence-title' }, 'Open the field clues')), h('span', null, submitted ? 'Case evidence locked' : 'Fewer clues = stronger score')),
+            h('div', { className: 'rh-mystery-clue-grid' },
+              c.clues.map(function(clue, index) {
+                var visible = index < clueCount;
+                return h('article', { key: index, className: 'rh-mystery-clue', 'data-mystery-clue': index + 1, 'data-state': visible ? 'revealed' : 'sealed' },
+                  h('span', { className: 'rh-mystery-clue-index' }, 'E' + (index + 1)),
+                  h('p', null, visible ? clue : 'Evidence sealed. Reveal when your current hypothesis needs another field mark.')
+                );
+              })
             ),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.clues', '💡 Clues')),
-              h('ul', { className: 'space-y-1 list-disc list-inside text-xs text-amber-100/90' },
-                c.clues.map(function(cl, i) {
-                  return h('li', { key: i, className: 'leading-relaxed' }, cl);
+            !submitted && clueCount < c.clues.length && h('button', { type: 'button', className: 'rh-mystery-reveal-clue', onClick: revealNextClue }, 'Reveal evidence clue ' + (clueCount + 1))
+          ),
+          h('section', { className: 'rh-mystery-decision', 'aria-labelledby': 'rh-mystery-decision-title' },
+            h('div', null,
+              h('div', { className: 'rh-mystery-section-head' }, h('div', null, h('div', { className: 'rh-mystery-section-kicker' }, 'Four plausible suspects'), h('h3', { id: 'rh-mystery-decision-title' }, 'Commit to an identification')), h('span', null, selectedGuess == null ? 'No suspect selected' : 'Suspect ' + String.fromCharCode(65 + selectedGuess) + ' selected')),
+              h('div', { className: 'rh-mystery-suspect-grid', role: 'group', 'aria-label': 'Choose the most likely raptor species' },
+                c.possibleSpecies.map(function(species, index) {
+                  return h('button', { key: index, type: 'button', className: 'rh-mystery-suspect', onClick: function() { chooseSuspect(index); }, disabled: submitted, 'aria-pressed': selectedGuess === index, 'data-mystery-suspect': index, 'data-answer': answerState(index) },
+                    h('span', { className: 'rh-mystery-suspect-code' }, String.fromCharCode(65 + index)),
+                    h('span', { className: 'rh-mystery-suspect-label' }, species)
+                  );
                 })
               )
             ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.your_guess', '❓ Your Guess')),
-              h('div', { className: 'text-xs text-slate-200' }, c.possibleSpecies.join(' / '))
-            ),
-            // Reveal button
-            !revealed && h('button', {
-              onClick: toggleReveal,
-              className: 'w-full py-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-fuchsia-700',
-              'aria-label': __alloT('stem.raptorhunt.reveal_answer', 'Reveal answer')
-            }, __alloT('stem.raptorhunt.reveal_answer_2', '🔓 Reveal Answer')),
-            // Revealed answer
-            revealed && h('div', { className: 'space-y-2' },
-              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.answer_2', '✅ Answer')),
-                h('div', { className: 'text-base font-bold text-emerald-100' }, c.answer)
+            h('aside', { className: 'rh-mystery-confidence', 'aria-live': 'polite' },
+              h('span', null, 'How confident is this call?'),
+              h('div', { className: 'rh-mystery-confidence-grid', role: 'group', 'aria-label': 'Set identification confidence' },
+                confidenceOptions.map(function(option) {
+                  return h('button', { key: option.value, type: 'button', onClick: function() { chooseConfidence(option.value); }, disabled: submitted, 'aria-pressed': confidence === option.value, 'data-mystery-confidence': option.value }, option.label);
+                })
               ),
-              h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-3' },
-                h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.why', '📖 Why')),
-                h('div', { className: 'text-xs text-cyan-100/90 leading-relaxed' }, c.why)
-              ),
-              h('button', {
-                onClick: toggleReveal,
-                className: 'transition-colors text-xs text-purple-300 hover:text-purple-200',
-                'aria-label': __alloT('stem.raptorhunt.hide_answer', 'Hide answer')
-              }, __alloT('stem.raptorhunt.hide_answer_2', '🔒 Hide Answer'))
+              !submitted && h('button', { type: 'button', className: 'rh-mystery-submit', disabled: selectedGuess == null, onClick: submitIdentification }, selectedGuess == null ? 'Select a suspect first' : 'Submit field identification'),
+              submitted && h('div', { className: 'rh-mystery-result', 'data-mystery-result': correct ? 'correct' : 'incorrect', 'data-result': correct ? 'correct' : 'incorrect', role: 'status' },
+                h('span', { className: 'rh-mystery-result-kicker' }, correct ? 'Evidence-supported identification' : 'Reassess the evidence'),
+                h('strong', null, correct ? 'Correct: ' + c.answer : 'Best identification: ' + c.answer),
+                h('p', null, c.why),
+                h('p', null, calibration),
+                h('div', { className: 'rh-mystery-score-head' }, h('span', null, 'Casework score'), h('b', null, evidenceScore + ' / 100')),
+                h('div', { className: 'rh-mystery-score-track', role: 'meter', 'aria-label': 'Identification evidence score', 'aria-valuenow': evidenceScore, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('span', { style: { width: evidenceScore + '%' } })),
+                h('div', { className: 'rh-mystery-result-actions' }, h('button', { type: 'button', onClick: retryCase }, 'Retry case'), h('button', { type: 'button', onClick: nextCase }, 'Next field case'))
+              )
             )
-          )
+          ),
+          h('div', { className: 'rh-mystery-note', role: 'note' }, h('strong', null, 'Identification note: '), 'The plates are schematic training scenes, not substitutes for photographs or direct observation. Real field IDs should remain provisional when views are brief or diagnostic marks conflict.')
         );
       }
 
@@ -22006,7 +23734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-orange-900/40 via-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌅'),
             h('div', { className: 'text-2xl font-bold text-amber-100 tracking-tight' }, __alloT('stem.raptorhunt.you_are_now_a_raptor_scholar', 'You Are Now A Raptor Scholar')),
-            h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, __alloT('stem.raptorhunt.60_sections_20_species_100s_of_facts_c', '60+ sections · 20+ species · 100s of facts · centuries of knowledge'))
+            h('div', { className: 'text-sm text-amber-200/80 mt-2 italic' }, contentSectionCount + ' sections · ' + speciesCount + ' species · 100s of facts · centuries of knowledge')
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
             h('div', { className: 'text-base font-bold text-amber-300' }, __alloT('stem.raptorhunt.what_you_ve_learned', '🎓 What you\'ve learned')),
@@ -22114,144 +23842,705 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: AGE & PLUMAGE GUIDE (v0.46)
       // ────────────────────────────────────────────────────────
       function renderAgeColoration() {
-        var apIdx = rh.agePlumageIdx == null ? 0 : rh.agePlumageIdx;
-        function setApIdx(i) { setRH({ agePlumageIdx: i }); }
-        var s = AGE_PLUMAGE.species[apIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-fuchsia-900/40 to-pink-900/40 border border-fuchsia-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🎨'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-fuchsia-200 tracking-tight' }, __alloT('stem.raptorhunt.age_plumage_guide_2', 'Age & Plumage Guide')),
-                h('div', { className: 'text-sm text-fuchsia-100/85 mt-1' }, AGE_PLUMAGE.intro)
+        var requestedSpecies = rh.agePlumageIdx == null ? 0 : Number(rh.agePlumageIdx);
+        var speciesIdx = isFinite(requestedSpecies) && requestedSpecies >= 0 && requestedSpecies < AGE_PLUMAGE.species.length ? Math.round(requestedSpecies) : 0;
+        var record = AGE_PLUMAGE.species[speciesIdx];
+        var visual = AGE_PLUMAGE_VISUALS[speciesIdx] || AGE_PLUMAGE_VISUALS[0];
+        var requestedStage = rh.agePlumageStage == null ? 0 : Number(rh.agePlumageStage);
+        var stageIdx = isFinite(requestedStage) ? Math.max(0, Math.min(2, Math.round(requestedStage))) : 0;
+        var requestedMark = rh.agePlumageMark == null ? 0 : Number(rh.agePlumageMark);
+        var markIdx = isFinite(requestedMark) && requestedMark >= 0 && requestedMark < 3 ? Math.round(requestedMark) : 0;
+        var requestedCompare = rh.agePlumageCompareIdx == null ? (speciesIdx + 1) % AGE_PLUMAGE.species.length : Number(rh.agePlumageCompareIdx);
+        var compareIdx = isFinite(requestedCompare) && requestedCompare >= 0 && requestedCompare < AGE_PLUMAGE.species.length ? Math.round(requestedCompare) : (speciesIdx + 1) % AGE_PLUMAGE.species.length;
+        if (compareIdx === speciesIdx) compareIdx = (speciesIdx + 1) % AGE_PLUMAGE.species.length;
+        var compareRecord = AGE_PLUMAGE.species[compareIdx];
+        var compareVisual = AGE_PLUMAGE_VISUALS[compareIdx];
+        var requestedMysterySpecies = rh.ageMysterySpeciesIdx == null ? 5 : Number(rh.ageMysterySpeciesIdx);
+        var mysterySpeciesIdx = isFinite(requestedMysterySpecies) && requestedMysterySpecies >= 0 && requestedMysterySpecies < AGE_PLUMAGE.species.length ? Math.round(requestedMysterySpecies) : 5;
+        var requestedMysteryStage = rh.ageMysteryStage == null ? 1 : Number(rh.ageMysteryStage);
+        var mysteryStage = isFinite(requestedMysteryStage) ? Math.max(0, Math.min(2, Math.round(requestedMysteryStage))) : 1;
+        var mysteryGuess = rh.ageMysteryGuess == null ? null : Number(rh.ageMysteryGuess);
+        var mysteryAnswered = mysteryGuess != null && isFinite(mysteryGuess);
+        var mysteryCorrect = mysteryAnswered && mysteryGuess === mysteryStage;
+        var stageLabels = ['Juvenile', 'Subadult', 'Adult'];
+        var stageShort = ['Year 1', 'Transition', 'Mature'];
+        var stageCopies = [record.juvPattern, record.subadultPattern, record.adultPattern];
+        var stageData = visual.stages[stageIdx];
+
+        function setSpecies(i) {
+          setRH({ agePlumageIdx: i, agePlumageStage: 0, agePlumageMark: 0, ageMysteryGuess: null });
+          rhAnnounce(AGE_PLUMAGE.species[i].species + ' plumage profile opened');
+        }
+
+        function setStage(i) {
+          var bounded = Math.max(0, Math.min(2, Math.round(i)));
+          setRH({ agePlumageStage: bounded, agePlumageMark: 0 });
+          rhAnnounce(stageLabels[bounded] + ' plumage shown');
+        }
+
+        function setMark(i) {
+          setRH({ agePlumageMark: i });
+          rhAnnounce(visual.stages[stageIdx].marks[i] + ' field mark selected');
+        }
+
+        function setCompare(i) {
+          setRH({ agePlumageCompareIdx: i });
+          rhAnnounce('Comparison changed to ' + AGE_PLUMAGE.species[i].species);
+        }
+
+        function setGuess(i) {
+          setRH({ ageMysteryGuess: i });
+          rhAnnounce(i === mysteryStage ? 'Correct age-stage identification' : 'That stage does not match the visible field marks');
+        }
+
+        function nextMystery() {
+          setRH({ ageMysterySpeciesIdx: (mysterySpeciesIdx + 4) % AGE_PLUMAGE.species.length, ageMysteryStage: (mysteryStage + 1) % 3, ageMysteryGuess: null });
+          rhAnnounce('New plumage mystery loaded');
+        }
+
+        function openMoltAtlas() {
+          setRH({ activeSection: 'molt' });
+          rhAnnounce('Molt Atlas opened');
+        }
+
+        function renderPlumagePlate(itemVisual, itemRecord, itemStage, options) {
+          options = options || {};
+          var compact = !!options.compact;
+          var identity = options.identity || itemVisual.kind;
+          var selectedMark = options.mark == null ? 0 : options.mark;
+          var data = itemVisual.stages[itemStage];
+          var family = itemVisual.family;
+          var titleId = 'rh-age-svg-title-' + identity;
+          var descId = 'rh-age-svg-desc-' + identity;
+          var bodyRx = family === 'owl' ? 105 : family === 'falcon' ? 72 : family === 'accipiter' ? 77 : 90;
+          var bodyRy = family === 'owl' ? 126 : family === 'falcon' ? 118 : 124;
+          var headR = family === 'owl' ? 61 : family === 'falcon' ? 42 : 49;
+          var wingReach = family === 'falcon' || family === 'osprey' ? 300 : family === 'accipiter' ? 245 : 278;
+          var tailLength = family === 'accipiter' ? 128 : family === 'falcon' ? 92 : 105;
+          if (compact) tailLength = Math.round(tailLength * .72);
+          var baseY = compact ? 270 : 348;
+          var bodyCy = compact ? 198 : 245;
+          var headCy = bodyCy - bodyRy + 35;
+          var clipId = 'rh-age-body-clip-' + identity;
+          var bgId = 'rh-age-bg-' + identity;
+          var gridId = 'rh-age-grid-' + identity;
+          var callouts = [
+            { x: 420, y: headCy - 6, lx: 655, ly: 102 },
+            { x: 420, y: bodyCy + 18, lx: 655, ly: 245 },
+            { x: 420, y: baseY + tailLength*.55, lx: 655, ly: compact ? 334 : 405 }
+          ];
+
+          function renderBodyPattern() {
+            var nodes = [];
+            if (data.pattern === 'streaks' || data.pattern === 'mixed') {
+              [-45,-22,0,22,45].forEach(function(offset, i) { nodes.push(h('path', { key: 'streak-' + i, className: 'rh-age-pattern-line', d: 'M' + (420+offset) + ' ' + (bodyCy-44) + ' Q' + (414+offset) + ' ' + bodyCy + ' ' + (424+offset) + ' ' + (bodyCy+73) })); });
+            }
+            if (data.pattern === 'bars' || data.pattern === 'mixed') {
+              [-42,-18,6,30,54].forEach(function(offset, i) { nodes.push(h('path', { key: 'bar-' + i, className: 'rh-age-pattern-line', d: 'M342 ' + (bodyCy+offset) + ' Q420 ' + (bodyCy+offset+10) + ' 498 ' + (bodyCy+offset) })); });
+            }
+            if (data.pattern === 'speckle' || data.pattern === 'mixed' || data.pattern === 'down') {
+              [[-48,-48],[-18,-60],[18,-52],[49,-38],[-59,-12],[-25,-18],[12,-8],[48,2],[-47,25],[-10,31],[32,27],[-29,59],[14,64]].forEach(function(point, i) { nodes.push(h('circle', { key: 'dot-' + i, className: 'rh-age-pattern-speckle', cx: 420 + point[0], cy: bodyCy + point[1], r: data.pattern === 'down' ? 9 : 5 })); });
+            }
+            if (data.pattern === 'patches') {
+              nodes.push(h('path', { key: 'patch-left', d: 'M335 ' + (bodyCy-38) + ' Q364 ' + (bodyCy-70) + ' 389 ' + (bodyCy-28) + ' L368 ' + (bodyCy+13) + ' Z', fill: '#f8fafc', opacity: .72 }));
+              nodes.push(h('path', { key: 'patch-right', d: 'M505 ' + (bodyCy-38) + ' Q476 ' + (bodyCy-70) + ' 451 ' + (bodyCy-28) + ' L472 ' + (bodyCy+13) + ' Z', fill: '#f8fafc', opacity: .72 }));
+            }
+            return nodes;
+          }
+
+          return h('svg', { viewBox: compact ? '0 0 840 380' : '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-age-plumage-drawing': identity },
+            h('title', { id: titleId }, itemRecord.species + ' ' + stageLabels[itemStage].toLowerCase() + ' plumage identification plate'),
+            h('desc', { id: descId }, data.marks.join(', ') + '. Schematic frontal field view; colors and marks are teaching cues, not a photographic specimen.'),
+            h('defs', null,
+              h('linearGradient', { id: bgId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: '#020617' }), h('stop', { offset: '55%', stopColor: '#0f172a' }), h('stop', { offset: '100%', stopColor: '#4a044e' })),
+              h('pattern', { id: gridId, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .1 })),
+              h('clipPath', { id: clipId }, h('ellipse', { cx: 420, cy: bodyCy, rx: bodyRx, ry: bodyRy }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: compact ? 380 : 480, fill: 'url(#' + bgId + ')' }),
+            h('rect', { className: 'rh-age-grid', x: 0, y: 0, width: 840, height: compact ? 380 : 480, fill: 'url(#' + gridId + ')' }),
+            h('path', { className: 'rh-age-bird-tail', d: 'M380 ' + (baseY-18) + ' L' + (420-tailLength*.34) + ' ' + (baseY+tailLength) + ' L420 ' + (baseY+tailLength*.72) + ' L' + (420+tailLength*.34) + ' ' + (baseY+tailLength) + ' L460 ' + (baseY-18) + ' Z', fill: data.tail }),
+            (data.tailPattern === 'banded' || data.tailPattern === 'mixed') && [0.2,0.42,0.64].map(function(ratio, i) { return h('line', { key: 'tail-band-' + i, className: 'rh-age-pattern-line', x1: 385-ratio*10, y1: baseY+tailLength*ratio, x2: 455+ratio*10, y2: baseY+tailLength*ratio, opacity: .7 }); }),
+            h('path', { className: 'rh-age-bird-wing', d: 'M' + (420-bodyRx*.68) + ' ' + (bodyCy-63) + ' C' + (420-wingReach*.45) + ' ' + (bodyCy-112) + ' ' + (420-wingReach*.92) + ' ' + (bodyCy-54) + ' ' + (420-wingReach) + ' ' + (bodyCy+75) + ' C' + (420-wingReach*.65) + ' ' + (bodyCy+40) + ' ' + (420-bodyRx*.92) + ' ' + (bodyCy+72) + ' ' + (420-bodyRx*.58) + ' ' + (bodyCy+93) + ' Z', fill: data.wing }),
+            h('path', { className: 'rh-age-bird-wing', d: 'M' + (420+bodyRx*.68) + ' ' + (bodyCy-63) + ' C' + (420+wingReach*.45) + ' ' + (bodyCy-112) + ' ' + (420+wingReach*.92) + ' ' + (bodyCy-54) + ' ' + (420+wingReach) + ' ' + (bodyCy+75) + ' C' + (420+wingReach*.65) + ' ' + (bodyCy+40) + ' ' + (420+bodyRx*.92) + ' ' + (bodyCy+72) + ' ' + (420+bodyRx*.58) + ' ' + (bodyCy+93) + ' Z', fill: data.wing }),
+            h('ellipse', { className: 'rh-age-bird-body', cx: 420, cy: bodyCy, rx: bodyRx, ry: bodyRy, fill: data.body }),
+            h('g', { clipPath: 'url(#' + clipId + ')' }, renderBodyPattern()),
+            (family === 'owl' || itemVisual.family === 'harpy') && h('path', { d: 'M370 ' + (headCy-30) + ' L382 ' + (headCy-89) + ' L405 ' + (headCy-43) + ' M470 ' + (headCy-30) + ' L458 ' + (headCy-89) + ' L435 ' + (headCy-43), fill: data.head, stroke: '#e2e8f0', strokeWidth: family === 'owl' ? 8 : 13, strokeLinecap: 'round' }),
+            h('circle', { className: 'rh-age-bird-head', cx: 420, cy: headCy, r: headR, fill: data.head }),
+            family === 'owl' && h('g', null, h('circle', { cx: 397, cy: headCy, r: 18, fill: 'rgba(248,250,252,.32)', stroke: '#f8fafc', strokeWidth: 2 }), h('circle', { cx: 443, cy: headCy, r: 18, fill: 'rgba(248,250,252,.32)', stroke: '#f8fafc', strokeWidth: 2 })),
+            h('circle', { cx: family === 'owl' ? 397 : 405, cy: headCy-2, r: 5, fill: '#f8fafc' }),
+            h('circle', { cx: family === 'owl' ? 443 : 435, cy: headCy-2, r: 5, fill: '#f8fafc' }),
+            h('circle', { cx: family === 'owl' ? 397 : 405, cy: headCy-2, r: 2.5, fill: '#020617' }),
+            h('circle', { cx: family === 'owl' ? 443 : 435, cy: headCy-2, r: 2.5, fill: '#020617' }),
+            h('path', { d: 'M414 ' + (headCy+16) + ' L446 ' + (headCy+23) + ' L416 ' + (headCy+31) + ' Z', fill: '#fbbf24', stroke: '#f8fafc', strokeWidth: 1.5 }),
+            !compact && callouts.map(function(callout, i) { var selected = selectedMark === i; var props = { key: i, className: 'rh-age-field-callout', 'data-selected': selected }; props['data-age-field-mark'] = i + 1; return h('g', props, h('path', { className: 'rh-age-callout-line', d: 'M' + callout.x + ' ' + callout.y + ' Q' + ((callout.x+callout.lx)/2) + ' ' + (callout.ly-18) + ' ' + (callout.lx-8) + ' ' + callout.ly }), h('circle', { className: 'rh-age-callout-dot', cx: callout.x, cy: callout.y, r: selected ? 8 : 6 }), h('text', { className: 'rh-age-callout-label', x: callout.lx, y: callout.ly+4 }, data.marks[i])); }),
+            h('text', { className: 'rh-age-svg-label', x: 22, y: 28 }, compact ? 'UNKNOWN LIFE STAGE · FIELD CUES ONLY' : 'PLUMAGE DEVELOPMENT PLATE · ' + itemVisual.code),
+            h('text', { className: 'rh-age-svg-accent', x: 22, y: 55 }, compact ? 'ESTIMATE THE AGE CLASS' : stageLabels[itemStage].toUpperCase()),
+            h('text', { className: 'rh-age-svg-label', x: 818, y: compact ? 360 : 460, textAnchor: 'end' }, 'SCHEMATIC · COLOR VARIES IN THE FIELD')
+          );
+        }
+
+        return h('div', { className: 'rh-age-lab', 'data-raptor-age-plumage-lab': 'true', 'data-age-species': visual.kind, 'data-age-stage': stageLabels[stageIdx].toLowerCase(), 'data-age-mark': markIdx + 1, style: { '--rh-age-accent': visual.accent } },
+          h('section', { className: 'rh-age-hero', 'aria-labelledby': 'rh-age-title' },
+            h('div', { className: 'rh-age-hero-main' }, h('div', { className: 'rh-age-hero-icon', 'aria-hidden': 'true' }, 'JUV→\nADULT'), h('div', null, h('div', { className: 'rh-age-kicker' }, 'Interactive plumage-development field station'), h('h2', { id: 'rh-age-title', className: 'rh-age-title' }, __alloT('stem.raptorhunt.age_plumage_guide_2', 'Age & Plumage Guide')), h('p', { className: 'rh-age-copy' }, AGE_PLUMAGE.intro + ' Scrub through three life stages, inspect field marks, and compare look-alikes at the same age.'))),
+            h('div', { className: 'rh-age-summary', 'aria-label': 'Age and Plumage inventory' }, h('div', { className: 'rh-age-stat' }, h('strong', null, AGE_PLUMAGE.species.length), h('span', null, 'species profiles')), h('div', { className: 'rh-age-stat' }, h('strong', null, 3), h('span', null, 'life stages')))
+          ),
+          h('div', { className: 'rh-age-tabs', role: 'tablist', 'aria-label': 'Choose a species plumage profile' }, AGE_PLUMAGE.species.map(function(item, i) { var selected = speciesIdx === i; return h('button', { key: i, id: 'rh-age-tab-' + i, type: 'button', role: 'tab', className: 'rh-age-tab', onClick: function() { setSpecies(i); }, 'aria-selected': selected, 'aria-controls': 'rh-age-workbench' }, h('span', { className: 'rh-age-code', 'aria-hidden': 'true' }, AGE_PLUMAGE_VISUALS[i].code), item.species); })),
+          h('div', { id: 'rh-age-workbench', className: 'rh-age-workbench', role: 'tabpanel', 'aria-labelledby': 'rh-age-tab-' + speciesIdx },
+            h('section', { className: 'rh-age-plate', 'aria-labelledby': 'rh-age-plate-title' },
+              h('div', { className: 'rh-age-plate-head' }, h('div', null, h('div', { className: 'rh-age-section-kicker' }, visual.family + ' development profile'), h('strong', { id: 'rh-age-plate-title', className: 'rh-age-plate-title' }, record.species + ' field plate')), h('span', { className: 'rh-age-stage-badge' }, stageLabels[stageIdx] + ' · mature at ' + record.maturity)),
+              h('div', { className: 'rh-age-stage', 'data-raptor-age-stage': visual.kind }, renderPlumagePlate(visual, record, stageIdx, { identity: visual.kind, mark: markIdx }), h('div', { className: 'rh-age-stage-legend', 'aria-hidden': 'true' }, 'Selected mark · ' + stageData.marks[markIdx])),
+              h('div', { className: 'rh-age-controls' },
+                h('div', { className: 'rh-age-stage-buttons', role: 'group', 'aria-label': 'Choose a plumage life stage' }, stageLabels.map(function(label, i) { return h('button', { key: label, type: 'button', className: 'rh-age-stage-button', onClick: function() { setStage(i); }, 'aria-pressed': stageIdx === i, 'data-age-stage-control': label.toLowerCase() }, label, h('span', null, stageShort[i])); })),
+                h('label', { className: 'rh-age-scrubber' }, h('span', { className: 'rh-age-scrubber-head' }, h('span', null, 'Plumage development'), h('strong', null, stageLabels[stageIdx])), h('input', { type: 'range', min: 0, max: 2, step: 1, value: stageIdx, onChange: function(event) { setStage(Number(event.target.value)); }, 'aria-label': 'Plumage life stage from juvenile to adult', 'aria-valuetext': stageLabels[stageIdx] })),
+                h('div', { className: 'rh-age-mark-buttons', role: 'group', 'aria-label': 'Inspect plumage field marks' }, stageData.marks.map(function(mark, i) { return h('button', { key: i, type: 'button', className: 'rh-age-mark-button', onClick: function() { setMark(i); }, 'aria-pressed': markIdx === i, 'data-age-mark-control': i + 1 }, (i === 0 ? 'Head · ' : i === 1 ? 'Body · ' : 'Tail · ') + mark); }))
               )
+            ),
+            h('aside', { className: 'rh-age-detail', 'data-raptor-age-detail': 'true', 'aria-labelledby': 'rh-age-detail-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-age-detail-head' }, h('div', null, h('div', { className: 'rh-age-detail-kicker' }, stageLabels[stageIdx] + ' identification read'), h('h3', { id: 'rh-age-detail-title' }, record.species)), h('span', { className: 'rh-age-chip' }, visual.code)),
+              h('div', { className: 'rh-age-reading' }, h('span', null, 'Stage pattern'), h('strong', null, stageLabels[stageIdx] + ' · ' + stageShort[stageIdx]), h('p', null, stageCopies[stageIdx])),
+              h('div', { className: 'rh-age-mark-card' }, h('span', null, 'Selected field mark ' + (markIdx + 1) + ' of 3'), h('strong', null, stageData.marks[markIdx]), h('p', null, 'Confirm this cue with the other marked regions before assigning an age class.')),
+              h('div', { className: 'rh-age-timing' }, h('span', null, 'Development timing'), h('p', null, record.timing)),
+              h('div', { className: 'rh-age-variation' }, h('span', null, 'Variation caution'), h('p', null, visual.variation)),
+              h('div', { className: 'rh-age-timeline', 'aria-label': 'Plumage maturity progression' }, stageLabels.map(function(label, i) { return h('div', { key: label, className: 'rh-age-timeline-step', 'data-reached': i <= stageIdx }, label); })),
+              h('div', { className: 'rh-age-detail-actions' }, h('button', { type: 'button', onClick: function() { setMark((markIdx + 2) % 3); } }, '← Previous mark'), h('button', { type: 'button', onClick: openMoltAtlas }, 'Open Molt Atlas →'))
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            AGE_PLUMAGE.species.map(function(sp, i) {
-              var sel = apIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setApIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-fuchsia-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-fuchsia-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, sp.species);
-            })
+          h('section', { className: 'rh-age-stage-strip', 'aria-labelledby': 'rh-age-stage-strip-title' },
+            h('div', { className: 'rh-age-section-head' }, h('div', null, h('div', { className: 'rh-age-section-kicker' }, 'One bird across time'), h('h3', { id: 'rh-age-stage-strip-title' }, 'Compare all three plumage stages')), h('span', null, record.timing)),
+            h('div', { className: 'rh-age-stage-grid' }, stageLabels.map(function(label, i) { return h('button', { key: label, type: 'button', className: 'rh-age-stage-card', onClick: function() { setStage(i); }, 'aria-pressed': stageIdx === i }, h('span', null, '0' + (i + 1) + ' · ' + stageShort[i]), h('strong', null, label), h('p', null, [record.juvPattern, record.subadultPattern, record.adultPattern][i])); }))
           ),
-          h('div', { className: 'bg-slate-800/40 border border-fuchsia-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'flex items-baseline justify-between' },
-              h('div', { className: 'text-lg font-bold text-fuchsia-300 tracking-tight' }, '🦅 ' + s.species),
-              h('div', { className: 'text-xs text-amber-300 font-mono' }, 'Mature at ' + s.maturity)
-            ),
-            h('div', { className: 'grid md:grid-cols-3 gap-2' },
-              h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.juvenile_year_1', '🐣 Juvenile (Year 1)')),
-                h('div', { className: 'text-emerald-100/90' }, s.juvPattern)
-              ),
-              h('div', { className: 'bg-yellow-900/20 border border-yellow-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.sub_adult_year_2_3', '🌱 Sub-adult (Year 2-3)')),
-                h('div', { className: 'text-yellow-100/90' }, s.subadultPattern)
-              ),
-              h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.adult', '🦅 Adult')),
-                h('div', { className: 'text-amber-100/90' }, s.adultPattern)
-              )
-            ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.timing_2', '⏰ Timing')),
-              h('div', { className: 'text-cyan-100/90' }, s.timing)
+          h('section', { className: 'rh-age-compare', 'aria-labelledby': 'rh-age-compare-title' },
+            h('div', { className: 'rh-age-section-head' }, h('div', null, h('div', { className: 'rh-age-section-kicker' }, 'Look-alike comparison'), h('h3', { id: 'rh-age-compare-title' }, 'Compare the same life stage')), h('span', null, stageLabels[stageIdx])),
+            h('div', { className: 'rh-age-compare-grid' },
+              h('div', { className: 'rh-age-compare-control' }, h('label', null, 'Comparison species', h('select', { value: compareIdx, onChange: function(event) { setCompare(Number(event.target.value)); }, 'aria-label': 'Choose a plumage comparison species' }, AGE_PLUMAGE.species.map(function(item, i) { return i === speciesIdx ? null : h('option', { key: i, value: i }, item.species); }))), h('p', null, 'Hold age constant and compare head, body pattern, and tail—the three marked regions on the plate.')),
+              h('article', { className: 'rh-age-compare-card', 'data-current': 'true' }, h('div', { className: 'rh-age-compare-card-head' }, h('strong', null, record.species), h('span', null, visual.code)), h('b', null, visual.stages[stageIdx].marks.join(' · ')), h('p', null, stageCopies[stageIdx])),
+              h('article', { className: 'rh-age-compare-card' }, h('div', { className: 'rh-age-compare-card-head' }, h('strong', null, compareRecord.species), h('span', null, compareVisual.code)), h('b', null, compareVisual.stages[stageIdx].marks.join(' · ')), h('p', null, [compareRecord.juvPattern, compareRecord.subadultPattern, compareRecord.adultPattern][stageIdx]))
             )
-          )
+          ),
+          h('section', { className: 'rh-age-challenge', 'aria-labelledby': 'rh-age-challenge-title', 'data-age-plumage-challenge': mysteryCorrect ? 'correct' : mysteryAnswered ? 'incorrect' : 'open' },
+            h('div', { className: 'rh-age-section-head' }, h('div', null, h('div', { className: 'rh-age-section-kicker' }, 'Field identification challenge'), h('h3', { id: 'rh-age-challenge-title' }, 'Estimate the life stage')), h('span', null, AGE_PLUMAGE.species[mysterySpeciesIdx].species)),
+            h('div', { className: 'rh-age-challenge-grid' },
+              h('div', { className: 'rh-age-mystery-stage' }, renderPlumagePlate(AGE_PLUMAGE_VISUALS[mysterySpeciesIdx], AGE_PLUMAGE.species[mysterySpeciesIdx], mysteryStage, { compact: true, identity: 'mystery-' + mysterySpeciesIdx + '-' + mysteryStage })),
+              h('div', { className: 'rh-age-quiz' }, h('span', null, 'Unknown age class'), h('strong', null, AGE_PLUMAGE.species[mysterySpeciesIdx].species), h('p', null, 'Use the head, chest pattern, and tail. Then choose the most defensible broad life stage.'), h('div', { className: 'rh-age-guess-grid', role: 'group', 'aria-label': 'Choose the mystery plumage life stage' }, stageLabels.map(function(label, i) { var state = mysteryAnswered && i === mysteryGuess ? (mysteryCorrect ? 'correct' : 'wrong') : undefined; return h('button', { key: label, type: 'button', className: 'rh-age-guess', onClick: function() { setGuess(i); }, 'data-guess-state': state, 'aria-pressed': mysteryGuess === i }, label); })), mysteryAnswered && h('div', { className: 'rh-age-result', 'data-result': mysteryCorrect ? 'correct' : 'incorrect', role: 'status' }, mysteryCorrect ? 'Correct age class. ' + AGE_PLUMAGE_VISUALS[mysterySpeciesIdx].stages[mysteryStage].marks.join(', ') + '.' : 'Not this stage. Recheck whether the chest is streaked, mixed, or barred and compare the tail pattern.'), h('button', { type: 'button', className: 'rh-age-new', onClick: nextMystery }, 'Load another mystery'))
+            )
+          ),
+          h('div', { className: 'rh-age-note', role: 'note' }, h('strong', null, 'Field-use note: '), 'These plates simplify broad age classes. Real plumage varies with sex, morph, geography, molt, wear, lighting, and individual history; confirm several marks together.')
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: MOLT ATLAS (v0.46)
       // ────────────────────────────────────────────────────────
       function renderMolt() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-slate-700/40 to-stone-700/40 border border-slate-600/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🪶'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-stone-200 tracking-tight' }, __alloT('stem.raptorhunt.molt_atlas_2', 'Molt Atlas')),
-                h('div', { className: 'text-sm text-stone-300 mt-1' }, MOLT_ATLAS.intro)
+        var requestedSpecies = rh.moltSpeciesIdx == null ? 0 : Number(rh.moltSpeciesIdx);
+        var speciesIdx = isFinite(requestedSpecies) && requestedSpecies >= 0 && requestedSpecies < MOLT_ATLAS.timetable.length ? requestedSpecies : 0;
+        var schedule = MOLT_ATLAS.timetable[speciesIdx];
+        var visual = MOLT_VISUALS[speciesIdx] || MOLT_VISUALS[0];
+        var requestedPhase = rh.moltPhase == null ? 5 : Number(rh.moltPhase);
+        var phase = isFinite(requestedPhase) ? Math.max(0, Math.min(11, Math.round(requestedPhase))) : 5;
+        var requestedFocus = rh.moltFocus == null ? (phase >= 1 && phase <= 10 ? phase - 1 : 0) : Number(rh.moltFocus);
+        var focusIdx = isFinite(requestedFocus) && requestedFocus >= 0 && requestedFocus < 10 ? Math.round(requestedFocus) : 0;
+        var requestedMonth = rh.moltMonth == null ? 7 : Number(rh.moltMonth);
+        var monthIdx = isFinite(requestedMonth) && requestedMonth >= 0 && requestedMonth < 12 ? Math.round(requestedMonth) : 7;
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        var conceptLabels = {
+          moltPurpose: 'Why feathers change',
+          energyCost: 'Energy budget',
+          timing: 'Annual timing',
+          bodyOrder: 'Body before flight',
+          sequentialMolt: 'Sequential safety',
+          duration: 'Duration'
+        };
+        var primaryGeometry = [
+          { x: 430, y: 258, angle: 13, length: 106, width: 22 },
+          { x: 444, y: 244, angle: 7, length: 122, width: 23 },
+          { x: 460, y: 230, angle: 1, length: 140, width: 24 },
+          { x: 477, y: 217, angle: -6, length: 157, width: 24 },
+          { x: 495, y: 204, angle: -13, length: 174, width: 25 },
+          { x: 514, y: 192, angle: -20, length: 190, width: 25 },
+          { x: 533, y: 182, angle: -27, length: 205, width: 24 },
+          { x: 551, y: 174, angle: -34, length: 218, width: 23 },
+          { x: 568, y: 169, angle: -41, length: 227, width: 22 },
+          { x: 584, y: 167, angle: -48, length: 232, width: 21 }
+        ];
+
+        function featherStatus(index) {
+          if (phase === 0) return 'worn';
+          if (phase === 11) return 'renewed';
+          if (index + 1 < phase) return 'renewed';
+          if (index + 1 === phase) return 'growing';
+          return 'worn';
+        }
+
+        function featherRole(index) {
+          if (index < 3) return 'Inner primary · transfers lift and downstroke force into the hand wing.';
+          if (index < 7) return 'Mid primary · balances lift, thrust, and wing shape through the power stroke.';
+          return 'Outer primary · controls the wingtip, high-speed handling, and fine maneuvering.';
+        }
+
+        function statusExplanation(status) {
+          if (status === 'renewed') return 'Full-length vane restored. The feather is now part of the stable working set.';
+          if (status === 'growing') return 'A blood feather is extending from the follicle. It is metabolically expensive and vulnerable to damage.';
+          return 'The older feather remains functional, but abrasion and structural fatigue reduce its efficiency.';
+        }
+
+        function phaseTitle() {
+          if (phase === 0) return 'Pre-molt assessment';
+          if (phase === 11) return 'Complete renewed set';
+          return 'Growing P' + phase;
+        }
+
+        function setSpecies(i) {
+          setRH({ moltSpeciesIdx: i, moltPhase: 0, moltFocus: 0, moltMonth: MOLT_VISUALS[i].activeMonths[0] });
+          rhAnnounce(MOLT_ATLAS.timetable[i].species + ' molt profile opened');
+        }
+
+        function setPhase(nextPhase) {
+          var bounded = Math.max(0, Math.min(11, Math.round(nextPhase)));
+          var patch = { moltPhase: bounded };
+          if (bounded >= 1 && bounded <= 10) patch.moltFocus = bounded - 1;
+          setRH(patch);
+          rhAnnounce(bounded === 0 ? 'Pre-molt wing shown' : bounded === 11 ? 'Complete renewed wing shown' : 'Primary P' + bounded + ' growing');
+        }
+
+        function setFocus(i) {
+          setRH({ moltFocus: i });
+          rhAnnounce('Primary P' + (i + 1) + ' selected');
+        }
+
+        function setMonth(i) {
+          setRH({ moltMonth: i });
+          rhAnnounce(months[i] + ' molt calendar selected');
+        }
+
+        function monthActivity(i) {
+          var primaries = visual.primaryMonths.map(function(month, p) { return month === i ? 'P' + (p + 1) : ''; }).filter(Boolean);
+          if (visual.bodyMonths.indexOf(i) >= 0) primaries.unshift('Body');
+          if (visual.tailMonths.indexOf(i) >= 0) primaries.push('Tail');
+          return primaries.length ? primaries.join(' · ') : 'Rest';
+        }
+
+        function renderWingPlate() {
+          var titleId = 'rh-molt-svg-title-' + visual.kind;
+          var descId = 'rh-molt-svg-desc-' + visual.kind;
+          var bgId = 'rh-molt-bg-' + visual.kind;
+          var gridId = 'rh-molt-grid-' + visual.kind;
+          return h('svg', { viewBox: '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-molt-wing-drawing': visual.kind },
+            h('title', { id: titleId }, schedule.species + ' sequential primary molt wing map'),
+            h('desc', { id: descId }, phaseTitle() + '. Primary P' + (focusIdx + 1) + ' is selected. Worn, growing, and renewed feathers use distinct visual states.'),
+            h('defs', null,
+              h('linearGradient', { id: bgId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' }, h('stop', { offset: '0%', stopColor: visual.sky }), h('stop', { offset: '100%', stopColor: visual.ground })),
+              h('pattern', { id: gridId, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .12 }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: 480, fill: 'url(#' + bgId + ')' }),
+            h('rect', { className: 'rh-molt-grid', x: 0, y: 0, width: 840, height: 480, fill: 'url(#' + gridId + ')' }),
+            h('g', { transform: 'translate(0 6)' },
+              h('path', { className: 'rh-molt-wing-base', d: 'M374 255 C470 128 598 82 786 62 C726 130 680 198 637 277 C559 288 482 296 405 306 Z' }),
+              h('path', { className: 'rh-molt-wing-base', d: 'M368 256 C286 136 177 96 52 91 C113 150 159 214 201 288 C261 293 315 299 379 308 Z' }),
+              [
+                [410,245,517,148],[423,259,555,151],[435,274,590,164],[447,287,621,185],[460,299,646,212],[475,309,664,244]
+              ].map(function(line, i) { return h('path', { key: 'secondary-' + i, className: 'rh-molt-secondary', d: 'M' + line[0] + ' ' + line[1] + ' Q' + ((line[0]+line[2])/2) + ' ' + (line[1]-28) + ' ' + line[2] + ' ' + line[3] + ' L' + (line[2]-17) + ' ' + (line[3]+22) + ' Q' + ((line[0]+line[2])/2) + ' ' + (line[1]+5) + ' ' + line[0] + ' ' + line[1] + ' Z' }); }),
+              primaryGeometry.map(function(g, i) {
+                var status = featherStatus(i);
+                var selected = focusIdx === i;
+                var tipX = g.length - 12;
+                return h('g', { key: i, className: 'rh-molt-primary-feather', transform: 'translate(' + g.x + ' ' + g.y + ') rotate(' + g.angle + ')', 'data-molt-primary': 'P' + (i + 1), 'data-status': status, 'data-selected': selected },
+                  h('path', { className: 'rh-molt-primary', d: 'M0 0 C' + (g.length*.28) + ' ' + (-g.width*.55) + ' ' + (g.length*.72) + ' ' + (-g.width*.52) + ' ' + g.length + ' 0 C' + (g.length*.72) + ' ' + (g.width*.62) + ' ' + (g.length*.28) + ' ' + (g.width*.58) + ' 0 0 Z' }),
+                  status === 'worn' && h('path', { className: 'rh-molt-line-thin rh-molt-wear', d: 'M' + (g.length*.62) + ' -' + (g.width*.24) + ' l15 ' + (g.width*.42) + ' M' + (g.length*.76) + ' -' + (g.width*.22) + ' l13 ' + (g.width*.38), opacity: .35 }),
+                  status === 'growing' && h('ellipse', { cx: 9, cy: 0, rx: 15, ry: 11, fill: 'none', stroke: visual.accent, strokeWidth: 3, opacity: .8 }),
+                  h('text', { className: 'rh-molt-feather-label', x: tipX, y: 4 }, 'P' + (i + 1))
+                );
+              }),
+              h('ellipse', { className: 'rh-molt-body', cx: 381, cy: 306, rx: 52, ry: 93 }),
+              h('circle', { className: 'rh-molt-body', cx: 376, cy: 220, r: 35 }),
+              h('path', { d: 'M404 211 L445 224 L405 235 Z', fill: visual.accent, stroke: '#f8fafc', strokeWidth: 2 }),
+              h('circle', { cx: 388, cy: 214, r: 5, fill: '#f8fafc' }),
+              h('path', { className: 'rh-molt-body', d: 'M353 386 L322 457 L376 424 L412 459 L405 385 Z' }),
+              h('path', { className: 'rh-molt-line-thin', d: 'M357 295 C366 324 392 339 415 300' })
+            ),
+            h('text', { className: 'rh-molt-svg-label', x: 22, y: 28 }, 'PRIMARY REPLACEMENT MAP · ' + visual.code),
+            h('text', { className: 'rh-molt-svg-label-accent', x: 22, y: 56 }, phaseTitle().toUpperCase()),
+            h('text', { className: 'rh-molt-svg-label', x: 818, y: 460, textAnchor: 'end' }, 'P1 INNER → P10 OUTER · SIMPLIFIED DORSAL VIEW')
+          );
+        }
+
+        var selectedStatus = featherStatus(focusIdx);
+        var completedCount = phase === 11 ? 10 : Math.max(0, phase - 1);
+        var renewalPct = completedCount * 10;
+        var activeGrowth = phase >= 1 && phase <= 10;
+        var flightContinuity = activeGrowth ? Math.min(94, 88 + Math.floor(completedCount / 2)) : (phase === 11 ? 100 : 82);
+        var energyDemand = activeGrowth ? 100 : (phase === 11 ? 45 : 35);
+        var monthActive = visual.activeMonths.indexOf(monthIdx) >= 0;
+        var monthPeak = visual.peakMonths.indexOf(monthIdx) >= 0;
+        var metricData = [
+          { label: 'Renewed set', value: renewalPct },
+          { label: 'Flight continuity', value: flightContinuity },
+          { label: 'Energy demand', value: energyDemand }
+        ];
+
+        return h('div', { className: 'rh-molt-atlas', 'data-raptor-molt-atlas': 'true', 'data-molt-species': visual.kind, 'data-molt-phase': phase, 'data-molt-month': monthIdx, style: { '--rh-molt-accent': visual.accent } },
+          h('section', { className: 'rh-molt-hero', 'aria-labelledby': 'rh-molt-title' },
+            h('div', { className: 'rh-molt-hero-main' },
+              h('div', { className: 'rh-molt-hero-icon', 'aria-hidden': 'true' }, 'P1→P10'),
+              h('div', null,
+                h('div', { className: 'rh-molt-kicker' }, 'Interactive feather sequence laboratory'),
+                h('h2', { id: 'rh-molt-title', className: 'rh-molt-title' }, __alloT('stem.raptorhunt.molt_atlas_2', 'Molt Atlas')),
+                h('p', { className: 'rh-molt-copy' }, MOLT_ATLAS.intro + ' Scrub the sequence, inspect each primary, and compare how eight species distribute the cost across the year.')
+              )
+            ),
+            h('div', { className: 'rh-molt-summary', 'aria-label': 'Molt Atlas inventory' },
+              h('div', { className: 'rh-molt-stat' }, h('strong', null, MOLT_ATLAS.timetable.length), h('span', null, 'species profiles')),
+              h('div', { className: 'rh-molt-stat' }, h('strong', null, 10), h('span', null, 'primary feathers'))
+            )
+          ),
+          h('div', { className: 'rh-molt-species-tabs', role: 'tablist', 'aria-label': 'Choose a species molt profile' },
+            MOLT_ATLAS.timetable.map(function(item, i) { var selected = speciesIdx === i; return h('button', { key: i, id: 'rh-molt-species-tab-' + i, type: 'button', role: 'tab', className: 'rh-molt-species-tab', onClick: function() { setSpecies(i); }, 'aria-selected': selected, 'aria-controls': 'rh-molt-workbench' }, h('span', { className: 'rh-molt-species-code', 'aria-hidden': 'true' }, MOLT_VISUALS[i].code), item.species); })
+          ),
+          h('div', { id: 'rh-molt-workbench', className: 'rh-molt-workbench', role: 'tabpanel', 'aria-labelledby': 'rh-molt-species-tab-' + speciesIdx },
+            h('section', { className: 'rh-molt-plate', 'aria-labelledby': 'rh-molt-plate-title' },
+              h('div', { className: 'rh-molt-plate-head' },
+                h('div', null, h('div', { className: 'rh-molt-plate-kicker' }, visual.wing), h('strong', { id: 'rh-molt-plate-title', className: 'rh-molt-plate-title' }, schedule.species + ' primary map')),
+                h('span', { className: 'rh-molt-phase-badge' }, 'Phase ' + phase + ' / 11 · ' + phaseTitle())
+              ),
+              h('div', { className: 'rh-molt-stage', 'data-raptor-molt-stage': visual.kind },
+                renderWingPlate(),
+                h('div', { className: 'rh-molt-stage-legend', 'aria-hidden': 'true' },
+                  ['worn','growing','renewed'].map(function(status) { return h('span', { key: status, className: 'rh-molt-legend-item' }, h('span', { className: 'rh-molt-legend-dot', 'data-status': status }), status); })
+                )
+              ),
+              h('div', { className: 'rh-molt-phase-controls' },
+                h('button', { type: 'button', onClick: function() { setPhase(phase - 1); }, disabled: phase === 0, 'aria-label': 'Previous molt phase' }, '← Previous'),
+                h('label', { className: 'rh-molt-scrubber' },
+                  h('span', { className: 'rh-molt-scrubber-head' }, h('span', null, 'Molt sequence'), h('strong', null, phaseTitle())),
+                  h('input', { type: 'range', min: 0, max: 11, step: 1, value: phase, onChange: function(event) { setPhase(Number(event.target.value)); }, 'aria-label': 'Molt phase from pre-molt through complete renewal', 'aria-valuetext': phaseTitle() })
+                ),
+                h('button', { type: 'button', onClick: function() { setPhase(phase + 1); }, disabled: phase === 11, 'aria-label': 'Next molt phase' }, 'Next →')
+              ),
+              h('div', { className: 'rh-molt-meters', 'aria-label': 'Molt performance profile' },
+                metricData.map(function(metric) { return h('div', { key: metric.label, className: 'rh-molt-meter', role: 'meter', 'aria-label': metric.label, 'aria-valuenow': metric.value, 'aria-valuemin': 0, 'aria-valuemax': 100 }, h('div', { className: 'rh-molt-meter-head' }, h('span', null, metric.label), h('strong', null, metric.value + '%')), h('div', { className: 'rh-molt-meter-track' }, h('span', { style: { width: metric.value + '%' } }))); })
+              ),
+              h('div', { className: 'rh-molt-primary-controls', role: 'group', 'aria-label': 'Inspect primary feathers P1 through P10' },
+                primaryGeometry.map(function(g, i) { var status = featherStatus(i); var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-primary-control', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'data-status': status, 'aria-label': 'Inspect primary P' + (i + 1) + ', ' + status }, 'P' + (i + 1), h('span', { className: 'rh-molt-primary-status' }, status)); })
+              )
+            ),
+            h('aside', { className: 'rh-molt-detail', 'data-raptor-molt-detail': 'true', 'aria-labelledby': 'rh-molt-detail-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-molt-detail-kicker' }, 'Selected flight feather'),
+              h('div', { className: 'rh-molt-detail-index' }, h('span', null, visual.code + ' · ' + phaseTitle()), h('strong', null, 'P' + (focusIdx + 1))),
+              h('h3', { id: 'rh-molt-detail-title' }, 'Primary P' + (focusIdx + 1)),
+              h('div', { className: 'rh-molt-role' }, featherRole(focusIdx)),
+              h('div', { className: 'rh-molt-status-card', 'data-status': selectedStatus }, h('span', null, 'Current feather state'), h('strong', null, selectedStatus.charAt(0).toUpperCase() + selectedStatus.slice(1)), h('p', null, statusExplanation(selectedStatus))),
+              h('div', { className: 'rh-molt-month-read', 'data-active': monthActive },
+                h('span', null, months[monthIdx] + ' calendar read'),
+                h('strong', null, monthPeak ? 'Peak molt workload' : monthActive ? 'Active molt window' : 'Rest or maintenance window'),
+                h('p', null, monthActivity(monthIdx) + '. ' + visual.tradeoff)
+              ),
+              h('div', { className: 'rh-molt-question' }, h('span', null, 'Reasoning prompt'), h('p', null, visual.question)),
+              h('div', { className: 'rh-molt-detail-nav' },
+                h('button', { type: 'button', onClick: function() { setFocus((focusIdx - 1 + 10) % 10); }, 'aria-label': 'Previous primary feather' }, '← Previous feather'),
+                h('button', { type: 'button', onClick: function() { setFocus((focusIdx + 1) % 10); }, 'aria-label': 'Next primary feather' }, 'Next feather →')
               )
             )
           ),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
-            Object.keys(MOLT_ATLAS.info).map(function(k, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-slate-700/40 rounded-lg p-3' },
-                h('div', { className: 'text-sm font-bold text-stone-300 mb-1 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, MOLT_ATLAS.info[k])
-              );
-            })
+          h('section', { className: 'rh-molt-timeline', 'aria-labelledby': 'rh-molt-timeline-title' },
+            h('div', { className: 'rh-molt-section-head' }, h('div', null, h('div', { className: 'rh-molt-section-kicker' }, schedule.timing), h('h3', { id: 'rh-molt-timeline-title' }, 'Annual molt calendar')), h('span', null, visual.pace)),
+            h('div', { className: 'rh-molt-month-grid', role: 'group', 'aria-label': 'Select a month in the molt calendar' },
+              months.map(function(month, i) { var active = visual.activeMonths.indexOf(i) >= 0; var peak = visual.peakMonths.indexOf(i) >= 0; var selected = monthIdx === i; return h('button', { key: month, type: 'button', className: 'rh-molt-month', onClick: function() { setMonth(i); }, 'aria-pressed': selected, 'data-active': active, 'data-peak': peak, 'data-molt-calendar-month': month }, h('span', { className: 'rh-molt-month-name' }, month), h('span', { className: 'rh-molt-month-dot', 'aria-hidden': 'true' }), h('span', { className: 'rh-molt-month-activity' }, monthActivity(i))); })
+            )
           ),
-          h('div', { className: 'bg-slate-800/40 border border-slate-700/40 rounded-xl p-4' },
-            h('div', { className: 'text-sm font-bold text-stone-300 mb-2' }, __alloT('stem.raptorhunt.molt_timetable_by_species', '📅 Molt Timetable by Species')),
-            h('div', { className: 'space-y-2' },
-              MOLT_ATLAS.timetable.map(function(t, i) {
-                return h('div', { key: i, className: 'bg-slate-900/40 border-l-4 border-amber-600 rounded-r p-2' },
-                  h('div', { className: 'flex items-baseline justify-between mb-1' },
-                    h('div', { className: 'text-sm font-bold text-amber-300' }, t.species),
-                    h('div', { className: 'text-xs text-cyan-300 font-mono' }, t.timing)
-                  ),
-                  h('div', { className: 'text-xs text-slate-200 italic' }, t.specifics)
-                );
-              })
+          h('section', { className: 'rh-molt-concepts', 'aria-labelledby': 'rh-molt-concepts-title' },
+            h('div', { className: 'rh-molt-section-head' }, h('div', null, h('div', { className: 'rh-molt-section-kicker' }, 'Molt mechanics'), h('h3', { id: 'rh-molt-concepts-title' }, 'Six ideas that explain the sequence')), h('span', null, 'Concept field notes')),
+            h('div', { className: 'rh-molt-concept-grid' }, Object.keys(MOLT_ATLAS.info).map(function(key, i) { return h('article', { key: key, className: 'rh-molt-concept' }, h('span', { className: 'rh-molt-concept-index', 'aria-hidden': 'true' }, String(i + 1).padStart(2, '0')), h('strong', null, conceptLabels[key] || key), h('p', null, MOLT_ATLAS.info[key])); }))
+          ),
+          h('section', { className: 'rh-molt-directory', 'aria-labelledby': 'rh-molt-directory-title' },
+            h('div', { className: 'rh-molt-section-head' }, h('div', null, h('div', { className: 'rh-molt-section-kicker' }, 'Species calendar comparison'), h('h3', { id: 'rh-molt-directory-title' }, 'Compare molt timing')), h('span', null, MOLT_ATLAS.timetable.length + ' profiles')),
+            h('div', { className: 'rh-molt-directory-grid' },
+              MOLT_ATLAS.timetable.map(function(item, i) { var itemVisual = MOLT_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-molt-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + item.species + ' molt profile', style: { '--rh-molt-accent': itemVisual.accent } },
+                h('span', null, h('strong', null, item.species), h('span', { className: 'rh-molt-card-timing' }, item.timing), h('span', { className: 'rh-molt-card-months', 'aria-hidden': 'true' }, months.map(function(month, monthIndex) { return h('span', { key: month, className: 'rh-molt-card-month', 'data-active': itemVisual.activeMonths.indexOf(monthIndex) >= 0, 'data-peak': itemVisual.peakMonths.indexOf(monthIndex) >= 0 }); }))),
+                h('span', { className: 'rh-molt-card-copy' }, item.specifics)
+              ); })
             )
           )
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: WING FORMULA (v0.46)
       // ────────────────────────────────────────────────────────
       function renderWingFormula() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-sky-900/40 border border-blue-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '📐'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.wing_formula_calculator_2', 'Wing Formula Calculator')),
-                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WING_FORMULA.intro)
+        var requestedSpecies = rh.wingFormulaSpeciesIdx == null ? 0 : Number(rh.wingFormulaSpeciesIdx);
+        var speciesIdx = isFinite(requestedSpecies) && requestedSpecies >= 0 && requestedSpecies < WING_FORMULA.species.length ? Math.round(requestedSpecies) : 0;
+        var profile = WING_FORMULA_VISUALS[speciesIdx] || WING_FORMULA_VISUALS[0];
+        var record = WING_FORMULA.species[speciesIdx];
+        var requestedFocus = rh.wingFormulaFocus == null ? profile.lengths.indexOf(Math.max.apply(null, profile.lengths)) : Number(rh.wingFormulaFocus);
+        var focusIdx = isFinite(requestedFocus) && requestedFocus >= 0 && requestedFocus < 10 ? Math.round(requestedFocus) : 0;
+        var customOwned = Number(rh.wingFormulaOwner) === speciesIdx && Array.isArray(rh.wingFormulaLengths) && rh.wingFormulaLengths.length === 10;
+        var currentLengths = customOwned ? rh.wingFormulaLengths.map(function(value, i) {
+          var number = Number(value);
+          return isFinite(number) ? Math.max(50, Math.min(100, Math.round(number))) : profile.lengths[i];
+        }) : profile.lengths.slice();
+        var requestedCompare = rh.wingFormulaCompareIdx == null ? (speciesIdx === 1 ? 2 : 1) : Number(rh.wingFormulaCompareIdx);
+        var compareIdx = isFinite(requestedCompare) && requestedCompare >= 0 && requestedCompare < WING_FORMULA.species.length ? Math.round(requestedCompare) : 1;
+        if (compareIdx === speciesIdx) compareIdx = (speciesIdx + 1) % WING_FORMULA.species.length;
+        var compareProfile = WING_FORMULA_VISUALS[compareIdx];
+        var compareRecord = WING_FORMULA.species[compareIdx];
+        var requestedMystery = rh.wingFormulaMysteryIdx == null ? 2 : Number(rh.wingFormulaMysteryIdx);
+        var mysteryIdx = isFinite(requestedMystery) && requestedMystery >= 0 && requestedMystery < WING_FORMULA.species.length ? Math.round(requestedMystery) : 2;
+        var mysteryProfile = WING_FORMULA_VISUALS[mysteryIdx];
+        var mysteryGuess = rh.wingFormulaMysteryGuess == null ? null : Number(rh.wingFormulaMysteryGuess);
+        var mysteryAnswered = mysteryGuess != null && isFinite(mysteryGuess);
+        var mysteryCorrect = mysteryAnswered && mysteryGuess === mysteryIdx;
+
+        function rankedFormula(lengths, limit) {
+          return lengths.map(function(value, index) { return { value: value, index: index }; })
+            .sort(function(a, b) { return b.value - a.value || a.index - b.index; })
+            .slice(0, limit || lengths.length)
+            .map(function(item) { return 'P' + (item.index + 1); })
+            .join(' > ');
+        }
+
+        function average(values) {
+          return values.reduce(function(sum, value) { return sum + value; }, 0) / values.length;
+        }
+
+        function meanDifference(a, b) {
+          return Math.round(average(a.map(function(value, i) { return Math.abs(value - b[i]); })) * 10) / 10;
+        }
+
+        function closestReference(lengths) {
+          return WING_FORMULA_VISUALS.map(function(item, index) {
+            return { index: index, difference: meanDifference(lengths, item.lengths) };
+          }).sort(function(a, b) { return a.difference - b.difference || a.index - b.index; })[0];
+        }
+
+        function inferShape(lengths) {
+          var inner = average(lengths.slice(0, 3));
+          var outer = average(lengths.slice(7, 10));
+          var bias = Math.round(outer - inner);
+          var longest = lengths.indexOf(Math.max.apply(null, lengths));
+          if (bias >= 18) return 'Outer-primary emphasis · pointed pursuit profile';
+          if (bias >= 7) return 'Tapered outer wing · speed-biased profile';
+          if (bias <= -12 && longest >= 4 && longest <= 7) return 'Mid-primary emphasis · rounded silent-flight profile';
+          if (bias <= -12) return 'Inner-primary emphasis · broad maneuvering or soaring profile';
+          return 'Balanced primary envelope · versatile flight profile';
+        }
+
+        function setSpecies(i) {
+          var next = WING_FORMULA_VISUALS[i];
+          setRH({
+            wingFormulaSpeciesIdx: i,
+            wingFormulaOwner: i,
+            wingFormulaLengths: next.lengths.slice(),
+            wingFormulaFocus: next.lengths.indexOf(Math.max.apply(null, next.lengths)),
+            wingFormulaMysteryGuess: null
+          });
+          rhAnnounce(WING_FORMULA.species[i].species + ' wing formula profile opened');
+        }
+
+        function setFocus(i) {
+          setRH({ wingFormulaFocus: i });
+          rhAnnounce('Primary P' + (i + 1) + ' selected for measurement');
+        }
+
+        function setLength(value) {
+          var next = currentLengths.slice();
+          next[focusIdx] = Math.max(50, Math.min(100, Math.round(Number(value))));
+          setRH({ wingFormulaOwner: speciesIdx, wingFormulaLengths: next });
+        }
+
+        function resetProfile() {
+          setRH({ wingFormulaOwner: speciesIdx, wingFormulaLengths: profile.lengths.slice() });
+          rhAnnounce(profile.code + ' reference measurements restored');
+        }
+
+        function setComparison(i) {
+          setRH({ wingFormulaCompareIdx: i });
+          rhAnnounce('Comparison changed to ' + WING_FORMULA.species[i].species);
+        }
+
+        function setGuess(i) {
+          setRH({ wingFormulaMysteryGuess: i });
+          rhAnnounce(i === mysteryIdx ? 'Correct mystery wing identification' : 'That profile does not match; compare the longest primaries');
+        }
+
+        function nextMystery() {
+          var next = (mysteryIdx + 3) % WING_FORMULA.species.length;
+          setRH({ wingFormulaMysteryIdx: next, wingFormulaMysteryGuess: null });
+          rhAnnounce('New mystery wing loaded');
+        }
+
+        function renderMeasurementPlate(lengths, options) {
+          options = options || {};
+          var compact = !!options.compact;
+          var identity = options.identity || 'profile';
+          var label = options.label || 'Wing formula profile';
+          var titleId = 'rh-wing-formula-title-' + identity;
+          var descId = 'rh-wing-formula-desc-' + identity;
+          var baseY = compact ? 338 : 398;
+          var topPadding = compact ? 48 : 62;
+          var scale = compact ? 2.25 : 2.62;
+          var xStart = 126;
+          var xStep = 62;
+          var longest = lengths.indexOf(Math.max.apply(null, lengths));
+          var points = lengths.map(function(value, i) {
+            return (xStart + i * xStep) + ',' + (baseY - (topPadding + value * scale));
+          }).join(' ');
+          var referencePoints = options.reference ? options.reference.map(function(value, i) {
+            return (xStart + i * xStep) + ',' + (baseY - (topPadding + value * scale));
+          }).join(' ') : '';
+          return h('svg', { viewBox: compact ? '0 0 840 380' : '0 0 840 480', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-wing-formula-drawing': identity },
+            h('title', { id: titleId }, label + ' normalized primary measurement plate'),
+            h('desc', { id: descId }, rankedFormula(lengths, 5) + '. Ten primary feathers are aligned at the base and measured on a normalized 50 to 100 index.'),
+            h('defs', null,
+              h('linearGradient', { id: 'rh-wing-formula-bg-' + identity, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: '#020617' }),
+                h('stop', { offset: '55%', stopColor: '#0f172a' }),
+                h('stop', { offset: '100%', stopColor: options.ground || '#172554' })
+              ),
+              h('pattern', { id: 'rh-wing-formula-grid-' + identity, width: 42, height: 42, patternUnits: 'userSpaceOnUse' }, h('path', { d: 'M42 0 L0 0 0 42', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .1 }))
+            ),
+            h('rect', { x: 0, y: 0, width: 840, height: compact ? 380 : 480, fill: 'url(#rh-wing-formula-bg-' + identity + ')' }),
+            h('rect', { className: 'rh-wing-formula-svg-grid', x: 0, y: 0, width: 840, height: compact ? 380 : 480, fill: 'url(#rh-wing-formula-grid-' + identity + ')' }),
+            [60,80,100].map(function(tick) {
+              var y = baseY - (topPadding + tick * scale);
+              return h('g', { key: tick }, h('line', { className: 'rh-wing-formula-ruler', x1: 84, y1: y, x2: 756, y2: y }), h('text', { className: 'rh-wing-formula-svg-label', x: 74, y: y + 4, textAnchor: 'end' }, tick));
+            }),
+            h('path', { d: 'M92 ' + baseY + ' C190 ' + (baseY - 34) + ' 660 ' + (baseY - 34) + ' 748 ' + baseY + ' Z', fill: 'rgba(51,65,85,.38)', stroke: '#64748b', strokeWidth: 1.5 }),
+            lengths.map(function(value, i) {
+              var x = xStart + i * xStep;
+              var featherLength = topPadding + value * scale;
+              var tipY = baseY - featherLength;
+              var width = compact ? 29 : 33;
+              var selected = !compact && focusIdx === i;
+              var dataProps = { key: i, className: 'rh-wing-formula-primary', 'data-selected': selected, 'data-longest': longest === i };
+              if (!compact) dataProps['data-wing-primary'] = 'P' + (i + 1);
+              dataProps['data-wing-length'] = value;
+              return h('g', dataProps,
+                h('path', { className: 'rh-wing-formula-feather', d: 'M' + x + ' ' + baseY + ' C' + (x - width*.48) + ' ' + (baseY - featherLength*.25) + ' ' + (x - width*.56) + ' ' + (tipY + featherLength*.18) + ' ' + x + ' ' + tipY + ' C' + (x + width*.62) + ' ' + (tipY + featherLength*.18) + ' ' + (x + width*.45) + ' ' + (baseY - featherLength*.25) + ' ' + x + ' ' + baseY + ' Z' }),
+                h('line', { className: 'rh-wing-formula-shaft', x1: x, y1: baseY, x2: x, y2: tipY + 8 }),
+                h('text', { className: 'rh-wing-formula-svg-label-strong', x: x, y: baseY + 20, textAnchor: 'middle' }, 'P' + (i + 1)),
+                !compact && h('text', { className: 'rh-wing-formula-svg-label', x: x, y: tipY - 9, textAnchor: 'middle' }, value)
+              );
+            }),
+            options.reference && h('polyline', { className: 'rh-wing-formula-reference-line', points: referencePoints }),
+            h('polyline', { className: 'rh-wing-formula-current-line', points: points }),
+            h('line', { className: 'rh-wing-formula-baseline', x1: 92, y1: baseY, x2: 748, y2: baseY }),
+            h('text', { className: 'rh-wing-formula-svg-label', x: 22, y: 27 }, compact ? 'UNKNOWN SPECIMEN · NORMALIZED PROFILE' : 'PRIMARY LENGTH INDEX · BASES ALIGNED'),
+            h('text', { className: 'rh-wing-formula-svg-accent', x: 22, y: 51 }, rankedFormula(lengths, 5)),
+            h('text', { className: 'rh-wing-formula-svg-label', x: 818, y: compact ? 361 : 461, textAnchor: 'end' }, 'P1 INNER → P10 OUTER · SCHEMATIC')
+          );
+        }
+
+        var formula = rankedFormula(currentLengths, 5);
+        var longestIdx = currentLengths.indexOf(Math.max.apply(null, currentLengths));
+        var spread = Math.max.apply(null, currentLengths) - Math.min.apply(null, currentLengths);
+        var outerBias = Math.round(average(currentLengths.slice(7, 10)) - average(currentLengths.slice(0, 3)));
+        var nearest = closestReference(currentLengths);
+        var nearestProfile = WING_FORMULA_VISUALS[nearest.index];
+        var compareDifference = meanDifference(currentLengths, compareProfile.lengths);
+        var largestDifferenceIdx = currentLengths.map(function(value, i) { return Math.abs(value - compareProfile.lengths[i]); })
+          .map(function(value, i) { return { value: value, index: i }; })
+          .sort(function(a, b) { return b.value - a.value || a.index - b.index; })[0].index;
+        var howSteps = [
+          { title: 'Align the bases', copy: 'Place P1-P10 on one baseline so tip extension can be compared consistently.' },
+          { title: 'Rank the tips', copy: 'Order the primaries from longest to shortest; that order is the wing formula.' },
+          { title: 'Interpret shape', copy: 'Outer emphasis suggests pointed speed wings; central emphasis suggests broader wings.' }
+        ];
+
+        return h('div', { className: 'rh-wing-formula-lab', 'data-raptor-wing-formula-lab': 'true', 'data-wing-formula-species': profile.kind, 'data-wing-formula-focus': 'P' + (focusIdx + 1), style: { '--rh-wing-accent': profile.accent } },
+          h('section', { className: 'rh-wing-formula-hero', 'aria-labelledby': 'rh-wing-formula-heading' },
+            h('div', { className: 'rh-wing-formula-hero-main' },
+              h('div', { className: 'rh-wing-formula-hero-icon', 'aria-hidden': 'true' }, 'P1—P10'),
+              h('div', null,
+                h('div', { className: 'rh-wing-formula-kicker' }, 'Interactive morphometrics bench'),
+                h('h2', { id: 'rh-wing-formula-heading', className: 'rh-wing-formula-title' }, __alloT('stem.raptorhunt.wing_formula_calculator_2', 'Wing Formula Calculator')),
+                h('p', { className: 'rh-wing-formula-copy' }, WING_FORMULA.intro + ' Select a primary, adjust its normalized length, and watch the diagnostic formula update.')
               )
+            ),
+            h('div', { className: 'rh-wing-formula-summary', 'aria-label': 'Wing Formula laboratory inventory' },
+              h('div', { className: 'rh-wing-formula-stat' }, h('strong', null, WING_FORMULA.species.length), h('span', null, 'reference profiles')),
+              h('div', { className: 'rh-wing-formula-stat' }, h('strong', null, 10), h('span', null, 'primary measures'))
             )
           ),
-          h('div', { className: 'grid md:grid-cols-3 gap-3' },
-            Object.keys(WING_FORMULA.info).map(function(k, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-blue-700/30 rounded-lg p-3' },
-                h('div', { className: 'text-sm font-bold text-blue-300 mb-1 capitalize' }, k.replace(/([A-Z])/g, ' $1')),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, WING_FORMULA.info[k])
-              );
+          h('div', { className: 'rh-wing-formula-tabs', role: 'tablist', 'aria-label': 'Choose a wing formula species profile' },
+            WING_FORMULA.species.map(function(item, i) {
+              var selected = speciesIdx === i;
+              return h('button', { key: i, id: 'rh-wing-formula-tab-' + i, type: 'button', role: 'tab', className: 'rh-wing-formula-tab', onClick: function() { setSpecies(i); }, 'aria-selected': selected, 'aria-controls': 'rh-wing-formula-workbench' }, h('span', { className: 'rh-wing-formula-code', 'aria-hidden': 'true' }, WING_FORMULA_VISUALS[i].code), item.species);
             })
           ),
-          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 overflow-x-auto' },
-            h('table', { className: 'w-full text-xs' },
-              h('thead', null,
-                h('tr', { className: 'border-b border-blue-700/40' },
-                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.species_10', 'Species')),
-                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.formula', 'Formula')),
-                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.high_aspect_ratio', 'High Aspect Ratio?')),
-                  h('th', { scope: 'col', className: 'p-2 text-left text-blue-300' }, __alloT('stem.raptorhunt.notes_3', 'Notes'))
-                )
+          h('div', { id: 'rh-wing-formula-workbench', className: 'rh-wing-formula-workbench', role: 'tabpanel', 'aria-labelledby': 'rh-wing-formula-tab-' + speciesIdx },
+            h('section', { className: 'rh-wing-formula-plate', 'aria-labelledby': 'rh-wing-formula-plate-title' },
+              h('div', { className: 'rh-wing-formula-plate-head' },
+                h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, profile.shape), h('strong', { id: 'rh-wing-formula-plate-title', className: 'rh-wing-formula-plate-title' }, record.species + ' measurement profile')),
+                h('span', { className: 'rh-wing-formula-scale' }, 'Normalized index · 50–100')
               ),
-              h('tbody', null,
-                WING_FORMULA.species.map(function(s, i) {
-                  return h('tr', { key: i, className: 'border-b border-slate-700/40 ' + (i % 2 === 0 ? 'bg-slate-800/30' : 'bg-slate-900/30') },
-                    h('td', { className: 'p-2 font-bold text-amber-300' }, s.species),
-                    h('td', { className: 'p-2 text-cyan-200 font-mono' }, s.formula),
-                    h('td', { className: 'p-2 text-emerald-200' }, s.highAspect),
-                    h('td', { className: 'p-2 text-slate-200 italic' }, s.notes)
-                  );
-                })
+              h('div', { className: 'rh-wing-formula-stage', 'data-raptor-wing-formula-stage': profile.kind },
+                renderMeasurementPlate(currentLengths, { identity: profile.kind, label: record.species, reference: compareProfile.lengths, ground: '#172554' }),
+                h('div', { className: 'rh-wing-formula-legend', 'aria-hidden': 'true' }, h('span', null, h('i', null), profile.code + ' live profile'), h('span', null, h('i', { 'data-reference': 'true' }), compareProfile.code + ' reference'))
+              ),
+              h('div', { className: 'rh-wing-formula-controls' },
+                h('div', { className: 'rh-wing-formula-primary-grid', role: 'group', 'aria-label': 'Select primary feather P1 through P10' },
+                  currentLengths.map(function(value, i) { var selected = focusIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-primary-button', onClick: function() { setFocus(i); }, 'aria-pressed': selected, 'data-primary-control': 'P' + (i + 1), 'aria-label': 'Measure primary P' + (i + 1) + ', normalized length ' + value }, 'P' + (i + 1), h('span', null, value)); })
+                ),
+                h('div', { className: 'rh-wing-formula-adjust' },
+                  h('label', { className: 'rh-wing-formula-range' },
+                    h('span', { className: 'rh-wing-formula-range-head' }, h('span', null, 'Adjust P' + (focusIdx + 1) + ' normalized length'), h('strong', null, currentLengths[focusIdx] + ' / 100')),
+                    h('input', { type: 'range', min: 50, max: 100, step: 1, value: currentLengths[focusIdx], onChange: function(event) { setLength(event.target.value); }, 'aria-label': 'Normalized length for primary P' + (focusIdx + 1), 'aria-valuetext': currentLengths[focusIdx] + ' out of 100' })
+                  ),
+                  h('button', { type: 'button', className: 'rh-wing-formula-reset', onClick: resetProfile }, 'Restore ' + profile.code)
+                )
+              )
+            ),
+            h('aside', { className: 'rh-wing-formula-detail', 'data-raptor-wing-formula-reading': 'true', 'aria-labelledby': 'rh-wing-formula-reading-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-wing-formula-detail-head' }, h('div', null, h('div', { className: 'rh-wing-formula-detail-kicker' }, 'Live diagnostic reading'), h('h3', { id: 'rh-wing-formula-reading-title' }, record.species)), h('span', { className: 'rh-wing-formula-chip' }, profile.code)),
+              h('div', { className: 'rh-wing-formula-live' }, h('span', null, 'Derived wing formula'), h('strong', null, formula), h('p', null, inferShape(currentLengths))),
+              h('div', { className: 'rh-wing-formula-metrics' },
+                h('div', { className: 'rh-wing-formula-metric' }, h('span', null, 'Longest'), h('strong', null, 'P' + (longestIdx + 1))),
+                h('div', { className: 'rh-wing-formula-metric' }, h('span', null, 'Tip spread'), h('strong', null, spread + ' pts')),
+                h('div', { className: 'rh-wing-formula-metric' }, h('span', null, 'Outer bias'), h('strong', null, (outerBias > 0 ? '+' : '') + outerBias))
+              ),
+              h('div', { className: 'rh-wing-formula-reading' }, h('span', null, 'Closest teaching reference'), h('p', null, WING_FORMULA.species[nearest.index].species + ' · mean difference ' + nearest.difference + ' points. ' + nearestProfile.diagnostic)),
+              h('div', { className: 'rh-wing-formula-callout' }, h('span', null, 'Flight interpretation'), h('p', null, profile.flight + '. ' + record.notes)),
+              h('div', { className: 'rh-wing-formula-detail-actions' },
+                h('button', { type: 'button', onClick: function() { setFocus((focusIdx - 1 + 10) % 10); }, 'aria-label': 'Previous primary feather' }, '← Previous feather'),
+                h('button', { type: 'button', onClick: function() { setFocus((focusIdx + 1) % 10); }, 'aria-label': 'Next primary feather' }, 'Next feather →')
               )
             )
-          )
+          ),
+          h('section', { className: 'rh-wing-formula-compare', 'aria-labelledby': 'rh-wing-formula-compare-title' },
+            h('div', { className: 'rh-wing-formula-section-head' }, h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, 'Diagnostic comparison'), h('h3', { id: 'rh-wing-formula-compare-title' }, 'Separate similar wing profiles')), h('span', null, profile.code + ' vs ' + compareProfile.code)),
+            h('div', { className: 'rh-wing-formula-compare-grid' },
+              h('div', { className: 'rh-wing-formula-compare-controls' },
+                h('label', null, 'Comparison reference', h('select', { value: compareIdx, onChange: function(event) { setComparison(Number(event.target.value)); }, 'aria-label': 'Choose a comparison species' }, WING_FORMULA.species.map(function(item, i) { return i === speciesIdx ? null : h('option', { key: i, value: i }, item.species); }))),
+                h('div', { className: 'rh-wing-formula-compare-stat' }, h('span', null, 'Mean profile difference'), h('strong', null, compareDifference + ' normalized points'), h('p', null, 'Lower values indicate more similar primary-length envelopes.')),
+                h('div', { className: 'rh-wing-formula-compare-stat' }, h('span', null, 'Largest separator'), h('strong', null, 'P' + (largestDifferenceIdx + 1)), h('p', null, profile.code + ' ' + currentLengths[largestDifferenceIdx] + ' vs ' + compareProfile.code + ' ' + compareProfile.lengths[largestDifferenceIdx] + '.'))
+              ),
+              h('div', { className: 'rh-wing-formula-how' }, howSteps.map(function(step, i) { return h('article', { key: i }, h('b', { 'aria-hidden': 'true' }, '0' + (i + 1)), h('strong', null, step.title), h('p', null, step.copy)); }))
+            )
+          ),
+          h('section', { className: 'rh-wing-formula-mystery', 'aria-labelledby': 'rh-wing-formula-mystery-title', 'data-wing-formula-challenge': mysteryCorrect ? 'correct' : mysteryAnswered ? 'incorrect' : 'open' },
+            h('div', { className: 'rh-wing-formula-section-head' }, h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, 'Identification challenge'), h('h3', { id: 'rh-wing-formula-mystery-title' }, 'Mystery wing bench')), h('span', null, 'Read the tips, then identify')),
+            h('div', { className: 'rh-wing-formula-mystery-grid' },
+              h('div', { className: 'rh-wing-mystery-stage' }, renderMeasurementPlate(mysteryProfile.lengths, { compact: true, identity: 'mystery-' + mysteryIdx, label: 'Mystery wing' })),
+              h('div', { className: 'rh-wing-formula-challenge' },
+                h('span', null, 'Unknown specimen'),
+                h('strong', null, rankedFormula(mysteryProfile.lengths, 5)),
+                h('p', null, 'Use the longest feather, the width of the central plateau, and the outer-primary taper.'),
+                h('div', { className: 'rh-wing-formula-guess-grid', role: 'group', 'aria-label': 'Choose the mystery wing species' },
+                  WING_FORMULA.species.map(function(item, i) { var state = mysteryAnswered && i === mysteryGuess ? (mysteryCorrect ? 'correct' : 'wrong') : undefined; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-guess', onClick: function() { setGuess(i); }, 'data-guess-state': state, 'aria-pressed': mysteryGuess === i }, item.species); })
+                ),
+                mysteryAnswered && h('div', { className: 'rh-wing-formula-result', 'data-result': mysteryCorrect ? 'correct' : 'incorrect', role: 'status' }, mysteryCorrect ? 'Correct identification. ' + mysteryProfile.diagnostic : 'Not this profile. Compare the longest primary and the outer-wing taper, then try again.'),
+                h('button', { type: 'button', className: 'rh-wing-formula-new', onClick: nextMystery }, 'Load another mystery')
+              )
+            )
+          ),
+          h('section', { className: 'rh-wing-formula-directory', 'aria-labelledby': 'rh-wing-formula-directory-title' },
+            h('div', { className: 'rh-wing-formula-section-head' }, h('div', null, h('div', { className: 'rh-wing-formula-section-kicker' }, 'Reference library'), h('h3', { id: 'rh-wing-formula-directory-title' }, 'Compare all eight teaching profiles')), h('span', null, WING_FORMULA.species.length + ' profiles')),
+            h('div', { className: 'rh-wing-formula-directory-grid' },
+              WING_FORMULA.species.map(function(item, i) { var itemProfile = WING_FORMULA_VISUALS[i]; var selected = speciesIdx === i; return h('button', { key: i, type: 'button', className: 'rh-wing-formula-profile-card', onClick: function() { setSpecies(i); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open ' + item.species + ' wing formula profile', style: { '--rh-wing-accent': itemProfile.accent } }, h('span', { className: 'rh-wing-formula-profile-code', 'aria-hidden': 'true' }, itemProfile.code), h('span', { className: 'rh-wing-formula-profile-copy' }, h('strong', null, item.species), h('span', null, itemProfile.shape + ' · ' + itemProfile.family)), h('span', { className: 'rh-wing-formula-profile-rank' }, rankedFormula(itemProfile.lengths, 3))); })
+            )
+          ),
+          h('div', { className: 'rh-wing-formula-note', role: 'note' }, h('strong', null, 'Teaching-profile note: '), 'These normalized patterns are schematic comparisons, not specimen measurements. Feather wear, molt stage, age, sex, posture, and measurement technique can alter a real wing formula.')
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: DATA TABLES (v0.46)
       // ────────────────────────────────────────────────────────
       function renderDataTables() {
@@ -22528,54 +24817,449 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // RENDER: ILLUSTRATION GALLERY (v0.48)
       // ────────────────────────────────────────────────────────
       function renderIllustrations() {
-        var illIdx = rh.illustrationIdx == null ? 0 : rh.illustrationIdx;
-        function setIllIdx(i) { setRH({ illustrationIdx: i }); }
+        var requestedIdx = rh.illustrationIdx == null ? 0 : Number(rh.illustrationIdx);
+        var filters = ['All', 'Flight Science', 'Sensory Worlds', 'Anatomy & Diet', 'Ecology & Migration', 'Conservation', 'People & Culture'];
+        var requestedFilter = rh.illustrationFilter || 'All';
+        var activeFilter = filters.indexOf(requestedFilter) >= 0 ? requestedFilter : 'All';
+        var visibleIndices = ILLUSTRATION_VISUALS.map(function(visual, i) { return visual.category === activeFilter || activeFilter === 'All' ? i : -1; }).filter(function(i) { return i >= 0; });
+        var requestedIsValid = isFinite(requestedIdx) && requestedIdx >= 0 && requestedIdx < ILLUSTRATIONS.images.length;
+        var illIdx = requestedIsValid && visibleIndices.indexOf(requestedIdx) >= 0 ? requestedIdx : (visibleIndices[0] || 0);
         var ill = ILLUSTRATIONS.images[illIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🖼'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.illustration_gallery_2', 'Illustration Gallery')),
-                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, ILLUSTRATIONS.intro)
+        var visual = ILLUSTRATION_VISUALS[illIdx] || ILLUSTRATION_VISUALS[0];
+        var marksVisible = rh.illustrationMarks !== false;
+        var position = Math.max(0, visibleIndices.indexOf(illIdx));
+        var previousIdx = visibleIndices[(position - 1 + visibleIndices.length) % visibleIndices.length];
+        var nextIdx = visibleIndices[(position + 1) % visibleIndices.length];
+
+        function setIllIdx(i) {
+          setRH({ illustrationIdx: i });
+          rhAnnounce('Field plate ' + (i + 1) + ' opened: ' + ILLUSTRATIONS.images[i].title);
+        }
+
+        function setIllustrationFilter(filterName) {
+          var firstIdx = filterName === 'All' ? 0 : ILLUSTRATION_VISUALS.map(function(item) { return item.category; }).indexOf(filterName);
+          setRH({ illustrationFilter: filterName, illustrationIdx: firstIdx < 0 ? 0 : firstIdx });
+          rhAnnounce(filterName + ' illustration lens selected');
+        }
+
+        function toggleIllustrationMarks() {
+          setRH({ illustrationMarks: !marksVisible });
+          rhAnnounce(marksVisible ? 'Field marks hidden' : 'Field marks shown');
+        }
+
+        function birdGlyph(x, y, scale, rotation, key, highlighted) {
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') rotate(' + (rotation || 0) + ') scale(' + scale + ')' },
+            h('path', { className: highlighted ? 'rh-ill-accent' : 'rh-ill-paper', d: 'M-48 0 C-33 -23 -13 -24 0 -5 C13 -24 33 -23 48 0 C29 -9 19 3 0 12 C-19 3 -29 -9 -48 0 Z' }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M-8 8 L0 23 L8 8' })
+          );
+        }
+
+        function profileGlyph(x, y, scale, rotation, key, highlighted) {
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') rotate(' + (rotation || 0) + ') scale(' + scale + ')' },
+            h('ellipse', { className: highlighted ? 'rh-ill-accent' : 'rh-ill-paper', cx: 0, cy: 0, rx: 27, ry: 16 }),
+            h('path', { className: 'rh-ill-ink', d: 'M-11 -4 C-38 -34 -57 -18 -42 13 C-29 28 -10 18 5 8 Z' }),
+            h('circle', { className: highlighted ? 'rh-ill-accent' : 'rh-ill-paper', cx: 25, cy: -10, r: 11 }),
+            h('path', { className: 'rh-ill-accent', d: 'M34 -13 L53 -7 L34 -2 Z' }),
+            h('path', { className: 'rh-ill-line', d: 'M-24 7 L-47 21 M-21 11 L-42 29' })
+          );
+        }
+
+        function personGlyph(x, y, scale, key) {
+          return h('g', { key: key, transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')' },
+            h('circle', { className: 'rh-ill-paper', cx: 0, cy: -28, r: 10 }),
+            h('path', { className: 'rh-ill-line', d: 'M0 -17 L0 18 M0 -3 L-18 10 M0 -3 L19 7 M0 18 L-13 43 M0 18 L14 43' })
+          );
+        }
+
+        function renderIllustrationPlate() {
+          var kind = visual.kind;
+          var drawing;
+          if (kind === 'stoop') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('circle', { className: 'rh-ill-accent', cx: 674, cy: 92, r: 34, opacity: .75 }),
+            h('path', { className: 'rh-ill-muted', d: 'M0 394 L132 286 L236 359 L352 260 L481 383 L609 294 L800 393 L800 500 L0 500 Z' }),
+            h('path', { className: 'rh-ill-trace', d: 'M118 94 C227 40 364 70 438 141 C496 197 491 282 553 327 C590 354 641 359 690 346' }),
+            h('g', { transform: 'translate(493 180) rotate(55)' },
+              h('ellipse', { className: 'rh-ill-paper', cx: 0, cy: 0, rx: 44, ry: 13 }),
+              h('path', { className: 'rh-ill-ink', d: 'M-8 -8 L-40 -45 L-16 -12 M-5 8 L-34 46 L11 12' }),
+              h('circle', { className: 'rh-ill-accent', cx: 39, cy: -2, r: 9 }),
+              h('path', { className: 'rh-ill-accent', d: 'M47 -4 L63 1 L47 5 Z' })
+            ),
+            birdGlyph(681, 346, .34, -12, 'stoop-prey', false),
+            [0, 1, 2, 3].map(function(i) { return h('line', { key: 'speed' + i, className: 'rh-ill-line-thin', x1: 397 - i * 24, y1: 118 + i * 15, x2: 449 - i * 19, y2: 149 + i * 18 }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 112, y: 74 }, '242 MPH')
+          );
+          else if (kind === 'sound') drawing = h('g', { 'data-illustration-drawing': kind },
+            [64, 112, 162].map(function(r, i) { return h('circle', { key: 'wave' + i, className: i === 2 ? 'rh-ill-trace' : 'rh-ill-line-thin', cx: 640, cy: 365, r: r, opacity: .8 - i * .16 }); }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M640 365 L307 174 L300 270 Z', strokeDasharray: '8 8' }),
+            h('path', { className: 'rh-ill-ink', d: 'M174 87 L247 118 C292 82 363 82 407 118 L481 87 L454 185 C471 277 407 353 327 353 C246 353 183 278 200 184 Z' }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 280, cy: 212, rx: 78, ry: 103 }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 375, cy: 212, rx: 78, ry: 103 }),
+            h('circle', { className: 'rh-ill-accent', cx: 287, cy: 190, r: 16 }),
+            h('circle', { className: 'rh-ill-accent', cx: 368, cy: 190, r: 16 }),
+            h('path', { className: 'rh-ill-line', d: 'M250 254 C273 287 303 300 327 300 C352 300 384 286 405 252' }),
+            h('circle', { className: 'rh-ill-accent', cx: 222, cy: 232, r: 11 }),
+            h('circle', { className: 'rh-ill-accent', cx: 435, cy: 174, r: 11 }),
+            h('ellipse', { className: 'rh-ill-paper', cx: 640, cy: 366, rx: 24, ry: 13 }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M662 366 C683 350 689 357 693 366 M620 373 L611 383' }),
+            h('text', { className: 'rh-ill-label-accent', x: 203, y: 257 }, 'L ↓'),
+            h('text', { className: 'rh-ill-label-accent', x: 431, y: 161 }, 'R ↑')
+          );
+          else if (kind === 'wing') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-ink', d: 'M62 361 C153 299 193 217 270 149 C368 88 491 57 716 63 C680 95 651 125 633 158 C676 142 711 148 740 169 C696 207 661 231 617 249 C663 250 699 264 721 288 C632 356 488 382 355 337 C239 382 132 386 62 361 Z' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M84 357 C186 308 226 235 304 174 C407 114 516 91 695 73' }),
+            [0, 1, 2, 3, 4, 5].map(function(i) { return h('path', { key: 'primary' + i, className: 'rh-ill-line', d: 'M' + (484 + i * 27) + ' ' + (111 + i * 12) + ' L' + (699 - i * 5) + ' ' + (73 + i * 37) }); }),
+            [0, 1, 2, 3, 4].map(function(i) { return h('path', { key: 'secondary' + i, className: 'rh-ill-line-thin', d: 'M' + (189 + i * 54) + ' ' + (289 - i * 35) + ' L' + (236 + i * 56) + ' ' + (354 - i * 6) }); }),
+            [0, 1, 2].map(function(i) { return h('path', { key: 'vortex' + i, className: 'rh-ill-trace', d: 'M696 ' + (194 + i * 34) + ' C754 ' + (174 + i * 34) + ' 769 ' + (227 + i * 38) + ' 733 ' + (248 + i * 42), opacity: .84 - i * .18 }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 598, y: 47 }, 'SLOTTED TIPS')
+          );
+          else if (kind === 'talon') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-ink', d: 'M316 28 C364 16 429 30 449 67 L424 225 C415 257 391 275 359 276 C326 262 305 239 301 205 Z' }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M342 40 C339 119 343 205 360 272 M390 39 C394 127 391 207 371 273' }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 386, cy: 302, rx: 91, ry: 51 }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 395, cy: 385, rx: 154, ry: 49 }),
+            h('path', { className: 'rh-ill-line', d: 'M347 300 C272 309 208 347 175 402 C160 427 126 425 117 399 C111 378 135 362 161 375 M373 306 C380 355 375 393 350 419 C331 440 353 461 378 444 M407 301 C474 317 526 352 552 397 C566 421 600 417 605 392 C607 372 584 361 561 375 M418 286 C484 270 544 280 580 313 C600 331 628 310 617 287' }),
+            h('path', { className: 'rh-ill-accent', d: 'M108 399 C120 373 141 365 162 375 C140 378 127 393 123 416 Z M551 397 C565 371 587 367 605 386 C584 379 569 394 566 413 Z' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M684 102 L684 353 M670 339 L684 354 L698 339' }),
+            h('text', { className: 'rh-ill-label-accent', x: 629, y: 87 }, '530 PSI'),
+            h('text', { className: 'rh-ill-label', x: 319, y: 480 }, 'OPPOSING GRIP GEOMETRY')
+          );
+          else if (kind === 'uv') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-muted', d: 'M0 265 C149 222 271 278 398 245 C558 204 673 250 800 211 L800 500 L0 500 Z' }),
+            [46, 123, 205, 302, 389, 477, 566, 651, 735].map(function(x, i) { return h('path', { key: 'grass' + i, className: 'rh-ill-line-thin', d: 'M' + x + ' 450 C' + (x - 16) + ' 414 ' + (x - 12) + ' ' + (380 - (i % 3) * 18) + ' ' + (x - 6) + ' ' + (354 - (i % 3) * 17) + ' M' + x + ' 450 C' + (x + 17) + ' 411 ' + (x + 15) + ' ' + (372 - (i % 2) * 27) + ' ' + (x + 7) + ' ' + (345 - (i % 2) * 22) }); }),
+            h('path', { className: 'rh-ill-trace', d: 'M78 430 C159 367 213 426 285 363 C352 304 405 382 474 328 C546 271 599 345 687 289 C724 265 749 244 780 226' }),
+            h('path', { className: 'rh-ill-accent', d: 'M350 105 L537 368 L210 370 Z', opacity: .16 }),
+            birdGlyph(369, 105, .82, 2, 'uv-kestrel', true),
+            h('ellipse', { className: 'rh-ill-paper', cx: 655, cy: 350, rx: 19, ry: 10 }),
+            h('circle', { className: 'rh-ill-accent', cx: 637, cy: 346, r: 6 }),
+            [0, 1, 2, 3, 4].map(function(i) { return h('circle', { key: 'uvdot' + i, className: 'rh-ill-accent', cx: 470 + i * 34, cy: 343 - (i % 2) * 18, r: 4 + (i % 2), opacity: .72 }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 74, y: 72 }, 'ULTRAVIOLET SEARCH LAYER')
+          );
+          else if (kind === 'pellet') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('ellipse', { className: 'rh-ill-ink', cx: 400, cy: 250, rx: 267, ry: 151 }),
+            [ [213,177,252,210], [196,249,258,270], [226,326,292,292], [548,166,496,219], [581,256,524,275], [554,338,500,306] ].map(function(line, i) { return h('path', { key: 'fur' + i, className: 'rh-ill-line-thin', d: 'M' + line[0] + ' ' + line[1] + ' Q' + ((line[0] + line[2]) / 2) + ' ' + (line[1] - 28 + i * 7) + ' ' + line[2] + ' ' + line[3] }); }),
+            h('path', { className: 'rh-ill-paper', d: 'M347 176 C382 145 439 149 465 186 L455 241 L430 269 L368 264 L339 232 Z' }),
+            h('circle', { className: 'rh-ill-ink', cx: 382, cy: 202, r: 13 }),
+            h('circle', { className: 'rh-ill-ink', cx: 430, cy: 202, r: 13 }),
+            h('path', { className: 'rh-ill-line', d: 'M394 231 L405 216 L417 231 M371 263 L382 286 M445 261 L459 284' }),
+            [ [284,197,321,229], [278,307,329,273], [479,188,520,226], [476,314,531,284] ].map(function(bone, i) { return h('g', { key: 'bone' + i }, h('line', { className: 'rh-ill-line', x1: bone[0], y1: bone[1], x2: bone[2], y2: bone[3] }), h('circle', { className: 'rh-ill-paper', cx: bone[0], cy: bone[1], r: 7 }), h('circle', { className: 'rh-ill-paper', cx: bone[2], cy: bone[3], r: 7 })); }),
+            h('line', { className: 'rh-ill-accent-stroke', x1: 153, y1: 430, x2: 647, y2: 430 }),
+            [153, 252, 351, 450, 549, 647].map(function(x, i) { return h('line', { key: 'tick' + i, className: 'rh-ill-accent-stroke', x1: x, y1: 420, x2: x, y2: 440 }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 354, y: 469 }, 'PREY RECORD')
+          );
+          else if (kind === 'kettle') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('circle', { className: 'rh-ill-accent', cx: 392, cy: 279, r: 162, opacity: .09 }),
+            h('path', { className: 'rh-ill-muted', d: 'M0 405 L144 309 L272 391 L421 304 L557 398 L685 322 L800 390 L800 500 L0 500 Z' }),
+            h('path', { className: 'rh-ill-trace', d: 'M390 403 C260 372 262 275 374 255 C502 233 528 148 416 122 C330 102 300 55 358 31' }),
+            [[290,354,.28,-6],[339,323,.32,7],[428,331,.27,-9],[480,280,.34,4],[373,277,.3,-5],[306,232,.25,9],[417,214,.33,-3],[493,177,.27,8],[386,151,.3,-9],[331,105,.24,4],[456,91,.28,-4],[548,130,.23,8],[604,170,.25,-3],[644,208,.22,9],[675,254,.26,-8],[707,292,.22,4]].map(function(b, i) { return birdGlyph(b[0], b[1], b[2], b[3], 'kettle-bird-' + i, i === 6); }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M590 323 C647 307 695 288 742 245 M726 242 L743 245 L735 261' }),
+            h('text', { className: 'rh-ill-label-accent', x: 65, y: 68 }, 'RISING AIR · SHARED LIFT')
+          );
+          else if (kind === 'recovery') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('rect', { className: 'rh-ill-muted', x: 62, y: 78, width: 226, height: 330, rx: 18 }),
+            h('rect', { className: 'rh-ill-muted', x: 512, y: 78, width: 226, height: 330, rx: 18 }),
+            h('path', { className: 'rh-ill-trace', d: 'M171 336 C293 356 301 179 401 222 C486 258 500 127 627 144' }),
+            h('text', { className: 'rh-ill-label', x: 94, y: 117 }, '1974'),
+            h('text', { className: 'rh-ill-label-strong', x: 92, y: 175 }, '4 BIRDS'),
+            h('path', { className: 'rh-ill-line', d: 'M109 309 C137 283 167 286 187 310 C208 277 248 291 255 324 C243 362 212 379 180 379 C147 377 119 355 109 309 Z' }),
+            birdGlyph(182, 319, .48, 0, 'recovery-chick', true),
+            h('path', { className: 'rh-ill-paper', d: 'M318 335 C340 300 374 283 412 287 L452 309 C430 321 416 342 406 371 L350 382 C322 371 307 353 318 335 Z' }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M339 337 C371 326 403 335 427 357' }),
+            h('text', { className: 'rh-ill-label', x: 547, y: 117 }, 'TODAY'),
+            h('text', { className: 'rh-ill-label-strong', x: 545, y: 175 }, '800+'),
+            [[568,276,.36,-8],[641,244,.31,6],[685,312,.28,-4],[589,351,.3,8]].map(function(b, i) { return birdGlyph(b[0], b[1], b[2], b[3], 'recovery-wild-' + i, i === 0); }),
+            h('text', { className: 'rh-ill-label-accent', x: 305, y: 69 }, 'CARE → RELEASE → RECOVERY')
+          );
+          else if (kind === 'nest') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-ink', d: 'M214 500 C225 403 225 313 202 210 C195 173 212 143 248 136 C272 215 286 282 309 332 C330 281 351 210 371 125 C407 131 426 157 415 198 C393 280 388 397 400 500 Z' }),
+            h('path', { className: 'rh-ill-line', d: 'M251 242 L88 164 M385 218 L548 123 M283 326 L123 298 M363 307 L603 259' }),
+            [0,1,2,3,4,5].map(function(i) { return h('ellipse', { key: 'nestlayer' + i, className: i === 2 ? 'rh-ill-accent-stroke' : 'rh-ill-line', cx: 396, cy: 249 + i * 13, rx: 155 - i * 5, ry: 39 + i * 3 }); }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 396, cy: 234, rx: 112, ry: 32 }),
+            profileGlyph(439, 189, 1.12, -6, 'nest-adult', true),
+            h('circle', { className: 'rh-ill-paper', cx: 356, cy: 231, r: 13 }),
+            h('circle', { className: 'rh-ill-paper', cx: 391, cy: 225, r: 13 }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M646 115 L646 397 M632 129 L646 114 L660 129 M632 383 L646 398 L660 383' }),
+            h('text', { className: 'rh-ill-label-accent', x: 669, y: 265, transform: 'rotate(90 669 265)' }, 'UP TO 6 M')
+          );
+          else if (kind === 'snow') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('circle', { className: 'rh-ill-paper', cx: 682, cy: 82, r: 31, opacity: .65 }),
+            h('path', { className: 'rh-ill-paper', d: 'M0 292 C145 263 257 308 387 277 C533 243 653 284 800 250 L800 500 L0 500 Z', opacity: .88 }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M0 354 C148 325 267 369 403 341 C545 312 679 343 800 317' }),
+            h('path', { className: 'rh-ill-ink', d: 'M182 87 L236 114 C273 85 329 87 364 116 L420 88 L402 164 C433 235 385 299 301 299 C218 299 169 235 201 165 Z' }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 267, cy: 191, rx: 62, ry: 77 }),
+            h('ellipse', { className: 'rh-ill-muted', cx: 335, cy: 191, rx: 62, ry: 77 }),
+            h('circle', { className: 'rh-ill-accent', cx: 272, cy: 181, r: 12 }),
+            h('circle', { className: 'rh-ill-accent', cx: 330, cy: 181, r: 12 }),
+            h('path', { className: 'rh-ill-trace', d: 'M301 216 C389 242 414 303 472 343 C532 385 594 361 651 397' }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M481 401 C528 369 584 375 631 409', strokeDasharray: '9 8' }),
+            h('ellipse', { className: 'rh-ill-ink', cx: 641, cy: 408, rx: 22, ry: 12 }),
+            h('circle', { className: 'rh-ill-accent', cx: 622, cy: 403, r: 6 }),
+            h('text', { className: 'rh-ill-label-accent', x: 531, y: 462 }, 'HIDDEN BELOW SNOW')
+          );
+          else if (kind === 'strike') drawing = h('g', { 'data-illustration-drawing': kind },
+            [0,1,2,3,4,5].map(function(i) { return h('line', { key: 'motion' + i, className: i === 2 ? 'rh-ill-accent-stroke' : 'rh-ill-line-thin', x1: 62, y1: 96 + i * 54, x2: 487, y2: 230 + i * 27, opacity: .86 - i * .08 }); }),
+            h('g', { transform: 'translate(420 212) rotate(22)' },
+              h('ellipse', { className: 'rh-ill-paper', cx: 0, cy: 0, rx: 54, ry: 17 }),
+              h('path', { className: 'rh-ill-ink', d: 'M-7 -8 L-67 -61 L-23 -11 M-4 9 L-56 59 L18 14' }),
+              h('circle', { className: 'rh-ill-accent', cx: 49, cy: -3, r: 11 }),
+              h('path', { className: 'rh-ill-accent', d: 'M58 -6 L76 0 L58 5 Z' })
+            ),
+            birdGlyph(596, 311, .74, 16, 'strike-pigeon', false),
+            h('circle', { className: 'rh-ill-accent', cx: 535, cy: 272, r: 26, opacity: .24 }),
+            [[525,247,506,218],[548,253,570,224],[554,278,588,286],[529,291,514,326],[501,268,474,278]].map(function(f, i) { return h('path', { key: 'feather' + i, className: 'rh-ill-accent-stroke', d: 'M' + f[0] + ' ' + f[1] + ' Q' + ((f[0]+f[2])/2 + 8) + ' ' + ((f[1]+f[3])/2 - 10) + ' ' + f[2] + ' ' + f[3] }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 609, y: 103 }, '0.1 SECOND')
+          );
+          else if (kind === 'forest') drawing = h('g', { 'data-illustration-drawing': kind },
+            [48,134,226,606,694,756].map(function(x, i) { return h('g', { key: 'trunk' + i, opacity: .48 + (i % 3) * .16 }, h('rect', { className: 'rh-ill-ink', x: x, y: 0, width: 31 + (i % 2) * 13, height: 500 }), h('path', { className: 'rh-ill-line-thin', d: 'M' + (x+15) + ' ' + (88+i*14) + ' L' + (x-36) + ' ' + (44+i*11) + ' M' + (x+20) + ' ' + (176+i*9) + ' L' + (x+78) + ' ' + (122+i*12) })); }),
+            h('path', { className: 'rh-ill-trace', d: 'M78 394 C172 349 165 227 272 266 C372 303 376 140 494 185 C603 227 612 106 735 112' }),
+            h('g', { transform: 'translate(414 213) rotate(-8)' },
+              h('ellipse', { className: 'rh-ill-paper', cx: 0, cy: 0, rx: 56, ry: 20 }),
+              h('path', { className: 'rh-ill-ink', d: 'M-11 -7 C-49 -47 -77 -27 -67 14 C-41 26 -18 17 9 6 M-5 8 C-46 49 -73 36 -64 7' }),
+              h('circle', { className: 'rh-ill-accent', cx: 50, cy: -5, r: 12 }),
+              h('path', { className: 'rh-ill-line', d: 'M-49 4 L-91 12 L-54 22' })
+            ),
+            h('text', { className: 'rh-ill-label-accent', x: 273, y: 64 }, 'SHORT WINGS · LONG TAIL')
+          );
+          else if (kind === 'migration') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-muted', d: 'M0 91 C154 129 247 83 364 130 C491 182 624 118 800 154 L800 500 L0 500 Z' }),
+            h('path', { className: 'rh-ill-paper', d: 'M0 377 C157 316 219 367 309 304 C406 235 469 297 564 226 C650 161 727 198 800 146 L800 249 C719 288 668 273 588 341 C500 414 429 337 340 404 C236 481 138 401 0 462 Z', opacity: .28 }),
+            [[171,144,.22],[214,173,.2],[259,199,.25],[314,226,.21],[370,248,.24],[427,269,.2],[483,287,.22],[538,304,.25],[589,326,.2],[642,345,.23],[689,365,.21],[731,385,.24],[277,129,.18],[331,153,.2],[392,177,.18],[455,199,.21],[514,220,.18],[573,239,.2]].map(function(b, i) { return birdGlyph(b[0], b[1], b[2], i % 2 ? 6 : -6, 'migration-bird-' + i, i === 7); }),
+            h('path', { className: 'rh-ill-trace', d: 'M135 94 C241 132 315 211 411 241 C543 281 650 322 748 414' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M723 377 L748 415 L710 395' }),
+            h('text', { className: 'rh-ill-label-strong', x: 71, y: 438 }, '5M / YEAR'),
+            h('text', { className: 'rh-ill-label-accent', x: 626, y: 452 }, 'SOUTH')
+          );
+          else if (kind === 'history') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('rect', { className: 'rh-ill-muted', x: 174, y: 102, width: 326, height: 268, rx: 8 }),
+            [0,1,2,3,4].map(function(i) { return h('rect', { key: 'stripe' + i, className: i % 2 ? 'rh-ill-accent' : 'rh-ill-paper', x: 188, y: 116 + i * 48, width: 298, height: 31, opacity: i % 2 ? .52 : .32 }); }),
+            h('line', { className: 'rh-ill-line', x1: 150, y1: 60, x2: 150, y2: 449 }),
+            h('path', { className: 'rh-ill-accent', d: 'M137 58 L150 27 L163 58 Z' }),
+            h('path', { className: 'rh-ill-line', d: 'M128 174 L552 174' }),
+            profileGlyph(489, 147, 1.25, -5, 'old-abe', true),
+            h('path', { className: 'rh-ill-line', d: 'M467 174 L489 191 L514 174' }),
+            h('circle', { className: 'rh-ill-accent-stroke', cx: 336, cy: 244, r: 62 }),
+            h('text', { className: 'rh-ill-label-strong', x: 286, y: 251 }, '8TH WI'),
+            h('text', { className: 'rh-ill-label-accent', x: 570, y: 390 }, '1864'),
+            h('text', { className: 'rh-ill-label', x: 557, y: 420 }, 'LIVING STANDARD')
+          );
+          else if (kind === 'urban') drawing = h('g', { 'data-illustration-drawing': kind },
+            [[30,165,132,335],[178,104,111,396],[305,194,94,306],[414,79,137,421],[570,142,94,358],[678,91,93,409]].map(function(b, i) { return h('g', { key: 'building' + i }, h('rect', { className: 'rh-ill-ink', x: b[0], y: b[1], width: b[2], height: b[3] }), [0,1,2].map(function(row) { return [0,1].map(function(col) { return h('rect', { key: 'w' + row + col, className: (row + col + i) % 3 === 0 ? 'rh-ill-accent' : 'rh-ill-muted', x: b[0] + 18 + col * 37, y: b[1] + 28 + row * 56, width: 17, height: 26, opacity: .5 }); }); })); }),
+            h('path', { className: 'rh-ill-accent', d: 'M62 422 C153 345 258 388 338 354 C429 316 501 369 575 334 L575 500 L62 500 Z', opacity: .28 }),
+            h('path', { className: 'rh-ill-paper', d: 'M489 174 L747 174 L729 210 L508 210 Z' }),
+            profileGlyph(611, 156, 1.05, -4, 'pale-male', true),
+            h('circle', { className: 'rh-ill-accent', cx: 727, cy: 61, r: 25, opacity: .5 }),
+            h('text', { className: 'rh-ill-label-accent', x: 72, y: 462 }, 'CENTRAL PARK'),
+            h('text', { className: 'rh-ill-label', x: 557, y: 241 }, 'CORNICE = CLIFF')
+          );
+          else if (kind === 'condor') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('circle', { className: 'rh-ill-accent', cx: 671, cy: 83, r: 41, opacity: .56 }),
+            h('path', { className: 'rh-ill-muted', d: 'M0 280 L136 193 L245 260 L346 170 L456 282 L578 179 L800 303 L800 500 L0 500 Z' }),
+            h('path', { className: 'rh-ill-ink', d: 'M0 384 L168 276 L281 360 L388 242 L506 365 L649 260 L800 354 L800 500 L0 500 Z' }),
+            h('g', { transform: 'translate(396 160)' },
+              h('path', { className: 'rh-ill-paper', d: 'M-275 21 C-203 -56 -91 -44 0 3 C91 -44 203 -56 275 21 C177 -3 102 22 32 43 L0 74 L-32 43 C-102 22 -177 -3 -275 21 Z' }),
+              h('circle', { className: 'rh-ill-accent', cx: 0, cy: 48, r: 18 }),
+              h('path', { className: 'rh-ill-accent', d: 'M8 46 L35 53 L8 60 Z' })
+            ),
+            h('rect', { className: 'rh-ill-accent-stroke', x: 589, y: 380, width: 143, height: 61, rx: 7 }),
+            h('text', { className: 'rh-ill-label-accent', x: 617, y: 405 }, '1987'),
+            h('text', { className: 'rh-ill-label', x: 605, y: 428 }, 'LAST WILD BIRD')
+          );
+          else if (kind === 'falconry') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('circle', { className: 'rh-ill-accent', cx: 668, cy: 81, r: 31, opacity: .58 }),
+            h('path', { className: 'rh-ill-muted', d: 'M0 331 L137 161 L242 293 L365 106 L492 301 L622 158 L800 322 L800 500 L0 500 Z' }),
+            h('path', { className: 'rh-ill-ink', d: 'M198 381 C236 337 313 328 367 361 L428 363 L464 338 L489 354 L458 379 L425 388 C405 420 357 441 302 432 C251 429 211 412 198 381 Z' }),
+            h('circle', { className: 'rh-ill-ink', cx: 475, cy: 341, r: 20 }),
+            h('path', { className: 'rh-ill-line', d: 'M255 419 L247 481 M324 431 L320 484 M390 412 L403 478 M440 385 L468 444' }),
+            personGlyph(349, 302, 1.45, 'berkutchi'),
+            h('path', { className: 'rh-ill-line', d: 'M349 298 L420 266' }),
+            profileGlyph(447, 247, .78, -8, 'berkutchi-eagle', true),
+            [0,1,2,3,4,5,6,7].map(function(i) { return h('path', { key: 'pattern' + i, className: i % 2 ? 'rh-ill-line-thin' : 'rh-ill-accent-stroke', d: 'M' + (47 + i * 96) + ' 46 L' + (72 + i * 96) + ' 68 L' + (97 + i * 96) + ' 46' }); }),
+            h('text', { className: 'rh-ill-label-accent', x: 55, y: 108 }, 'ALTAI · PARTNERSHIP')
+          );
+          else if (kind === 'scholar') drawing = h('g', { 'data-illustration-drawing': kind },
+            h('path', { className: 'rh-ill-muted', d: 'M86 430 L86 108 C86 55 132 35 179 35 L621 35 C668 35 714 55 714 108 L714 430 Z' }),
+            h('path', { className: 'rh-ill-line', d: 'M113 430 L113 118 C113 81 143 62 181 62 L619 62 C657 62 687 81 687 118 L687 430' }),
+            personGlyph(234, 241, 1.45, 'frederick'),
+            h('rect', { className: 'rh-ill-ink', x: 183, y: 323, width: 442, height: 32, rx: 5 }),
+            h('path', { className: 'rh-ill-paper', d: 'M306 294 C361 270 400 284 416 305 L416 376 C376 351 339 347 306 364 Z M416 305 C455 276 504 276 557 295 L557 365 C504 344 460 348 416 376 Z' }),
+            h('circle', { className: 'rh-ill-accent-stroke', cx: 474, cy: 326, r: 25 }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M334 312 L390 323 M331 333 L387 343 M450 352 L532 329' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M279 247 L330 346 M286 241 L307 269' }),
+            profileGlyph(574, 177, .95, -5, 'scholar-falcon', true),
+            h('path', { className: 'rh-ill-line', d: 'M538 221 L631 221' }),
+            h('text', { className: 'rh-ill-label-accent', x: 427, y: 98 }, 'OBSERVE · RECORD · TEST')
+          );
+          else if (kind === 'carson') drawing = h('g', { 'data-illustration-drawing': kind },
+            [[126,92],[196,137],[120,185]].map(function(p, i) { return h('path', { key: 'hex' + i, className: 'rh-ill-line-thin', d: 'M' + p[0] + ' ' + (p[1]-28) + ' L' + (p[0]+25) + ' ' + (p[1]-14) + ' L' + (p[0]+25) + ' ' + (p[1]+14) + ' L' + p[0] + ' ' + (p[1]+28) + ' L' + (p[0]-25) + ' ' + (p[1]+14) + ' L' + (p[0]-25) + ' ' + (p[1]-14) + ' Z', opacity: .62 - i * .12 }); }),
+            h('path', { className: 'rh-ill-paper', d: 'M158 402 C209 331 284 298 362 313 L402 345 C353 353 321 378 302 432 L206 448 C170 438 148 421 158 402 Z' }),
+            h('path', { className: 'rh-ill-paper', d: 'M642 399 C596 329 522 297 445 313 L405 345 C452 353 487 380 504 432 L594 447 C630 438 651 419 642 399 Z' }),
+            h('path', { className: 'rh-ill-accent', d: 'M348 266 C366 224 393 208 420 218 L420 343 L355 343 C339 318 337 290 348 266 Z M420 218 C454 212 479 233 491 270 C502 303 492 326 483 343 L420 343 Z', opacity: .8 }),
+            h('path', { className: 'rh-ill-line', d: 'M348 266 L377 284 L362 312 L394 343 M491 270 L461 286 L478 314 L449 343' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M550 147 C602 105 659 101 714 125' }),
+            [[576,132,.25,-8],[644,112,.22,5],[701,128,.18,-4]].map(function(b, i) { return birdGlyph(b[0], b[1], b[2], b[3], 'carson-bird-' + i, i === 0); }),
+            h('text', { className: 'rh-ill-label-strong', x: 286, y: 82 }, 'SILENT SPRING'),
+            h('text', { className: 'rh-ill-label-accent', x: 361, y: 111 }, '1962')
+          );
+          else drawing = h('g', { 'data-illustration-drawing': 'citizen' },
+            h('path', { className: 'rh-ill-muted', d: 'M0 349 L124 256 L245 329 L356 224 L494 343 L630 245 L800 347 L800 500 L0 500 Z' }),
+            h('rect', { className: 'rh-ill-ink', x: 151, y: 344, width: 292, height: 24, rx: 4 }),
+            h('path', { className: 'rh-ill-line', d: 'M174 368 L151 475 M420 368 L448 475' }),
+            personGlyph(218, 320, .95, 'counter-1'),
+            personGlyph(294, 318, 1.05, 'counter-2'),
+            personGlyph(375, 322, .9, 'counter-3'),
+            [[447,91,.2,-6],[497,115,.23,5],[549,86,.2,-4],[598,130,.24,8],[651,103,.2,-5],[704,147,.22,6]].map(function(b, i) { return birdGlyph(b[0], b[1], b[2], b[3], 'citizen-bird-' + i, i === 3); }),
+            h('rect', { className: 'rh-ill-muted', x: 541, y: 244, width: 189, height: 156, rx: 9 }),
+            h('path', { className: 'rh-ill-line-thin', d: 'M569 366 L569 274 M569 366 L704 366' }),
+            h('path', { className: 'rh-ill-accent-stroke', d: 'M579 350 L607 326 L635 335 L667 294 L698 275' }),
+            [0,1,2,3].map(function(i) { return h('line', { key: 'tally' + i, className: 'rh-ill-line-thin', x1: 574 + i * 28, y1: 260, x2: 574 + i * 28, y2: 278 }); }),
+            h('circle', { className: 'rh-ill-accent-stroke', cx: 90, cy: 115, r: 42 }),
+            h('circle', { className: 'rh-ill-accent-stroke', cx: 173, cy: 115, r: 42 }),
+            h('path', { className: 'rh-ill-line', d: 'M132 115 L131 115 M48 115 L25 157 M215 115 L239 157' }),
+            h('text', { className: 'rh-ill-label-accent', x: 534, y: 430 }, 'COUNT → TREND → ACTION')
+          );
+
+          var titleId = 'rh-illustration-svg-title-' + kind;
+          var descId = 'rh-illustration-svg-desc-' + kind;
+          var backgroundId = 'rh-illustration-bg-' + kind;
+          var gridId = 'rh-illustration-grid-' + kind;
+          return h('svg', { viewBox: '0 0 800 500', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet' },
+            h('title', { id: titleId }, ill.title + ' illustrated field plate'),
+            h('desc', { id: descId }, ill.description + ' Three labeled field marks identify the main visual evidence.'),
+            h('defs', null,
+              h('linearGradient', { id: backgroundId, x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                h('stop', { offset: '0%', stopColor: visual.sky }),
+                h('stop', { offset: '100%', stopColor: visual.ground })
+              ),
+              h('pattern', { id: gridId, width: 40, height: 40, patternUnits: 'userSpaceOnUse' },
+                h('path', { d: 'M40 0 L0 0 0 40', fill: 'none', stroke: '#cbd5e1', strokeWidth: 1, opacity: .15 })
+              )
+            ),
+            h('rect', { x: 0, y: 0, width: 800, height: 500, fill: 'url(#' + backgroundId + ')' }),
+            h('rect', { className: 'rh-ill-grid', x: 0, y: 0, width: 800, height: 500, fill: 'url(#' + gridId + ')' }),
+            drawing,
+            h('text', { className: 'rh-ill-label', x: 22, y: 28 }, 'FIELD PLATE ' + String(illIdx + 1).padStart(2, '0') + ' · ' + visual.category.toUpperCase()),
+            h('text', { className: 'rh-ill-label', x: 778, y: 480, textAnchor: 'end' }, 'ILLUSTRATED SCHEMATIC · NOT TO SCALE')
+          );
+        }
+
+        function renderIllustrationThumbnail(index) {
+          var thumbVisual = ILLUSTRATION_VISUALS[index];
+          var wingPaths = [
+            'M5 27 C20 7 31 8 40 22 C49 8 61 7 75 27 C60 19 53 24 40 33 C27 24 20 19 5 27 Z',
+            'M5 31 C22 12 31 12 40 24 C49 12 59 12 75 31 C60 24 51 28 40 35 C29 28 20 24 5 31 Z',
+            'M7 21 C20 8 31 15 40 25 C49 15 61 8 73 21 C61 21 51 28 40 34 C29 28 19 21 7 21 Z'
+          ];
+          return h('span', { className: 'rh-illustration-thumb-art', style: { '--rh-illustration-accent': thumbVisual.accent }, 'aria-hidden': 'true' },
+            h('svg', { viewBox: '0 0 80 48', preserveAspectRatio: 'none' },
+              h('path', { d: 'M0 39 C18 31 28 36 43 30 C59 24 68 30 80 23 L80 48 L0 48 Z', fill: thumbVisual.ground, opacity: .9 }),
+              h('circle', { cx: 65, cy: 11, r: 7, fill: thumbVisual.accent, opacity: .7 }),
+              h('path', { d: wingPaths[index % wingPaths.length], fill: '#e2e8f0', stroke: thumbVisual.accent, strokeWidth: 1.5 })
+            ),
+            h('span', { className: 'rh-illustration-thumb-number' }, String(index + 1).padStart(2, '0'))
+          );
+        }
+
+        return h('div', { className: 'rh-illustration-gallery', 'data-raptor-illustration-gallery': 'true', 'data-illustration-kind': visual.kind, style: { '--rh-illustration-accent': visual.accent } },
+          h('section', { className: 'rh-illustration-hero', 'aria-labelledby': 'rh-illustration-title' },
+            h('div', { className: 'rh-illustration-hero-main' },
+              h('div', { className: 'rh-illustration-hero-icon', 'aria-hidden': 'true' }, 'FG'),
+              h('div', null,
+                h('div', { className: 'rh-illustration-kicker' }, 'Visual field guide'),
+                h('h2', { id: 'rh-illustration-title', className: 'rh-illustration-title' }, __alloT('stem.raptorhunt.illustration_gallery_2', 'Illustration Gallery')),
+                h('p', { className: 'rh-illustration-copy' }, ILLUSTRATIONS.intro + ' Use the visual-lens filters, inspect the labeled evidence, and compare how anatomy, behavior, place, and people shape each story.')
+              )
+            ),
+            h('div', { className: 'rh-illustration-summary', 'aria-label': 'Illustration gallery inventory' },
+              h('div', { className: 'rh-illustration-stat' }, h('strong', null, ILLUSTRATIONS.images.length), h('span', null, 'field plates')),
+              h('div', { className: 'rh-illustration-stat' }, h('strong', null, filters.length - 1), h('span', null, 'visual lenses'))
+            )
+          ),
+          h('div', { className: 'rh-illustration-browser' },
+            h('div', { className: 'rh-illustration-browser-label' }, 'Browse by lens'),
+            h('div', { className: 'rh-illustration-filters', role: 'group', 'aria-label': 'Filter illustration field plates' },
+              filters.map(function(filterName) {
+                var count = filterName === 'All' ? ILLUSTRATION_VISUALS.length : ILLUSTRATION_VISUALS.filter(function(item) { return item.category === filterName; }).length;
+                var selected = activeFilter === filterName;
+                return h('button', { key: filterName, type: 'button', className: 'rh-illustration-filter', onClick: function() { setIllustrationFilter(filterName); }, 'aria-pressed': selected, 'data-illustration-filter': filterName },
+                  filterName,
+                  h('span', { className: 'rh-illustration-filter-count', 'aria-hidden': 'true' }, count)
+                );
+              })
+            )
+          ),
+          h('div', { className: 'rh-illustration-workbench' },
+            h('section', { className: 'rh-illustration-plate', 'aria-labelledby': 'rh-illustration-plate-title' },
+              h('div', { className: 'rh-illustration-plate-head' },
+                h('div', null,
+                  h('div', { className: 'rh-illustration-plate-kicker' }, visual.category + ' lens'),
+                  h('strong', { id: 'rh-illustration-plate-title', className: 'rh-illustration-plate-title' }, ill.title)
+                ),
+                h('div', { className: 'rh-illustration-tools' },
+                  h('span', { className: 'rh-illustration-position' }, (position + 1) + ' / ' + visibleIndices.length),
+                  h('button', { type: 'button', className: 'rh-illustration-mark-toggle', onClick: toggleIllustrationMarks, 'aria-pressed': marksVisible, 'aria-controls': 'rh-illustration-field-marks' }, marksVisible ? 'Hide field marks' : 'Show field marks')
+                )
+              ),
+              h('div', { className: 'rh-illustration-stage', 'data-raptor-illustration-stage': visual.kind, 'data-marks-visible': marksVisible },
+                renderIllustrationPlate(),
+                h('div', { id: 'rh-illustration-field-marks', className: 'rh-illustration-mark-layer', 'aria-hidden': 'true' },
+                  visual.marks.map(function(mark, i) {
+                    return h('div', { key: i, className: 'rh-illustration-mark', style: { left: mark.x + '%', top: mark.y + '%' }, 'data-field-mark': mark.label },
+                      h('span', { className: 'rh-illustration-mark-index' }, String(i + 1).padStart(2, '0')),
+                      h('span', { className: 'rh-illustration-mark-label' }, mark.label)
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'rh-illustration-plate-foot' },
+                h('span', null, h('strong', null, 'How to read:'), ' follow the numbered field marks, then test the visual lens against the written evidence.'),
+                h('span', null, 'Original vector plate')
+              )
+            ),
+            h('aside', { className: 'rh-illustration-detail', 'data-raptor-illustration-detail': 'true', 'aria-labelledby': 'rh-illustration-detail-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-illustration-detail-kicker' }, 'Selected field plate'),
+              h('div', { className: 'rh-illustration-detail-index' },
+                h('span', null, visual.category),
+                h('strong', null, String(illIdx + 1).padStart(2, '0') + ' / ' + ILLUSTRATIONS.images.length)
+              ),
+              h('h3', { id: 'rh-illustration-detail-title' }, ill.title),
+              h('div', { className: 'rh-illustration-subject' }, ill.subject),
+              h('p', { className: 'rh-illustration-description' }, ill.description),
+              h('div', { className: 'rh-illustration-insight' },
+                h('span', null, 'Visual lens'),
+                h('p', null, visual.lens)
+              ),
+              h('div', { className: 'rh-illustration-insight rh-illustration-insight-symbol' },
+                h('span', null, __alloT('stem.raptorhunt.symbolism', 'Why it matters')),
+                h('p', null, ill.symbolism)
+              ),
+              h('ol', { className: 'rh-illustration-field-list', 'aria-label': 'Field marks in this illustration' },
+                visual.marks.map(function(mark, i) { return h('li', { key: i }, h('strong', null, String(i + 1).padStart(2, '0')), h('span', null, mark.label)); })
+              ),
+              h('div', { className: 'rh-illustration-detail-nav' },
+                h('button', { type: 'button', onClick: function() { setIllIdx(previousIdx); }, 'aria-label': 'Previous illustration in ' + activeFilter }, '← Previous'),
+                h('button', { type: 'button', onClick: function() { setIllIdx(nextIdx); }, 'aria-label': 'Next illustration in ' + activeFilter }, 'Next →')
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            ILLUSTRATIONS.images.map(function(img, i) {
-              var sel = illIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setIllIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-700 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, '🖼 #' + (i + 1));
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-3' },
-            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🖼 ' + ill.title),
-            h('div', { className: 'text-xs italic text-cyan-300' }, ill.subject),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-4' },
-              h('div', { className: 'aspect-square bg-gradient-to-br from-slate-700 to-slate-900 rounded flex items-center justify-center' },
-                h('div', { className: 'text-center p-4' },
-                  h('div', { className: 'text-6xl mb-2' }, '🖼'),
-                  h('div', { className: 'text-sm text-slate-300' }, '[Imagine: ' + ill.subject + ']')
-                )
-              )
+          h('section', { className: 'rh-illustration-directory', 'aria-labelledby': 'rh-illustration-directory-title' },
+            h('div', { className: 'rh-illustration-directory-head' },
+              h('div', null, h('div', { className: 'rh-illustration-directory-kicker' }, activeFilter === 'All' ? 'Complete collection' : activeFilter), h('h3', { id: 'rh-illustration-directory-title' }, 'Choose a field plate')),
+              h('span', null, visibleIndices.length + ' plate' + (visibleIndices.length === 1 ? '' : 's'))
             ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.description_2', '📝 Description')),
-              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, ill.description)
-            ),
-            h('div', { className: 'bg-purple-900/20 border border-purple-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.symbolism', '🎯 Symbolism')),
-              h('div', { className: 'text-sm text-purple-100/90 italic leading-relaxed' }, ill.symbolism)
+            h('div', { className: 'rh-illustration-directory-grid' },
+              visibleIndices.map(function(index) {
+                var item = ILLUSTRATIONS.images[index];
+                var itemVisual = ILLUSTRATION_VISUALS[index];
+                var selected = illIdx === index;
+                return h('button', { key: index, type: 'button', className: 'rh-illustration-card', onClick: function() { setIllIdx(index); }, 'data-active': selected, 'aria-current': selected ? 'true' : undefined, 'aria-label': 'Open field plate ' + String(index + 1).padStart(2, '0') + ': ' + item.title, style: { '--rh-illustration-accent': itemVisual.accent } },
+                  renderIllustrationThumbnail(index),
+                  h('span', { className: 'rh-illustration-card-copy' }, h('strong', null, item.title), h('span', null, itemVisual.category))
+                );
+              })
             )
           )
         );
       }
 
-      // ────────────────────────────────────────────────────────
       // RENDER: SONG SCRIPTS (v0.48)
       // ────────────────────────────────────────────────────────
       function renderSongScripts() {
@@ -23112,7 +25796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           h('div', { className: 'bg-gradient-to-br from-violet-900/40 via-purple-900/40 to-indigo-900/40 border border-violet-700/40 rounded-xl p-6 text-center' },
             h('div', { className: 'text-7xl mb-4' }, '🌟'),
             h('div', { className: 'text-3xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.you_ve_reached_the_end', 'You\'ve Reached the End')),
-            h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, __alloT('stem.raptorhunt.80_sections_19_500_lines_5_000_years_o', '80+ sections · 19,500+ lines · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution'))
+            h('div', { className: 'text-base text-violet-100/85 mt-3 italic' }, contentSectionCount + ' sections · 5,000+ years of human-raptor relationship · 60M+ years of raptor evolution')
           ),
           h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-5 space-y-3' },
             h('div', { className: 'text-base font-bold text-violet-300 mb-2' }, __alloT('stem.raptorhunt.what_this_tool_aims_to_do', '🦅 What This Tool Aims To Do')),
@@ -23324,7 +26008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-8xl mb-4' }, '🎆'),
             h('div', { className: 'text-4xl font-bold text-amber-200 mb-2 tracking-tight' }, __alloT('stem.raptorhunt.20_000_lines', '20,000 Lines')),
             h('div', { className: 'text-xl text-amber-100/90' }, __alloT('stem.raptorhunt.the_largest_single_educational_raptor_', 'The Largest Single Educational Raptor Tool Ever Built')),
-            h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, __alloT('stem.raptorhunt.90_sections_200_data_structures_20_spe', '90+ sections · 200+ data structures · 20+ species deep profiles · 60M+ years of raptor evolution distilled'))
+            h('div', { className: 'text-sm text-amber-200/80 mt-3 italic' }, contentSectionCount + ' sections · 200+ data structures · ' + speciesCount + ' species profiles · 60M+ years of raptor evolution distilled')
           ),
           h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-5 space-y-3' },
             h('div', { className: 'text-base font-bold text-amber-300 mb-2' }, __alloT('stem.raptorhunt.what_you_have_in_front_of_you', '📊 What You Have In Front Of You')),
@@ -24005,8 +26689,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 solution: 'Let baseline = x kcal/hr. Total = 6×0.5x + 4×1x + 2×1.5x + 2×0.8x + 10×0.5x = 3x + 4x + 3x + 1.6x + 5x = 16.6x. Set equal to 138: x = 8.3 kcal/hr. So perched/roost = 4.2 kcal/hr; soaring = 8.3; hunting = 12.5; eating = 6.6. Hunting is 3× more expensive per hour than perching — why raptors are picky about when to commit to a hunt.'
               },
               { id: 'mp48', topic: '🎓 ID Quiz Probability',
-                problem: 'A 28-question raptor ID quiz with 4 options each. If a student answers randomly, what is the expected score? Standard deviation? Probability of scoring ≥ 14 (50%)?',
-                solution: 'Each question is Bernoulli with p = 0.25. Expected score = 28 × 0.25 = 7. Variance = 28 × 0.25 × 0.75 = 5.25. SD = √5.25 = 2.29. P(score ≥ 14) by normal approximation: z = (14 − 7) / 2.29 = 3.06. P(z > 3.06) ≈ 0.001 = 0.1%. Random guessing essentially never produces 14+/28. A student scoring 14+ has REAL knowledge.'
+                problem: 'A 70-question raptor ID quiz has 4 options per question. If a student answers randomly, what is the expected score? Standard deviation? Probability of scoring ≥ 35 (50%)?',
+                solution: 'Each question is Bernoulli with p = 0.25. Expected score = 70 × 0.25 = 17.5. Variance = 70 × 0.25 × 0.75 = 13.125. SD = √13.125 ≈ 3.62. The exact binomial probability P(score ≥ 35) is about 0.00000589, or 0.000589% — roughly 1 in 170,000. Random guessing essentially never produces 35+/70; a student reaching 50% has demonstrated real knowledge.'
               },
               { id: 'mp49', topic: '🌅 Sunrise Hunting',
                 problem: 'A hawkwatch counter records: 40% of daily passage occurs in the morning rush (6-10 AM), 25% midday (10-2), 20% afternoon (2-6 PM), 15% other. Hours per slot: 4, 4, 4, 12. Rate (birds/hour) per slot?',
@@ -24512,7 +27196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // MAIN RENDER — Tab nav + active section
       // ────────────────────────────────────────────────────────
       var activeSectionMeta = findSection(activeSection);
-      var activeCategoryMeta = CATEGORIES.find(function(category) { return category.id === SECTION_TO_CATEGORY[activeSection]; }) || null;
+      var activeCategoryIdForPage = SECTION_TO_CATEGORY[activeSection] || (activeSection === 'hub' ? rh.activeCategory : null);
+      var activeCategoryMeta = CATEGORIES.find(function(category) { return category.id === activeCategoryIdForPage; }) || null;
       var activeVisitedCount = (rh.visited && rh.visited[activeSection]) || 0;
       var activeCategoryVisited = activeCategoryMeta ? activeCategoryMeta.sections.filter(function(sectionId) { return (rh.visited && rh.visited[sectionId]) > 0; }).length : 0;
       var activeCategoryProgress = activeCategoryMeta && activeCategoryMeta.sections.length
@@ -24525,7 +27210,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         vision: __alloT('stem.raptorhunt.section_hint_vision', 'See how acuity, foveae, and binocular overlap shape a hunt.'),
         flight: __alloT('stem.raptorhunt.section_hint_flight', 'Map wing loading and aspect ratio to the way a raptor moves.'),
         stoop: __alloT('stem.raptorhunt.section_hint_stoop', 'Tune the variables behind a high-speed dive and read the trade-offs.'),
-        silent: __alloT('stem.raptorhunt.section_hint_silent', 'Explore the feather engineering that lets owls close distance quietly.')
+        silent: __alloT('stem.raptorhunt.section_hint_silent', 'Explore the feather engineering that lets owls close distance quietly.'),
+        strategyHunt: __alloT('stem.raptorhunt.section_hint_strategy', 'Balance stealth, speed, ambush, and persistence to discover an evolved hunting strategy.')
       }[activeSection] || 'Open this field station, make a prediction, then follow the evidence.';
       var activeCategorySections = activeCategoryMeta ? activeCategoryMeta.sections.map(findSection).filter(Boolean) : [];
       var activeSectionIndex = activeCategorySections.findIndex(function(section) { return section.id === activeSection; });
@@ -24549,14 +27235,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
       return h('div', { className: 'space-y-4 text-slate-200', 'data-raptorhunt-root': 'true', 'data-raptor-active-section': activeSection, role: 'region', 'aria-label': __alloT('stem.raptorhunt.raptor_hunt_tool', 'Raptor Hunt tool') },
         // Tool subtitle (updated for 9-category hub)
-        activeSection === 'hub' && h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, __alloT('stem.raptorhunt.9_categories_100_sections_25_species_6', '9 categories · 100+ sections · 25 species · 6 labs · 70-Q quiz')),
+        activeSection === 'hub' && !rh.activeCategory && h('div', { className: 'text-[11px] text-slate-500 uppercase tracking-wider' }, CATEGORIES.length + ' collections · ' + contentSectionCount + ' sections · ' + speciesCount + ' species · ' + quizQuestionCount + '-question quiz'),
         // Category-aware navigation
         (function() {
           var activeCategoryId = rh.activeCategory || null;
           var searchTerm = (rh.sectionSearch || '').toLowerCase();
           var atHub = activeSection === 'hub' && !activeCategoryId && !searchTerm;
           // If user is in a section, infer its category so breadcrumb is correct
-          var inferredCat = activeCategoryId || SECTION_TO_CATEGORY[activeSection] || null;
+          var inferredCat = SECTION_TO_CATEGORY[activeSection] || activeCategoryId || null;
           var activeCategory = CATEGORIES.find(function(c) { return c.id === inferredCat; });
 
           // Search filter (across all sections by label)
@@ -24564,10 +27250,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ? SECTIONS.filter(function(s) { return s.label.toLowerCase().indexOf(searchTerm) !== -1 && s.id !== 'hub'; })
             : null;
 
-          function setCategory(catId) {
-            setRH(function(cur) { return Object.assign({}, cur, { activeCategory: catId, sectionSearch: '' }); });
-            rhAnnounce(catId ? 'Category opened' : 'Hub');
-          }
           function goSection(sid) {
             setRH(function(cur) {
               var visited = Object.assign({}, cur.visited || {});
@@ -24586,17 +27268,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Top bar: hub button + search + breadcrumb
           elements.push(h('div', { key: 'topbar', className: 'rh-nav-topbar flex flex-wrap items-center gap-2 mb-2' },
             h('button', {
-              onClick: function() { setCategory(null); goSection('hub'); },
+              onClick: function() {
+                setRH(function(cur) { return Object.assign({}, cur, { activeSection: 'hub', activeCategory: null, sectionSearch: '' }); });
+                rhAnnounce('Raptor Hunt Hub');
+              },
               'aria-label': __alloT('stem.raptorhunt.go_to_hub', 'Go to Hub'),
               className: 'rh-nav-home px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-amber-700 text-white' : 'transition-colors bg-slate-800 text-amber-200 hover:bg-slate-700 active:scale-[0.97]')
             }, __alloT('stem.raptorhunt.hub', '🏠 Hub')),
             activeCategory && h('span', { className: 'text-xs text-slate-400' }, '/'),
-            activeCategory && h('button', {
-              type: 'button',
-              onClick: function() { setCategory(null); goSection('hub'); },
-              className: 'rh-nav-breadcrumb px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200 hover:bg-slate-700',
-              'aria-label': 'Return to all Raptor Lab topic collections'
-            }, activeCategory.icon + ' ' + activeCategory.label),
+            activeCategory && (activeSection === 'hub'
+              ? h('span', { className: 'rh-nav-breadcrumb px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200', 'aria-current': 'page' }, activeCategory.icon + ' ' + activeCategory.label)
+              : h('button', {
+                  type: 'button',
+                  onClick: function() {
+                    setRH(function(cur) { return Object.assign({}, cur, { activeSection: 'hub', activeCategory: activeCategory.id, sectionSearch: '' }); });
+                    rhAnnounce(activeCategory.label + ' collection');
+                  },
+                  className: 'rh-nav-breadcrumb px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800/60 text-amber-200 hover:bg-slate-700',
+                  'aria-label': 'Open ' + activeCategory.label + ' collection'
+                }, activeCategory.icon + ' ' + activeCategory.label)),
             activeSection !== 'hub' && h('label', { className: 'ml-auto flex items-center gap-2 text-xs text-slate-300' },
               h('span', null, 'Switch lab'),
               h('select', {
@@ -24612,7 +27302,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             activeSection === 'hub' && h('div', { className: 'ml-auto flex items-center gap-2' },
               h('input', {
                 type: 'text',
-                placeholder: __alloT('stem.raptorhunt.search_all_90_sections', 'Search 100+ sections...'),
+                placeholder: 'Search ' + contentSectionCount + ' sections...',
                 value: rh.sectionSearch || '',
                 onChange: function(e) { setRH(function(cur) { return Object.assign({}, cur, { sectionSearch: e.target.value, activeCategory: null }); }); },
                 'aria-label': __alloT('stem.raptorhunt.search_sections', 'Search sections'),
@@ -24634,25 +27324,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       className: 'transition-colors px-2 py-1 rounded text-[11px] font-bold bg-slate-800 text-amber-200 hover:bg-amber-700/40 active:scale-[0.97]'
                     }, s.icon + ' ' + s.label);
                   })
-            ));
-          }
-
-          // Category open: show that category's sections only
-          if (activeSection === 'hub' && !atHub && activeCategory) {
-            var catSecs = activeCategory.sections.map(findSection).filter(Boolean);
-            var activeTheme = CATEGORY_NAV_CLASSES[activeCategory.color] || CATEGORY_NAV_CLASSES.amber;
-            elements.push(h('div', { key: 'cat-secs', className: 'flex flex-wrap gap-1.5 mb-3 p-2 bg-slate-900/30 rounded' },
-              catSecs.map(function(s) {
-                var active = activeSection === s.id;
-                return h('button', {
-                  key: s.id,
-                  role: 'tab',
-                  'aria-selected': active,
-                  onClick: function() { goSection(s.id); },
-                  className: 'px-2.5 py-1.5 rounded text-[11px] font-bold transition-all ' +
-                    (active ? activeTheme.active : activeTheme.inactive + ' active:scale-[0.97]')
-                }, s.icon + ' ' + s.label);
-              })
             ));
           }
 
@@ -24678,8 +27349,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           )
         ),
         // Panel
-        h('div', { id: 'rh-panel-' + activeSection, role: 'tabpanel', 'aria-labelledby': activeSection === 'hub' ? 'rh-command-title' : (activeSectionMeta ? 'rh-active-section-title' : activeSection) },
-          activeSection === 'hub' && renderHub(),
+        h('div', { id: 'rh-panel-' + activeSection, role: 'tabpanel', 'aria-labelledby': activeSection === 'hub' ? (activeCategoryMeta ? 'rh-collection-title-' + activeCategoryMeta.id : 'rh-command-title') : (activeSectionMeta ? 'rh-active-section-title' : activeSection) },
+          activeSection === 'hub' && (activeCategoryMeta ? renderCategoryLanding(activeCategoryMeta) : renderHub()),
           activeSection === 'roster' && renderRoster(),
           activeSection === 'hunt' && renderHunt(),
           activeSection === 'talons' && renderTalons(),
@@ -24788,28 +27459,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             else if (iq.speed > 80) strat = 'sprint';
             else strat = 'opportunist';
             var sm = {
-              ambush:      { label: __alloT('stem.raptorhunt.ambush_stealth_surprise', '🌳 Ambush (stealth + surprise)'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.raptorhunt.goshawk_style_hide_in_cover_single_str', 'Goshawk-style: hide in cover, single strike.') },
-              pursuit:     { label: __alloT('stem.raptorhunt.pursuit_speed_tracking', '🏃 Pursuit (speed + tracking)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.raptorhunt.peregrine_style_high_speed_chase_dive', 'Peregrine-style: high-speed chase + dive.') },
-              endurance:   { label: __alloT('stem.raptorhunt.endurance_long_persistence', '🦅 Endurance (long persistence)'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.raptorhunt.harrier_style_low_slow_patrolling', 'Harrier-style: low slow patrolling.') },
-              sprint:      { label: __alloT('stem.raptorhunt.sprint_burst', '⚡ Sprint (burst)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.raptorhunt.falcon_stoop_tactic_energy_intensive', 'Falcon-stoop tactic. Energy-intensive.') },
-              opportunist: { label: __alloT('stem.raptorhunt.opportunist_mixed', '🦉 Opportunist (mixed)'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.raptorhunt.generalist_owl_style_uses_whatever_wor', 'Generalist. Owl-style; uses whatever works.') }
+              ambush:      { label: __alloT('stem.raptorhunt.ambush_stealth_surprise', '🌳 Ambush (stealth + surprise)'), color: '#ddd6fe', bg: '#2e1065', border: '#a78bfa', desc: __alloT('stem.raptorhunt.goshawk_style_hide_in_cover_single_str', 'Goshawk-style: hide in cover, single strike.') },
+              pursuit:     { label: __alloT('stem.raptorhunt.pursuit_speed_tracking', '🏃 Pursuit (speed + tracking)'), color: '#fecaca', bg: '#450a0a', border: '#f87171', desc: __alloT('stem.raptorhunt.peregrine_style_high_speed_chase_dive', 'Peregrine-style: high-speed chase + dive.') },
+              endurance:   { label: __alloT('stem.raptorhunt.endurance_long_persistence', '🦅 Endurance (long persistence)'), color: '#a7f3d0', bg: '#022c22', border: '#34d399', desc: __alloT('stem.raptorhunt.harrier_style_low_slow_patrolling', 'Harrier-style: low slow patrolling.') },
+              sprint:      { label: __alloT('stem.raptorhunt.sprint_burst', '⚡ Sprint (burst)'), color: '#fde68a', bg: '#451a03', border: '#fbbf24', desc: __alloT('stem.raptorhunt.falcon_stoop_tactic_energy_intensive', 'Falcon-stoop tactic. Energy-intensive.') },
+              opportunist: { label: __alloT('stem.raptorhunt.opportunist_mixed', '🦉 Opportunist (mixed)'), color: '#a5f3fc', bg: '#083344', border: '#22d3ee', desc: __alloT('stem.raptorhunt.generalist_owl_style_uses_whatever_wor', 'Generalist. Owl-style; uses whatever works.') }
             }[strat];
             var H = h;
-            return H('div', { style: { padding: 16, background: '#fff', borderRadius: 10, border: '1px solid #cbd5e1' } },
-              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#7c3aed', margin: '0 0 6px 0' } }, '🎯 Predator strategy discovery'),
-              H('p', { style: { fontSize: 12, color: '#475569', marginBottom: 12 } }, '4 sliders for hunting attributes. Discrete 5-strategy classification + SVG radar chart. No score, no reveal.'),
-              H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
+            return H('div', { className: 'rh-strategy-lab', 'data-raptor-strategy-lab': 'true', style: { padding: 16, background: 'linear-gradient(145deg, #0f172a, #111827)', borderRadius: 14, border: '1px solid #8b5cf6', boxShadow: '0 18px 44px rgba(2,6,23,.36)' } },
+              H('div', { style: { color: '#a78bfa', fontSize: 10, fontWeight: 900, letterSpacing: '.13em', textTransform: 'uppercase', marginBottom: 5 } }, 'Adaptive hunting lab'),
+              H('h3', { style: { fontSize: 18, fontWeight: 900, color: '#f5f3ff', margin: '0 0 6px 0' } }, '🎯 Predator strategy discovery'),
+              H('p', { style: { fontSize: 12, lineHeight: 1.5, color: '#cbd5e1', marginBottom: 12 } }, 'Predict a strategy, tune four hunting traits, then use the live radar profile to explain why the adaptation fits its environment.'),
+              H('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-raptor-strategy-result': strat, style: { padding: 12, borderRadius: 10, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                 H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
-                H('div', { style: { fontSize: 11, color: '#475569', marginTop: 4 } }, sm.desc)
+                H('div', { style: { fontSize: 11, color: '#e2e8f0', marginTop: 4 } }, sm.desc)
               ),
               // SVG radar chart of 4 attributes
-              H('div', { style: { padding: 10, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 12 } },
-                H('svg', { viewBox: '0 0 200 200', style: { width: 200, height: 200, display: 'block', margin: '0 auto' } },
+              H('div', { style: { padding: 10, background: '#020617', borderRadius: 10, border: '1px solid #475569', marginBottom: 12 } },
+                H('svg', { viewBox: '0 0 200 200', role: 'img', 'aria-label': 'Radar chart of stealth, speed, ambush, and persistence', style: { width: 200, maxWidth: '100%', height: 'auto', aspectRatio: '1', display: 'block', margin: '0 auto' } },
                   // Grid circles
-                  [25, 50, 75, 100].map(function(r) { return H('circle', { key: 'g' + r, cx: 100, cy: 100, r: r * 0.8, fill: 'none', stroke: '#cbd5e1', strokeWidth: 0.5 }); }),
+                  [25, 50, 75, 100].map(function(r) { return H('circle', { key: 'g' + r, cx: 100, cy: 100, r: r * 0.8, fill: 'none', stroke: '#475569', strokeWidth: 0.7 }); }),
                   // Axes
-                  H('line', { x1: 100, y1: 20, x2: 100, y2: 180, stroke: '#94a3b8', strokeWidth: 1 }),
-                  H('line', { x1: 20, y1: 100, x2: 180, y2: 100, stroke: '#94a3b8', strokeWidth: 1 }),
+                  H('line', { x1: 100, y1: 20, x2: 100, y2: 180, stroke: '#64748b', strokeWidth: 1 }),
+                  H('line', { x1: 20, y1: 100, x2: 180, y2: 100, stroke: '#64748b', strokeWidth: 1 }),
                   // Attribute polygon (4 vertices)
                   (function() {
                     var pts = [
@@ -24821,41 +27493,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     return H('polygon', { points: pts.map(function(p) { return p.join(','); }).join(' '), fill: sm.color, fillOpacity: 0.35, stroke: sm.color, strokeWidth: 2 });
                   })(),
                   // Labels
-                  H('text', { x: 100, y: 16, textAnchor: 'middle', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Stealth ' + iq.stealth),
-                  H('text', { x: 188, y: 104, textAnchor: 'end', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Speed ' + iq.speed),
-                  H('text', { x: 100, y: 196, textAnchor: 'middle', fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Ambush ' + iq.ambush),
-                  H('text', { x: 12, y: 104, fontSize: 10, fill: '#475569', fontWeight: 'bold' }, 'Pers ' + iq.persistence)
+                  H('text', { x: 100, y: 16, textAnchor: 'middle', fontSize: 10, fill: '#e2e8f0', fontWeight: 'bold' }, 'Stealth ' + iq.stealth),
+                  H('text', { x: 188, y: 104, textAnchor: 'end', fontSize: 10, fill: '#e2e8f0', fontWeight: 'bold' }, 'Speed ' + iq.speed),
+                  H('text', { x: 100, y: 196, textAnchor: 'middle', fontSize: 10, fill: '#e2e8f0', fontWeight: 'bold' }, 'Ambush ' + iq.ambush),
+                  H('text', { x: 12, y: 104, fontSize: 10, fill: '#e2e8f0', fontWeight: 'bold' }, 'Pers ' + iq.persistence)
                 )
               ),
-              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 10 } },
+              H('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 10, marginBottom: 12 } },
                 [{ k: 'stealth', l: 'Stealth (%)' },
                  { k: 'speed', l: 'Speed (%)' },
                  { k: 'ambush', l: 'Ambush ability (%)' },
                  { k: 'persistence', l: 'Persistence (%)' }].map(function(s) {
-                  return H('div', { key: s.k },
-                    H('label', { htmlFor: 'sh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#475569', marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: '#7c3aed', fontFamily: 'monospace' } }, iq[s.k])),
+                  return H('div', { key: s.k, style: { padding: 9, border: '1px solid #475569', borderRadius: 9, background: '#020617' } },
+                    H('label', { htmlFor: 'sh-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: '#cbd5e1', marginBottom: 6 } }, s.l + ': ', H('span', { style: { color: sm.color, fontFamily: 'monospace' } }, iq[s.k])),
                     H('input', { id: 'sh-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                      style: { width: '100%' }, 'aria-label': s.l }));
+                      style: { width: '100%', accentColor: sm.border }, 'aria-label': s.l }));
                 })
               ),
               H('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                H('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ st: iq.stealth, sp: iq.speed, a: iq.ambush, p: iq.persistence, str: strat }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#e2e8f0', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
-                H('button', { onClick: function() { setIQ({ stealth: 50, speed: 50, ambush: 50, persistence: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: '#fff', color: '#64748b', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+                H('button', { type: 'button', onClick: function() { setIQ({ log: (iq.log || []).concat([{ st: iq.stealth, sp: iq.speed, a: iq.ambush, p: iq.persistence, str: strat }]).slice(-8) }); }, style: { minHeight: 38, padding: '7px 12px', background: '#5b21b6', color: '#f5f3ff', border: '1px solid #a78bfa', borderRadius: 8, fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Record trial'),
+                H('button', { type: 'button', onClick: function() { setIQ({ stealth: 50, speed: 50, ambush: 50, persistence: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { minHeight: 38, padding: '7px 12px', background: '#1e293b', color: '#e2e8f0', border: '1px solid #64748b', borderRadius: 8, fontSize: 11, cursor: 'pointer' } }, '↺ Reset')
+              ),
+              (iq.log || []).length > 0 && H('div', { 'aria-label': 'Recorded strategy trials', style: { marginBottom: 10, padding: 9, border: '1px solid #475569', borderRadius: 9, background: '#020617' } },
+                H('div', { style: { marginBottom: 6, color: '#94a3b8', fontSize: 9, fontWeight: 900, letterSpacing: '.08em', textTransform: 'uppercase' } }, 'Recent trials'),
+                H('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5 } }, (iq.log || []).map(function(entry, index) {
+                  return H('span', { key: index, style: { padding: '4px 7px', border: '1px solid #475569', borderRadius: 999, color: '#cbd5e1', fontSize: 9, fontFamily: 'monospace' } }, (index + 1) + '. ' + entry.str + ' · ' + entry.st + '/' + entry.sp + '/' + entry.a + '/' + entry.p);
+                }))
               ),
               H('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.raptorhunt.hypothesis_which_strategy_is_most_ener', 'Hypothesis: Which strategy is most energy-efficient?'),
-                style: { width: '100%', minHeight: 50, padding: 6, border: '1px solid #cbd5e1', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
-              !iq.stuckRevealed && H('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 4, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
-              iq.stuckRevealed && H('div', { style: { padding: 10, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 4, fontSize: 11, color: '#475569', marginBottom: 8 } },
+                'aria-label': 'Strategy hypothesis', style: { boxSizing: 'border-box', width: '100%', minHeight: 58, padding: 9, background: '#020617', color: '#f8fafc', border: '1px solid #64748b', borderRadius: 8, fontSize: 12, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
+              !iq.stuckRevealed && H('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { minHeight: 36, padding: '6px 10px', background: '#451a03', color: '#fde68a', border: '1px solid #fbbf24', borderRadius: 8, fontSize: 11, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Need a thinking prompt?'),
+              iq.stuckRevealed && H('div', { style: { padding: 10, background: '#451a03', border: '1px solid #fbbf24', borderRadius: 8, fontSize: 11, lineHeight: 1.45, color: '#fef3c7', marginBottom: 8 } },
                 H('ul', { style: { margin: 0, paddingLeft: 18 } },
                   H('li', null, 'Match real raptor species to a strategy (peregrine, goshawk, harrier).'),
                   H('li', null, 'Why has natural selection produced 5+ distinct hunting strategies?'),
                   H('li', null, 'What environment favors ambush vs pursuit?'))),
-              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#059669', cursor: 'pointer' } },
-                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain'),
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 7, minHeight: 38, padding: '7px 9px', border: '1px solid #047857', borderRadius: 8, background: '#022c22', fontSize: 12, fontWeight: 'bold', color: '#a7f3d0', cursor: 'pointer' } },
+                H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I can explain the adaptation'),
               iq.understood && H('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.raptorhunt.explain_how_raptor_traits_compose_hunt', 'Explain how raptor traits compose hunting strategy.'),
-                style: { width: '100%', minHeight: 60, padding: 6, border: '1px solid #86efac', borderRadius: 4, fontSize: 12, fontFamily: 'monospace', marginTop: 6 }, rows: 3 }),
-              H('div', { style: { marginTop: 8, fontSize: 10, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 5-strategy marker; SVG radar chart; no hunt-success score — by design.')
+                'aria-label': 'Strategy explanation', style: { boxSizing: 'border-box', width: '100%', minHeight: 70, padding: 9, background: '#020617', color: '#f8fafc', border: '1px solid #34d399', borderRadius: 8, fontSize: 12, fontFamily: 'monospace', marginTop: 8 }, rows: 3 }),
+              H('div', { style: { marginTop: 9, fontSize: 10, lineHeight: 1.4, color: '#94a3b8' } }, 'This is a model-building lab: compare trade-offs and defend your reasoning; there is no single highest-scoring predator.')
             );
           })()
         )

@@ -1614,7 +1614,7 @@
           {t('humanities.positionality_edit_title') || 'Your standpoint — material relationship to the question'}
         </h4>
         <p style={{ margin: 0, fontSize: '11px', color: '#831843', lineHeight: 1.5 }}>
-          {t('humanities.positionality_edit_help') ||
+          {t('humanities.positionality_edit_help', { min: floors.positionality }) ||
             ('Name your MATERIAL relationship to this question, not a generic identity. ≥' + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.')}
         </p>
         <textarea value={draft} rows={4} maxLength={1500}
@@ -2433,13 +2433,13 @@
 
         <TextareaCard t={t}
           label={t('humanities.question_label') || 'Your contestable question'}
-          help={t('humanities.question_help') || ('Open a position, not a fact. ≥' + floors.question + ' chars, ends in "?". Definitional / factoid questions are refused.')}
+          help={t('humanities.question_help', { min: floors.question }) || ('Open a position, not a fact. ≥' + floors.question + ' chars, ends in "?". Definitional / factoid questions are refused.')}
           value={qt} onChange={setQt} rows={2} max={240}
           placeholder={t('humanities.question_ph') || 'e.g. Should our library digitize the 1962-1989 yearbooks given alumni redaction requests?'} />
 
         <TextareaCard t={t}
           label={t('humanities.contestability_label') || 'Contestability rationale'}
-          help={t('humanities.contestability_help') || ('What makes this contestable, and for whom? Name a stakeholder and a contested term. ≥' + floors.rationale + ' chars.')}
+          help={t('humanities.contestability_help', { min: floors.rationale }) || ('What makes this contestable, and for whom? Name a stakeholder and a contested term. ≥' + floors.rationale + ' chars.')}
           value={rat} onChange={setRat} rows={4} max={1500} />
 
         <div style={{ padding: '12px', borderRadius: '12px', background: '#fff', border: '1px solid #e2e8f0' }}>

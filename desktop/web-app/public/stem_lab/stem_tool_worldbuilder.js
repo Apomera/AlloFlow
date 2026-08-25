@@ -1077,8 +1077,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             return [center + Math.cos(ang) * (radius + 12), center + Math.sin(ang) * (radius + 12)];
           });
           return h('div', { className: 'rounded-xl p-3 mb-3', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.world_inquiry_predict_the_story_tensio', '🔬 World Inquiry — Predict the Story Tension')),
-            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, tech, conflict, and government. Predict the world-state before writing your first scene. No score, no reveal.')),
+            h('h4', { className: 'text-xs font-black uppercase tracking-wider mb-1', style: { color: sm.color } }, __alloT('stem.worldbuilder.world_inquiry_predict_the_story_tensio', '🔬 World Inquiry — Explore the Story Tension')),
+            h('p', { className: 'text-[10px] opacity-85 mb-2 leading-snug' }, __alloT('stem.worldbuilder.set_biome_population_tech_conflict_and', 'Set biome, population, technology, conflict, and government, then observe how the modeled world-state changes. The result updates live; record a hypothesis or pattern before writing your first scene.')),
             h('div', { className: 'inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2', style: { background: sm.color, color: '#000' } }, biome.emoji + ' ' + biome.name + ' · ' + sm.label),
             h('p', { className: 'text-[10px] opacity-80 mb-2' }, sm.desc),
             h('div', { className: 'flex gap-3 items-center mb-2 flex-wrap' },

@@ -13,7 +13,7 @@ const domains = [{ id: 'd1', label: 'Planning' }, { id: 'd2', label: 'Environmen
 const workspace = {
   teachers: [{ id: 't1', name: 'Dana Reyes', ratings: { domains: { d1: 1 } } }],
   walkthroughs: [{ teacherId: 't1', publishedAt: 'y', componentTags: ['1a'], notes: 'Students were off task during transitions.' }],
-  observations: [{ teacherId: 't1', publishedAt: 'y', componentTags: ['2a'], notes: 'Clear routines posted.' }],
+  observations: [{ teacherId: 't1', evidencePublishedAt: 'y', componentTags: ['2a'], notes: 'Clear routines posted.' }],
 };
 
 describe('AI reflection prompt', () => {
@@ -21,6 +21,7 @@ describe('AI reflection prompt', () => {
 
   it('asks about the documentation and includes the assigned rating', () => {
     expect(prompt).toContain('off task during transitions');
+    expect(prompt).toContain('Clear routines posted');
     expect(prompt).toContain('Planning: Needs Improvement');
   });
 
@@ -42,6 +43,14 @@ describe('AI reflection prompt', () => {
   it('sends nothing when there is no published evidence, or no such educator', () => {
     expect(build({ teachers: [{ id: 't1', ratings: { domains: {} } }], walkthroughs: [], observations: [] }, 't1', domains, {})).toBeNull();
     expect(build(workspace, 'nobody', domains, {})).toBeNull();
+  });
+
+  it('does not treat a formal observation as released without evidencePublishedAt', () => {
+    const draftOnly = {
+      teachers: [{ id: 't1', ratings: { domains: {} } }], walkthroughs: [],
+      observations: [{ teacherId: 't1', publishedAt: 'legacy-field', notes: 'Private draft evidence' }],
+    };
+    expect(build(draftOnly, 't1', domains, {})).toBeNull();
   });
 
   it('never includes another educator evidence', () => {

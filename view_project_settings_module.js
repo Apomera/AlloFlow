@@ -148,6 +148,62 @@ function ProjectSettingsView(props) {
   var evaluationPortalUrl = props.evaluationPortalUrl || '';
   var isEvaluationPortalConnected = props.isEvaluationPortalConnected === true;
   var onSaveEvaluationPortalUrl = props.onSaveEvaluationPortalUrl;
+  var rewardsStorageKey = 'allo_school_rewards_portal_url_v1';
+  var normalizeRewardsPortalUrl = function (value) {
+    try {
+      var url = new URL(String(value || '').trim());
+      if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' || url.port || url.username || url.password || url.search || url.hash) return '';
+      if (!/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(url.pathname)) return '';
+      return url.origin + url.pathname;
+    } catch (_) {
+      return '';
+    }
+  };
+  var locallySavedRewardsUrl = '';
+  try {
+    locallySavedRewardsUrl = normalizeRewardsPortalUrl(window.localStorage.getItem(rewardsStorageKey));
+  } catch (_) {}
+  var rewardsPortalUrl = props.rewardsPortalUrl || locallySavedRewardsUrl;
+  var isRewardsPortalConnected = props.isRewardsPortalConnected === true || Boolean(rewardsPortalUrl);
+  var onSaveRewardsPortalUrl = props.onSaveRewardsPortalUrl || function (value) {
+    var raw = String(value || '').trim();
+    var normalized = raw ? normalizeRewardsPortalUrl(raw) : '';
+    if (raw && !normalized) {
+      try {
+        window.alert('Use the HTTPS Apps Script deployment URL ending in /macros/s/{deployment}/exec.');
+      } catch (_) {}
+      return {
+        ok: false,
+        error: 'Invalid Apps Script deployment URL.'
+      };
+    }
+    try {
+      if (normalized) window.localStorage.setItem(rewardsStorageKey, normalized);else window.localStorage.removeItem(rewardsStorageKey);
+    } catch (_) {
+      return {
+        ok: false,
+        error: 'This browser could not save the launcher URL.'
+      };
+    }
+    return {
+      ok: true,
+      url: normalized,
+      connected: Boolean(normalized)
+    };
+  };
+  var onOpenSchoolRewards = props.onOpenSchoolRewards || function () {
+    var url = normalizeRewardsPortalUrl(rewardsPortalUrl || locallySavedRewardsUrl);
+    if (!url) {
+      try {
+        window.alert('Connect the school or district School Rewards portal below first.');
+      } catch (_) {}
+      return;
+    }
+    try {
+      var popup = window.open(url, '_blank', 'noopener,noreferrer');
+      if (popup) popup.opener = null;
+    } catch (_) {}
+  };
   // This view intentionally remains hook-free because it is also invoked by
   // project export/test renderers. The uncontrolled input updates this
   // render-closure draft; the host owns persistence, validation, and toasts.
@@ -156,6 +212,17 @@ function ProjectSettingsView(props) {
     if (typeof onSaveEvaluationPortalUrl !== 'function') return;
     var result = onSaveEvaluationPortalUrl(value);
     if (result && result.ok !== false && typeof result.url === 'string') portalUrlDraft = result.url;
+    return result;
+  };
+  var rewardsPortalUrlDraft = rewardsPortalUrl;
+  var applyRewardsPortalUrl = function (value) {
+    if (typeof onSaveRewardsPortalUrl !== 'function') return;
+    var result = onSaveRewardsPortalUrl(value);
+    if (result && result.ok !== false && typeof result.url === 'string') {
+      rewardsPortalUrlDraft = result.url;
+      rewardsPortalUrl = result.url;
+      locallySavedRewardsUrl = result.url;
+    }
     return result;
   };
   var permissions = studentProjectSettings.adventurePermissions || {};
@@ -351,7 +418,59 @@ function ProjectSettingsView(props) {
     size: 20
   }))), /*#__PURE__*/React.createElement("div", {
     className: "min-h-0 flex-1 space-y-6 overflow-y-auto px-5 py-5 sm:px-6"
-  }, isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
+  }, isSchoolRole && /*#__PURE__*/React.createElement("section", {
+    "aria-labelledby": "school-rewards-title",
+    className: "rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-teal-50 p-4 shadow-sm sm:p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: `text-xs font-black uppercase tracking-wider ${isRewardsPortalConnected ? 'text-emerald-700' : 'text-amber-700'}`
+  }, isRewardsPortalConnected ? 'School rewards connected' : 'Google Education setup required'), /*#__PURE__*/React.createElement("h4", {
+    id: "school-rewards-title",
+    className: "mt-1 text-base font-black text-slate-900"
+  }, "School Rewards & Store"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 max-w-2xl text-sm leading-relaxed text-slate-600"
+  }, "A school-owned rewards ledger for staff recognition, private balance emails to managed student addresses, prize previews, and locked trimester checkout. The pilot stays separate from AlloHaven XP and can later point to a district-owned deployment without changing this launcher.")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onOpenSchoolRewards,
+    className: `shrink-0 rounded-xl px-4 py-2.5 text-sm font-black shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${isRewardsPortalConnected ? 'bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-emerald-600' : 'border border-amber-500 bg-white text-amber-800 hover:bg-amber-50 focus:ring-amber-500'}`
+  }, isRewardsPortalConnected ? 'Open School Rewards' : 'Connect School Rewards')), typeof onSaveRewardsPortalUrl === 'function' && /*#__PURE__*/React.createElement("form", {
+    className: "mt-4 border-t border-emerald-100 pt-4",
+    onSubmit: function (event) {
+      event.preventDefault();
+      applyRewardsPortalUrl(rewardsPortalUrlDraft);
+    }
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: "school-rewards-portal-url",
+    className: "block text-xs font-black text-slate-700"
+  }, "School or district Apps Script web-app URL"), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-col gap-2 sm:flex-row"
+  }, /*#__PURE__*/React.createElement("input", {
+    id: "school-rewards-portal-url",
+    type: "url",
+    inputMode: "url",
+    autoComplete: "off",
+    spellCheck: false,
+    defaultValue: rewardsPortalUrlDraft,
+    onChange: function (event) {
+      rewardsPortalUrlDraft = event.target.value;
+    },
+    "aria-describedby": "school-rewards-portal-help",
+    placeholder: "https://script.google.com/macros/s/…/exec",
+    className: "min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-inner focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    className: "min-h-11 rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-black text-emerald-800 hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+  }, isRewardsPortalConnected ? 'Update connection' : 'Connect portal'), isRewardsPortalConnected && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: function () {
+      applyRewardsPortalUrl('');
+    },
+    className: "min-h-11 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+  }, "Disconnect")), /*#__PURE__*/React.createElement("p", {
+    id: "school-rewards-portal-help",
+    className: "mt-2 text-xs leading-relaxed text-slate-500"
+  }, isRewardsPortalConnected ? 'This device opens the exact Google-hosted /exec deployment. Google sign-in and server-side roles control awards, checkout, and administration.' : 'Deploy the reviewed apps_script/school_rewards package from a managed school account, restrict it to your Google Education domain, and paste its /exec URL here. AlloFlow stores only the launcher address.'))), isSchoolRole && typeof onOpenPrincipalEvaluation === 'function' && /*#__PURE__*/React.createElement("section", {
     "aria-labelledby": "principal-evaluation-title",
     className: "rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 via-white to-violet-50 p-4 shadow-sm sm:p-5"
   }, /*#__PURE__*/React.createElement("div", {

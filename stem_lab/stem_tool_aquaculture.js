@@ -115,14 +115,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // ───────────────────────────────────────────────────────────
   var SPECIES = [
     { id: 'mussel', name: 'Blue Mussel', sci: 'Mytilus edulis', emoji: '🪨', method: 'Rope / raft culture',
-      growthMonths: '18-24 months seed to market',
-      yield: '4-7 kg per meter of rope at harvest',
-      marketPrice: '$1.50-$3.50/lb wholesale (Maine, 2024)',
-      tempRange: '5-22°C optimal',
+      growthMonths: 'Often about 18–24 months; strongly site- and system-dependent',
+      yield: 'Site- and system-specific; compare dated method examples',
+      marketPrice: 'Use current buyer quotes and dated Maine DMR value/landings data',
+      tempRange: '5–22°C broad comparison range; 8–18°C station reference band',
       salinityRange: '20-32 PSU',
       stressors: ['biofouling', 'ice damage in winter', 'sea-duck predation', 'paralytic shellfish toxin events'],
-      whyMaine: 'Cold clean water + protected estuaries + tidal flushing → world-class mussels. Bagaduce + Penobscot Bay yields are legendary.',
-      cite: 'Maine Aquaculture Association 2024' },
+      whyMaine: 'Maine supports both wild harvest and aquaculture; protected-water suitability still depends on measured site conditions, access, gear, and approvals.',
+      cite: 'Maine Sea Grant + Maine DMR; reviewed 2026' },
     { id: 'oyster', name: 'Eastern Oyster', sci: 'Crassostrea virginica', emoji: '🦪', method: 'Bag-on-bottom / floating cage / suspended',
       growthMonths: '24-36 months seed to market',
       yield: '50-150 oysters per cage at harvest',
@@ -782,7 +782,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       assessment: 'Multi-season probe data. Tidal variability matters more than mean.',
       red_flag: 'Wide swings after rain → freshwater stress events.' },
     { factor: 'Temperature',
-      criteria: 'Mussels 5-22°C; oysters 10-30°C; kelp <15°C.',
+      criteria: 'Mussels: 5–22°C broad comparison range and 8–18°C station reference band; other species use different ranges.',
       assessment: 'Summer maxima are the killer. Profile depth-wise (deeper = cooler).',
       red_flag: 'Temperatures >22°C in late summer.' },
     { factor: 'Dissolved Oxygen',
@@ -790,7 +790,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       assessment: 'Continuous datalogger ideal. Sample at dawn (lowest).',
       red_flag: 'DO <5 mg/L for hours.' },
     { factor: 'pH',
-      criteria: '7.8-8.2 ideal; lower → larval shell formation issues.',
+      criteria: '7.8–8.2 teaching reference band; sensitivity varies with life stage, carbonate chemistry, site, and exposure duration.',
       assessment: 'Monthly samples; trend over years.',
       red_flag: 'pH <7.7 during shell-forming periods.' },
     { factor: 'Current Speed',
@@ -2303,36 +2303,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // DATA: MUSSEL INDUSTRY CASE STUDY (DEEP)
   // ───────────────────────────────────────────────────────────
   var MUSSEL_INDUSTRY = [
-    { topic: 'Maine Mussel Industry History',
-      content: 'Wild mussel beds harvested historically. Aquaculture began 1970s with European rope-culture methods. Industry grew through 1980s-2000s. Bagaduce Mussel Company + similar operations pioneered.',
-      relevance: 'Aquaculture rebuilt + scaled Maine mussel industry.' },
-    { topic: 'Rope Culture Method',
-      content: 'Spat (newly-settled mussels) loaded into mesh socks + wrapped around dropper lines. Mussels anchor via byssal threads. Mesh degrades over months. Grow 18-24 months to market size.',
-      relevance: 'Standard Maine method. Familiar to all Maine operators.' },
-    { topic: 'Bagaduce River Terroir',
-      content: 'Bagaduce + Penobscot Bay waters produce premium mussels. Cold + clean + protected. Bagaduce Mussel Company brand globally recognized.',
-      relevance: 'Place-based identity + quality reputation.' },
-    { topic: 'Industry Challenges',
-      content: 'Heat stress in summer; ice damage in winter; biofouling year-round; sea duck predation; HAB closures; competition with cheaper imports (Pacific NW + Chile).',
-      relevance: 'Multiple operational + market pressures.' },
-    { topic: 'Industry Growth',
-      content: '~5-10M lbs/yr Maine mussel production. Industry roughly stable; growth limited by competitive pressure + capacity.',
-      relevance: 'Mature industry; differentiation matters.' },
-    { topic: 'Market Channels',
-      content: 'Wholesale $1.50-$3.50/lb; D2C $3-$8/lb. Restaurant + farmers market premium achievable.',
-      relevance: 'D2C captures more value.' },
-    { topic: 'Climate Adaptation',
-      content: 'Mussels prefer cold water (5-22°C optimal). Warming creates summer stress. Some mortality during heat waves. Industry adapting via depth + species portfolio.',
-      relevance: 'Climate is mussel industry challenge.' },
-    { topic: 'Cooperative Models',
-      content: 'Some mussel growers in cooperative arrangements. Atlantic Sea Farms model could expand to mussels. Industry exploring.',
-      relevance: 'Cooperation could enable smaller farms to access wider markets.' },
-    { topic: 'Right Whale + Vertical Lines',
-      content: 'Mussel longline gear has vertical lines (mooring + dropper). Right whale rules increasingly affect mussel aquaculture. Industry retrofitting toward ropeless or compliant gear.',
-      relevance: 'Industry transition cost.' },
-    { topic: 'Future of Maine Mussel Industry',
-      content: 'Maine mussel industry mature + sustainable but growth-constrained. Industry strength: terroir + brand + cold-water quality.',
-      relevance: 'Mussels likely remain Maine industry component for foreseeable future.' }
+    { topic: '2025 Cultured Mussel Harvest',
+      content: 'Maine DMR reports 2,649,277 live pounds of cultured blue mussels with a landed value of $5,655,952 in 2025.',
+      relevance: 'Use a dated, species-specific aquaculture figure instead of mixing farmed and wild landings.',
+      sourceLabel: 'Maine DMR: 2021-2025 Aquaculture Landings Report', sourceUrl: 'https://www.maine.gov/dmr/sites/maine.gov.dmr/files/2026-04/MAINE%20AQUACULTURE%20LANDINGS%20REPORT.pdf' },
+    { topic: 'Read the Trend Carefully',
+      content: 'The same DMR series reports 1,735,733 live pounds and $2,950,899 in 2021. Those two endpoints show recent growth, but they do not guarantee a future rate or explain year-to-year causes.',
+      relevance: 'A transparent comparison separates evidence from a forecast.',
+      sourceLabel: 'Maine DMR: 2021-2025 Aquaculture Landings Report', sourceUrl: 'https://www.maine.gov/dmr/sites/maine.gov.dmr/files/2026-04/MAINE%20AQUACULTURE%20LANDINGS%20REPORT.pdf' },
+    { topic: 'Two Principal Maine Culture Methods',
+      content: 'Maine Sea Grant describes raft culture in the water column and bottom culture on leased seabed as the state\'s two principal mussel-farming methods.',
+      relevance: 'Start with the methods documented for Maine before comparing global alternatives.',
+      sourceLabel: 'Maine Sea Grant: 2025 Aquaculture Fact Sheets', sourceUrl: 'https://seagrant.umaine.edu/focus-areas/fisheries-and-aquaculture/2025-aquaculture-fact-sheets/' },
+    { topic: 'Raft Example, Not a Guarantee',
+      content: 'Sea Grant gives a planning example in which a 40-foot raft with 40-60-foot droppers might produce about 50,000 pounds over a two-year rotation. Site, stocking, survival, gear, and harvest practices change the result.',
+      relevance: 'Published examples are useful comparison anchors, not universal yield promises.',
+      sourceLabel: 'Maine Sea Grant: 2025 Aquaculture Fact Sheets', sourceUrl: 'https://seagrant.umaine.edu/focus-areas/fisheries-and-aquaculture/2025-aquaculture-fact-sheets/' },
+    { topic: 'Bottom-Culture Example',
+      content: 'Sea Grant presents roughly 20,000-30,000 pounds per acre over two to three years as a bottom-culture planning example.',
+      relevance: 'Time, area, and culture method must travel with any production number.',
+      sourceLabel: 'Maine Sea Grant: 2025 Aquaculture Fact Sheets', sourceUrl: 'https://seagrant.umaine.edu/focus-areas/fisheries-and-aquaculture/2025-aquaculture-fact-sheets/' },
+    { topic: 'Wild and Farmed Totals Are Different',
+      content: 'Sea Grant reports that Maine\'s combined wild and farmed mussel harvest exceeded 8 million pounds in 2022, worth about $8.2 million. That combined figure should not be labeled aquaculture production.',
+      relevance: 'Define the population behind a number before comparing years or industries.',
+      sourceLabel: 'Maine Sea Grant: 2025 Aquaculture Fact Sheets', sourceUrl: 'https://seagrant.umaine.edu/focus-areas/fisheries-and-aquaculture/2025-aquaculture-fact-sheets/' },
+    { topic: 'Closures and Food Safety',
+      content: 'A classroom water reading, clear appearance, or healthy attachment cannot establish that shellfish are safe to harvest or eat. Current closure status comes from Maine DMR.',
+      relevance: 'Operational decisions require current regulatory information beyond this learning model.',
+      sourceLabel: 'Maine DMR · Current Shellfish Closures', sourceUrl: 'https://www1.maine.gov/dmr/fisheries/shellfish/closures' }
   ];
 
   // ───────────────────────────────────────────────────────────
@@ -5198,11 +5196,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     { chapter: 'Chapter 7: Water Quality Management',
       sections: [
         'Water quality determines aquaculture success. Six key parameters: temperature, salinity, dissolved oxygen, pH, chlorophyll-a, turbidity.',
-        'Temperature: each species has optimal + tolerance range. Mussels stressed >22°C; oysters tolerate wider range. Heat waves can cause mass mortality.',
+        'Temperature: use species- and life-stage-specific reference and tolerance ranges. In this Mussel station, 8–18°C is the reference band and 5–22°C is a broader comparison range; duration and co-stressors matter.',
         'Salinity: Atlantic Maine waters typically 25-32 PSU. Heavy rain pulses freshwater + can stress bivalves. Species like oysters more tolerant of variability.',
         'DO: minimum >5 mg/L for most bivalves. Dense beds + warm calm summers = hypoxia risk. Stocking density matters.',
-        'pH: optimum 7.8-8.2. Ocean acidification reduces pH; affects larval shell formation. Hatcheries buffer for shell-forming stages.',
-        'Chlorophyll-a: food availability. Low = slow growth. High (>30 µg/L) = potential HAB warning.',
+        'pH: this lab uses 7.8–8.2 as a teaching reference band, not a universal optimum. Interpret pH with calibration, temperature, salinity, time of day, life stage, and broader carbonate chemistry.',
+        'Chlorophyll-a is a food proxy. Low readings can accompany slow growth, while high readings can prompt checking official phytoplankton and closure monitoring; chlorophyll alone cannot identify a harmful bloom.',
         'Turbidity: high sediment clogs gills + smothers seed. Post-storm events.',
         'Monitoring frequency: weekly minimum; daily during stress events. Multiple depths + GPS-logged.',
         'NERACOOS provides regional buoy data. Cross-check own site with regional pattern.',
@@ -5909,7 +5907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // ───────────────────────────────────────────────────────────
   var WQ_THRESHOLDS = [
     { species: 'Blue Mussel',
-      temp_range: '5-22°C optimal; >22°C stress',
+      temp_range: '5–22°C broad comparison range; 8–18°C station reference band',
       salinity_range: '20-32 PSU',
       DO_min: '5 mg/L (4 mg/L stress)',
       pH_range: '7.8-8.2',
@@ -7399,17 +7397,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     function delta(key) { return Number((currentRun.summary[key] - baselineRun.summary[key]).toFixed(2)); }
     return { biomass: delta('endingBiomass'), survival: delta('survival'), minOxygen: delta('minOxygen'), peakAmmonia: delta('peakAmmonia'), resilience: delta('averageResilience'), riskMonths: delta('riskMonths'), harvestUnits: delta('harvestUnits'), operatingEffort: delta('operatingEffort') };
   }
+
+  var MUSSEL_HEALTH_MODEL_VERSION = '2026.08';
+  var MUSSEL_HEALTH_PRESETS = [
+    { id: 'balanced', name: 'Balanced lease day', prompt: 'A productive, well-flushed lease check with strong attachment and light fouling.', values: { temperature: 14, salinity: 28, oxygen: 8.1, pH: 8.05, chlorophyll: 7, fouling: 12, attachment: 92 } },
+    { id: 'heatwave', name: 'Heatwave + slack tide', prompt: 'Warm, still water can combine several stress signals. Identify what must be verified first.', values: { temperature: 24, salinity: 27, oxygen: 3.6, pH: 7.85, chlorophyll: 16, fouling: 35, attachment: 58 } },
+    { id: 'freshet', name: 'Rain-driven freshet', prompt: 'A heavy-rain pulse lowers surface salinity. Compare the signal with depth and tidal timing.', values: { temperature: 12, salinity: 12, oxygen: 7.5, pH: 7.7, chlorophyll: 5, fouling: 18, attachment: 72 } },
+    { id: 'fouling', name: 'Heavy biofouling', prompt: 'Water readings look workable, but added drag and competition may be loading the droppers.', values: { temperature: 15, salinity: 29, oxygen: 6.8, pH: 8, chlorophyll: 4, fouling: 72, attachment: 66 } },
+    { id: 'low-food', name: 'Low-food interval', prompt: 'Cold, clear water carries little chlorophyll-a. Separate food limitation from acute stress.', values: { temperature: 9, salinity: 30, oxygen: 8.6, pH: 8.1, chlorophyll: .7, fouling: 8, attachment: 88 } }
+  ];
+
+  function aqSanitizeMusselReadings(raw) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    return {
+      temperature: Number(aqEcoClamp(source.temperature == null ? 14 : source.temperature, 0, 30).toFixed(1)),
+      salinity: Number(aqEcoClamp(source.salinity == null ? 28 : source.salinity, 0, 38).toFixed(1)),
+      oxygen: Number(aqEcoClamp(source.oxygen == null ? 8.1 : source.oxygen, 0, 14).toFixed(1)),
+      pH: Number(aqEcoClamp(source.pH == null ? 8.05 : source.pH, 6.5, 9).toFixed(2)),
+      chlorophyll: Number(aqEcoClamp(source.chlorophyll == null ? 7 : source.chlorophyll, 0, 30).toFixed(1)),
+      fouling: Math.round(aqEcoClamp(source.fouling == null ? 12 : source.fouling, 0, 100)),
+      attachment: Math.round(aqEcoClamp(source.attachment == null ? 92 : source.attachment, 0, 100))
+    };
+  }
+
+  function aqDefaultMusselHealthWorkspace() {
+    return Object.assign({}, aqSanitizeMusselReadings(MUSSEL_HEALTH_PRESETS[0].values), { scenarioId: 'balanced', prediction: '', observation: '', checks: [] });
+  }
+
+  function aqSanitizeMusselHealthWorkspace(raw) {
+    var source = raw && typeof raw === 'object' ? raw : {};
+    var readings = aqSanitizeMusselReadings(source);
+    var checks = (Array.isArray(source.checks) ? source.checks : []).slice(0, 10).map(function(item, index) {
+      var record = item && typeof item === 'object' ? item : {};
+      return {
+        id: String(record.id || ('mussel-check-' + index)).slice(0, 80),
+        savedAt: Math.max(0, Number(record.savedAt) || 0),
+        readings: aqSanitizeMusselReadings(record.readings),
+        status: ['Ready to monitor', 'Watch closely', 'Act and verify'].indexOf(record.status) >= 0 ? record.status : 'Watch closely',
+        limitingFactor: String(record.limitingFactor || record.prioritySignal || '').slice(0, 80),
+        prioritySignal: String(record.prioritySignal || record.limitingFactor || '').slice(0, 80),
+        modelVersion: String(record.modelVersion || 'legacy').slice(0, 40),
+        scenarioId: String(record.scenarioId || '').slice(0, 40),
+        prediction: String(record.prediction || '').slice(0, 80),
+        observation: String(record.observation || '').slice(0, 600)
+      };
+    });
+    var scenarioId = MUSSEL_HEALTH_PRESETS.some(function(preset) { return preset.id === source.scenarioId; }) ? source.scenarioId : 'custom';
+    var prediction = ['none', 'temperature', 'salinity', 'oxygen', 'pH', 'chlorophyll', 'fouling', 'attachment'].indexOf(source.prediction) >= 0 ? source.prediction : '';
+    return Object.assign({}, readings, { scenarioId: scenarioId, prediction: prediction, observation: String(source.observation || '').slice(0, 600), checks: checks });
+  }
+
+  function aqAssessMusselHealth(raw) {
+    var readings = aqSanitizeMusselReadings(raw), factors = [];
+    function addFactor(id, label, value, unit, status, signal, action) {
+      var priorityWeights = { oxygen: 60, attachment: 50, salinity: 45, temperature: 40, pH: 35, fouling: 30, chlorophyll: 10 };
+      var priority = status === 'optimal' ? 0 : (priorityWeights[id] || 20) + (status === 'critical' ? 40 : 0);
+      factors.push({ id: id, label: label, value: value, unit: unit, status: status, signal: signal, action: action, priority: priority });
+    }
+    var tempStatus = readings.temperature >= 8 && readings.temperature <= 18 ? 'optimal' : readings.temperature >= 5 && readings.temperature <= 22 ? 'watch' : 'critical';
+    addFactor('temperature', 'Temperature', readings.temperature, '°C', tempStatus,
+      tempStatus === 'optimal' ? 'Within this model’s 8–18 °C reference band; this is not a universal optimum.' : readings.temperature > 18 ? 'Warm water can raise metabolic demand while oxygen availability falls.' : 'Cold water slows feeding and growth; acute handling can add stress.',
+      tempStatus === 'critical' ? 'Verify at a second depth and tidal phase; inspect stock before changing gear.' : 'Keep a time series and compare the same depth across tides.');
+    var salinityStatus = readings.salinity >= 20 && readings.salinity <= 32 ? 'optimal' : readings.salinity >= 15 && readings.salinity <= 34 ? 'watch' : 'critical';
+    addFactor('salinity', 'Salinity', readings.salinity, 'PSU', salinityStatus,
+      salinityStatus === 'optimal' ? 'Inside the broad teaching range used for marine blue mussels.' : readings.salinity < 20 ? 'A freshwater pulse can suppress feeding and attachment, especially near the surface.' : 'Elevated salinity is outside the usual estuarine teaching range.',
+      salinityStatus === 'critical' ? 'Repeat at surface and crop depth after the tide turns before handling stock.' : 'Compare depth, rainfall, and tide timing.');
+    var oxygenStatus = readings.oxygen > 6 ? 'optimal' : readings.oxygen >= 4 ? 'watch' : 'critical';
+    addFactor('oxygen', 'Dissolved oxygen', readings.oxygen, 'mg/L', oxygenStatus,
+      oxygenStatus === 'optimal' ? 'Oxygen is above the broad watch threshold used in this classroom model.' : oxygenStatus === 'watch' ? 'Oxygen is in a stress-watch band; duration matters as much as one reading.' : 'Low oxygen can become an acute risk, especially with heat and weak exchange.',
+      oxygenStatus === 'critical' ? 'Confirm the sensor, sample multiple depths, reduce handling, and escalate persistent low readings.' : 'Log duration and compare flood, ebb, and slack water.');
+    var pHStatus = readings.pH >= 7.8 && readings.pH <= 8.2 ? 'optimal' : readings.pH >= 7.5 && readings.pH <= 8.4 ? 'watch' : 'critical';
+    addFactor('pH', 'pH', readings.pH, '', pHStatus,
+      pHStatus === 'optimal' ? 'Within this model’s 7.8–8.2 pH reference band.' : pHStatus === 'watch' ? 'Outside the reference band but inside the broader comparison range; duration and calibration matter.' : 'Outside the broader comparison range; shell-building stress and sensor error both need consideration.',
+      pHStatus === 'critical' ? 'Check calibration and pair pH with temperature, salinity, and time-of-day context.' : 'Record calibration and compare the same time of day.');
+    var foodStatus = readings.chlorophyll >= 2 && readings.chlorophyll <= 15 ? 'optimal' : 'watch';
+    addFactor('chlorophyll', 'Chlorophyll-a proxy', readings.chlorophyll, 'µg/L', foodStatus,
+      foodStatus === 'optimal' ? 'Within this model’s 2–15 µg/L food-proxy reference band.' : readings.chlorophyll < 2 ? 'Low chlorophyll-a can indicate limited food supply and slower growth.' : 'A high reading can flag bloom conditions, but cannot identify a harmful species.',
+      readings.chlorophyll > 20 ? 'Check official phytoplankton and closure monitoring; chlorophyll alone cannot diagnose a HAB.' : 'Compare growth and condition over time rather than treating one proxy as food intake.');
+    var foulingStatus = readings.fouling <= 25 ? 'optimal' : readings.fouling <= 55 ? 'watch' : 'critical';
+    addFactor('fouling', 'Biofouling cover', readings.fouling, '%', foulingStatus,
+      foulingStatus === 'optimal' ? 'Light visible fouling leaves flow and crop access relatively open.' : foulingStatus === 'watch' ? 'Added drag and competition may be starting to affect flow and gear load.' : 'Heavy cover can restrict flow, compete for food, and add substantial gear load.',
+      foulingStatus === 'critical' ? 'Photograph representative droppers and plan a small staged cleaning trial before scaling up.' : 'Track cover at fixed photo points.');
+    var attachmentStatus = readings.attachment >= 80 ? 'optimal' : readings.attachment >= 60 ? 'watch' : 'critical';
+    addFactor('attachment', 'Firmly attached stock', readings.attachment, '%', attachmentStatus,
+      attachmentStatus === 'optimal' ? 'Most sampled mussels remain firmly attached to the grow rope.' : attachmentStatus === 'watch' ? 'Attachment is mixed; inspect byssal threads, predators, handling, and water stress.' : 'Weak attachment raises drop-off risk and may signal combined stress or disturbance.',
+      attachmentStatus === 'critical' ? 'Re-sample across several droppers and inspect byssal threads, predators, and recent handling.' : 'Use the same sampling method and rope locations next visit.');
+    var ordered = factors.slice().sort(function(a, b) { return b.priority - a.priority; });
+    var criticalCount = factors.filter(function(item) { return item.status === 'critical'; }).length;
+    var watchCount = factors.filter(function(item) { return item.status === 'watch'; }).length;
+    var status = criticalCount ? 'Act and verify' : watchCount ? 'Watch closely' : 'Ready to monitor';
+    var limitingFactor = ordered.find(function(item) { return item.status !== 'optimal'; }) || { id: 'none', label: 'No priority signal', status: 'optimal', priority: 0, action: 'Keep the same sampling method and compare the next tide or field visit.' };
+    var priorityActions = ordered.filter(function(item) { return item.status !== 'optimal'; }).slice(0, 3).map(function(item) { return item.action; });
+    if (!priorityActions.length) priorityActions.push('Keep the same sampling method and compare the next tide or field visit.');
+    return {
+      status: status,
+      tone: criticalCount ? '#fca5a5' : watchCount ? '#fde68a' : '#86efac',
+      summary: criticalCount ? criticalCount + ' critical signal' + (criticalCount === 1 ? '' : 's') + ' and ' + watchCount + ' watch signal' + (watchCount === 1 ? '' : 's') + '.' : watchCount ? watchCount + ' watch signal' + (watchCount === 1 ? '' : 's') + '; no critical signals.' : 'All seven signals are within the model\'s broad reference bands.',
+      modelVersion: MUSSEL_HEALTH_MODEL_VERSION,
+      priorityFactor: limitingFactor,
+      limitingFactor: limitingFactor,
+      factors: factors,
+      priorityActions: priorityActions,
+      readings: readings
+    };
+  }
   var AQ_CONTENT_TRUST_SOURCES = {
     maineLaws: { label: 'Maine DMR · Aquaculture laws and regulations', url: 'https://www.maine.gov/dmr/aquaculture/laws-and-regulations' },
     maineGrowers: { label: 'Maine DMR · Grower FAQ and current process guidance', url: 'https://www.maine.gov/dmr/aquaculture/resources-for-growers/faq' },
     maineBiosecurity: { label: 'Maine DMR · Biosecurity permits and requirements', url: 'https://www.maine.gov/dmr/fisheries/pathology/permits' },
+    maineClosures: { label: 'Maine DMR: Current shellfish closures', url: 'https://www1.maine.gov/dmr/fisheries/shellfish/closures' },
+    maineSeaGrantMussel: { label: 'Maine Sea Grant: Aquaculture fact sheets', url: 'https://seagrant.umaine.edu/focus-areas/fisheries-and-aquaculture/2025-aquaculture-fact-sheets/' },
+    maineLandings2025: { label: 'Maine DMR: 2021-2025 aquaculture landings report', url: 'https://www.maine.gov/dmr/sites/maine.gov.dmr/files/2026-04/MAINE%20AQUACULTURE%20LANDINGS%20REPORT.pdf' },
     noaaReferences: { label: 'NOAA Fisheries · Aquaculture references', url: 'https://www.fisheries.noaa.gov/national/aquaculture/aquaculture-references-and-further-reading' },
     usdaAquaculture: { label: 'USDA National Agricultural Library · Aquaculture resources', url: 'https://www.nal.usda.gov/farms-and-agricultural-production-systems/aquaculture-and-aquaponics' }
   };
   var AQ_TIME_SENSITIVE_TOPICS = { lease: true, permitwf: true, permitsbystate: true, aqlawsuits: true, econ: true, aqinsurance: true, aqloans: true, pricehistory: true, biotoxin: true, quarantine: true, exports: true };
-  var AQ_MODEL_TOPICS = { ecosystem: true, sim: true, chart: true, wqindex: true, lca: true };
+  var AQ_MODEL_TOPICS = { ecosystem: true, sim: true, chart: true, wqindex: true, lca: true, musseldeep: true };
 
   function aqContentTrustForTopic(topicId) {
+    if (topicId === 'musseldeep') return { label: 'Illustrative field-investigation model', tone: '#bfdbfe', context: 'Reference bands and scenario values are simplified for comparison and evidence-building. They do not assess harvest status, food safety, animal health, or site operations.', jurisdiction: 'Maine learning context; not operational guidance', checked: 'Primary-source gateways reviewed 25 Aug 2026', sourceIds: ['maineSeaGrantMussel', 'maineClosures', 'maineLandings2025'] };
     if (AQ_MODEL_TOPICS[topicId]) return { label: 'Illustrative learning model', tone: '#bfdbfe', context: 'Relationships and values are simplified for exploration. Do not use them as engineering, navigation, veterinary, or production forecasts.', jurisdiction: 'Learning model · not operational guidance', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['noaaReferences', 'usdaAquaculture'] };
     if (AQ_TIME_SENSITIVE_TOPICS[topicId]) return { label: 'Time-sensitive reference', tone: '#fde68a', context: 'Rules, fees, markets, closures, and program details can change. Confirm the jurisdiction, effective year, and current agency page before acting.', jurisdiction: 'Maine / U.S. context unless the lesson states otherwise', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['maineLaws', 'maineGrowers', 'maineBiosecurity'] };
     return { label: 'Educational synthesis', tone: '#a7f3d0', context: 'This lesson combines sources from different publication years. Use the linked primary-source gateways when exact or current values matter.', jurisdiction: 'Maine-centered with broader examples', checked: 'Official source gateways checked 26 Jul 2026', sourceIds: ['noaaReferences', 'usdaAquaculture'] };
@@ -7435,11 +7541,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         quizCheckpointResults: {},
         learnerProfile: aqSanitizeLearnerProfile(null),
         ecosystemWorkspace: aqDefaultEcosystemWorkspace(),
+        musselHealthWorkspace: aqDefaultMusselHealthWorkspace(),
         teacherPlan: aqSanitizeTeacherPlan(null),
         a11y: { staticCamera: false }
       }, s);
     } catch (_) {
-      return { region: DEFAULT_REGION, completedMissions: {}, harvests: [], droppersDeployed: 0, probeReadings: [], completedTopics: {}, quizCheckpointResults: {}, learnerProfile: aqSanitizeLearnerProfile(null), ecosystemWorkspace: aqDefaultEcosystemWorkspace(), teacherPlan: aqSanitizeTeacherPlan(null), a11y: {} };
+      return { region: DEFAULT_REGION, completedMissions: {}, harvests: [], droppersDeployed: 0, probeReadings: [], completedTopics: {}, quizCheckpointResults: {}, learnerProfile: aqSanitizeLearnerProfile(null), ecosystemWorkspace: aqDefaultEcosystemWorkspace(), musselHealthWorkspace: aqDefaultMusselHealthWorkspace(), teacherPlan: aqSanitizeTeacherPlan(null), a11y: {} };
     }
   }
   function saveState(s) {
@@ -7993,6 +8100,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var ecosystemWorkspace = ecosystemWorkspaceHook[0], setEcosystemWorkspace = ecosystemWorkspaceHook[1];
     var ecosystemNoticeHook = useState('Change one factor at a time, observe the response, and save evidence.');
     var ecosystemNotice = ecosystemNoticeHook[0], setEcosystemNotice = ecosystemNoticeHook[1];
+    var musselHealthWorkspaceHook = useState(aqSanitizeMusselHealthWorkspace(stateInit.musselHealthWorkspace));
+    var musselHealthWorkspace = musselHealthWorkspaceHook[0], setMusselHealthWorkspace = musselHealthWorkspaceHook[1];
+    var musselHealthNoticeHook = useState('Change one signal at a time, then explain what you would verify in the field.');
+    var musselHealthNotice = musselHealthNoticeHook[0], setMusselHealthNotice = musselHealthNoticeHook[1];
+    var musselPredictionHook = useState(musselHealthWorkspace.prediction || '');
+    var musselPrediction = musselPredictionHook[0], setMusselPrediction = musselPredictionHook[1];
+    var musselAssessmentRevealedHook = useState(false);
+    var musselAssessmentRevealed = musselAssessmentRevealedHook[0], setMusselAssessmentRevealed = musselAssessmentRevealedHook[1];
+    var musselDeletedCheckHook = useState(null);
+    var musselDeletedCheck = musselDeletedCheckHook[0], setMusselDeletedCheck = musselDeletedCheckHook[1];
     var organismFilterHook = useState('all');
     var organismFilter = organismFilterHook[0], setOrganismFilter = organismFilterHook[1];
     var teacherPlanHook = useState(aqSanitizeTeacherPlan(stateInit.teacherPlan));
@@ -8011,6 +8128,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var probes = probeHook[0], setProbes = probeHook[1];
     var droppersHook = useState(stateInit.droppersDeployed || 0);
     var droppersDeployed = droppersHook[0], setDroppers = droppersHook[1];
+    var musselAssessmentRef = useRef(null);
     var canvasRef = useRef(null);
     var farmRef = useRef(null);
     var topicSearchRef = useRef(null);
@@ -8548,6 +8666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         quizCheckpointResults: quizCheckpointResults,
         learnerProfile: aqSanitizeLearnerProfile(source.learnerProfile),
         ecosystemWorkspace: aqSanitizeEcosystemWorkspace(source.ecosystemWorkspace),
+        musselHealthWorkspace: aqSanitizeMusselHealthWorkspace(source.musselHealthWorkspace),
         teacherPlan: aqSanitizeTeacherPlan(source.teacherPlan)
       };
     }
@@ -8574,6 +8693,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         return Object.assign({ id: missionId }, learning.completedMissions[missionId]);
       });
       var ecosystemExperiments = learning.ecosystemWorkspace.experiments.slice();
+      var musselHealthChecks = learning.musselHealthWorkspace.checks.slice();
       var paths = (journeys || []).map(function(journey) {
         var visitedCount = journey.topics.filter(function(topicId) { return !!learning.visitedTopics[topicId]; }).length;
         var completedCount = journey.topics.filter(function(topicId) { return !!learning.completedTopics[topicId]; }).length;
@@ -8591,6 +8711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           reflections: notes.length,
           missionsCompleted: missions.length,
           ecosystemExperiments: ecosystemExperiments.length,
+          musselHealthChecks: musselHealthChecks.length,
           pathsFullyVisited: paths.filter(function(path) { return path.visited === path.total; }).length,
           pathsCompleted: paths.filter(function(path) { return path.completed === path.total; }).length
         },
@@ -8601,6 +8722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         notes: notes,
         missions: missions,
         ecosystemExperiments: ecosystemExperiments,
+        musselHealthChecks: musselHealthChecks,
         learnerProfile: learning.learnerProfile,
         teacherPlan: learning.teacherPlan,
         paths: paths
@@ -8651,6 +8773,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (!currentEcosystem.experiments.length && importedEcosystem.experiments.length) {
         mergedEcosystem = Object.assign({}, importedEcosystem, { experiments: mergedExperiments });
       }
+      var currentMusselHealth = current.musselHealthWorkspace;
+      var importedMusselHealth = imported.musselHealthWorkspace;
+      var musselCheckSeen = {};
+      var mergedMusselChecks = importedMusselHealth.checks.concat(currentMusselHealth.checks).filter(function(item) {
+        var key = item.id || (item.savedAt + '-' + item.limitingFactor);
+        if (musselCheckSeen[key]) return false;
+        musselCheckSeen[key] = true;
+        return true;
+      }).sort(function(a, b) { return b.savedAt - a.savedAt; }).slice(0, 10);
+      var mergedMusselHealth = Object.assign({}, currentMusselHealth, { checks: mergedMusselChecks });
+      if (!currentMusselHealth.checks.length && importedMusselHealth.checks.length) {
+        mergedMusselHealth = Object.assign({}, importedMusselHealth, { checks: mergedMusselChecks });
+      }
+
       function mergeLists(first, second, limit) {
         var seen = {};
         return first.concat(second).filter(function(topicId) {
@@ -8669,6 +8805,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         quizCheckpointResults: mergedQuizResults,
         learnerProfile: imported.learnerProfile.configured ? imported.learnerProfile : current.learnerProfile,
         ecosystemWorkspace: mergedEcosystem,
+        musselHealthWorkspace: mergedMusselHealth,
         teacherPlan: imported.teacherPlan
       });
     }
@@ -8714,6 +8851,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         if (item.kind === 'comparison' && item.baselineSummary && item.currentSummary) return '<article><h3>A/B seasonal comparison · ' + aqEscapeHtml(environment.name) + '</h3><p><strong>Scenario A:</strong> survival ' + item.baselineSummary.survival + '%, risk months ' + item.baselineSummary.riskMonths + ', ending biomass index ' + item.baselineSummary.endingBiomass + '</p><p><strong>Scenario B:</strong> survival ' + item.currentSummary.survival + '%, risk months ' + item.currentSummary.riskMonths + ', ending biomass index ' + item.currentSummary.endingBiomass + '</p><p><strong>Evidence:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p>' + evidenceMarkup + '</article>';
         return '<article><h3>' + aqEscapeHtml(environment.name) + ' · ' + aqEscapeHtml(item.status) + '</h3><p><strong>Community:</strong> ' + aqEscapeHtml(community || 'No organisms') + '</p><p><strong>Snapshot:</strong> carrying pressure ' + item.carryingPressure + '%, oxygen ' + item.oxygen + ' mg/L, ammonia ' + item.ammonia + ' mg/L, resilience ' + item.resilience + '/100</p><p><strong>Observation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p>' + evidenceMarkup + '</article>';
       }).join('') : '<p>No ecosystem experiments saved yet.</p>';
+      var musselChecks = Array.isArray(portfolio.musselHealthChecks) ? portfolio.musselHealthChecks : [];
+      var musselMarkup = musselChecks.length ? musselChecks.map(function(item) {
+        var readings = aqSanitizeMusselReadings(item.readings);
+        return '<article><h3>' + aqEscapeHtml(item.status) + ' · priority signal: ' + aqEscapeHtml(item.prioritySignal || item.limitingFactor) + '</h3>' +
+          '<p><strong>Context:</strong> scenario ' + aqEscapeHtml(item.scenarioId || 'custom') + ' · model ' + aqEscapeHtml(item.modelVersion || 'legacy') + (item.prediction ? ' · prediction ' + aqEscapeHtml(item.prediction) : '') + '</p>' +
+          '<p><strong>Readings:</strong> temperature ' + readings.temperature + ' °C · salinity ' + readings.salinity + ' PSU · dissolved oxygen ' + readings.oxygen + ' mg/L · pH ' + readings.pH + ' · chlorophyll-a ' + readings.chlorophyll + ' µg/L · biofouling ' + readings.fouling + '% · attachment ' + readings.attachment + '%</p>' +
+          '<p><strong>Field explanation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
+      }).join('') : '<p>No mussel field checks saved yet.</p>';
+
       var profileMarkup = '<p><strong>Role:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.role) + ' · <strong>Goal:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.goal) + ' · <strong>Session:</strong> ' + aqEscapeHtml(portfolio.learnerProfile.session) + ' minutes</p>';
       var pathMarkup = '<ul>' + portfolio.paths.map(function(path) {
         return '<li><strong>' + aqEscapeHtml(path.title) + '</strong>: ' + path.completed + ' completed, ' + path.visited + ' visited, ' + path.total + ' total</li>';
@@ -8721,8 +8867,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
         '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
         '<header><h1>Aquaculture Lab Learning Portfolio</h1><p>Exported ' + aqEscapeHtml(portfolio.exportedAt) + '</p></header>' +
-        '<section class="stats"><div class="stat"><b>' + portfolio.summary.topicsVisited + '</b>Topics visited</div><div class="stat"><b>' + portfolio.summary.topicsCompleted + '</b>Lessons completed</div><div class="stat"><b>' + portfolio.summary.missionsCompleted + '</b>Missions completed</div><div class="stat"><b>' + portfolio.summary.topicsSaved + '</b>Saved topics</div><div class="stat"><b>' + portfolio.summary.reflections + '</b>Reflections</div><div class="stat"><b>' + portfolio.summary.ecosystemExperiments + '</b>Ecosystem experiments</div><div class="stat"><b>' + portfolio.summary.pathsCompleted + '</b>Paths completed</div></section>' +
-        '<section><h2>Learning route</h2>' + profileMarkup + '</section><section><h2>Guided paths</h2>' + pathMarkup + '</section><section><h2>Completed lessons</h2>' + completedMarkup + '</section><section><h2>Mission evidence</h2>' + missionMarkup + '</section><section><h2>Ecosystem experiment evidence</h2>' + ecosystemMarkup + '</section><section><h2>Saved topics</h2>' + savedMarkup + '</section><section><h2>Reflections</h2>' + noteMarkup + '</section></body></html>';
+        '<section class="stats"><div class="stat"><b>' + portfolio.summary.topicsVisited + '</b>Topics visited</div><div class="stat"><b>' + portfolio.summary.topicsCompleted + '</b>Lessons completed</div><div class="stat"><b>' + portfolio.summary.missionsCompleted + '</b>Missions completed</div><div class="stat"><b>' + portfolio.summary.topicsSaved + '</b>Saved topics</div><div class="stat"><b>' + portfolio.summary.reflections + '</b>Reflections</div><div class="stat"><b>' + portfolio.summary.ecosystemExperiments + '</b>Ecosystem experiments</div><div class="stat"><b>' + portfolio.summary.musselHealthChecks + '</b>Mussel field checks</div><div class="stat"><b>' + portfolio.summary.pathsCompleted + '</b>Paths completed</div></section>' +
+        '<section><h2>Learning route</h2>' + profileMarkup + '</section><section><h2>Guided paths</h2>' + pathMarkup + '</section><section><h2>Completed lessons</h2>' + completedMarkup + '</section><section><h2>Mission evidence</h2>' + missionMarkup + '</section><section><h2>Ecosystem experiment evidence</h2>' + ecosystemMarkup + '</section><section><h2>Mussel field-check evidence</h2>' + musselMarkup + '</section><section><h2>Saved topics</h2>' + savedMarkup + '</section><section><h2>Reflections</h2>' + noteMarkup + '</section></body></html>';
     }
 
     window.AquacultureLearningHelpers = {
@@ -8735,6 +8881,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       calculateEcosystem: aqCalculateEcosystem,
       simulateEcosystemYear: aqSimulateEcosystemYear,
       compareEcosystemRuns: aqCompareEcosystemRuns,
+      assessMusselHealth: aqAssessMusselHealth,
+      sanitizeMusselHealthWorkspace: aqSanitizeMusselHealthWorkspace,
       contentTrustForTopic: aqContentTrustForTopic,
       sanitizeEcosystemWorkspace: aqSanitizeEcosystemWorkspace,
       sanitizeLearnerProfile: aqSanitizeLearnerProfile,
@@ -8748,7 +8896,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var LEARNING_JOURNEYS = [
       { id: 'first-shift', title: 'First Shift', icon: '\u26F5', tone: '#5eead4', description: 'Read the river, launch the skiff, and interpret a water-quality check.', topics: ['chart', 'sim', 'water'] },
       { id: 'systems-designer', title: 'Ecosystem Designer', icon: '\uD83E\uDDEC', tone: '#2dd4bf', description: 'Compose a farm community, test water conditions, and save evidence from a disturbance.', topics: ['ecosystem', 'water', 'imta'] },
-      { id: 'healthy-stock', title: 'Keep Stock Healthy', icon: '\uD83E\uDDA0', tone: '#86efac', description: 'Connect water chemistry, stocking pressure, disease, and emergency response.', topics: ['water', 'stockHunt', 'disease', 'emergency'] },
+      { id: 'healthy-stock', title: 'Keep Stock Healthy', icon: '\uD83E\uDDA0', tone: '#86efac', description: 'Connect water chemistry, mussel field signals, stocking pressure, disease, and emergency response.', topics: ['water', 'musseldeep', 'stockHunt', 'disease', 'emergency'] },
       { id: 'farm-plan', title: 'Plan a Farm', icon: '\uD83D\uDCCB', tone: '#fbbf24', description: 'Choose species and a site, then examine leases, gear, and economics.', topics: ['species', 'site', 'lease', 'equipment', 'econ'] },
       { id: 'careers-classroom', title: 'Careers & Classroom', icon: '\uD83C\uDF93', tone: '#c4b5fd', description: 'Explore roles, real pathways, student activities, and lesson plans.', topics: ['careers', 'careerprofiles', 'activities', 'lessonplans'] }
     ];
@@ -8972,6 +9120,127 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setEcosystemWorkspace(clean); setEcosystemNotice(stored ? (notice || 'Ecosystem model updated.') : 'The model changed for now, but this browser could not save it.');
       return stored;
     }
+    function persistMusselHealthWorkspace(nextWorkspace, notice) {
+      var clean = aqSanitizeMusselHealthWorkspace(nextWorkspace), savedState = loadState();
+      savedState.musselHealthWorkspace = clean;
+      var stored = saveState(savedState);
+      setMusselHealthWorkspace(clean);
+      setMusselHealthNotice(stored ? (notice || 'Mussel health check updated.') : 'The check changed for now, but this browser could not save it.');
+      return stored;
+    }
+
+    function updateMusselHealthReading(key, value) {
+      var patch = {}; patch[key] = Number(value);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, patch), 'Field signal updated. Compare the full pattern before deciding.');
+    }
+
+    function selectMusselHealthPrediction(value) {
+      var nextPrediction = ['none', 'temperature', 'salinity', 'oxygen', 'pH', 'chlorophyll', 'fouling', 'attachment'].indexOf(value) >= 0 ? value : '';
+      setMusselPrediction(nextPrediction);
+      setMusselAssessmentRevealed(false);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { prediction: nextPrediction }), nextPrediction ? 'Prediction recorded. Reveal the model when you are ready to compare.' : 'Choose a prediction before revealing the model.');
+    }
+
+    function revealMusselHealthAssessment() {
+      if (!musselPrediction) {
+        setMusselHealthNotice('Choose the signal you predict will need attention before revealing the model.');
+        aqAnnounce('Choose a prediction first.');
+        return;
+      }
+      setMusselAssessmentRevealed(true);
+      setMusselHealthNotice('Model revealed. Compare its priority signal with your prediction, then explain any difference.');
+      aqAnnounce('Mussel health model revealed.');
+      window.setTimeout(function() {
+        if (musselAssessmentRef.current && typeof musselAssessmentRef.current.focus === 'function') musselAssessmentRef.current.focus();
+      }, 0);
+    }
+
+    function applyMusselHealthPreset(preset) {
+      if (!preset) return;
+      setMusselPrediction('');
+      setMusselAssessmentRevealed(false);
+      setMusselDeletedCheck(null);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, preset.values, { scenarioId: preset.id, prediction: '' }), preset.prompt + ' Make a prediction before revealing the model.');
+      aqAnnounce(preset.name + ' scenario loaded. Make a prediction before revealing the model.');
+    }
+
+    function updateMusselHealthObservation(value) {
+      var next = aqSanitizeMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { observation: String(value || '').slice(0, 600) }));
+      setMusselHealthWorkspace(next);
+      setMusselHealthNotice('Draft changed. It will save on this device when you leave the explanation field.');
+    }
+
+    function commitMusselHealthObservation() {
+      persistMusselHealthWorkspace(musselHealthWorkspace, 'Field explanation draft saved on this device.');
+    }
+
+    function saveMusselHealthCheck() {
+      var existingChecks = musselHealthWorkspace.checks || [];
+      if (!musselAssessmentRevealed) { setMusselHealthNotice('Reveal the model before saving field-check evidence.'); aqAnnounce('Reveal the model before saving.'); return; }
+      if (existingChecks.length >= 10) { setMusselHealthNotice('Evidence history is full at 10 checks. Remove a check before saving another; nothing was discarded.'); aqAnnounce('Field-check history is full.'); return; }
+      var observation = String(musselHealthWorkspace.observation || '').trim();
+      if (observation.length < 20) { setMusselHealthNotice('Add at least 20 characters explaining what you would verify next.'); aqAnnounce('More field-check evidence is needed.'); return; }
+      var assessment = aqAssessMusselHealth(musselHealthWorkspace), now = Date.now();
+      var record = {
+        id: 'mussel-check-' + now + '-' + Math.random().toString(36).slice(2, 7),
+        savedAt: now,
+        readings: assessment.readings,
+        status: assessment.status,
+        limitingFactor: assessment.priorityFactor.label,
+        prioritySignal: assessment.priorityFactor.label,
+        modelVersion: assessment.modelVersion,
+        scenarioId: musselHealthWorkspace.scenarioId,
+        prediction: musselPrediction,
+        observation: observation
+      };
+      var checks = [record].concat(existingChecks);
+      setMusselDeletedCheck(null);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Field check saved to your learning portfolio. Your explanation remains available to revise.');
+      setLearningNotice({ kind: 'success', message: 'Mussel health field check saved to your learning portfolio.' });
+      aqAnnounce('Mussel health field check saved.');
+    }
+
+    function deleteMusselHealthCheck(checkId) {
+      var currentChecks = musselHealthWorkspace.checks || [];
+      var deletedIndex = currentChecks.findIndex(function(item) { return item.id === checkId; });
+      if (deletedIndex < 0) return;
+      setMusselDeletedCheck({ record: currentChecks[deletedIndex], index: deletedIndex });
+      var checks = currentChecks.filter(function(item) { return item.id !== checkId; });
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Saved mussel field check removed. Undo is available.');
+      aqAnnounce('Saved mussel field check removed. Undo is available.');
+    }
+
+    function undoMusselHealthDelete() {
+      if (!musselDeletedCheck || !musselDeletedCheck.record) return;
+      var checks = (musselHealthWorkspace.checks || []).slice();
+      checks.splice(Math.min(musselDeletedCheck.index, checks.length), 0, musselDeletedCheck.record);
+      setMusselDeletedCheck(null);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, { checks: checks }), 'Removed field check restored.');
+      aqAnnounce('Removed mussel field check restored.');
+    }
+
+    function loadMusselHealthCheck(check) {
+      if (!check || !check.readings) return;
+      var next = Object.assign({}, musselHealthWorkspace, check.readings, { scenarioId: check.scenarioId || 'custom', prediction: check.prediction || '' });
+      setMusselPrediction(check.prediction || '');
+      setMusselAssessmentRevealed(true);
+      persistMusselHealthWorkspace(next, 'Saved readings loaded. Your current explanation draft and evidence history were kept.');
+      aqAnnounce('Saved mussel readings loaded.');
+      window.setTimeout(function() {
+        if (musselAssessmentRef.current && typeof musselAssessmentRef.current.focus === 'function') musselAssessmentRef.current.focus();
+      }, 0);
+    }
+
+    function resetMusselHealthWorkspace() {
+      var reset = aqDefaultMusselHealthWorkspace();
+      reset.checks = musselHealthWorkspace.checks || [];
+      reset.observation = musselHealthWorkspace.observation || '';
+      setMusselPrediction('');
+      setMusselAssessmentRevealed(false);
+      setMusselDeletedCheck(null);
+      persistMusselHealthWorkspace(reset, 'Signals reset to the balanced case. Your draft and saved field checks were kept.');
+      aqAnnounce('Mussel health station reset. Draft and saved checks kept.');
+    }
 
     function selectEcosystemEnvironment(environmentId) {
       if (!ECOSYSTEM_ENVIRONMENTS[environmentId]) return;
@@ -9148,6 +9417,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           setQuizCheckpointResults(mergedState.quizCheckpointResults || {});
           setLearnerProfile(aqSanitizeLearnerProfile(mergedState.learnerProfile));
           setEcosystemWorkspace(aqSanitizeEcosystemWorkspace(mergedState.ecosystemWorkspace));
+          var importedMusselWorkspace = aqSanitizeMusselHealthWorkspace(mergedState.musselHealthWorkspace);
+          setMusselHealthWorkspace(importedMusselWorkspace);
+          setMusselPrediction(importedMusselWorkspace.prediction || '');
+          setMusselAssessmentRevealed(false);
           setTeacherPlan(aqSanitizeTeacherPlan(mergedState.teacherPlan));
           if (tab !== 'home') setNoteDraft(String((mergedState.topicNotes || {})[tab] || '').slice(0, 600));
           setLearningNotice({ kind: 'success', message: 'Backup merged successfully. Existing learning data was preserved.' });
@@ -9559,11 +9832,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var profileNext = profileRecommendation(learnerProfile);
       var adaptiveNext = adaptiveNextAction(learnerProfile, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace, completedMissions || {}, learningProgress);
       var ecosystemExperimentCount = (ecosystemWorkspace.experiments || []).length;
+      var musselFieldCheckCount = (musselHealthWorkspace.checks || []).length;
       var opsRoutes = [
         { id: 'launch', label: 'Run the skiff mission', detail: 'Cast off, reach the lease, deploy droppers, and probe water quality.', tab: 'sim', tone: '#5eead4' },
         { id: 'chart', label: 'Read the river first', detail: 'Preview the channel, buoy marks, lease box, and red-right-returning rule.', tab: 'chart', tone: '#60a5fa' },
         { id: 'ecosystem', label: 'Build an ecosystem', detail: 'Combine organisms, tune water conditions, apply a disturbance, and save evidence.', tab: 'ecosystem', tone: '#2dd4bf' },
         { id: 'biology', label: 'Plan the crop', detail: 'Compare mussels, oysters, kelp, scallops, and hatchery workflows.', tab: 'species', tone: '#86efac' },
+        { id: 'mussel-health', label: 'Check mussel health', detail: 'Combine water readings, food proxy, fouling, and attachment evidence in a field triage model.', tab: 'musseldeep', tone: '#a7f3d0' },
         { id: 'permits', label: 'Build the farm case', detail: 'Review lease tiers, hearings, costs, safety, and market choices.', tab: 'lease', tone: '#fbbf24' }
       ];
       return h('div', null,
@@ -9619,6 +9894,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               ['Saved topics', savedTopicCount, '#fde68a'],
               ['Reflections', noteCount, '#bfdbfe'],
               ['Experiments', ecosystemExperimentCount, '#2dd4bf'],
+              ['Mussel field checks', musselFieldCheckCount, '#a7f3d0'],
               ['Paths completed', fullyCompletedJourneyCount + '/' + LEARNING_JOURNEYS.length, '#c4b5fd']
             ].map(function(metric) {
               return h('div', { key: metric[0], className: 'aq-metric-card', style: { padding: '8px 9px', borderRadius: 9, background: '#061a18', border: '1px solid #416c67' } },
@@ -10207,7 +10483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Growth time: '), s.growthMonths),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Yield: '), s.yield),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Market: '), s.marketPrice),
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Optimal: '), s.tempRange + ' · ' + s.salinityRange),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Reference ranges: '), s.tempRange + ' · ' + s.salinityRange),
               h('div', { style: { fontSize: 11, color: '#fb923c', marginBottom: 3 } }, h('b', null, 'Stressors: '), (s.stressors || []).join(' · ')),
               h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(100,116,139,0.25)' } },
                 h('b', null, 'Why Maine: '), s.whyMaine,
@@ -10223,7 +10499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           WATER_QUALITY.map(function(p, i) {
             return h('div', { key: i, style: { padding: 10, marginBottom: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 8 } },
               h('div', { style: { fontSize: 14, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, p.param + ' (' + p.symbol + ')'),
-              h('div', { style: { fontSize: 11, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Optimal: '), p.optimal),
+              h('div', { style: { fontSize: 11, color: '#bef264', marginBottom: 3 } }, h('b', null, 'Teaching reference: '), p.optimal),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 3 } }, h('b', null, 'Effect: '), p.effect),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 3 } }, h('b', null, 'Monitor: '), p.monitor),
               h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Action: '), p.action));
@@ -11509,23 +11785,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     var MUSSEL_METHOD_DETAIL = [
-      { method: 'Bottom Lease (Wild + Cultured Mix)', desc: 'Mussel seed (wild or hatchery) broadcast on the seabed of a leased plot. Drag-harvested with a dredge.', density: '50-100 lbs/m²', yield: '20K-40K lbs/acre', timeToMarket: '24-30 months', exampleFarm: 'Great Eastern Mussel Farms', notes: 'Lower cost but lower yield + high seabed disturbance.' },
-      { method: 'Raft Culture (Spanish Style)', desc: 'Mussels grown on vertical socks hanging from a wooden + foam raft (typically 25m x 25m). High density per acre.', density: '300-500 lbs/m of sock', yield: '100K+ lbs/acre', timeToMarket: '18-24 months', exampleFarm: 'Bangs Island Mussels (Casco Bay)', notes: 'Industry leader for high-yield small footprint. Storm risk if not engineered correctly.' },
-      { method: 'Longline (Suspended)', desc: 'Horizontal rope suspended below surface by floats. Mussel socks hang vertically from the longline.', density: '100-200 lbs/m', yield: '50K-100K lbs/acre', timeToMarket: '20-30 months', exampleFarm: 'Wild Ocean Aquaculture (Bremen)', notes: 'Lower visual profile than raft; better storm resilience.' },
-      { method: 'Submerged Longline (Offshore)', desc: 'Longline kept below storm + ice zone (10m+ depth). Surface-marker buoys only.', density: '100-200 lbs/m', yield: '60K-90K lbs/acre', timeToMarket: '22-30 months', exampleFarm: 'Offshore Maine pilots', notes: 'Storm-proof. Used for offshore farms with no neighbors. Higher gear cost.' },
-      { method: 'Continuous Sock (NZ Method)', desc: 'Mussels grown in a continuous tube of cotton mesh that disintegrates as mussels attach to internal rope.', density: '150-250 lbs/m', yield: '70K-120K lbs/acre', timeToMarket: '14-18 months (warmer water)', exampleFarm: 'Common in NZ; rare US', notes: 'Fastest growth where water temps allow. Cotton sock dissolves naturally.' },
-      { method: 'Bouchot Pole (French)', desc: 'Wooden poles driven into intertidal mud. Mussels colonize poles naturally or seeded with rope wraps.', density: '50-100 mussels/m', yield: '5-10K lbs/acre', timeToMarket: '18-24 months', exampleFarm: 'France (Mont-St-Michel)', notes: 'AOC-protected designation. Cottage industry. Not viable in Maine.' },
-      { method: 'Rack-and-Sock', desc: 'Mussel socks tied to horizontal racks in intertidal zone. Tide-exposed daily.', density: '100-150 lbs/m', yield: '20K-40K lbs/acre', timeToMarket: '20-26 months', exampleFarm: 'PEI (some Maine trials)', notes: 'Intertidal access reduces winter ice risk. Limited Maine sites.' },
-      { method: 'Floating Cage (Predator-protected)', desc: 'Mussels in floating mesh cages — predator protection from crabs + sea ducks.', density: 'Variable', yield: '30K-60K lbs/acre', timeToMarket: '24-30 months', exampleFarm: 'Predator-pressure sites', notes: 'Higher gear cost. Used where eider duck pressure is severe.' },
-      { method: 'Stake Culture (Asia)', desc: 'Bamboo stakes driven into seabed. Mussels colonize stakes naturally.', density: 'Low', yield: '5-15K lbs/acre', timeToMarket: '18-24 months', exampleFarm: 'Common in SE Asia', notes: 'Not viable in Maine — no bamboo + freeze-thaw issues.' },
-      { method: 'Sea Ranching (Wild Stock Management)', desc: 'Manage wild mussel beds; protect from over-harvest; rotate plots.', density: 'N/A', yield: 'Variable', timeToMarket: 'Continuous', exampleFarm: 'Maine wild mussel beds', notes: 'Hybrid of fishery and aquaculture. Subject to fishery rules + DMR licenses.' }
+      { method: 'Bottom culture', context: 'Maine principal method', desc: 'Seed is placed on suitable leased seabed and managed until harvest; methods and seabed effects depend on the site and gear.', density: 'Site-specific', yield: 'Published planning example: 20,000–30,000 lb/acre', timeToMarket: '2–3 years in the published example', exampleFarm: 'Maine Sea Grant reference', notes: 'Treat production values as comparison anchors, then verify lease conditions, stocking, survival, and harvest method.' },
+      { method: 'Raft culture', context: 'Maine principal method', desc: 'Vertical grow ropes or socks hang from a floating raft in protected water, keeping stock in the water column.', density: 'Published example: 40–60 ft droppers', yield: 'Published example: about 50,000 lb per 40-ft raft', timeToMarket: '2-year rotation in the published example', exampleFarm: 'Maine Sea Grant reference', notes: 'Load, exposure, moorings, spacing, survival, and husbandry make results site-specific.' },
+      { method: 'Suspended longline', context: 'Northeast regional reference', desc: 'A horizontal backbone supports vertical mussel ropes or socks below floats.', density: 'Site- and design-specific', yield: 'Varies by site and system', timeToMarket: 'Varies with seed, water, and husbandry', exampleFarm: 'Regional comparison', notes: 'Compare navigation clearance, exposure, moorings, crop depth, access, and visual footprint.' },
+      { method: 'Submerged longline', context: 'Management adaptation', desc: 'The backbone and crop are held deeper to reduce surface exposure to some waves or ice.', density: 'Site- and design-specific', yield: 'Varies by site and system', timeToMarket: 'Varies with seed, water, and husbandry', exampleFarm: 'Offshore and exposed-site concepts', notes: 'Submergence can reduce surface exposure, but it is not storm-proof and still requires engineering, marking, inspection, and safe access.' },
+      { method: 'Continuous sock', context: 'Global reference', desc: 'Seed is held around a grow rope by degradable or opening mesh while mussels attach with byssal threads.', density: 'Site- and gear-specific', yield: 'Varies by site and system', timeToMarket: 'Varies by region', exampleFarm: 'Used in several mussel-growing regions', notes: 'Mesh material, retention, attachment, handling, and local requirements must be evaluated.' },
+      { method: 'Bouchot pole', context: 'Global reference', desc: 'Seeded ropes or naturally settling mussels grow around intertidal wooden poles.', density: 'Site-specific', yield: 'Varies by site and system', timeToMarket: 'Varies by region', exampleFarm: 'French intertidal systems', notes: 'Requires appropriate sediment, tidal range, access, tenure, materials, and local approval; it is a comparison, not a Maine recommendation.' },
+      { method: 'Rack-and-sock', context: 'Regional reference', desc: 'Mussel socks attach to intertidal racks and are exposed during part of the tidal cycle.', density: 'Site- and rack-specific', yield: 'Varies by site and system', timeToMarket: 'Varies by region', exampleFarm: 'Intertidal culture systems', notes: 'Evaluate exposure, ice, access windows, sediment, predators, and permitting.' },
+      { method: 'Floating cage', context: 'Management adaptation', desc: 'Mesh cages hold mussels in the water column and may change access or predator exposure.', density: 'Cage- and site-specific', yield: 'Varies by site and system', timeToMarket: 'Varies by region', exampleFarm: 'Predator-management concepts', notes: 'Added structure changes cost, fouling, flow, loading, maintenance, and wildlife interactions.' },
+      { method: 'Stake culture', context: 'Global reference', desc: 'Mussels settle on or are seeded onto stakes installed in suitable shallow or intertidal habitat.', density: 'Site-specific', yield: 'Varies by site and system', timeToMarket: 'Varies by region', exampleFarm: 'Asian coastal systems', notes: 'Suitability depends on habitat, materials, exposure, navigation, maintenance, tenure, and local rules.' },
+      { method: 'Wild-bed management or enhancement', context: 'Fishery and enhancement context', desc: 'Managers may protect, relay, seed, or rotate natural beds under fishery, public-health, habitat, and licensing rules.', density: 'Not a single farm specification', yield: 'Highly variable', timeToMarket: 'Population- and management-dependent', exampleFarm: 'Maine wild mussel beds', notes: 'Do not assume that a wild fishery or enhancement activity is aquaculture; confirm the governing authority and current rules.' }
     ];
 
     function musselMethodDetailTab() {
       return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪨 Mussel Growing Methods — Detailed Comparison'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-          'Ten methods for cultivating blue mussels (Mytilus edulis). Raft culture (Bangs Island model) gives highest yield per acre. Submerged longlines are storm-proof but cost more. Bouchot poles are protected as AOC in France — Maine\'s ice precludes the model.'),
+          'Ten Maine, regional, and global comparisons for cultivating or managing blue mussels (Mytilus edulis). Production, suitability, exposure, engineering, habitat effects, and approval needs remain site-specific.'),
         MUSSEL_METHOD_DETAIL.map(function(m, i) {
           return h('div', { key: i, style: { padding: 14, marginBottom: 12, background: 'rgba(15,23,42,0.55)', borderRadius: 10, borderLeft: '4px solid #818cf8' } },
             h('div', { style: { fontSize: 14, fontWeight: 900, color: '#c4b5fd', marginBottom: 4 } }, m.method),
@@ -21418,16 +21694,242 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     }
 
     // ─── MUSSEL INDUSTRY DEEP tab
+    function musselHealthDeepTab() {
+      var assessment = aqAssessMusselHealth(musselHealthWorkspace);
+      var controls = [
+        { id: 'temperature', label: 'Water temperature', min: 0, max: 30, step: .5, unit: '°C' },
+        { id: 'salinity', label: 'Salinity', min: 0, max: 38, step: .5, unit: 'PSU' },
+        { id: 'oxygen', label: 'Dissolved oxygen', min: 0, max: 14, step: .1, unit: 'mg/L' },
+        { id: 'pH', label: 'pH', min: 6.5, max: 9, step: .05, unit: '' },
+        { id: 'chlorophyll', label: 'Chlorophyll-a proxy', min: 0, max: 30, step: .5, unit: 'µg/L' },
+        { id: 'fouling', label: 'Visible biofouling cover', min: 0, max: 100, step: 1, unit: '%' },
+        { id: 'attachment', label: 'Firmly attached stock', min: 0, max: 100, step: 1, unit: '%' }
+      ];
+      var predictionOptions = [
+        { id: '', label: 'Choose a prediction' },
+        { id: 'none', label: 'No signal needs attention' },
+        { id: 'oxygen', label: 'Dissolved oxygen' },
+        { id: 'attachment', label: 'Byssal attachment' },
+        { id: 'salinity', label: 'Salinity' },
+        { id: 'temperature', label: 'Temperature' },
+        { id: 'pH', label: 'pH' },
+        { id: 'fouling', label: 'Biofouling' },
+        { id: 'chlorophyll', label: 'Chlorophyll-a / food proxy' }
+      ];
+      function predictionLabel(id) {
+        var option = predictionOptions.find(function(item) { return item.id === id; });
+        return option ? option.label : 'No prediction';
+      }
+      var selectedPreset = MUSSEL_HEALTH_PRESETS.find(function(preset) { return preset.id === musselHealthWorkspace.scenarioId; });
+      var scenarioName = selectedPreset ? selectedPreset.name : 'Custom field case';
+      var scenarioPrompt = selectedPreset ? selectedPreset.prompt : 'You adjusted or loaded a custom set of readings. Identify the pattern, then decide what evidence you would collect next.';
+      var statusMeta = {
+        optimal: { label: 'Within reference band', symbol: '✓', color: '#86efac', background: 'rgba(34,197,94,.10)' },
+        watch: { label: 'Watch and compare', symbol: '!', color: '#fde68a', background: 'rgba(245,158,11,.11)' },
+        critical: { label: 'Urgent verification', symbol: '!!', color: '#fca5a5', background: 'rgba(239,68,68,.12)' }
+      };
+      var neutralMeta = { label: 'Hidden until reveal', symbol: '—', color: '#bfdbfe', background: 'rgba(30,64,175,.09)' };
+      var historyFull = (musselHealthWorkspace.checks || []).length >= 10;
+      var predictionMatches = musselPrediction === assessment.priorityFactor.id || (musselPrediction === 'none' && assessment.priorityFactor.id === 'none');
+      return h('div', null,
+        h('div', { className: 'aq-mussel-health-card', style: cardStyle },
+          h('div', { className: 'aq-mussel-health-kicker', style: headerStyle }, 'Blue mussel field investigation'),
+          h('section', { className: 'aq-mussel-health-station', 'aria-labelledby': 'aq-mussel-health-heading',
+            style: { padding: 14, borderRadius: 12, background: 'linear-gradient(145deg, rgba(5,46,43,.96), rgba(15,23,42,.98))', border: '1px solid #5f8f88' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { color: '#99f6e4', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Interactive field investigation · model ' + MUSSEL_HEALTH_MODEL_VERSION),
+                h('h2', { id: 'aq-mussel-health-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 21 } }, 'Mussel health station'),
+                h('p', { style: { margin: 0, maxWidth: 760, color: '#dbeafe', fontSize: 13, lineHeight: 1.55 } }, 'Read a lease case, predict the priority signal, inspect seven measurements, and reveal the model. Then explain what you would verify rather than treating one reading as a diagnosis.')),
+              h('button', { type: 'button', className: 'aq-btn', onClick: resetMusselHealthWorkspace,
+                style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 12, fontWeight: 850 } }, 'Reset signals')),
+            h('ol', { className: 'aq-mussel-steps', 'aria-label': 'Mussel investigation steps',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 7, margin: '14px 0 0', padding: 0, listStyle: 'none' } },
+              ['1 · Choose case', '2 · Predict', '3 · Inspect', '4 · Reveal', '5 · Explain + save'].map(function(step, index) {
+                var active = index < 3 ? true : musselAssessmentRevealed;
+                return h('li', { key: step, style: { padding: '7px 8px', borderRadius: 8, color: active ? '#ecfeff' : '#94a3b8', background: active ? 'rgba(13,148,136,.16)' : 'rgba(15,23,42,.5)', border: '1px solid ' + (active ? '#5eead4' : '#475569'), fontSize: 11.5, fontWeight: 850 } }, step);
+              })),
+            h('figure', { className: 'aq-mussel-lease-figure', style: { margin: '12px 0 0', padding: 9, borderRadius: 10, background: '#061a25', border: '1px solid #527a75' } },
+              h('svg', { viewBox: '0 0 720 210', role: 'img', 'aria-labelledby': 'aq-mussel-lease-title aq-mussel-lease-desc', style: { display: 'block', width: '100%', height: 'auto', maxHeight: 230 } },
+                h('title', { id: 'aq-mussel-lease-title' }, 'Mussel raft and crop-depth sampling cross-section'),
+                h('desc', { id: 'aq-mussel-lease-desc' }, 'A raft floats at the surface with four vertical mussel droppers. Markers show a surface sample and a crop-depth sample beside the mussels.'),
+                h('rect', { x: 0, y: 0, width: 720, height: 210, rx: 12, fill: '#082f49' }),
+                h('path', { d: 'M0 48 C90 36 150 58 240 46 S390 36 480 49 S630 60 720 45 L720 210 L0 210 Z', fill: '#0e7490', opacity: .6 }),
+                h('line', { x1: 0, y1: 48, x2: 720, y2: 48, stroke: '#a5f3fc', strokeWidth: 3 }),
+                h('rect', { x: 215, y: 28, width: 290, height: 20, rx: 5, fill: '#f59e0b', stroke: '#fde68a', strokeWidth: 2 }),
+                h('text', { x: 360, y: 21, textAnchor: 'middle', fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, 'surface raft'),
+                [250, 325, 400, 475].map(function(x) {
+                  return h('g', { key: x },
+                    h('line', { x1: x, y1: 48, x2: x, y2: 188, stroke: '#e2e8f0', strokeWidth: 3 }),
+                    [78, 104, 130, 156].map(function(y) { return h('ellipse', { key: y, cx: x - 5, cy: y, rx: 9, ry: 5, fill: '#312e81', stroke: '#c4b5fd' }); }));
+                }),
+                h('circle', { cx: 575, cy: 60, r: 9, fill: '#fde68a', stroke: '#fff7ed', strokeWidth: 2 }),
+                h('line', { x1: 566, y1: 60, x2: 505, y2: 60, stroke: '#fde68a', strokeDasharray: '5 4' }),
+                h('text', { x: 585, y: 64, fill: '#fef3c7', fontSize: 12 }, 'surface sample'),
+                h('circle', { cx: 575, cy: 132, r: 9, fill: '#86efac', stroke: '#ecfdf5', strokeWidth: 2 }),
+                h('line', { x1: 566, y1: 132, x2: 475, y2: 132, stroke: '#86efac', strokeDasharray: '5 4' }),
+                h('text', { x: 585, y: 136, fill: '#d1fae5', fontSize: 12 }, 'crop-depth sample'),
+                h('text', { x: 90, y: 94, fill: '#cffafe', fontSize: 12 }, 'Compare depth'),
+                h('text', { x: 90, y: 112, fill: '#cffafe', fontSize: 12 }, '+ tide + time')),
+              h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45 } }, 'One surface reading can miss conditions around the crop. Scenario prompts ask you to compare depth, tidal phase, and timing.')),
+            h('fieldset', { className: 'aq-mussel-scenarios', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #527a75' } },
+              h('legend', { style: { padding: '0 6px', color: '#f8fafc', fontSize: 13, fontWeight: 900 } }, '1 · Choose a field case'),
+              h('div', { role: 'radiogroup', 'aria-label': 'Mussel field scenarios', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                MUSSEL_HEALTH_PRESETS.map(function(preset) {
+                  var selected = musselHealthWorkspace.scenarioId === preset.id;
+                  return h('button', { key: preset.id, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn aq-mussel-preset', onClick: function() { applyMusselHealthPreset(preset); },
+                    style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: selected ? '#0f766e' : '#123a36', color: '#f8fafc', border: '2px solid ' + (selected ? '#99f6e4' : '#789b97'), fontSize: 11.5, fontWeight: 850 } }, preset.name);
+                }))),
+            h('section', { 'aria-labelledby': 'aq-mussel-case-heading', style: { marginTop: 9, padding: 10, borderRadius: 9, background: 'rgba(8,145,178,.12)', border: '1px solid #67e8f9' } },
+              h('h3', { id: 'aq-mussel-case-heading', style: { margin: 0, color: '#cffafe', fontSize: 13.5 } }, scenarioName),
+              h('p', { style: { margin: '4px 0 0', color: '#e0f2fe', fontSize: 12, lineHeight: 1.5 } }, scenarioPrompt)),
+            h('fieldset', { style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #818cf8', background: 'rgba(67,56,202,.10)' } },
+              h('legend', { style: { padding: '0 6px', color: '#e0e7ff', fontSize: 13, fontWeight: 900 } }, '2 · Predict before the model answers'),
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap' } },
+                h('label', { htmlFor: 'aq-mussel-prediction', style: { display: 'grid', gap: 5, flex: '1 1 260px', color: '#e2e8f0', fontSize: 12, fontWeight: 800 } },
+                  'Which signal will need attention first?',
+                  h('select', { id: 'aq-mussel-prediction', value: musselPrediction, onChange: function(event) { selectMusselHealthPrediction(event.target.value); },
+                    style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #a5b4fc', fontSize: 13 } },
+                    predictionOptions.map(function(option) { return h('option', { key: option.id || 'blank', value: option.id }, option.label); }))),
+                h('button', { type: 'button', className: 'aq-btn aq-mussel-reveal', disabled: !musselPrediction, onClick: revealMusselHealthAssessment,
+                  style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, cursor: musselPrediction ? 'pointer' : 'not-allowed', opacity: musselPrediction ? 1 : .55, background: '#c4b5fd', color: '#1e1b4b', border: '1px solid #e0e7ff', fontSize: 12.5, fontWeight: 950 } }, musselAssessmentRevealed ? 'Reveal again' : '4 · Reveal model'))),
+            h('p', { id: 'aq-mussel-health-notice', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+              style: { margin: '9px 0 0', padding: '8px 10px', borderRadius: 7, background: 'rgba(15,118,110,.15)', color: '#ccfbf1', fontSize: 12, lineHeight: 1.45 } },
+              musselHealthNotice,
+              musselDeletedCheck ? h('button', { type: 'button', className: 'aq-btn', onClick: undoMusselHealthDelete,
+                style: { marginLeft: 9, minHeight: 36, padding: '5px 9px', borderRadius: 7, cursor: 'pointer', background: '#ccfbf1', color: '#134e4a', border: '1px solid #99f6e4', fontWeight: 900 } }, 'Undo remove') : null),
+            h('section', { 'aria-labelledby': 'aq-mussel-inspect-heading', style: { marginTop: 12 } },
+              h('h3', { id: 'aq-mussel-inspect-heading', style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 14 } }, '3 · Inspect and adjust seven signals'),
+              h('p', { style: { margin: '0 0 8px', color: '#cbd5e1', fontSize: 11.5 } }, 'Use the slider for exploration or the number field for exact entry. Model bands remain hidden until reveal.'),
+              h('div', { className: 'aq-mussel-controls', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(235px,1fr))', gap: 9 } },
+                controls.map(function(control) {
+                  var factor = assessment.factors.find(function(item) { return item.id === control.id; });
+                  var meta = musselAssessmentRevealed ? statusMeta[factor.status] : neutralMeta;
+                  var valueText = factor.value + (control.unit ? ' ' + control.unit : '');
+                  return h('div', { key: control.id, style: { padding: 10, borderRadius: 9, background: meta.background, border: '1px solid ' + meta.color } },
+                    h('label', { htmlFor: 'aq-mussel-' + control.id, style: { display: 'block', color: '#f8fafc', fontSize: 12, fontWeight: 850 } }, control.label),
+                    h('input', { id: 'aq-mussel-' + control.id, type: 'range', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
+                      'aria-valuetext': valueText + (musselAssessmentRevealed ? ', ' + meta.label : ', interpretation hidden until reveal'),
+                      'aria-describedby': 'aq-mussel-' + control.id + '-signal', onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
+                      style: { width: '100%', margin: '9px 0 6px', accentColor: meta.color } }),
+                    h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
+                      h('label', { htmlFor: 'aq-mussel-' + control.id + '-number', style: { color: '#cbd5e1', fontSize: 11 } }, 'Exact value'),
+                      h('input', { id: 'aq-mussel-' + control.id + '-number', type: 'number', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
+                        'aria-label': control.label + ' exact value', 'aria-describedby': 'aq-mussel-' + control.id + '-signal', onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
+                        style: { width: 82, minHeight: 38, boxSizing: 'border-box', padding: '6px 7px', borderRadius: 7, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontFamily: 'monospace', fontSize: 13 } }),
+                      h('span', { style: { color: meta.color, fontSize: 12, fontWeight: 900 } }, control.unit || 'pH')),
+                    h('div', { id: 'aq-mussel-' + control.id + '-signal', style: { marginTop: 6, color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.45 } },
+                      musselAssessmentRevealed ? h(React.Fragment, null, h('strong', { style: { color: meta.color } }, meta.symbol + ' ' + meta.label + '. '), factor.signal) : 'Interpretation hidden. Compare the readings and commit to a prediction first.'));
+                }))),
+            h('aside', { className: 'aq-mussel-food-safety', style: { marginTop: 12, padding: 11, borderRadius: 9, background: 'rgba(127,29,29,.18)', border: '2px solid #fca5a5', color: '#fee2e2', fontSize: 12, lineHeight: 1.5 } },
+              h('strong', null, 'Food safety is not assessed. '),
+              'Do not use this model to decide whether shellfish are safe to harvest or eat. ',
+              h('a', { href: 'https://www1.maine.gov/dmr/fisheries/shellfish/closures', target: '_blank', rel: 'noopener noreferrer', style: { color: '#fecaca', fontWeight: 900 } }, 'Check current Maine DMR shellfish closures.')),
+            musselAssessmentRevealed ? h(React.Fragment, null,
+              h('section', { ref: musselAssessmentRef, tabIndex: -1, className: 'aq-mussel-assessment', 'aria-labelledby': 'aq-mussel-result-heading',
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 12, marginTop: 12, padding: 12, borderRadius: 10, background: '#031714', border: '2px solid ' + assessment.tone, outline: 'none' } },
+                h('div', null,
+                  h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Model status'),
+                  h('h3', { id: 'aq-mussel-result-heading', style: { margin: '3px 0', color: assessment.tone, fontSize: 20 } }, assessment.status),
+                  h('div', { style: { color: '#e2e8f0', fontSize: 12 } }, assessment.summary)),
+                h('div', null,
+                  h('div', { style: { color: '#cbd5e1', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Priority signal'),
+                  h('div', { style: { marginTop: 3, color: assessment.tone, fontSize: 14, fontWeight: 900 } }, assessment.priorityFactor.label + ' · ' + statusMeta[assessment.priorityFactor.status].label),
+                  h('p', { style: { margin: '4px 0 0', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } }, assessment.priorityFactor.action)),
+                h('p', { style: { gridColumn: '1 / -1', margin: 0, paddingTop: 8, borderTop: '1px solid #345c57', color: predictionMatches ? '#bbf7d0' : '#fde68a', fontSize: 12, lineHeight: 1.5 } },
+                  predictionMatches ? 'Your prediction aligned with the model. Explain what field evidence could still challenge it.' : 'You predicted ' + predictionLabel(musselPrediction) + '; the model prioritizes ' + assessment.priorityFactor.label + '. Use the factor evidence to explain the difference.')),
+              h('div', { style: { overflowX: 'auto', marginTop: 12 } },
+                h('table', { className: 'aq-mussel-factor-table', style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 11.5 } },
+                  h('caption', { style: { padding: '0 0 7px', textAlign: 'left', color: '#bfdbfe', fontWeight: 850 } }, 'Seven-signal evidence table · model ' + assessment.modelVersion),
+                  h('thead', null, h('tr', { style: { background: '#0f2d2a' } },
+                    ['Signal', 'Reading', 'Reference-band result', 'What it suggests'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid #789b97' } }, label); }))),
+                  h('tbody', null, assessment.factors.map(function(factor) {
+                    var meta = statusMeta[factor.status];
+                    return h('tr', { key: factor.id },
+                      h('th', { scope: 'row', style: { padding: 8, textAlign: 'left', borderBottom: '1px solid #345c57' } }, factor.label),
+                      h('td', { style: { padding: 8, borderBottom: '1px solid #345c57', fontFamily: 'monospace' } }, factor.value + (factor.unit ? ' ' + factor.unit : '')),
+                      h('td', { style: { padding: 8, borderBottom: '1px solid #345c57', color: meta.color, fontWeight: 900 } }, meta.symbol + ' ' + meta.label),
+                      h('td', { style: { padding: 8, borderBottom: '1px solid #345c57', lineHeight: 1.45 } }, factor.signal));
+                  })))),
+              h('section', { 'aria-labelledby': 'aq-mussel-actions-heading', style: { marginTop: 12, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.12)', border: '1px solid #60a5fa' } },
+                h('h3', { id: 'aq-mussel-actions-heading', style: { margin: 0, color: '#bfdbfe', fontSize: 13.5 } }, 'Verification priorities'),
+                h('ol', { style: { margin: '6px 0 0', paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } },
+                  assessment.priorityActions.map(function(action, index) { return h('li', { key: index }, action); }))),
+              h('section', { style: { marginTop: 12, padding: 11, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75' } },
+                h('label', { htmlFor: 'aq-mussel-observation', style: { display: 'block', color: '#f8fafc', fontSize: 13, fontWeight: 900 } }, '5 · Field explanation'),
+                h('p', { id: 'aq-mussel-observation-help', style: { margin: '4px 0 7px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'Explain which pattern matters, an alternative explanation, and what you would verify next. Your draft saves when you leave this field.'),
+                h('textarea', { id: 'aq-mussel-observation', rows: 4, maxLength: 600, value: musselHealthWorkspace.observation,
+                  'aria-describedby': 'aq-mussel-observation-help aq-mussel-observation-count', onChange: function(event) { updateMusselHealthObservation(event.target.value); }, onBlur: commitMusselHealthObservation,
+                  placeholder: 'Example: Low oxygen and warm water occur together, so I would repeat calibrated readings at crop depth after the tide turns before attributing weak attachment to one cause.',
+                  style: { boxSizing: 'border-box', width: '100%', minHeight: 104, resize: 'vertical', padding: 9, borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 14, lineHeight: 1.5 } }),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 9, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
+                  h('span', { id: 'aq-mussel-observation-count', style: { color: musselHealthWorkspace.observation.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 11.5, fontWeight: 800 } }, musselHealthWorkspace.observation.length + '/600 characters · 20 needed'),
+                  h('button', { type: 'button', className: 'aq-btn', disabled: musselHealthWorkspace.observation.trim().length < 20 || historyFull, onClick: saveMusselHealthCheck,
+                    style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: musselHealthWorkspace.observation.trim().length >= 20 && !historyFull ? 'pointer' : 'not-allowed', opacity: musselHealthWorkspace.observation.trim().length >= 20 && !historyFull ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 12.5, fontWeight: 950 } }, historyFull ? 'History full · remove a check to save' : 'Save field-check evidence')))
+            ) : h('section', { className: 'aq-mussel-result-hidden', style: { marginTop: 12, padding: 12, borderRadius: 9, background: 'rgba(30,41,59,.72)', border: '1px dashed #94a3b8', color: '#e2e8f0' } },
+              h('h3', { style: { margin: 0, fontSize: 14 } }, 'Model result hidden'),
+              h('p', { style: { margin: '5px 0 0', fontSize: 12, lineHeight: 1.5 } }, 'Choose a prediction, inspect the readings, and then use “Reveal model” to compare your reasoning.')),
+            (musselHealthWorkspace.checks || []).length ? h('section', { 'aria-labelledby': 'aq-saved-mussel-checks-heading', style: { marginTop: 12 } },
+              h('h3', { id: 'aq-saved-mussel-checks-heading', style: { margin: '0 0 7px', color: '#f8fafc', fontSize: 14 } }, 'Saved field checks · ' + musselHealthWorkspace.checks.length + '/10'),
+              h('div', { style: { display: 'grid', gap: 8 } }, musselHealthWorkspace.checks.map(function(check, checkIndex) {
+                var readings = aqSanitizeMusselReadings(check.readings);
+                var savedLabel = check.savedAt ? new Date(check.savedAt).toLocaleString() : 'undated';
+                return h('article', { key: check.id, style: { padding: 10, borderRadius: 8, background: '#061a18', border: '1px solid #527a75' } },
+                  h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' } },
+                    h('div', null,
+                      h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900 } }, check.status + ' · priority: ' + (check.prioritySignal || check.limitingFactor)),
+                      h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 11 } }, savedLabel + ' · model ' + (check.modelVersion || 'legacy'))),
+                    h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                      h('button', { type: 'button', className: 'aq-btn', onClick: function() { loadMusselHealthCheck(check); },
+                        'aria-label': 'Load ' + check.status + ' mussel field check saved ' + savedLabel + ', check ' + (checkIndex + 1) + ' of ' + musselHealthWorkspace.checks.length,
+                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#123a36', color: '#ccfbf1', border: '1px solid #5eead4', fontSize: 11, fontWeight: 850 } }, 'Load this check'),
+                      h('button', { type: 'button', className: 'aq-btn', onClick: function() { deleteMusselHealthCheck(check.id); },
+                        'aria-label': 'Remove ' + check.status + ' mussel field check saved ' + savedLabel + ', check ' + (checkIndex + 1) + ' of ' + musselHealthWorkspace.checks.length,
+                        style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#2a1b25', color: '#fecdd3', border: '1px solid #9f6672', fontSize: 11, fontWeight: 850 } }, 'Remove'))),
+                  h('p', { style: { margin: '6px 0 0', color: '#dbeafe', fontFamily: 'monospace', fontSize: 11, lineHeight: 1.5 } },
+                    readings.temperature + ' °C · ' + readings.salinity + ' PSU · O₂ ' + readings.oxygen + ' mg/L · pH ' + readings.pH + ' · Chl-a ' + readings.chlorophyll + ' µg/L · fouling ' + readings.fouling + '% · attachment ' + readings.attachment + '%'),
+                  h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, check.observation));
+              }))) : h('p', { style: { margin: '11px 0 0', color: '#cbd5e1', fontSize: 11.5 } }, 'No field-check evidence saved yet.'),
+            h('details', { style: { marginTop: 12, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
+              h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Field glossary · six terms'),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'minmax(120px,.35fr) minmax(0,1fr)', gap: '7px 12px', margin: 0, padding: '0 12px 12px', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } },
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Byssal attachment'), h('dd', { style: { margin: 0 } }, 'How firmly mussels remain connected by protein threads to rope, shell, or another surface.'),
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Chlorophyll-a'), h('dd', { style: { margin: 0 } }, 'A pigment measurement used here as a rough phytoplankton food proxy; it does not identify harmful species or actual ingestion.'),
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Freshet'), h('dd', { style: { margin: 0 } }, 'A pulse of freshwater runoff that can lower near-surface salinity after rain or snowmelt.'),
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Slack tide'), h('dd', { style: { margin: 0 } }, 'The interval near a tidal turn when current speed is relatively low.'),
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'PSU'), h('dd', { style: { margin: 0 } }, 'Practical Salinity Unit, commonly used to report seawater salinity.'),
+                h('dt', { style: { fontWeight: 900, color: '#99f6e4' } }, 'Crop depth'), h('dd', { style: { margin: 0 } }, 'The depth where most cultured mussels sit, which may differ from conditions at the surface.'))),
+            h('p', { style: { margin: '12px 0 0', paddingTop: 9, borderTop: '1px solid #345c57', color: '#cbd5e1', fontSize: 11, lineHeight: 1.55 } },
+              'Illustrative learning model only. “Within reference band” means inside this comparison model’s broad teaching band, not universally optimal conditions. Confirm sensors, sampling method, depth, tide, site history, and current agency guidance.'))),
+        h('details', { style: { marginTop: 10, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
+          h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Compare 10 growing methods · Maine and global context'),
+          h('div', { style: { padding: '0 12px 12px' } },
+            h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'Maine Sea Grant identifies bottom and raft culture as Maine’s principal methods. The others are regional or global comparisons, not site recommendations.'),
+            MUSSEL_METHOD_DETAIL.map(function(method, index) {
+              return h('article', { key: index, style: { padding: 11, marginBottom: 8, borderRadius: 8, background: 'rgba(15,23,42,.72)', borderLeft: '4px solid #818cf8' } },
+                h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
+                  h('h3', { style: { margin: 0, color: '#c4b5fd', fontSize: 13.5 } }, method.method),
+                  h('span', { style: { padding: '2px 6px', borderRadius: 999, color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 10, fontWeight: 850 } }, method.context)),
+                h('p', { style: { margin: '5px 0 0', color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.5 } }, method.desc),
+                h('p', { style: { margin: '5px 0 0', color: '#bfdbfe', fontSize: 11, lineHeight: 1.45 } }, method.timeToMarket + ' · ' + method.yield),
+                h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, method.notes));
+            }))),
+        h('details', { style: { marginTop: 10, borderRadius: 9, background: '#071f1d', border: '1px solid #527a75', overflow: 'hidden' } },
+          h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Explore Maine mussel industry evidence'),
+          h('div', { style: { padding: '0 12px 12px' } }, musselDeepTab())));
+    }
+
     function musselDeepTab() {
       return h('div', null, h('div', { className: 'aq-content-card', style: cardStyle },
-        h('div', { className: 'aq-section-kicker', style: headerStyle }, '🪨 Maine Mussel Industry — Deep Case Study'),
+        h('h2', { className: 'aq-section-kicker', style: headerStyle }, 'Maine mussel industry · source-backed evidence'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-          'Maine mussel industry status + trajectory.'),
+          'Compare dated figures, definitions, methods, and current safety boundaries. Each card links to the source used.'),
         MUSSEL_INDUSTRY.map(function(m, i) {
-          return h('div', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
-            h('div', { style: { fontSize: 13, fontWeight: 900, color: '#5eead4', marginBottom: 4 } }, m.topic),
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5, marginBottom: 4 } }, m.content),
-            h('div', { style: { fontSize: 11, color: '#fbbf24' } }, h('b', null, 'Relevance: '), m.relevance));
+          return h('article', { key: i, style: { padding: 12, marginBottom: 10, background: 'rgba(15,23,42,0.55)', borderRadius: 8, borderLeft: '4px solid #14b8a6' } },
+            h('h3', { style: { margin: '0 0 4px', fontSize: 13.5, fontWeight: 900, color: '#5eead4' } }, m.topic),
+            h('p', { style: { margin: '0 0 5px', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.5 } }, m.content),
+            h('p', { style: { margin: '0 0 5px', fontSize: 11.5, color: '#fbbf24', lineHeight: 1.45 } }, h('b', null, 'Why it matters: '), m.relevance),
+            m.sourceUrl ? h('a', { href: m.sourceUrl, target: '_blank', rel: 'noopener noreferrer', style: { color: '#bfdbfe', fontSize: 11.5, fontWeight: 850 } }, m.sourceLabel || 'Open source') : null);
         })));
     }
 
@@ -22599,7 +23101,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       tab === 'advecon' ? advEconTab() :
       tab === 'certifications' ? certificationsTab() :
       tab === 'oysterdeep' ? oysterDeepTab() :
-      tab === 'musseldeep' ? musselDeepTab() :
+      tab === 'musseldeep' ? musselHealthDeepTab() :
       tab === 'kelpdeep' ? kelpIndustryTab() :
       tab === 'salmondeep' ? salmonDeepTab() :
       tab === 'rasdeep' ? rasDeepTab() :

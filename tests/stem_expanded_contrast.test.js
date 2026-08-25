@@ -393,7 +393,7 @@ describe('STEM dynamic active-state contrast', () => {
     ['stem_tool_circuit.js', 'bg-green-700 text-white border-green-800'],
     ['stem_tool_circuit.js', 'bg-slate-800 text-slate-300'],
     ['stem_tool_lumen.js', 'bg-violet-600 text-white hover:bg-violet-700'],
-    ['stem_tool_artstudio.js', 'bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100'],
+    ['stem_tool_artstudio.js', 'text-pink-800 bg-pink-50 hover:bg-pink-100'],
     ['stem_tool_dataplot.js', 'bg-pink-200 text-pink-800 cursor-wait'],
     ['stem_tool_angles.js', 'bg-pink-200 text-pink-800 cursor-wait'],
     ['stem_tool_angles.js', 'bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'],

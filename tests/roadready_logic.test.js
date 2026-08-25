@@ -48,6 +48,35 @@ describe('world-space simulation consistency', () => {
     expect(RR.metersToWorldUnits(25)).toBe(25);
   });
 
+  it('permits P/R/D changes only when the vehicle is effectively stopped', () => {
+    expect(RR.GEAR_SHIFT_MAX_SPEED_MPS).toBeCloseTo(0.35, 8);
+    expect(RR.canShiftDriveGear(0)).toBe(true);
+    expect(RR.canShiftDriveGear(RR.GEAR_SHIFT_MAX_SPEED_MPS)).toBe(true);
+    expect(RR.canShiftDriveGear(-RR.GEAR_SHIFT_MAX_SPEED_MPS)).toBe(true);
+    expect(RR.canShiftDriveGear(RR.GEAR_SHIFT_MAX_SPEED_MPS + 0.001)).toBe(false);
+    expect(RR.canShiftDriveGear(-(RR.GEAR_SHIFT_MAX_SPEED_MPS + 0.001))).toBe(false);
+    expect(RR.canShiftDriveGear('0')).toBe(false);
+    expect(RR.canShiftDriveGear(NaN)).toBe(false);
+    expect(RR.canShiftDriveGear(Infinity)).toBe(false);
+  });
+
+  it('starts formal evaluation time at the belt checkpoint and clamps invalid input', () => {
+    expect(RR.evaluationElapsedSeconds(null, 10)).toBe(0);
+    expect(RR.evaluationElapsedSeconds({ startedAtSim: null }, 10)).toBe(0);
+    expect(RR.evaluationElapsedSeconds({ startedAtSim: 5 }, 5)).toBe(0);
+    expect(RR.evaluationElapsedSeconds({ startedAtSim: 5 }, 8.4)).toBeCloseTo(3.4, 8);
+    expect(RR.evaluationElapsedSeconds({ startedAtSim: 5 }, 2)).toBe(0);
+    expect(RR.evaluationElapsedSeconds({ startedAtSim: 5 }, Infinity)).toBe(0);
+  });
+
+  it('holds a parked startup world until belt and mirror setup are complete', () => {
+    expect(RR.shouldHoldStartupWorld(false, 20, 4, 'P')).toBe(true);
+    expect(RR.shouldHoldStartupWorld(true, 3.9, 4, 'P')).toBe(true);
+    expect(RR.shouldHoldStartupWorld(true, 4, 4, 'P')).toBe(false);
+    expect(RR.shouldHoldStartupWorld(true, 3, 4, 'D')).toBe(false);
+    expect(RR.shouldHoldStartupWorld(true, Infinity, 4, 'P')).toBe(false);
+  });
+
   it('computes a true time gap and weather-aware following target', () => {
     const speed60 = 60 * RR.MPH_TO_MS;
     expect(RR.followingGapSeconds(speed60 * 3, speed60)).toBeCloseTo(3, 6);
@@ -90,6 +119,84 @@ describe('world-space simulation consistency', () => {
     expect(RR.vehicleRectsOverlap(car, size, clear, size)).toBe(false);
     expect(RR.vehicleRectsOverlap(car, size, perpendicular, size)).toBe(true);
     expect(RR.vehicleFootprint('school_bus')).toEqual({ length: 10, width: 2.5 });
+  });
+
+  it('uses the full rotated vehicle body for pedestrian and emergency contact', () => {
+    const vehicle = { x: 0, y: 0, heading: Math.PI / 2 };
+    const size = RR.vehicleFootprint('car');
+    expect(RR.pointOverlapsVehicle(vehicle, size, { x: 0, y: 2.45 }, 0.25)).toBe(true);
+    expect(RR.pointOverlapsVehicle(vehicle, size, { x: 0, y: 2.6 }, 0.25)).toBe(false);
+    expect(RR.pointOverlapsVehicle(vehicle, size, { x: 1.1, y: 0 }, 0.25)).toBe(true);
+    expect(RR.pointOverlapsVehicle(vehicle, size, { x: 1.2, y: 0 }, 0.25)).toBe(false);
+    expect(RR.emergencyVehicleFootprintType('firetruck')).toBe('truck');
+    expect(RR.emergencyVehicleFootprintType('ambulance')).toBe('van');
+    expect(RR.emergencyVehicleFootprintType('police')).toBe('car');
+  });
+
+  it('measures bicycle passing clearance edge-to-edge and sizes vulnerable road users', () => {
+    const car = { x: 0, y: 0, heading: 0 };
+    const carSize = RR.vehicleFootprint('car');
+    const cyclist = { x: 0, y: 2.2, heading: 0, type: 'cyclist' };
+    const cyclistSize = RR.vulnerableRoadUserFootprint(cyclist);
+    expect(cyclistSize).toEqual({ length: 1.85, width: 0.68 });
+    expect(RR.vulnerableRoadUserFootprint({ type: 'motorcycle' }))
+      .toEqual({ length: 2.15, width: 0.82 });
+    expect(RR.vehicleRectsOverlap(car, carSize,
+      { x: 3.1, y: 0, heading: 0 }, cyclistSize)).toBe(true);
+    expect(RR.vehicleRectsOverlap(car, carSize,
+      { x: 3.3, y: 0, heading: 0 }, cyclistSize)).toBe(false);
+    expect(RR.worldUnitsToFeet(RR.vehicleSideClearance(
+      car, carSize, cyclist, cyclistSize))).toBeGreaterThan(3);
+    cyclist.y = 2.0;
+    expect(RR.worldUnitsToFeet(RR.vehicleSideClearance(
+      car, carSize, cyclist, cyclistSize))).toBeLessThan(3);
+    expect(RR.wildlifeCollisionRadius({ kind: 'child', mass: 'small' })).toBe(0.24);
+    expect(RR.wildlifeCollisionRadius({ kind: 'moose', mass: 'massive' })).toBe(1);
+    expect(RR.wildlifeCollisionRadius({ kind: 'deer', mass: 'medium' })).toBe(0.55);
+  });
+
+  it('keeps landmark hazards visually and physically type-correct', () => {
+    const kinds = ['schoolbus_arm', 'ambulance', 'firetruck', 'cruiser', 'tractor'];
+    for (const kind of kinds) {
+      const profile = RR.landmarkVehicleAppearance(kind);
+      expect(profile).toBeTruthy();
+      expect(profile.bodyLength).toBe(profile.length);
+      expect(profile.bodyWidth).toBe(profile.width);
+    }
+    expect(RR.landmarkVehicleAppearance('schoolbus_arm')).toMatchObject({
+      label: 'school bus', length: 10, width: 2.5, stopArm: true, emergency: false,
+    });
+    expect(RR.landmarkVehicleAppearance('ambulance')).toMatchObject({
+      label: 'ambulance', length: 5, width: 2, emergency: true,
+    });
+    expect(RR.landmarkVehicleAppearance('tractor').emergency).toBe(false);
+    expect(RR.landmarkVehicleAppearance('deer')).toBeNull();
+    expect(RR.hazardActorCategory({ kind: 'schoolbus_arm' })).toBe('school_bus');
+    expect(RR.hazardActorCategory({ kind: 'firetruck' })).toBe('emergency_vehicle');
+    expect(RR.hazardActorCategory({ kind: 'tractor' })).toBe('vehicle');
+    expect(RR.hazardActorCategory({ kind: 'pedestrian' })).toBe('pedestrian');
+    expect(RR.hazardActorCategory({ kind: 'ball' })).toBe('ball');
+    expect(RR.hazardActorCategory({ kind: 'deer', mass: 'medium' })).toBe('wildlife');
+    expect(RR.wildlifeCollisionRadius({ kind: 'pedestrian' })).toBe(0.28);
+    expect(RR.wildlifeCollisionRadius({ kind: 'ball' })).toBe(0.22);
+  });
+
+  it('keeps one meaning-colored, priority-aware driving alert', () => {
+    const caution = RR.mergeDriveAlert(null,
+      { msg: 'Ease off the gas.', until: 4, priority: 2 }, 0);
+    const critical = RR.mergeDriveAlert(caution,
+      { msg: 'Collision ahead.', until: 5, priority: 3 }, 0.5);
+    expect(critical.msg).toBe('Collision ahead.');
+    expect(RR.mergeDriveAlert(critical,
+      { msg: 'Landmark ahead.', until: 6, priority: 0 }, 1)).toBe(critical);
+    expect(RR.driveAlertAppearance('Collision ahead.').tone).toBe('critical');
+    expect(RR.driveAlertAppearance('✓ Good full stop.').tone).toBe('success');
+    const context = { measureText: text => ({ width: text.length * 8 }) };
+    const lines = RR.canvasMessageLines(context,
+      'This long safety instruction needs to remain readable on a narrow driving canvas.', 150, 2);
+    expect(lines).toHaveLength(2);
+    expect(lines[1].endsWith('…')).toBe(true);
+    expect(lines.every(line => context.measureText(line).width <= 150)).toBe(true);
   });
 
   it('places four tire contacts inside the oriented vehicle footprint', () => {
@@ -144,6 +251,27 @@ describe('world-space simulation consistency', () => {
     expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: Math.PI / 2 }, size, obstacleAt(0, 2)).hit).toBe(true);
     expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(2, 0, 7)).hit).toBe(true);
     expect(RR.vehicleGridCollision({ x: 0, y: 0, heading: 0 }, size, obstacleAt(2, 0, 4)).hit).toBe(false);
+  });
+});
+
+describe('Ride-Along safety planning', () => {
+  it('only advertises automatic driving on spline-backed road scenarios', () => {
+    expect(RR.rideAlongSupportsScenario('residential', false)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('highway', false)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('parking', false)).toBe(false);
+    expect(RR.rideAlongSupportsScenario('roundabout', false)).toBe(false);
+    expect(RR.rideAlongSupportsScenario('suburban', true)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('roundabout', true)).toBe(false);
+  });
+
+  it('uses distance and surface grip to lower the safe approach speed', () => {
+    const dryFar = RR.rideAlongApproachSpeedMph(40, 'clear', 2);
+    const dryNear = RR.rideAlongApproachSpeedMph(12, 'clear', 2);
+    const snowFar = RR.rideAlongApproachSpeedMph(40, 'snow', 2);
+    expect(dryFar).toBeGreaterThan(dryNear);
+    expect(dryFar).toBeGreaterThan(snowFar);
+    expect(RR.rideAlongApproachSpeedMph(2, 'clear', 2)).toBe(0);
+    expect(RR.rideAlongApproachSpeedMph(-5, 'rain', 1)).toBe(0);
   });
 });
 
@@ -228,6 +356,133 @@ describe('physical road layouts', () => {
     expect(RR.roadRelativeTarget(world, observer, targetPoint).lateralDifference).toBeCloseTo(0, 4);
   });
 
+  it('measures steering against the live tangent instead of raw world heading', () => {
+    const spline = {
+      centerAt: station => 48 + 0.08 * station + 0.0015 * station * station,
+      headingAt: station => Math.atan(0.08 + 0.003 * station),
+      heightAt: () => 0,
+    };
+    const world = { profile: { roadHalfWidth: 3.5 }, spline };
+    const earlyPoint = RR.mainRoadWorldPoint(world, 10, -1.5);
+    const laterPoint = RR.mainRoadWorldPoint(world, 50, -1.5);
+    const early = { ...earlyPoint, heading: Math.PI / 2 - earlyPoint.heading };
+    const later = { ...laterPoint, heading: Math.PI / 2 - laterPoint.heading };
+
+    expect(RR.mainRoadTravelSign(world, early)).toBe(1);
+    expect(RR.mainRoadTravelSign(world, later)).toBe(1);
+    expect(RR.roadRelativeHeadingError(world, early, 1)).toBeCloseTo(0, 3);
+    expect(RR.roadRelativeHeadingError(world, later, 1)).toBeCloseTo(0, 3);
+    expect(Math.abs(later.heading - early.heading)).toBeGreaterThan(0.08);
+
+    later.heading += 0.3;
+    expect(RR.roadRelativeHeadingError(world, later, 1)).toBeCloseTo(0.3, 2);
+    const reverse = {
+      ...laterPoint,
+      heading: -Math.PI / 2 - laterPoint.heading,
+    };
+    expect(RR.mainRoadTravelSign(world, reverse)).toBe(-1);
+    expect(RR.roadRelativeHeadingError(world, reverse, -1)).toBeCloseTo(0, 3);
+  });
+
+  it('describes curved-road hazards in travel-relative road coordinates', () => {
+    const heading = 0.46;
+    const spline = {
+      centerAt: station => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: () => 0,
+    };
+    const world = { profile: { roadHalfWidth: 6.5, lanesPerDirection: 2 }, spline };
+    const observer = RR.mainRoadWorldPoint(world, 10, 4.65);
+    observer.heading = Math.PI / 2 - heading;
+    const rightAhead = RR.mainRoadWorldPoint(world, 18, 1.55);
+    const relation = RR.roadAwareRelativePosition(world, observer, rightAhead);
+    expect(relation.frame).toBe('main');
+    expect(relation.ahead).toBeCloseTo(8, 4);
+    expect(relation.lat).toBeCloseTo(3.1, 4);
+
+    observer.heading = -Math.PI / 2 - heading;
+    const reverseRelation = RR.roadAwareRelativePosition(world, observer, rightAhead);
+    expect(reverseRelation.ahead).toBeCloseTo(-8, 4);
+    expect(reverseRelation.lat).toBeCloseTo(-3.1, 4);
+  });
+
+  it('separates impacted pedestrians laterally without changing curved-road station', () => {
+    const heading = 0.4;
+    const world = {
+      profile: { roadHalfWidth: 3.5 },
+      spline: {
+        centerAt: station => 48 + Math.tan(heading) * station,
+        headingAt: () => heading,
+        heightAt: () => 0,
+      },
+    };
+    const car = { ...RR.mainRoadWorldPoint(world, 30, 1.5), heading: -Math.PI / 2 - heading };
+    const pedestrian = {
+      ...RR.mainRoadWorldPoint(world, 30, 1.5),
+      _curvedRoadFrame: true,
+      _roadStation: 30,
+      _sidewalkLateral: 1.5,
+      homeX: 0,
+      homeY: 0,
+    };
+    expect(RR.separatePedestrianAfterImpact(world, car, pedestrian, 1.4)).toBe(true);
+    const displaced = RR.mainRoadLocalPoint(world, pedestrian.x, pedestrian.y);
+    expect(displaced.longitudinal).toBeCloseTo(30, 4);
+    expect(displaced.lateral).toBeCloseTo(2.9, 4);
+    expect(pedestrian._roadStation).toBeCloseTo(30, 4);
+    expect(pedestrian._sidewalkLateral).toBeCloseTo(2.9, 4);
+    expect(pedestrian.homeX).toBeCloseTo(pedestrian.x, 8);
+  });
+
+  it('settles impacted cyclists beside a curved road without teleporting them away', () => {
+    const heading = 0.4;
+    const world = {
+      profile: { roadHalfWidth: 3.5 },
+      spline: {
+        centerAt: station => 48 + Math.tan(heading) * station,
+        headingAt: () => heading,
+        heightAt: () => 0,
+      },
+    };
+    const car = { ...RR.mainRoadWorldPoint(world, 30, 1.5), heading: -Math.PI / 2 - heading };
+    const cyclist = {
+      ...RR.mainRoadWorldPoint(world, 30, 1.5),
+      heading: car.heading,
+      speed: 6,
+      type: 'cyclist',
+      _roadStation: 30,
+      _bikeLane: 1.5,
+    };
+    expect(RR.separateRoadUserAfterImpact(world, car, cyclist, 1.2)).toBe(true);
+    const displaced = RR.mainRoadLocalPoint(world, cyclist.x, cyclist.y);
+    expect(displaced.longitudinal).toBeCloseTo(30, 4);
+    expect(displaced.lateral).toBeCloseTo(2.7, 4);
+    expect(cyclist._bikeLane).toBeCloseTo(2.7, 4);
+    expect(cyclist.speed).toBe(0);
+    expect(cyclist._impactPose).toBe(true);
+    expect(cyclist.x).not.toBe(-99);
+  });
+
+  it('settles a bus-crossing road user in the rotated cross-street frame', () => {
+    const pose = { x: 30, y: 40, heading: 0.38 };
+    const contact = RR.crossStreetWorldPoint(pose, 2, -1);
+    const car = { ...contact, heading: RR.crossStreetTravelHeading(pose, 1) };
+    const child = {
+      ...contact,
+      crossStreet: true,
+      _crossPose: pose,
+      _roadSide: -1,
+      vx: 1,
+      vy: 1,
+    };
+    expect(RR.separateRoadUserAfterImpact(null, car, child, 1)).toBe(true);
+    const displaced = RR.crossStreetLocalPoint(pose, child.x, child.y);
+    expect(displaced.longitudinal).toBeCloseTo(2, 6);
+    expect(displaced.lateral).toBeCloseTo(-2, 6);
+    expect(child.vx).toBe(0);
+    expect(child.vy).toBe(0);
+  });
+
   it('assesses legal outer lanes without single-lane false departures', () => {
     const suburban = { roadHalfWidth: 6.5, lanesPerDirection: 2 };
     const southOuter = RR.assessRoadLanePosition(suburban, 4.65, -1);
@@ -287,6 +542,31 @@ describe('physical road layouts', () => {
     const oneMeterAhead = RR.crossStreetWorldPoint(pose, 19, 1.5);
     expect(oneMeterAhead.x - worldPoint.x).toBeCloseTo(Math.cos(positiveHeading), 8);
     expect(oneMeterAhead.y - worldPoint.y).toBeCloseTo(Math.sin(positiveHeading), 8);
+  });
+
+  it('clears only the player-start intersection in the rotated cross-street frame', () => {
+    const heading = 0.35;
+    const world = {
+      spline: {
+        centerAt: station => 48 + Math.tan(heading) * station,
+        headingAt: () => heading,
+        heightAt: () => 0,
+      },
+    };
+    const center = RR.mainRoadWorldPoint(world, 50, 0);
+    const pose = RR.crossStreetPose(center.x, center.y, heading, 6.5, RR.CROSS_STREET_LENGTH);
+    const start = RR.crossStreetWorldPoint(pose, -2, 1.5);
+    const actor = { ...start, crossStreet: true, _crossPose: pose,
+      _crossDirection: 1, laneOffset: 1.5, heading: RR.crossStreetTravelHeading(pose, 1) };
+    expect(RR.moveCrossStreetActorToSafeApproach(world, actor, 50, 15)).toBe(true);
+    const moved = RR.crossStreetLocalPoint(pose, actor.x, actor.y);
+    expect(moved.longitudinal).toBeCloseTo(-RR.CROSS_STREET_LENGTH * 0.5 + 3, 8);
+    expect(moved.lateral).toBeCloseTo(1.5, 8);
+
+    const farActor = { ...start, crossStreet: true, _crossPose: pose,
+      _crossDirection: 1, laneOffset: 1.5, heading: RR.crossStreetTravelHeading(pose, 1) };
+    expect(RR.moveCrossStreetActorToSafeApproach(world, farActor, 10, 15)).toBe(false);
+    expect(farActor).toMatchObject(start);
   });
 
   it('uses one road-local frame for curved main-road and rotated cross-street traffic', () => {
@@ -353,12 +633,25 @@ describe('physical road layouts', () => {
     expect(RR.mainRoadLocalPoint(world, traffic[0].x, traffic[0].y).lateral).toBeCloseTo(traffic[0].laneOffset, 4);
     expect(traffic[0].heading).toBeCloseTo(Math.PI / 2 - heading, 8);
 
+    // Re-alignment after streamed-world updates must preserve the authored
+    // station rather than treating the curved world-Y coordinate as a new one.
+    traffic[0].x += 1.2;
+    traffic[0].y += 0.6;
+    RR.alignTrafficToStreamedWorld(world, traffic);
+    expect(traffic[0]._roadStation).toBe(12);
+    expect(traffic[0].y).toBeCloseTo(12 - traffic[0].laneOffset * Math.sin(heading), 8);
+
     const cyclists = [{ x: 0, y: 12, heading: -Math.PI / 2, type: 'cyclist' }];
     RR.alignCyclistsToStreamedWorld(world, cyclists);
     expect(cyclists[0]._bikeLane).toBeCloseTo(5.8, 8);
     expect(cyclists[0].x).toBeCloseTo(48 + cyclists[0]._bikeLane * Math.cos(heading), 8);
     expect(cyclists[0].y).toBeCloseTo(12 - cyclists[0]._bikeLane * Math.sin(heading), 8);
     expect(RR.mainRoadLocalPoint(world, cyclists[0].x, cyclists[0].y).lateral).toBeCloseTo(cyclists[0]._bikeLane, 3);
+    cyclists[0].x -= 1.1;
+    cyclists[0].y += 0.4;
+    RR.alignCyclistsToStreamedWorld(world, cyclists);
+    expect(cyclists[0]._roadStation).toBe(12);
+    expect(cyclists[0].y).toBeCloseTo(12 - cyclists[0]._bikeLane * Math.sin(heading), 8);
   });
 
   it('changes Free Explore traffic density without resetting nearby or cross-street actors', () => {
@@ -395,6 +688,7 @@ describe('physical road layouts', () => {
     expect(grown.filter(v => !v.crossStreet)).toHaveLength(4);
     for (const vehicle of grown.filter(v => !v.crossStreet && v !== nearby && v !== farA && v !== farB)) {
       expect(Math.hypot(vehicle.x - player.x, vehicle.y - player.y)).toBeGreaterThanOrEqual(24);
+      expect(RR.mainRoadCoordinateDistance(world, vehicle, player)).toBeGreaterThanOrEqual(24);
       const station = typeof vehicle._roadStation === 'number'
         ? vehicle._roadStation : vehicle.y;
       const expectedPoint = {
@@ -404,6 +698,23 @@ describe('physical road layouts', () => {
       expect(vehicle.x).toBeCloseTo(expectedPoint.x, 6);
       expect(vehicle.y).toBeCloseTo(expectedPoint.y, 6);
     }
+  });
+
+  it('measures live-traffic spawn gaps along the authored road frame', () => {
+    const heading = 0.5;
+    const world = {
+      spline: {
+        centerAt: station => 48 + Math.tan(heading) * station,
+        headingAt: () => heading,
+        heightAt: () => 0,
+      },
+    };
+    const first = { ...RR.mainRoadWorldPoint(world, 10, -1.5), _roadStation: 10 };
+    const tooClose = { ...RR.mainRoadWorldPoint(world, 19, -1.5), _roadStation: 19 };
+    const clear = { ...RR.mainRoadWorldPoint(world, 21, -1.5), _roadStation: 21 };
+    expect(RR.mainRoadCoordinateDistance(world, first, tooClose)).toBeCloseTo(9, 6);
+    expect(RR.hasMainRoadTrafficGap(world, [first], tooClose, 10)).toBe(false);
+    expect(RR.hasMainRoadTrafficGap(world, [first], clear, 10)).toBe(true);
   });
 
   it('leaves bounded roundabout traffic unchanged when density controls are unavailable', () => {
@@ -1900,6 +2211,17 @@ describe('pushDriveEvent', () => {
       RR.pushDriveEvent(statsRef, 'speedViolation', 40, 0.72, 25, 2);
     }
     expect(statsRef.current.driveEvents.length).toBeLessThanOrEqual(60);
+  });
+
+  it('uses active simulation time so pausing does not age the cooldown or timeline', () => {
+    const statsRef = { current: { startTime: Date.now() - 60_000, simTime: 5 } };
+    RR.pushDriveEvent(statsRef, 'hardBrake', 32, 0.72, 25, 2);
+    RR.pushDriveEvent(statsRef, 'hardBrake', 31, 0.72, 25, 2);
+    statsRef.current.simTime = 6.4;
+    RR.pushDriveEvent(statsRef, 'hardBrake', 30, 0.72, 25, 2);
+    statsRef.current.simTime = 6.6;
+    RR.pushDriveEvent(statsRef, 'hardBrake', 29, 0.72, 25, 2);
+    expect(statsRef.current.driveEvents.map((event) => event.t)).toEqual([5, 6.6]);
   });
 });
 

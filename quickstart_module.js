@@ -408,8 +408,11 @@ const QuickStartWizard = React.memo(({
   };
   const wizardRef = useRef(null);
   const handleClose = useCallback(() => {
-    setIsHelpMode(false);
-    onClose();
+    const close = () => {
+      setIsHelpMode(false);
+      onClose();
+    };
+    if (typeof React.startTransition === 'function') React.startTransition(close);else close();
   }, [setIsHelpMode, onClose]);
   useQuickStartDialogFocus(wizardRef, isOpen, handleClose);
   const [localData, setLocalData] = useState({
@@ -482,10 +485,21 @@ const QuickStartWizard = React.memo(({
     }
   }, [isOpen]);
   if (!isOpen) return null;
-  const handleSkip = () => {
+  const handleSkip = event => {
     safeSetItem('allo_wizard_completed', 'true');
-    setIsHelpMode(false);
-    onClose();
+    const button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.style.opacity = '0.7';
+    }
+    const close = () => {
+      setIsHelpMode(false);
+      onClose();
+    };
+    setTimeout(() => {
+      if (typeof React.startTransition === 'function') React.startTransition(close);else close();
+    }, 80);
   };
   const handleNext = () => {
     if (step === 1 && !localData.grade) {

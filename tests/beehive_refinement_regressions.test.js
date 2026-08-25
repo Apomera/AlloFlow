@@ -173,8 +173,18 @@ describe('Beehive refinement regressions', () => {
   });
 
   it('stops a rapid double Next Day sequence after the first step raises an event', async () => {
-    Math.random.mockReturnValue(0);
-    await mountBee(colony({ day: 10, history: [], journal: [], activeEvent: null }));
+    // Seed 7 begins with a draw below the model's 0.12 event threshold.
+    // The daily simulation intentionally no longer reads global Math.random.
+    await mountBee(colony({
+      day: 10,
+      history: [],
+      journal: [],
+      activeEvent: null,
+      modelVersion: 'colony-daily-1.0',
+      simulationSeed: 7,
+      randomState: 7,
+      seededFromDay: 0,
+    }));
     const nextDay = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Next Day'));
 
     await act(async () => {
@@ -485,9 +495,12 @@ describe('Beehive refinement regressions', () => {
       badges: earnedBadges,
       bestQuizScore: 9,
       layersViewed: ['roles', 'honey_chem', 'lifecycle'],
+      simulationSeed: 2468,
+      randomState: 1357,
+      seededFromDay: 0,
     }));
 
-    const restart = host.querySelector('button[aria-label="Start a new colony from scratch"]');
+    const restart = host.querySelector('button[data-beehive-restart="same-seed"]');
     expect(restart).toBeTruthy();
     await act(async () => {
       restart.click();
@@ -516,6 +529,9 @@ describe('Beehive refinement regressions', () => {
       quizAnswered: 0,
       quizFeedback: null,
       quizQuestions: null,
+      simulationSeed: 2468,
+      randomState: 2468,
+      seededFromDay: 0,
     });
     // Cross-run mastery survives. Additional badges may be auto-awarded from
     // the completed pre-reset run before the restart click is processed.

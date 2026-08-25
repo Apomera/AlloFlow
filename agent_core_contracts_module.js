@@ -267,7 +267,7 @@
         source.textAccessExpectation || source.primaryTextPolicy || source.expectation,
         80
       );
-      var allowed = ['unspecified', 'preserve-primary', 'supplemental-adaptation-permitted', 'educator-directed'];
+      var allowed = ['unspecified', 'preserve-primary', 'supplemental-adaptation-permitted', 'educator-directed', 'adaptation-prohibited'];
       if (allowed.indexOf(expectation) === -1) expectation = 'unspecified';
       var basis = cap(source.basis || source.source || source.authority, 240);
       var sourceUrl = cap(source.sourceUrl || source.url, 600);
@@ -410,6 +410,65 @@
     };
   }
 
+  function deriveTextAccessPlan(input, fallback) {
+    var source = isPlainObject(input) ? input : {};
+    var opts = isPlainObject(fallback) ? fallback : {};
+    var standardsContext = normalizeStandardsContext(source.standardsContext || opts.standardsContext) || {};
+    var constraints = isPlainObject(standardsContext.instructionalConstraints)
+      ? standardsContext.instructionalConstraints : {};
+    if ((!constraints.textAccessExpectation || constraints.textAccessExpectation === 'unspecified')
+        && Array.isArray(standardsContext.standards)) {
+      var constrainedEntry = standardsContext.standards.find(function (entry) {
+        return entry && entry.instructionalConstraints
+          && entry.instructionalConstraints.textAccessExpectation
+          && entry.instructionalConstraints.textAccessExpectation !== 'unspecified';
+      });
+      if (constrainedEntry) constraints = constrainedEntry.instructionalConstraints;
+    }
+    var expectation = String(constraints.textAccessExpectation || 'unspecified');
+    var sourced = constraints.sourced === true || !!(constraints.basis || constraints.sourceUrl);
+    var values = [opts.standardsInput, opts.standards, standardsContext.inputText, standardsContext.promptText];
+    (standardsContext.standards || []).forEach(function (entry) {
+      if (isPlainObject(entry)) values.push(entry.code, entry.label, entry.text);
+      else values.push(entry);
+    });
+    var searchable = values.filter(Boolean).join(' ');
+    var complexityRequired = /\b(?:text complexity|appropriately complex text|grade[- ]level complex text|complex (?:literary|informational|source) texts?|independently and proficiently|high end of (?:the )?text complexity band)\b/i.test(searchable)
+      || /\b(?:CCSS\.)?(?:ELA-LITERACY\.)?(?:RL|RI|RST|RH)\.[A-Z0-9-]+\.10\b/i.test(searchable);
+    var standardRequiresPrimary = expectation === 'preserve-primary'
+      || expectation === 'adaptation-prohibited' || complexityRequired;
+    var prohibited = sourced && expectation === 'adaptation-prohibited';
+    var explicitAdapted = String(source.adaptedTextPolicy || opts.adaptedTextPolicy || '');
+    var adaptedTextPolicy = ['include', 'omit', 'prohibited'].indexOf(explicitAdapted) !== -1
+      ? explicitAdapted : 'include';
+    if (adaptedTextPolicy === 'prohibited' && !prohibited) adaptedTextPolicy = 'omit';
+    if (prohibited) adaptedTextPolicy = 'prohibited';
+    var decisionSource = String(source.adaptedTextPolicySource || opts.adaptedTextPolicySource || '');
+    if (prohibited) decisionSource = 'standard';
+    else if (explicitAdapted === 'prohibited') decisionSource = 'educator';
+    else if (['educator', 'standard', 'workflow-default'].indexOf(decisionSource) === -1) {
+      decisionSource = explicitAdapted ? 'educator' : 'workflow-default';
+    }
+    var explicitPrimary = String(source.primaryTextAccess || opts.primaryTextAccess || '');
+    var primaryTextAccess = ['required', 'available'].indexOf(explicitPrimary) !== -1
+      ? explicitPrimary : (standardRequiresPrimary ? 'required' : 'available');
+    if (standardRequiresPrimary) primaryTextAccess = 'required';
+    return {
+      primaryTextAccess: primaryTextAccess,
+      adaptedTextPolicy: adaptedTextPolicy,
+      adaptedTextPolicySource: decisionSource,
+      textAccessReason: prohibited
+        ? 'sourced-adaptation-prohibition'
+        : (expectation === 'preserve-primary' && sourced
+            ? 'sourced-primary-text-requirement'
+            : (complexityRequired
+                ? 'standard-text-complexity-requirement'
+                : (explicitAdapted ? 'educator-choice' : 'default-access-companion'))),
+      standardRequiresPrimary: standardRequiresPrimary,
+      sourcedAdaptationProhibition: prohibited
+    };
+  }
+
   function normalizeInstructionalContext(input, fallback) {
     var source = isPlainObject(input) ? input : {};
     var opts = isPlainObject(fallback) ? fallback : {};
@@ -417,10 +476,18 @@
     var policy = source.primaryTextPolicy === 'educator-directed' ? 'educator-directed' : 'preserve-primary';
     var grade = String(source.instructionalGrade || opts.instructionalGrade || '').replace(/\s+/g, ' ').trim().slice(0, 80);
     var suppliedFingerprint = String(source.standardsFingerprint || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+    var textAccess = deriveTextAccessPlan(source, {
+      standardsContext: standardsContext,
+      standardsInput: opts.standardsInput || opts.standards || ''
+    });
     return {
       schemaVersion: 1,
       instructionalGrade: grade,
       primaryTextPolicy: policy,
+      primaryTextAccess: textAccess.primaryTextAccess,
+      adaptedTextPolicy: textAccess.adaptedTextPolicy,
+      adaptedTextPolicySource: textAccess.adaptedTextPolicySource,
+      textAccessReason: textAccess.textAccessReason,
       standardsContext: standardsContext,
       standardsFingerprint: suppliedFingerprint || instructionalFingerprint(standardsContext || null)
     };
@@ -577,7 +644,8 @@
       standardsContext: blueprintStandardsContext,
       instructionalContext: normalizeInstructionalContext(input.instructionalContext, {
         instructionalGrade: input.audience && input.audience.gradeLevel,
-        standardsContext: blueprintStandardsContext
+        standardsContext: blueprintStandardsContext,
+        standards: input.standards
       }),
       sourcePolicy: isPlainObject(input.sourcePolicy) ? input.sourcePolicy : { kind: 'workspace-source' },
       lessonDNA: isPlainObject(input.lessonDNA) ? input.lessonDNA : {},
@@ -644,7 +712,8 @@
       standardsContext: legacyStandardsContext,
       instructionalContext: normalizeInstructionalContext(ctx.instructionalContext || c.instructionalContext, {
         instructionalGrade: (c.globalSettings && c.globalSettings.gradeLevel) || ctx.gradeLevel || '',
-        standardsContext: legacyStandardsContext
+        standardsContext: legacyStandardsContext,
+        standards: ctx.standards || c.standards || ''
       }),
       sourcePolicy: isPlainObject(ctx.sourcePolicy) ? ctx.sourcePolicy
         : (isPlainObject(c.sourcePolicy) ? c.sourcePolicy : { kind: 'workspace-source' }),
@@ -700,7 +769,8 @@
       standardsContext: legacyStandardsContext,
       instructionalContext: normalizeInstructionalContext(b.instructionalContext, {
         instructionalGrade: b.audience && b.audience.gradeLevel,
-        standardsContext: legacyStandardsContext
+        standardsContext: legacyStandardsContext,
+        standards: b.standards
       }),
       sourcePolicy: isPlainObject(b.sourcePolicy) ? b.sourcePolicy : { kind: 'workspace-source' }
     };
@@ -983,6 +1053,7 @@
     normalizePlanItems: normalizePlanItems,
     normalizeInstructionalText: normalizeInstructionalText,
     normalizeInstructionalContext: normalizeInstructionalContext,
+    deriveTextAccessPlan: deriveTextAccessPlan,
     requiredCapabilitiesForPlan: requiredCapabilitiesForPlan,
     fromLegacyConfig: fromLegacyConfig,
     toLegacyConfig: toLegacyConfig,

@@ -120,12 +120,14 @@ describe('Blueprint creation freezes and preserves GenerationMatrix decisions', 
     expect(quiz.generationVariants.every((cell) => cell.contextInputsFingerprint === bp.globalSettings.contextInputsFingerprint)).toBe(true);
 
     const roundTrip = C.fromLegacyConfig(C.toLegacyConfig(bp), { blueprintId: bp.blueprintId });
-    expect(roundTrip.plan[0].generationVariants).toEqual(quiz.generationVariants);
-    expect(roundTrip.plan[0].generationAction).toBe(quiz.generationAction);
-    expect(roundTrip.plan[0].variantKey).toBe(quiz.variantKey);
-    expect(roundTrip.plan[0].explicitVariantKey).toBe(quiz.explicitVariantKey);
-    expect(roundTrip.plan[0].variantKeyDerived).toBe(true);
-    expect(roundTrip.plan[0].generationVariants.every((cell) => cell.contextInputsFingerprint === bp.globalSettings.contextInputsFingerprint)).toBe(true);
+    const roundTripQuiz = roundTrip.plan.find((row) => row.tool === 'quiz');
+    expect(roundTripQuiz).toBeTruthy();
+    expect(roundTripQuiz.generationVariants).toEqual(quiz.generationVariants);
+    expect(roundTripQuiz.generationAction).toBe(quiz.generationAction);
+    expect(roundTripQuiz.variantKey).toBe(quiz.variantKey);
+    expect(roundTripQuiz.explicitVariantKey).toBe(quiz.explicitVariantKey);
+    expect(roundTripQuiz.variantKeyDerived).toBe(true);
+    expect(roundTripQuiz.generationVariants.every((cell) => cell.contextInputsFingerprint === bp.globalSettings.contextInputsFingerprint)).toBe(true);
   });
 
   it('does not reuse an artifact after reviewed generation context changes', async () => {
@@ -136,7 +138,9 @@ describe('Blueprint creation freezes and preserves GenerationMatrix decisions', 
       autoConfigure,
     });
     const first = await service.createDraft(frozenRequest({ language: 'English', selectedLanguages: [], differentiationRange: 'None', dokLevel: '2' }));
-    const firstCell = first.plan[0].generationVariants[0];
+    const firstGlossary = first.plan.find((row) => row.tool === 'glossary');
+    expect(firstGlossary).toBeTruthy();
+    const firstCell = firstGlossary.generationVariants[0];
     const artifact = {
       id: 'old-context-artifact', type: 'glossary', directive: 'Key terms.',
       generationIdentity: firstCell.generationIdentity,
@@ -149,17 +153,18 @@ describe('Blueprint creation freezes and preserves GenerationMatrix decisions', 
       language: 'English', selectedLanguages: [], differentiationRange: 'None',
       dokLevel: '2', existingArtifacts: [artifact],
     }));
-    expect(reusable.plan[0].generationAction).toBe('reuse');
+    expect(reusable.plan.find((row) => row.tool === 'glossary').generationAction).toBe('reuse');
     const revisedContext = service.revise(reusable, { globalSettings: { dokLevel: '4' } });
     expect(revisedContext.ok).toBe(true);
-    expect(revisedContext.value.plan[0].generationAction).not.toBe('reuse');
+    expect(revisedContext.value.plan.find((row) => row.tool === 'glossary').generationAction).not.toBe('reuse');
     const changed = await service.createDraft(frozenRequest({
       language: 'English', selectedLanguages: [], differentiationRange: 'None',
       dokLevel: '4', existingArtifacts: [artifact],
     }));
     expect(changed.globalSettings.contextFingerprint).not.toBe(first.globalSettings.contextFingerprint);
-    expect(changed.plan[0].generationAction).not.toBe('reuse');
-    expect(changed.plan[0].existingArtifactId).toBeNull();
+    const changedGlossary = changed.plan.find((row) => row.tool === 'glossary');
+    expect(changedGlossary.generationAction).not.toBe('reuse');
+    expect(changedGlossary.existingArtifactId).toBeNull();
   });
 
   it('marks a same-context singleton for reuse and refreshes it when AI edits its directive', async () => {
@@ -179,12 +184,14 @@ describe('Blueprint creation freezes and preserves GenerationMatrix decisions', 
       })),
     });
     const bp = await service.createDraft(frozenRequest({ sourceText, existingArtifacts: [glossary] }));
-    expect(bp.plan[0].generationAction).toBe('reuse');
-    expect(bp.plan[0].existingArtifactId).toBe('glossary-existing');
+    const blueprintGlossary = bp.plan.find((row) => row.tool === 'glossary');
+    expect(blueprintGlossary.generationAction).toBe('reuse');
+    expect(blueprintGlossary.existingArtifactId).toBe('glossary-existing');
 
     const revised = await service.reviseWithAI(bp, 'add detail');
-    expect(revised.plan[0].generationAction).toBe('refresh');
-    expect(revised.plan[0].generationVariants[0].existingArtifactId).toBe('glossary-existing');
+    const revisedGlossary = revised.plan.find((row) => row.tool === 'glossary');
+    expect(revisedGlossary.generationAction).toBe('refresh');
+    expect(revisedGlossary.generationVariants[0].existingArtifactId).toBe('glossary-existing');
     expect(revised.globalSettings).toEqual(bp.globalSettings);
   });
 });

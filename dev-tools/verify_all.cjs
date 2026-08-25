@@ -172,6 +172,31 @@ const checks = [
     description: 'cmd_keys_en.json matches the source AND every lang pack has all cmd.*/palette.* keys — catches a new command silently regressing the palette to English-only. Fix: extract_cmd_keys.cjs then merge_cmd_keys.cjs.',
   },
   {
+    name: 'Reviewed command hand-source audit',
+    cmd: ['node', 'dev-tools/i18n/audit_cmd_hand_sources.cjs', '--gate', '--quiet'],
+    description: 'Every reviewed command/palette hand-translation batch is checked against all 63 packs for missing records, English payloads, placeholder drift, conflicts, and recoverable values.',
+  },
+  {
+    name: 'Command UI exact-translation reuse',
+    cmd: ['node', 'dev-tools/i18n/merge_cmd_ui_translations.cjs', '--gate', '--quiet'],
+    description: 'Every command/palette identity with a unique exact translation already present in the same pack is merged; ambiguous and context-sensitive fragments remain explicitly reported.',
+  },
+  {
+    name: 'Ctrl+K command identity staleness',
+    cmd: ['node', 'dev-tools/i18n/check_cmd_value_staleness.cjs', '--gate', '--quiet'],
+    description: 'Per-pack ratchet for command/palette values that are identical to English outside the reviewed identity allowlist; also fails when a token-safe catalog translation is available but not merged.',
+  },
+  {
+    name: 'Complete runtime language-pack coverage',
+    cmd: ['node', 'dev-tools/i18n/audit_runtime_pack_coverage.cjs', '--gate', '--quiet'],
+    description: 'Every literal runtime translation leaf has a valid value in all 63 root/deployed packs with matching placeholder multiplicity and no mirror drift.',
+  },
+  {
+    name: 'Complete UI catalog language-pack coverage',
+    cmd: ['node', 'dev-tools/i18n/audit_ui_pack_coverage.cjs', '--gate', '--quiet'],
+    description: 'Every non-empty ui_strings.js leaf has explicit coverage in all 63 root/deployed packs; English fallback presence is allowed as shape coverage but remains visible in the audit report.',
+  },
+  {
     name: 'Translation quality (i18n CI guard)',
     cmd: ['node', 'dev-tools/i18n/check_translation_quality.cjs', '--quiet'],
     description: 'Contraction stubs / compound stubs / Matter-calque / ASCII-density in non-Latin packs. Informational — promote to blocking after a future Spanglish sweep drives ascii-density to ~0.',

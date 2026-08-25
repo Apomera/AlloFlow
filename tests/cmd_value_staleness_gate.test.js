@@ -67,6 +67,39 @@ describe('planted-defect negative controls', () => {
     const src = readFileSync(TOOL, 'utf8');
     expect(src).toContain("key.startsWith('palette.ctx.')");
   });
+
+  it('classifies a token-safe catalog candidate instead of treating coverage as translation', () => {
+    const langDir = makeLangDir('cmd.open_history');
+    const catalogDir = mkdtempSync(join(tmpdir(), 'cmdcatalog-'));
+    writeFileSync(join(catalogDir, 'spanish.json'), JSON.stringify({
+      'cmd.open_history': 'Abrir historial',
+    }, null, 2));
+    const outDir = join(langDir, '_out');
+    const baseline = join(langDir, '_baseline.json');
+    let r = runTool([
+      '--lang-dir', langDir,
+      '--catalog-dir', catalogDir,
+      '--baseline', baseline,
+      '--out-dir', outDir,
+      '--write-baseline',
+    ]);
+    expect(r.status).toBe(0);
+    const report = JSON.parse(readFileSync(join(outDir, '_summary.json'), 'utf8'));
+    expect(report.totalIdentical).toBe(1);
+    expect(report.totalCatalogRecoverable).toBe(1);
+    expect(report.totalCatalogMissing).toBe(0);
+
+    r = runTool([
+      '--lang-dir', langDir,
+      '--catalog-dir', catalogDir,
+      '--baseline', baseline,
+      '--out-dir', outDir,
+      '--gate',
+      '--quiet',
+    ]);
+    expect(r.status, 'catalog candidate must not be left unmerged').toBe(1);
+    expect(r.stderr || r.stdout).toContain('ready to merge');
+  });
 });
 
 describe('the guarded staleness namespaces hold', () => {

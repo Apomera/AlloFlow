@@ -58,7 +58,7 @@ const AE_PACKET_SCRIPT_ID = 'allo-evaluation-packet';
 // Packet construction is a disclosure boundary, not merely a teacher-id filter. Every list is
 // deliberately positive: adding a field to a workspace record never makes it leave the device
 // until it is reviewed here and explicitly added to the appropriate release-state allow-list.
-const AE_PACKET_TEACHER_FIELDS = ['educatorStatement'];
+const AE_PACKET_TEACHER_FIELDS = ['educatorStatement', 'annualRationales', 'annualEvidenceRefs'];
 const AE_PACKET_STATEMENT_FIELDS = ['text'];
 const AE_PACKET_RECORD_FIELDS = ['reflection', 'acknowledged'];
 const AE_PACKET_PROFILE_FIELDS = ['id', 'code', 'name', 'building', 'assignment', 'employeeType', 'evaluator', 'dueDate', 'cycleStatus', 'frameworkVersion'];
@@ -161,6 +161,23 @@ function aeEducatorPacket(workspace, teacherId, options) {
       teacher: teacherRatings.teacher == null ? null : teacherRatings.teacher,
       lea: teacherRatings.lea == null ? null : teacherRatings.lea,
     };
+    const annualRationales = aePacketPick(teacher.annualRationales, AE_PACKET_DOMAIN_FIELDS);
+    const annualEvidenceRefs = {};
+    AE_PACKET_DOMAIN_FIELDS.forEach(function (domainId) {
+      annualEvidenceRefs[domainId] = (Array.isArray(teacher.annualEvidenceRefs && teacher.annualEvidenceRefs[domainId])
+        ? teacher.annualEvidenceRefs[domainId] : []).filter(function (token) {
+          return /^(walkthrough|formal_observation|spm):[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(String(token || ''));
+        }).slice(0, 100);
+    });
+    const hasAnnualProvenance = AE_PACKET_DOMAIN_FIELDS.some(function (domainId) {
+      return String(annualRationales[domainId] || '').trim() || annualEvidenceRefs[domainId].length;
+    });
+    // Historical finalized cycles predate annual provenance. Omit an entirely empty pair so the
+    // hardened share helper can distinguish those legacy records from an incomplete new release.
+    if (hasAnnualProvenance) {
+      packetTeacher.annualRationales = annualRationales;
+      packetTeacher.annualEvidenceRefs = annualEvidenceRefs;
+    }
   }
   const config = source.config || {};
   if (!opts.includeNames) {
@@ -675,7 +692,7 @@ function aeBuildReflectionPrompt(workspace, teacherId, domains, ratingLabels) {
   };
   const published = []
     .concat((source.walkthroughs || []).filter(function (i) { return i && i.teacherId === teacherId && i.publishedAt; }))
-    .concat((source.observations || []).filter(function (i) { return i && i.teacherId === teacherId && i.publishedAt; }));
+    .concat((source.observations || []).filter(function (i) { return i && i.teacherId === teacherId && i.evidencePublishedAt; }));
   const evidenceLines = published.map(function (record, index) {
     const tags = (record.componentTags || []).join(', ');
     const body = textOf(record);
@@ -731,14 +748,19 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
 
   const published = []
     .concat((source.walkthroughs || []).filter(function (item) { return item && item.teacherId === teacherId && item.publishedAt; }))
-    .concat((source.observations || []).filter(function (item) { return item && item.teacherId === teacherId && item.publishedAt; }));
+    .concat((source.observations || []).filter(function (item) { return item && item.teacherId === teacherId && item.evidencePublishedAt; }));
   const perDomain = {};
   domains.forEach(function (domain) { perDomain[domain.id] = 0; });
   published.forEach(function (record) {
+    // Count published source records, not component-tag associations. One
+    // observation tagged to two components in the same domain remains one
+    // evidence record for that domain; tags spanning domains cover each once.
+    const coveredDomains = new Set();
     (record.componentTags || []).forEach(function (code) {
       const domainId = componentDomain[String(code).toLowerCase()];
-      if (domainId && perDomain[domainId] != null) perDomain[domainId] += 1;
+      if (domainId && perDomain[domainId] != null) coveredDomains.add(domainId);
     });
+    coveredDomains.forEach(function (domainId) { perDomain[domainId] += 1; });
   });
 
   const rated = (teacher.ratings && teacher.ratings.domains) || {};
@@ -758,8 +780,7 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
       findings.push({
         severity: 'high', domainId: domain.id, code: 'adverse-on-thin-evidence',
         message: domain.label + t("educator_evaluation.is_rated_below_proficient_on_1q9m4x1", ' is rated below proficient on ') + count
-          + (count === 1 ? t("educator_evaluation.tagged_piece_1o0u7l9", ' tagged piece') : t("educator_evaluation.tagged_pieces_1x5d8z7", ' tagged pieces'))
-          + t("educator_evaluation.of_evidence_1m4a6qf", ' of evidence.'),
+          + (count === 1 ? t("educator_evaluation.published_evidence_record_20260824", ' published evidence record.') : t("educator_evaluation.published_evidence_records_20260824", ' published evidence records.')),
       });
     }
   });
@@ -774,8 +795,8 @@ function aeEvidenceSufficiency(workspace, teacherId, options) {
   if (expectedPieces > 0 && published.length < expectedPieces) {
     findings.push({
       severity: 'medium', code: 'below-expected-volume',
-      message: published.length + (published.length === 1 ? t("educator_evaluation.published_piece_1p4g6nf", ' published piece') : t("educator_evaluation.published_pieces_1f5y8d4", ' published pieces'))
-        + t("educator_evaluation.of_evidence_so_far_this_plan_looks_for_1e7h2a9", ' of evidence so far; this plan looks for ') + expectedPieces + t("educator_evaluation.across_the_cycle_1d7u3xk", ' across the cycle.'),
+      message: published.length + (published.length === 1 ? t("educator_evaluation.published_evidence_record_so_far_20260824", ' published evidence record') : t("educator_evaluation.published_evidence_records_so_far_20260824", ' published evidence records'))
+        + t("educator_evaluation.so_far_this_plan_looks_for_20260824", ' so far; this plan looks for ') + expectedPieces + t("educator_evaluation.across_the_cycle_1d7u3xk", ' across the cycle.'),
     });
   }
   return findings;
@@ -1076,6 +1097,14 @@ function aeDomainRatings(value) {
   const source = aePlainObject(value) ? value : {};
   return { d1: aeRatingValue(source.d1), d2: aeRatingValue(source.d2), d3: aeRatingValue(source.d3), d4: aeRatingValue(source.d4) };
 }
+function aeAnnualEvidenceRefs(value) {
+  const source = aePlainObject(value) ? value : {};
+  const clean = {};
+  ['d1', 'd2', 'd3', 'd4'].forEach((domainId) => {
+    clean[domainId] = Array.from(new Set((Array.isArray(source[domainId]) ? source[domainId] : []).map((token) => aeString(token, 160, '')).filter((token) => /^(walkthrough|formal_observation|spm):[A-Za-z0-9][A-Za-z0-9._-]{0,119}$/.test(token)))).slice(0, 100);
+  });
+  return clean;
+}
 
 function aeComponentTags(value) {
   const allowed = new Set(AE_COMPONENTS.map((component) => component.code));
@@ -1132,6 +1161,7 @@ function aeNormalizeWorkspace(value) {
     while (usedTeacherIds.has(id)) id += '-' + (index + 1);
     usedTeacherIds.add(id);
     const ratings = aePlainObject(raw.ratings) ? raw.ratings : {};
+    const annualRationales = aePlainObject(raw.annualRationales) ? raw.annualRationales : {};
     const status = aeString(raw.cycleStatus, 30, 'not_started');
     return {
       id,
@@ -1149,7 +1179,7 @@ function aeNormalizeWorkspace(value) {
       lastActivityAt: aeTimestamp(raw.lastActivityAt),
       finalizedAt: aeTimestamp(raw.finalizedAt),
       cycleLockedAt: aeTimestamp(raw.cycleLockedAt),
-      frameworkVersion: aeString(raw.frameworkVersion, 80, AE_FRAMEWORK),
+      frameworkVersion: aeString(raw.frameworkVersion, 80, config.frameworkVersion),
       weightSnapshot: aeSafeWeightSnapshot(raw.weightSnapshot),
       finalScore: aeRatingValue(raw.finalScore),
       ratings: {
@@ -1158,6 +1188,8 @@ function aeNormalizeWorkspace(value) {
         teacher: aeRatingValue(ratings.teacher),
         lea: aeRatingValue(ratings.lea),
       },
+      annualRationales: { d1: aeString(annualRationales.d1, 15000, ''), d2: aeString(annualRationales.d2, 15000, ''), d3: aeString(annualRationales.d3, 15000, ''), d4: aeString(annualRationales.d4, 15000, '') },
+      annualEvidenceRefs: aeAnnualEvidenceRefs(raw.annualEvidenceRefs),
       // Server-owned pointer to the released strengths-first summary shared to
       // the educator's Drive; the portal ignores client-sent values on save.
       releasedDoc: raw.releasedDoc && typeof raw.releasedDoc === 'object' ? {
@@ -1217,7 +1249,7 @@ function aeNormalizeWorkspace(value) {
     const item = {
       id: aeSafeId(raw.id, 'formal-' + (index + 1)), teacherId: teacherRef(raw.teacherId),
       createdAt: aeTimestamp(raw.createdAt) || aeNow(), updatedAt: aeTimestamp(raw.updatedAt),
-      frameworkVersion: aeString(raw.frameworkVersion, 80, AE_FRAMEWORK),
+      frameworkVersion: aeString(raw.frameworkVersion, 80, config.frameworkVersion),
       version: Math.min(1000, Math.max(1, Number.parseInt(raw.version, 10) || 1)),
       prework: {
         plan: aeString(prework.plan, 30000, ''), outcomes: aeString(prework.outcomes, 20000, ''),
@@ -1288,7 +1320,7 @@ function aeNormalizeWorkspace(value) {
     finalScore: aeRatingValue(raw.finalScore),
     domainRatings: aeDomainRatings(raw.domainRatings),
     weightSnapshot: aeSafeWeightSnapshot(raw.weightSnapshot),
-    frameworkVersion: aeString(raw.frameworkVersion, 80, AE_FRAMEWORK),
+    frameworkVersion: aeString(raw.frameworkVersion, 80, config.frameworkVersion),
   })).filter((snapshot) => snapshot.teacherId && snapshot.finalizedAt);
 
   return {
@@ -1408,11 +1440,11 @@ function aeSampleWorkspace() {
     { id: 'sample-c4', teacherId: teachers[3].id, recordType: 'spm', recordId: 'sample-s4', text: 'Submitted with the winter checkpoint added, as we discussed.', role: 'Teacher', author: 'Teacher 04', at: iso(3), version: 1 },
   ];
   const workspace = aeNormalizeWorkspace({
-    config: { organization: 'Sample School District', building: 'Main Building', academicYear: '2026-27', evaluatorName: 'A. Principal', evaluatorInitials: 'AP', frameworkVersion: AE_FRAMEWORK, frameworkProfile: 'maine_pepg', pepgPracticeWeight: null, sampleMode: true, setupPath: 'local' },
+    config: { organization: 'Sample School District', building: 'Main Building', academicYear: '2026-27', evaluatorName: 'A. Principal', evaluatorInitials: 'AP', frameworkVersion: AE_FRAMEWORKS.maine_pepg.versionTag, frameworkProfile: 'maine_pepg', pepgPracticeWeight: null, sampleMode: true, setupPath: 'local' },
     teachers, walkthroughs, observations, spms, comments,
     cycleSnapshots: [
-      { id: 'sample-cycle-1a', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2024-25', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2025-06-12T20:30:00.000Z', finalScore: 2.08, domainRatings: { d1: 2, d2: 2, d3: 2, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
-      { id: 'sample-cycle-1b', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2025-26', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2026-06-11T20:30:00.000Z', finalScore: 2.22, domainRatings: { d1: 2, d2: 2, d3: 2.5, d4: 2 }, frameworkVersion: AE_FRAMEWORK },
+      { id: 'sample-cycle-1a', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2024-25', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2025-06-12T20:30:00.000Z', finalScore: 2.08, domainRatings: { d1: 2, d2: 2, d3: 2, d4: 2 }, frameworkVersion: AE_FRAMEWORKS.maine_pepg.versionTag },
+      { id: 'sample-cycle-1b', teacherId: teachers[0].id, staffCodeSnapshot: teachers[0].code, academicYear: '2025-26', buildingSnapshot: teachers[0].building, employeeTypeSnapshot: 'professional', finalizedAt: '2026-06-11T20:30:00.000Z', finalScore: 2.22, domainRatings: { d1: 2, d2: 2, d3: 2.5, d4: 2 }, frameworkVersion: AE_FRAMEWORKS.maine_pepg.versionTag },
     ],
     audit: [
       { id: 'sample-a1', teacherId: teachers[0].id, event: 'ASSIGNED', summary: 'Formal observation assigned', actor: 'A. Principal', role: 'Evaluator', at: iso(45), entityType: 'formal_observation', entityId: 'sample-f1', version: 1 },
@@ -1590,7 +1622,7 @@ function aeSimulationSummary(workspace) {
 
 function aeBlankWorkspace() {
   return aeNormalizeWorkspace({
-    config: { organization: 'My School District', building: 'My School', academicYear: aeSchoolYear(), evaluatorName: 'Principal', evaluatorInitials: '', frameworkVersion: AE_FRAMEWORK, frameworkProfile: 'maine_pepg', pepgPracticeWeight: null, sampleMode: false },
+    config: { organization: 'My School District', building: 'My School', academicYear: aeSchoolYear(), evaluatorName: 'Principal', evaluatorInitials: '', frameworkVersion: AE_FRAMEWORKS.maine_pepg.versionTag, frameworkProfile: 'maine_pepg', pepgPracticeWeight: null, sampleMode: false },
     teachers: [], walkthroughs: [], observations: [], spms: [], comments: [], audit: [], cycleSnapshots: [],
   });
 }
@@ -1797,6 +1829,7 @@ function aeTeacherNextAction(workspace, teacher) {
     5: t("educator_evaluation.record_post_conference_1r2t4v6", 'Record post-conference'), 6: t("educator_evaluation.complete_ratings_and_sign_1x3z5b7", 'Complete ratings and sign'), 8: t("educator_evaluation.finalize_observation_1d4f6h8", 'Finalize observation'),
   };
   const waitingObservationLabels = { 0: t("educator_evaluation.waiting_for_prework_1j5l7n9", 'Waiting for prework'), 4: t("educator_evaluation.waiting_for_reflection_1p2r4t6", 'Waiting for reflection'), 7: t("educator_evaluation.waiting_for_educator_acknowledgment_1v3x5z7", 'Waiting for educator acknowledgment') };
+  const teacherObservationLabels = { 0: 'Complete pre-observation work', 4: 'Submit your post-observation reflection', 7: 'Acknowledge the observation rating record' };
   const evaluatorObservation = observations.find((item) => evaluatorObservationLabels[aeStepOfObservation(item)]);
   if (evaluatorObservation) {
     const step = aeStepOfObservation(evaluatorObservation);
@@ -1810,12 +1843,12 @@ function aeTeacherNextAction(workspace, teacher) {
   const waitingObservation = observations.find((item) => waitingObservationLabels[aeStepOfObservation(item)]);
   if (waitingObservation) {
     const step = aeStepOfObservation(waitingObservation);
-    return { tab: 'formal', label: waitingObservationLabels[step], detail: t("educator_evaluation.formal_observation_step_1b4d6f8", 'Formal observation step ') + (step + 1) + t("educator_evaluation.of_10_1af6cv5", ' of 10'), owner: 'teacher' };
+    return { tab: 'formal', label: waitingObservationLabels[step], teacherLabel: teacherObservationLabels[step], detail: t("educator_evaluation.formal_observation_step_1b4d6f8", 'Formal observation step ') + (step + 1) + t("educator_evaluation.of_10_1af6cv5", ' of 10'), owner: 'teacher' };
   }
-  if (spm && ['draft', 'returned'].includes(spm.status)) return { tab: 'spm', label: t("educator_evaluation.waiting_for_spm_slo_submission_1r3t5v7", 'Waiting for SPM / SLO submission'), detail: spm.status === 'returned' ? t("educator_evaluation.revision_requested_1x2z4b6", 'Revision requested') : t("educator_evaluation.educator_draft_1d3f5h7", 'Educator draft'), owner: 'teacher' };
-  if (spm && spm.status === 'approved') return { tab: 'spm', label: t("educator_evaluation.waiting_for_spm_slo_results_1j2l4n6", 'Waiting for SPM / SLO results'), detail: t("educator_evaluation.goal_approved_1p3r5t7", 'Goal approved'), owner: 'teacher' };
+  if (spm && ['draft', 'returned'].includes(spm.status)) return { tab: 'spm', label: t("educator_evaluation.waiting_for_spm_slo_submission_1r3t5v7", 'Waiting for SPM / SLO submission'), teacherLabel: spm.status === 'returned' ? 'Revise and resubmit your SPM / SLO plan' : 'Complete and submit your SPM / SLO plan', detail: spm.status === 'returned' ? t("educator_evaluation.revision_requested_1x2z4b6", 'Revision requested') : t("educator_evaluation.educator_draft_1d3f5h7", 'Educator draft'), owner: 'teacher' };
+  if (spm && spm.status === 'approved') return { tab: 'spm', label: t("educator_evaluation.waiting_for_spm_slo_results_1j2l4n6", 'Waiting for SPM / SLO results'), teacherLabel: 'Submit your year-end SPM / SLO results', detail: t("educator_evaluation.goal_approved_1p3r5t7", 'Goal approved'), owner: 'teacher' };
   const unacknowledgedWalkthrough = (workspace.walkthroughs || []).find((item) => item.teacherId === teacher.id && item.publishedAt && !item.teacherAcknowledgedAt);
-  if (unacknowledgedWalkthrough) return { tab: 'walkthroughs', label: t("educator_evaluation.waiting_for_walkthrough_acknowledgment_1v2x4z6", 'Waiting for walkthrough acknowledgment'), detail: t("educator_evaluation.published_evidence_available_1b3d5f7", 'Published evidence available'), owner: 'teacher' };
+  if (unacknowledgedWalkthrough) return { tab: 'walkthroughs', label: t("educator_evaluation.waiting_for_walkthrough_acknowledgment_1v2x4z6", 'Waiting for walkthrough acknowledgment'), teacherLabel: 'Acknowledge published walkthrough evidence', detail: t("educator_evaluation.published_evidence_available_1b3d5f7", 'Published evidence available'), owner: 'teacher' };
   if (!(workspace.observations || []).some((item) => item.teacherId === teacher.id)) return { tab: 'formal', label: t("educator_evaluation.assign_formal_observation_1h4j6l8", 'Assign formal observation'), detail: t("educator_evaluation.formal_cycle_not_started_1n5p7r9", 'Formal cycle not started'), owner: 'evaluator' };
   return { tab: 'overview', label: t("educator_evaluation.complete_final_evaluation_1t2v4x6", 'Complete final evaluation'), detail: t("educator_evaluation.review_ratings_and_release_status_1z3b5d7", 'Review ratings and release status'), owner: 'evaluator' };
 }
@@ -2058,6 +2091,38 @@ function AeReleaseReview({ state, onCancel, onConfirm }) {
   </div>;
 }
 
+function AeActionReview({ review, onCancel, onConfirm }) {
+  const firstRef = React.useRef(null);
+  const [confirmed, setConfirmed] = React.useState(false);
+  React.useEffect(() => {
+    const returnFocus = document.activeElement;
+    setConfirmed(false);
+    if (firstRef.current) firstRef.current.focus();
+    return () => { if (returnFocus && typeof returnFocus.focus === 'function' && document.contains(returnFocus)) returnFocus.focus(); };
+  }, [review.token]);
+  const trapFocus = (event) => {
+    if (event.key === 'Escape') { event.preventDefault(); onCancel(); return; }
+    if (event.key !== 'Tab') return;
+    const focusables = event.currentTarget.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled])');
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  };
+  return <div className="ae-onboarding-overlay" role="dialog" aria-modal="true" aria-labelledby="ae-action-review-title" aria-describedby="ae-action-review-description" onKeyDown={trapFocus}>
+    <section className="ae-onboarding-card ae-release-review">
+      <div className="ae-onboarding-kicker">Review before recording</div>
+      <h2 id="ae-action-review-title">{review.title}</h2>
+      <p id="ae-action-review-description">{review.description}</p>
+      {Array.isArray(review.facts) && review.facts.length > 0 && <dl className="ae-review-facts">{review.facts.map((fact, index) => <React.Fragment key={String(fact[0]) + index}><dt>{fact[0]}</dt><dd>{fact[1]}</dd></React.Fragment>)}</dl>}
+      {review.warning && <div className={'ae-note ' + (review.danger ? 'ae-danger' : 'ae-warn')}><strong>{review.warning}</strong></div>}
+      <label className="ae-release-confirm"><input ref={firstRef} type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)}/><span>{review.acknowledgement || 'I reviewed the educator, content, visibility, and lock effect shown above.'}</span></label>
+      <div className="ae-release-actions"><button type="button" className="ae-btn" onClick={onCancel}>Cancel</button><button type="button" className={'ae-btn ' + (review.danger ? 'ae-btn-danger' : 'ae-btn-primary')} disabled={!confirmed} onClick={onConfirm}>{review.confirmLabel || 'Confirm and record'}</button></div>
+    </section>
+  </div>;
+}
+
 const AE_GUIDED_TOUR_STEPS = [
   { tab: 'overview', title: t("educator_evaluation.see_the_year_at_a_glance_1lkts3i", 'See the year at a glance'), text: t("educator_evaluation.review_completion_due_date_workload_framework_weighting_an_fhkim2", 'Review completion, due-date workload, framework weighting, and the currently selected fictional educator.') },
   { tab: 'trends', title: t("educator_evaluation.tour_trends_title_20260823", 'Plan visit coverage'), text: t("educator_evaluation.tour_trends_text_20260823", 'Trends pairs longitudinal educator views with roster-wide walkthrough coverage and domain documentation counts.') },
@@ -2109,9 +2174,31 @@ function AeDonut({ segments, centerTop, centerBottom, label }) {
   );
 }
 
+const AeActionReviewContext = typeof React.createContext === 'function'
+  ? React.createContext(null)
+  : { Provider: ({ children }) => children };
+const aeUseActionReview = () => typeof React.useContext === 'function' ? React.useContext(AeActionReviewContext) : null;
+
 function AeThread({ workspace, recordType, recordId, teacherId, role, onAdd, readOnlyPreview = false }) {
   const [text, setText] = React.useState('');
+  const requestActionReview = aeUseActionReview();
   const comments = workspace.comments.filter((comment) => comment.recordType === recordType && comment.recordId === recordId);
+  const beginPost = () => {
+    const commentText = text.trim();
+    if (!commentText) return;
+    const teacher = workspace.teachers.find((item) => item.id === teacherId);
+    const perform = () => { onAdd({ recordType, recordId, teacherId, text: commentText }); setText(''); };
+    if (!requestActionReview) { perform(); return; }
+    requestActionReview({
+      title: 'Post this shared comment?',
+      description: 'The comment will be appended to this record and visible to its authorized educator and evaluator participants.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : teacherId], ['Record', recordType.replace(/_/g, ' ') + ' · ' + recordId], ['Comment', commentText], ['Editability', 'Append-only after posting']],
+      warning: 'This does not alter the original evidence. If context changes later, add another comment rather than rewriting history.',
+      acknowledgement: 'I reviewed the exact comment and the educator record that will receive it.',
+      confirmLabel: 'Post shared comment',
+      onConfirm: perform,
+    });
+  };
   return <div className="ae-thread">
     <h4>{t("educator_evaluation.conversation_17o4v1i", "Conversation")} <span className="ae-chip ae-chip-neutral">{comments.length}</span></h4>
     <p className="ae-sub">{t("educator_evaluation.published_comments_are_appended_to_this_record_and_cannot__1d8q75r", "Published comments are appended to this record and cannot alter the original evidence.")}</p>
@@ -2121,7 +2208,7 @@ function AeThread({ workspace, recordType, recordId, teacherId, role, onAdd, rea
     <label className="ae-field"><span>{t("educator_evaluation.add_a_shared_comment_177alq1", "Add a shared comment")}</span>
       <textarea className="ae-textarea" value={text} maxLength={3000} readOnly={readOnlyPreview} aria-describedby={readOnlyPreview ? 'ae-preview-readonly-help' : undefined} onChange={(event) => setText(event.target.value)} placeholder={role === 'teacher' ? t("educator_evaluation.add_context_or_ask_a_question_1frz89c", 'Add context or ask a question…') : t("educator_evaluation.add_feedback_or_answer_a_question_9ojcfz", 'Add feedback or answer a question…')} />
     </label>
-    <button type="button" className="ae-btn" disabled={readOnlyPreview || !text.trim()} onClick={() => { onAdd({ recordType, recordId, teacherId, text: text.trim() }); setText(''); }}>{t("educator_evaluation.post_comment_4q20ym", "Post comment")}</button>
+    <button type="button" className="ae-btn" disabled={readOnlyPreview || !text.trim()} onClick={beginPost}>{t("educator_evaluation.post_comment_4q20ym", "Review comment")}</button>
     {readOnlyPreview && <p className="ae-help" id="ae-preview-readonly-help">{t("educator_evaluation.preview_only_shared_comments_can_be_added_from_an_educator_ckoxtu", "Preview only. Shared comments can be added from an educator packet or the authenticated district portal.")}</p>}
   </div>;
 }
@@ -2137,12 +2224,37 @@ function AeFrameworkReference() {
   </div>;
 }
 
-function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiReflectionEnabled, askForReflection, reflection }) {
+function aeAnnualEvidenceOptions(workspace, teacherId) {
+  const options = [];
+  (workspace.walkthroughs || []).filter((item) => item.teacherId === teacherId && item.publishedAt).forEach((item) => options.push({
+    token: 'walkthrough:' + item.id,
+    label: 'Walkthrough · ' + aeDate(item.date || item.publishedAt) + (item.subject ? ' · ' + item.subject : ''),
+    tags: item.componentTags || [],
+  }));
+  (workspace.observations || []).filter((item) => item.teacherId === teacherId && item.evidencePublishedAt).forEach((item) => options.push({
+    token: 'formal_observation:' + item.id,
+    label: 'Formal observation · ' + aeDate(item.observedAt || item.evidencePublishedAt || item.createdAt),
+    tags: item.componentTags || [],
+  }));
+  (workspace.spms || []).filter((item) => item.teacherId === teacherId && (item.lockedAt || item.status === 'locked')).forEach((item) => options.push({
+    token: 'spm:' + item.id,
+    label: 'Locked SPM / SLO' + (item.goal ? ' · ' + String(item.goal).slice(0, 90) : '') + ' · ' + aeDate(item.lockedAt),
+    tags: [],
+  }));
+  return options;
+}
+
+function AeRatingComposer({ workspace, teacher, role, updateTeacher, evidenceFindings, aiReflectionEnabled, askForReflection, reflection, requestActionReview }) {
   const [releaseChecked, setReleaseChecked] = React.useState(false);
   React.useEffect(() => { setReleaseChecked(false); }, [teacher.id]);
   const profile = aeWeightProfile(teacher);
   const obs = aeObservationScore(teacher.ratings);
   const overall = aeOverallScore(teacher);
+  const annualRationales = teacher.annualRationales || {};
+  const annualEvidenceRefs = teacher.annualEvidenceRefs || {};
+  const annualEvidence = React.useMemo(() => aeAnnualEvidenceOptions(workspace, teacher.id), [workspace, teacher.id]);
+  const ratedDomains = AE_DOMAINS.filter((domain) => aeNumberOrNull(teacher.ratings.domains[domain.id]) !== null);
+  const provenanceMissing = ratedDomains.filter((domain) => !String(annualRationales[domain.id] || '').trim() || !(annualEvidenceRefs[domain.id] || []).length);
   const missing = [];
   if (obs === null) missing.push('all four O&P domain ratings');
   profile.forEach((part) => {
@@ -2157,6 +2269,17 @@ function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiRe
       else draft.ratings[key] = rating;
     }, 'RATING_UPDATED', 'Rating input updated');
   };
+  const setAnnualRationale = (domainId, value) => updateTeacher(teacher.id, (draft) => {
+    aeFreezeTeacherCycle(draft);
+    draft.annualRationales = Object.assign({ d1: '', d2: '', d3: '', d4: '' }, draft.annualRationales || {}, { [domainId]: String(value).slice(0, 15000) });
+  }, 'RATING_UPDATED', 'Annual domain rationale updated');
+  const toggleAnnualEvidence = (domainId, token, checked) => updateTeacher(teacher.id, (draft) => {
+    aeFreezeTeacherCycle(draft);
+    const current = Object.assign({ d1: [], d2: [], d3: [], d4: [] }, draft.annualEvidenceRefs || {});
+    const values = Array.isArray(current[domainId]) ? current[domainId] : [];
+    current[domainId] = checked ? Array.from(new Set(values.concat(token))).slice(0, 100) : values.filter((item) => item !== token);
+    draft.annualEvidenceRefs = current;
+  }, 'RATING_UPDATED', 'Annual supporting evidence updated');
   const recordFinalRelease = () => updateTeacher(teacher.id, (draft) => {
     draft.finalizedAt = aeNow();
     draft.cycleStatus = 'finalized';
@@ -2164,6 +2287,23 @@ function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiRe
     draft.weightSnapshot = profile.map((part) => ({ id: part.id, label: part.label, weight: part.weight }));
     draft.frameworkVersion = AE_ACTIVE_FW.versionTag;
   }, 'RELEASED', 'Final rating release recorded');
+  const beginFinalRelease = () => {
+    if (!requestActionReview) { recordFinalRelease(); return; }
+    requestActionReview({
+    title: 'Record final annual release for ' + teacher.name + '?',
+    description: 'This freezes the annual ratings, written rationales, supporting evidence references, calculation, framework, and weights for this cycle.',
+    facts: [
+      ['Educator', teacher.name + ' · ' + teacher.code],
+      ['Final calculation', AE_ACTIVE_FW.id === 'portland_me' ? ((aePortlandPracticeRating(teacher.ratings.domains) || {}).label || 'Complete') : aeRoundedScore(overall).toFixed(2) + ' · ' + aeBand(overall)],
+      ['Annual basis', ratedDomains.length + ' domain rationales · ' + ratedDomains.reduce((count, domain) => count + (annualEvidenceRefs[domain.id] || []).length, 0) + ' evidence references'],
+      ['Lock effect', 'The cycle and annual provenance become read-only.'],
+    ],
+    warning: 'Confirm the official-system release separately. This action records and locks the local or portal cycle.',
+    acknowledgement: 'I reviewed every annual rating, rationale, and supporting evidence reference and am ready to lock this cycle.',
+    confirmLabel: 'Confirm final release',
+    onConfirm: recordFinalRelease,
+    });
+  };
   return <div className="ae-card">
     <div className="ae-record-head"><div><h3>{role === 'evaluator' ? t("educator_evaluation.annual_summative_calculation_preview_uacw2w", 'Annual summative calculation preview') : t("educator_evaluation.how_your_final_rating_is_calculated_1opgwi1", 'How your final rating is calculated')}</h3><p className="ae-sub">{role === 'evaluator'
       ? t("educator_evaluation.enter_cycle_level_domain_judgments_after_reviewing_all_rel_9ulz1r", 'Enter cycle-level domain judgments after reviewing all relevant observations, walkthroughs, artifacts, and professional-practice evidence. Observation-specific ratings stay separate; the system performs arithmetic only.')
@@ -2178,6 +2318,8 @@ function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiRe
         <label className="ae-field"><span>{t("educator_evaluation.human_selected_rating_1mz5eyx", "Human-selected rating")}</span><select className="ae-select" value={teacher.ratings.domains[domain.id] == null ? '' : teacher.ratings.domains[domain.id]} disabled={role !== 'evaluator' || !!teacher.finalizedAt} onChange={(event) => setRating(domain.id, event.target.value)}>
           <option value="">{t("educator_evaluation.not_rated_17t3qdk", "Not rated")}</option>{AE_RATINGS.map((rating) => <option key={rating.value} value={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}
         </select></label>
+        {(role === 'evaluator' || teacher.finalizedAt) && <><label className="ae-field"><span>Annual rationale</span><textarea className="ae-textarea" style={{ minHeight: 90 }} maxLength={15000} value={annualRationales[domain.id] || ''} disabled={role !== 'evaluator' || !!teacher.finalizedAt} onChange={(event) => setAnnualRationale(domain.id, event.target.value)} placeholder="Explain how the cycle evidence supports this annual domain judgment."/></label>
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }} disabled={role !== 'evaluator' || !!teacher.finalizedAt}><legend className="ae-legend-label">Supporting published or locked evidence</legend>{annualEvidence.length === 0 ? <p className="ae-help">Publish walkthrough or formal-observation evidence, or lock an SPM / SLO record, before final release.</p> : annualEvidence.map((item) => <label className="ae-check" key={domain.id + '-' + item.token}><input type="checkbox" checked={(annualEvidenceRefs[domain.id] || []).includes(item.token)} onChange={(event) => toggleAnnualEvidence(domain.id, item.token, event.target.checked)}/><span>{item.label}{item.tags.some((tag) => String(tag).startsWith(domain.code)) ? ' · tagged to this domain' : ''}</span></label>)}</fieldset></>}
       </div>)}
     </div>
     <div className="ae-form-grid" style={{ marginTop: 12 }}>
@@ -2188,7 +2330,7 @@ function AeRatingComposer({ teacher, role, updateTeacher, evidenceFindings, aiRe
     {AE_ACTIVE_FW.id === 'portland_me' && (() => { const rollup = aePortlandPracticeRating(teacher.ratings.domains); return rollup ? <div className="ae-note" style={{ marginTop: 10 }}><strong>{t("educator_evaluation.practice_rating_guidebook_roll_up_1gx63z6", "Practice rating (guidebook roll-up):")} {rollup.label}</strong>, {rollup.rule}. The guidebook derives this rating from the four domain ratings by rule, not by averaging; the numeric average never appears on official Portland forms. Student growth combines per the district’s current plan documents. Confirm against the current PEPG plan; this mirrors guidebook v1.0.</div> : null; })()}
     <div className="ae-note ae-warn">{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.this_is_a_planning_preview_not_an_official_pde_13_1_form_f_10do9m2", 'This is a planning preview, not an official PDE 13-1 form. Follow your LEA’s approved process and enter/release the official summative form in PEERS or the district’s authorized record system.') : t("educator_evaluation.this_is_a_planning_preview_not_an_official_pepg_summative__foogxv", 'This is a planning preview, not an official PEPG summative form. Your district’s PEPG plan (developed with its teacher-majority steering committee) governs the official process, rating levels, and forms; record the official summative rating in the district-authorized system.')}</div>
     {teacher.finalizedAt && <div className="ae-note ae-ok" style={{ marginTop: 10 }}><strong>{t("educator_evaluation.final_release_recorded_11c3x9z", "Final release recorded ·")} {Number(teacher.finalScore == null ? aeRoundedScore(overall) : teacher.finalScore).toFixed(2)}</strong><br/>{t("educator_evaluation.released_i33a4u", "Released")} {aeDateTime(teacher.finalizedAt)}. This local receipt does not replace the official record.</div>}
-    {!teacher.finalizedAt && role === 'evaluator' && overall !== null && <div style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={releaseChecked} onChange={(event) => setReleaseChecked(event.target.checked)}/><span>{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.i_confirm_the_official_final_rating_form_has_already_been__tji0m8", 'I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.') : t("educator_evaluation.i_confirm_the_official_summative_rating_has_already_been_r_ugj5jr", 'I confirm the official summative rating has already been recorded through the district-authorized PEPG process.')}</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!releaseChecked} onClick={recordFinalRelease}>{t("educator_evaluation.record_final_release_q8qg6h", "Record final release")}</button><p className="ae-help">{t("educator_evaluation.this_locks_the_local_cycle_and_advances_the_teachers_evalu_1t38zzd", "This locks the local cycle and advances the “teachers evaluated” completion pie.")}</p></div>}
+    {!teacher.finalizedAt && role === 'evaluator' && overall !== null && <div style={{ marginTop: 12 }}>{provenanceMissing.length > 0 && <div className="ae-note ae-warn" style={{ marginBottom: 10 }}><strong>Annual basis incomplete.</strong> Add a written rationale and at least one eligible supporting record for {provenanceMissing.map((domain) => 'Domain ' + domain.code).join(', ')}.</div>}<label className="ae-check"><input type="checkbox" checked={releaseChecked} onChange={(event) => setReleaseChecked(event.target.checked)}/><span>{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.i_confirm_the_official_final_rating_form_has_already_been__tji0m8", 'I confirm the official final rating form has already been released in PEERS or the LEA-authorized record system.') : t("educator_evaluation.i_confirm_the_official_summative_rating_has_already_been_r_ugj5jr", 'I confirm the official summative rating has already been recorded through the district-authorized PEPG process.')}</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!releaseChecked || provenanceMissing.length > 0} onClick={beginFinalRelease}>{t("educator_evaluation.record_final_release_q8qg6h", "Review final release")}</button><p className="ae-help">{t("educator_evaluation.this_locks_the_local_cycle_and_advances_the_teachers_evalu_1t38zzd", "This locks the local cycle and advances the “teachers evaluated” completion pie.")}</p></div>}
   </div>;
 }
 
@@ -2285,7 +2427,7 @@ function AeRealWorkLaunch({ workspace, setTab }) {
   </section>;
 }
 
-function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, setRole, updateTeacher, setTab, aiReflectionEnabled, askForReflection, reflection, readOnlyPreview = false, isRemote = false }) {
+function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, setRole, updateTeacher, setTab, aiReflectionEnabled, askForReflection, reflection, readOnlyPreview = false, isRemote = false, requestActionReview }) {
   const evidenceFindings = React.useMemo(() => (selectedTeacher ? aeEvidenceSufficiency(workspace, selectedTeacher.id, { domains: AE_DOMAINS, componentsByDomain: AE_ACTIVE_FW.components || null, expectedPieces: AE_ACTIVE_FW.evidenceTarget || 0 }) : []), [workspace, selectedTeacher]);
   const isEvaluator = role === 'evaluator';
   const visibleTeachers = isEvaluator ? workspace.teachers : (selectedTeacher ? [selectedTeacher] : []);
@@ -2313,7 +2455,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, se
     .filter((item) => item.action.owner === 'evaluator')
     .sort((a, b) => String(a.teacher.dueDate || '9999-12-31').localeCompare(String(b.teacher.dueDate || '9999-12-31')) || a.teacher.name.localeCompare(b.teacher.name));
   const evaluatorQueue = showAllQueue ? evaluatorQueueAll : evaluatorQueueAll.slice(0, 6);
-  const openNextAction = (teacher, action) => { setSelectedTeacherId(teacher.id); setTab(action.tab); };
+  const openNextAction = (teacher, action) => { setSelectedTeacherId(teacher.id); setTab(action.tab); setTimeout(() => { const panel = document.getElementById('ae-panel'); if (panel) panel.focus(); }, 0); };
   return <div className="ae-page">
     <div className="ae-heading"><div><h2>{isEvaluator ? t("educator_evaluation.evaluation_overview_qv05eq", 'Evaluation overview') : t("educator_evaluation.my_evaluation_gfi35n", 'My evaluation')}</h2><p>{t("educator_evaluation.completion_means_the_final_rating_record_has_been_finalize_1jispfg", "Completion means the final rating record has been finalized, not that a walkthrough occurred.")}</p></div>
       {isEvaluator && <label className="ae-field" style={{ minWidth: 230, margin: 0 }}><span>{t("educator_evaluation.selected_educator_2guy6p", "Selected educator")}</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => setSelectedTeacherId(event.target.value)}>
@@ -2323,6 +2465,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, se
     <div className="ae-grid">
       {workspace.config.sampleMode && <AeSampleEvaluationRehearsal workspace={workspace} setSelectedTeacherId={setSelectedTeacherId} setRole={setRole} setTab={setTab}/>}
       {!isRemote && isEvaluator && !workspace.educatorPacketMode && !workspace.config.sampleMode && <AeRealWorkLaunch workspace={workspace} setTab={setTab}/>}
+      {!isEvaluator && selectedTeacher && (() => { const action = aeTeacherNextAction(workspace, selectedTeacher); const educatorLabel = action.teacherLabel || (action.owner === 'evaluator' ? 'No action required from you right now' : action.label); return <section className="ae-card ae-span-12" aria-labelledby="ae-educator-next-title"><div className="ae-record-head"><div><div className="ae-onboarding-kicker">Your next step</div><h3 id="ae-educator-next-title">{educatorLabel}</h3><p className="ae-sub">{action.detail}</p></div><span className={'ae-chip ' + (action.owner === 'teacher' ? 'ae-chip-purple' : action.owner === 'complete' ? 'ae-chip-good' : 'ae-chip-neutral')}>{action.owner === 'teacher' ? 'Your turn' : action.owner === 'complete' ? 'Complete' : 'Evaluator’s turn'}</span></div>{['teacher', 'complete'].includes(action.owner) && <div className="ae-actions" style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview && action.owner === 'teacher'} onClick={() => openNextAction(selectedTeacher, action)}>{readOnlyPreview && action.owner === 'teacher' ? 'Preview only' : educatorLabel}</button></div>}</section>; })()}
       {isEvaluator && (workload.overdue > 0 || workload.soon > 0 || workload.month > 0) && <section className="ae-card ae-span-12" aria-labelledby="ae-workload-title"><h3 id="ae-workload-title">{t("educator_evaluation.coming_due_ry9pkk", "Coming due")}</h3><p className="ae-sub">{t("educator_evaluation.open_cycles_by_due_date_a_band_is_triage_for_your_calendar_15zfrim", "Open cycles by due date. A band is triage for your calendar, not a judgment about anyone.")}</p><div className="ae-grid" style={{ marginTop: 10 }}>
         <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.overdue ? '#b91c1c' : undefined }}><strong>{workload.overdue}</strong><span>{t("educator_evaluation.past_due_date_1pu1i2t", "past due date")}</span></div>
         <div className="ae-span-4 ae-stat" style={{ borderLeftColor: workload.soon ? '#b45309' : undefined }}><strong>{workload.soon}</strong><span>{t("educator_evaluation.due_within_14_days_1xnpchg", "due within 14 days")}</span></div>
@@ -2368,7 +2511,7 @@ function AeOverview({ workspace, selectedTeacher, setSelectedTeacherId, role, se
         return <section className="ae-card ae-span-12" aria-labelledby="ae-evidence-count-title"><h3 id="ae-evidence-count-title">{t("educator_evaluation.evidence_collected_this_cycle_1i65e5v", "Evidence collected this cycle")}</h3><div className="ae-grid" style={{ marginTop: 10 }}><div className="ae-span-4 ae-stat"><strong>{pieces}</strong><span>{t("educator_evaluation.portal_tracked_evidence_pieces_1qci6ac", "portal-tracked evidence pieces")}</span></div><div className="ae-span-8"><p className="ae-sub">{t("educator_evaluation.the_guidebook_calls_for_at_least_nine_pieces_of_evidence_p_1pzljv9", "The guidebook calls for at least nine pieces of evidence per cycle across the full range of practice: including an observation cycle, and possibly walk-throughs, student materials, parent communication, surveys, and team-meeting performance. This counter sees only what lives in this portal (")}{published} {t("educator_evaluation.published_walkthrough_1fw5err", "published walkthrough")}{published === 1 ? '' : 's'} + {observed} observation{observed === 1 ? '' : 's'} {t("educator_evaluation.with_published_evidence_evidence_gathered_outside_it_count_hbhlh9", "with published evidence); evidence gathered outside it counts toward the nine as well.")}</p></div></div></section>;
       })()}
       {selectedTeacher && <AeEducatorStatement teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} readOnlyPreview={readOnlyPreview} />}
-      {selectedTeacher && <section className="ae-span-12" id="ae-annual-rating-composer"><AeRatingComposer teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} evidenceFindings={evidenceFindings} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} /></section>}
+      {selectedTeacher && <section className="ae-span-12" id="ae-annual-rating-composer"><AeRatingComposer workspace={workspace} teacher={selectedTeacher} role={role} updateTeacher={updateTeacher} evidenceFindings={evidenceFindings} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} requestActionReview={requestActionReview}/></section>}
     </div>
   </div>;
 }
@@ -2577,12 +2720,15 @@ function AeComponentChecks({ selected, onChange, disabled }) {
 }
 
 const AE_WALK_DRAFT_KEY = 'alloflow_ae_walkthrough_draft_v1';
+function aeMeaningfulWalkthroughDraft(value) {
+  return !!(value && (String(value.evidence || '').trim() || String(value.interpretation || '').trim() || String(value.subject || '').trim() || (Array.isArray(value.componentTags) && value.componentTags.length)));
+}
 function aeHasWalkthroughDraft() {
   try {
     const raw = sessionStorage.getItem(AE_WALK_DRAFT_KEY);
     if (!raw) return false;
     const saved = JSON.parse(raw);
-    return !!(saved && typeof saved === 'object' && (String(saved.evidence || '').trim() || String(saved.interpretation || '').trim() || String(saved.subject || '').trim() || saved.startedAt));
+    return !!(saved && typeof saved === 'object' && aeMeaningfulWalkthroughDraft(saved));
   } catch (_) { return false; }
 }
 
@@ -2590,12 +2736,13 @@ function aeHasWalkthroughDraft() {
 // draft lived in AeWalkthroughs, every keystroke re-rendered the whole tab
 // including the visit-record list; with a year of records that measured
 // ~117ms mean per keystroke at 4x CPU throttle.
-function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, addTeacher = null, canAddStaff = false, onCreated }) {
+function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, editingRecord = null, updateWalkthroughDraft = null, requestActionReview, addTeacher = null, canAddStaff = false, onCreated }) {
   const blank = () => ({ teacherId: selectedTeacherId || (teachers[0] && teachers[0].id) || '', date: aeToday(), startedAt: '', durationMin: '8', announced: 'unannounced', lessonPhase: 'middle', subject: '', evidence: '', interpretation: '', componentTags: [], privacyChecked: false });
   // Switching tool tabs unmounts the walkthroughs tab: sessionStorage keeps
   // the typed evidence for the life of the browser tab so a mid-visit
   // interruption cannot erase it.
   const [draft, setDraft] = React.useState(() => {
+    if (editingRecord) return Object.assign(blank(), editingRecord, { privacyChecked: !!editingRecord.privacyChecked });
     try {
       const raw = sessionStorage.getItem(AE_WALK_DRAFT_KEY);
       if (raw) {
@@ -2611,11 +2758,11 @@ function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, add
   });
   React.useEffect(() => {
     try {
-      if (String(draft.evidence || '').trim() || String(draft.interpretation || '').trim() || String(draft.subject || '').trim() || draft.startedAt) sessionStorage.setItem(AE_WALK_DRAFT_KEY, JSON.stringify(draft));
+      if (editingRecord) return;
+      if (aeMeaningfulWalkthroughDraft(draft)) sessionStorage.setItem(AE_WALK_DRAFT_KEY, JSON.stringify(draft));
       else sessionStorage.removeItem(AE_WALK_DRAFT_KEY);
     } catch (_) {}
-  }, [draft]);
-  React.useEffect(() => { setDraft((current) => (current.startedAt ? current : Object.assign({}, current, { startedAt: aeNow() }))); }, []);
+  }, [draft, editingRecord]);
   React.useEffect(() => { if (selectedTeacherId) setDraft((value) => (value.teacherId ? value : Object.assign({}, value, { teacherId: selectedTeacherId }))); }, [selectedTeacherId]);
   const [quickAdd, setQuickAdd] = React.useState(false);
   const [quickName, setQuickName] = React.useState('');
@@ -2629,10 +2776,11 @@ function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, add
     setQuickName('');
     setQuickCode('');
   };
-  const submit = (published) => {
+  const persist = (published) => {
     if (!draft.teacherId || !draft.evidence.trim()) return;
     if (published && !draft.privacyChecked) return;
-    const id = createWalkthrough(Object.assign({}, draft, { published }));
+    const payload = Object.assign({}, draft, { startedAt: draft.startedAt || aeNow(), published });
+    const id = editingRecord && typeof updateWalkthroughDraft === 'function' ? updateWalkthroughDraft(editingRecord.id, payload) : createWalkthrough(payload);
     setDraft(blank());
     // onCreated() closes the form, unmounting this component in the SAME
     // commit, so the persistence effect never sees the blank draft: clear
@@ -2640,7 +2788,22 @@ function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, add
     try { sessionStorage.removeItem(AE_WALK_DRAFT_KEY); } catch (_) {}
     onCreated(id);
   };
-  return <section className="ae-card" style={{ marginBottom: 16 }}><h3>{t("educator_evaluation.new_walkthrough_evidence_1q2lsy4", "New walkthrough evidence")}</h3><p className="ae-sub">{t("educator_evaluation.keep_witnessed_evidence_separate_from_interpretation_or_fe_a6e0j0", "Keep witnessed evidence separate from interpretation or feedback.")}</p><div className="ae-form-grid" style={{ marginTop: 12 }}>
+  const submit = (published) => {
+    if (!draft.teacherId || !draft.evidence.trim() || (published && !draft.privacyChecked)) return;
+    if (!published) { persist(false); return; }
+    const teacher = teachers.find((item) => item.id === draft.teacherId);
+    if (!requestActionReview) { persist(true); return; }
+    requestActionReview({
+      title: 'Publish walkthrough evidence to ' + (teacher ? teacher.name : 'the educator') + '?',
+      description: 'Review the exact evidence and interpretation that will become visible and append-only in the educator record.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : draft.teacherId], ['Visit', aeDate(draft.date) + ' · ' + draft.durationMin + ' minutes · ' + draft.lessonPhase.replace(/_/g, ' ')], ['Direct evidence', draft.evidence], ['Interpretation', draft.interpretation || 'None'], ['Visibility', 'Published to the educator and eligible for annual evidence provenance']],
+      warning: 'After publication, correct context with an appended comment; the evidence snapshot itself cannot be rewritten.',
+      acknowledgement: 'I removed student-identifying information and reviewed the exact snapshot that will be published.',
+      confirmLabel: 'Confirm publication',
+      onConfirm: () => persist(true),
+    });
+  };
+  return <section className="ae-card" style={{ marginBottom: 16 }}><h3>{editingRecord ? 'Edit private walkthrough draft' : t("educator_evaluation.new_walkthrough_evidence_1q2lsy4", "New walkthrough evidence")}</h3><p className="ae-sub">{t("educator_evaluation.keep_witnessed_evidence_separate_from_interpretation_or_fe_a6e0j0", "Keep witnessed evidence separate from interpretation or feedback.")}</p><div className="ae-form-grid" style={{ marginTop: 12 }}>
       <label className="ae-field"><span>{t("educator_evaluation.educator_8c1rq4", "Educator")}</span><select className="ae-select" value={draft.teacherId} onChange={(event) => setDraft(Object.assign({}, draft, { teacherId: event.target.value }))}><option value="">{t("educator_evaluation.choose_w4fyow", "Choose")}</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select>{canAddStaff && typeof addTeacher === 'function' && !quickAdd && <button type="button" className="ae-btn ae-btn-quiet" style={{ marginTop: 6, alignSelf: 'flex-start' }} onClick={() => setQuickAdd(true)}>{t("educator_evaluation.new_educator_quick_add_20260823", "+ New educator")}</button>}</label>
       {quickAdd && canAddStaff && typeof addTeacher === 'function' && <div className="ae-field ae-field-wide"><span>{t("educator_evaluation.quick_add_educator_20260823", "Quick-add educator")}</span><div className="ae-actions" style={{ alignItems: 'flex-end', marginTop: 6 }}><label className="ae-field" style={{ margin: 0 }}><span>{t("educator_evaluation.name_4el6o6", "Name")}</span><input className="ae-input" value={quickName} onChange={(event) => setQuickName(event.target.value)}/></label><label className="ae-field" style={{ margin: 0 }}><span>{t("educator_evaluation.unique_staff_code_1e9a9q5", "Unique staff code")}</span><input className="ae-input" value={quickCode} onChange={(event) => setQuickCode(event.target.value)}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!quickName.trim() || !quickCode.trim()} onClick={saveQuickAdd}>{t("educator_evaluation.add_and_select_20260823", "Add and select")}</button><button type="button" className="ae-btn" onClick={() => { setQuickAdd(false); setQuickName(''); setQuickCode(''); }}>{t("educator_evaluation.cancel_ew9em3", "Cancel")}</button></div><span className="ae-help">{t("educator_evaluation.quick_add_finish_in_staff_20260823", "Adds the educator to Staff with default settings selected; finish the assignment details there later.")}</span></div>}
       <label className="ae-field"><span>{t("educator_evaluation.date_ggjuyh", "Date")}</span><input className="ae-input" type="date" value={draft.date} onChange={(event) => setDraft(Object.assign({}, draft, { date: event.target.value }))}/></label>
@@ -2652,20 +2815,22 @@ function AeWalkthroughForm({ teachers, selectedTeacherId, createWalkthrough, add
     <label className="ae-field"><span>{t("educator_evaluation.interpretation_feedback_separate_gnko5f", "Interpretation / feedback (separate)")}</span><textarea className="ae-textarea" value={draft.interpretation} onChange={(event) => setDraft(Object.assign({}, draft, { interpretation: event.target.value }))} placeholder={t("educator_evaluation.possible_strength_question_or_area_for_discussion_o2yuye", "Possible strength, question, or area for discussion…")}/></label>
     <AeComponentChecks selected={draft.componentTags} onChange={(componentTags) => setDraft(Object.assign({}, draft, { componentTags }))}/>
     <label className="ae-check"><input type="checkbox" checked={draft.privacyChecked} onChange={(event) => setDraft(Object.assign({}, draft, { privacyChecked: event.target.checked }))}/><span>{t("educator_evaluation.i_reviewed_these_notes_and_removed_student_identifying_inf_19fa1eo", "I reviewed these notes and removed student-identifying information.")}</span></label>
-    <div className="ae-actions"><button type="button" className="ae-btn" disabled={!draft.teacherId || !draft.evidence.trim()} onClick={() => submit(false)}>{t("educator_evaluation.save_private_draft_19fsvdc", "Save private draft")}</button><button type="button" className="ae-btn ae-btn-primary" disabled={!draft.teacherId || !draft.evidence.trim() || !draft.privacyChecked} onClick={() => submit(true)}>{t("educator_evaluation.publish_to_teacher_3pztvz", "Publish to teacher")}</button></div>
+    <div className="ae-actions"><button type="button" className="ae-btn" disabled={!draft.teacherId || !draft.evidence.trim()} onClick={() => submit(false)}>{editingRecord ? 'Save draft changes' : t("educator_evaluation.save_private_draft_19fsvdc", "Save private draft")}</button>{!editingRecord && <button type="button" className="ae-btn ae-btn-primary" disabled={!draft.teacherId || !draft.evidence.trim() || !draft.privacyChecked} onClick={() => submit(true)}>{t("educator_evaluation.publish_to_teacher_3pztvz", "Review & publish to teacher")}</button>}</div>
     </section>;
 }
 
-function AeWalkthroughs({ workspace, selectedTeacher, setSelectedTeacherId, role, createWalkthrough, publishWalkthrough, addComment, acknowledgeWalkthrough, addTeacher = null, canAddStaff = false, isRemote = false, readOnlyPreview = false }) {
+function AeWalkthroughs({ workspace, selectedTeacher, setSelectedTeacherId, role, createWalkthrough, updateWalkthroughDraft, discardWalkthroughDraft, publishWalkthrough, addComment, acknowledgeWalkthrough, requestActionReview, addTeacher = null, canAddStaff = false, isRemote = false, readOnlyPreview = false }) {
   const teachers = workspace.teachers.filter((teacher) => teacher.active !== false);
   const [showForm, setShowForm] = React.useState(false);
   const [openId, setOpenId] = React.useState('');
+  const [editingRecord, setEditingRecord] = React.useState(null);
   const [draftReleaseChecked, setDraftReleaseChecked] = React.useState(false);
   const records = workspace.walkthroughs.filter((record) => role !== 'teacher' || (selectedTeacher && record.teacherId === selectedTeacher.id && !!record.publishedAt)).sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-  const startOrClose = () => setShowForm((value) => !value);
+  const startOrClose = () => { setEditingRecord(null); setShowForm((value) => !value); };
   return <div className="ae-page"><div className="ae-heading"><div><h2>{t("educator_evaluation.walkthrough_observations_ekug5k", "Walkthrough observations")}</h2><p>{t("educator_evaluation.a_middle_of_lesson_visit_captures_factual_evidence_it_does_qtq6s8", "A middle-of-lesson visit captures factual evidence. It does not replace a comprehensive observation or auto-score a rubric.")}</p></div>{role === 'evaluator' && <button type="button" className="ae-btn ae-btn-primary" onClick={startOrClose}>{showForm ? t("educator_evaluation.close_draft_107v6z4", 'Close draft') : (aeHasWalkthroughDraft() ? t("educator_evaluation.resume_walkthrough_draft_1q8sho7", 'Resume walkthrough draft') : t("educator_evaluation.start_walkthrough_11gr9kg", '+ Start walkthrough'))}</button>}</div>
     {role === 'teacher' && <div className="ae-note"><strong>{selectedTeacher ? selectedTeacher.name : t("educator_evaluation.educator_record_mmlsdd", 'Educator record')}</strong> · {isRemote ? t("educator_evaluation.only_records_assigned_to_this_district_account_are_shown_p_qbheaj", 'Only records assigned to this district account are shown; private evaluator drafts remain hidden.') : t("educator_evaluation.teacher_view_shows_only_the_selected_educator_s_published__cddf6p", 'Teacher view shows only the selected educator’s published records. Role switching previews this perspective on the same device; it is not a sign-in.')}</div>}
-    {showForm && role === 'evaluator' && <AeWalkthroughForm teachers={teachers} selectedTeacherId={selectedTeacher ? selectedTeacher.id : ''} createWalkthrough={createWalkthrough} addTeacher={addTeacher} canAddStaff={canAddStaff} onCreated={(id) => { setOpenId(id); setShowForm(false); }}/>}
+    {showForm && role === 'evaluator' && <AeWalkthroughForm teachers={teachers} selectedTeacherId={selectedTeacher ? selectedTeacher.id : ''} createWalkthrough={createWalkthrough} editingRecord={editingRecord} updateWalkthroughDraft={updateWalkthroughDraft} requestActionReview={requestActionReview} addTeacher={addTeacher} canAddStaff={canAddStaff} onCreated={(id) => { setOpenId(id); setEditingRecord(null); setShowForm(false); }}/>}
+    {role === 'evaluator' && !showForm && openId && (() => { const draftRecord = records.find((item) => item.id === openId && !item.publishedAt); if (!draftRecord) return null; return <div className="ae-note ae-warn" style={{ marginBottom: 12 }}><strong>Private draft controls</strong><p className="ae-help">Correct the saved note before publication, or discard it if it should not be retained.</p><div className="ae-actions"><button type="button" className="ae-btn" onClick={() => { setEditingRecord(draftRecord); setShowForm(true); }}>Edit draft</button><button type="button" className="ae-btn ae-btn-danger" onClick={() => discardWalkthroughDraft(draftRecord.id, () => setOpenId(''))}>Discard draft</button></div></div>; })()}
     <div className="ae-grid"><section className="ae-card ae-span-5"><h3>{t("educator_evaluation.visit_records_bic8za", "Visit records")}</h3>{records.length === 0 ? <div className="ae-empty">{t("educator_evaluation.no_walkthroughs_yet_1evk53z", "No walkthroughs yet.")}</div> : records.map((record) => { const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <button type="button" key={record.id} className="ae-record" style={{ width: '100%', textAlign: 'left', cursor: 'pointer' }} onClick={() => { setOpenId(record.id); setSelectedTeacherId(record.teacherId); }}><div className="ae-record-head"><div><h4>{teacher ? teacher.name : t("educator_evaluation.unknown_educator_3f7jiu", 'Unknown educator')}</h4><div className="ae-meta"><span>{aeDate(record.date)}</span><span>{record.durationMin} min</span><span>{record.announced}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : 'ae-chip-neutral')}>{record.publishedAt ? t("educator_evaluation.published_75k7c9", 'Published') : t("educator_evaluation.private_draft_11oqeav", 'Private draft')}</span></div><p className="ae-sub" style={{ marginTop: 8 }}>{record.evidence.slice(0, 120)}{record.evidence.length > 120 ? '…' : ''}</p></button>; })}</section>
       <section className="ae-card ae-span-7"><h3>{t("educator_evaluation.walkthrough_detail_o8078q", "Walkthrough detail")}</h3>{!openId ? <div className="ae-empty">{t("educator_evaluation.choose_a_visit_to_review_evidence_and_conversation_1vps0ym", "Choose a visit to review evidence and conversation.")}</div> : (() => { const record = records.find((item) => item.id === openId); if (!record) return <div className="ae-empty">{t("educator_evaluation.record_not_found_a5oa6l", "Record not found.")}</div>; const teacher = workspace.teachers.find((item) => item.id === record.teacherId); return <><div className="ae-record-head"><div><h4>{teacher ? teacher.name : t("educator_evaluation.unknown_educator_3f7jiu", 'Unknown educator')} · {aeDate(record.date)}</h4><div className="ae-meta"><span>{t("educator_evaluation.started_163dnb2", "Started")} {aeDateTime(record.startedAt)}</span><span>{record.durationMin} minutes</span><span>{record.lessonPhase.replace(/_/g, ' ')}</span></div></div><span className={'ae-chip ' + (record.publishedAt ? 'ae-chip-good' : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? 'ae-chip-amber' : 'ae-chip-neutral'))}>{record.publishedAt ? t("educator_evaluation.published_snapshot_1an1wnv", 'Published snapshot') : ((Date.now() - new Date(record.startedAt).getTime()) > 14 * 86400000 ? t("educator_evaluation.private_draft_1un9trq", 'Private draft · ') + Math.floor((Date.now() - new Date(record.startedAt).getTime()) / 86400000) + t("educator_evaluation.days_unpublished_1xvkbxt", ' days unpublished') : t("educator_evaluation.private_evaluator_draft_em0xyi", 'Private evaluator draft'))}</span></div><h4>{t("educator_evaluation.directly_witnessed_evidence_3xyvim", "Directly witnessed evidence")}</h4><div className="ae-evidence">{record.evidence}</div>{record.interpretation && <><h4>{t("educator_evaluation.interpretation_feedback_c0i2id", "Interpretation / feedback")}</h4><div className="ae-evidence ae-interpretation">{record.interpretation}</div></>}<div className="ae-chips">{record.componentTags.map((code) => <span className="ae-chip ae-chip-blue" key={code}>{code}</span>)}</div>{!record.publishedAt && role === 'evaluator' && <div className="ae-note ae-warn" style={{ marginTop: 12 }}><label className="ae-check"><input type="checkbox" checked={draftReleaseChecked} onChange={(event) => setDraftReleaseChecked(event.target.checked)}/><span>{t("educator_evaluation.i_reviewed_this_saved_draft_and_removed_student_identifyin_x8dx3g", "I reviewed this saved draft and removed student-identifying information.")}</span></label><button type="button" className="ae-btn ae-btn-primary" disabled={!draftReleaseChecked} onClick={() => { publishWalkthrough(record.id); setDraftReleaseChecked(false); }}>{t("educator_evaluation.publish_saved_draft_to_teacher_4k4347", "Publish saved draft to teacher")}</button><p className="ae-help">{t("educator_evaluation.unpublished_drafts_never_enter_the_educator_s_record_docum_1gj0to6", "Unpublished drafts never enter the educator’s record, documents, or trends, but they also sit outside the educator’s review rights. Publish promptly, or clear notes you do not intend to publish.")}</p></div>}{record.publishedAt && role === 'teacher' && !record.teacherAcknowledgedAt && <div style={{ marginTop: 12 }}><button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview} title={readOnlyPreview ? t("educator_evaluation.preview_only_no_acknowledgment_is_recorded_1801uuq", 'Preview only; no acknowledgment is recorded.') : undefined} onClick={() => acknowledgeWalkthrough(record.id)}>{t("educator_evaluation.acknowledge_receipt_1erqgfr", "Acknowledge receipt")}</button><p className="ae-help">{t("educator_evaluation.acknowledgment_records_receipt_not_agreement_and_is_not_th_vqhr36", "Acknowledgment records receipt, not agreement, and is not the signature your district’s evaluation form asks for at the conference.")}</p></div>}{record.teacherAcknowledgedAt && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>{t("educator_evaluation.teacher_acknowledged_receipt_tzqdjf", "Teacher acknowledged receipt")} {aeDateTime(record.teacherAcknowledgedAt)}.</div>}{record.publishedAt && <AeThread workspace={workspace} recordType="walkthrough" recordId={record.id} teacherId={record.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview}/>}</>; })()}</section>
     </div>
@@ -2729,7 +2894,22 @@ function AeFormalObservations({ workspace, selectedTeacher, setSelectedTeacherId
     const date = aeDate(record.observedAt || record.finalizedAt || record.createdAt);
     return date + ' · ' + (record.finalizedAt ? t("educator_evaluation.finalized_4cmc2p", 'Finalized') : (t("educator_evaluation.step_jtn9kf", 'Step ') + (aeStepOfObservation(record) + 1) + t("educator_evaluation.of_10_1af6cv5", ' of 10')));
   };
-  const patch = (changes, event, summary) => updateObservation(active.id, changes, event, summary);
+  const requestActionReview = aeUseActionReview();
+  const performPatch = (changes, event, summary) => updateObservation(active.id, changes, event, summary);
+  const patch = (changes, event, summary) => {
+    const milestone = {
+      EVIDENCE_PUBLISHED: { title: 'Publish formal-observation evidence?', description: 'The factual evidence and component tags will become visible to the educator and the evidence snapshot will lock.', confirmLabel: 'Publish formal evidence', warning: 'Remove student-identifying information before publication; later context belongs in appended comments.' },
+      SIGNED: { title: 'Sign the evaluator assessment?', description: 'The four human-selected ratings and written rationales will become the signed educator-visible assessment.', confirmLabel: 'Sign assessment', warning: 'Review every rating and rationale. The educator will be asked to acknowledge receipt, not agreement.' },
+      FINALIZED: { title: 'Finalize this formal observation?', description: 'The acknowledged formal-observation workflow will lock as a finalized record.', confirmLabel: 'Finalize observation', warning: 'After finalization, use appended comments or a new record for later context.' },
+    }[event];
+    if (!milestone || !requestActionReview) { performPatch(changes, event, summary); return; }
+    const teacher = workspace.teachers.find((item) => item.id === active.teacherId);
+    requestActionReview(Object.assign({}, milestone, {
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : active.teacherId], ['Formal record', active.id], ['Workflow milestone', summary], ['Current step', (aeStepOfObservation(active) + 1) + ' of 10']],
+      acknowledgement: 'I reviewed the educator, record content, visibility, and lock effect for this milestone.',
+      onConfirm: () => performPatch(changes, event, summary),
+    }));
+  };
   return <div className="ae-page"><div className="ae-heading"><div><h2>{t("educator_evaluation.formal_comprehensive_observations_huzqzp", "Formal comprehensive observations")}</h2><p>{t("educator_evaluation.prework_conferences_observed_evidence_reflection_human_rat_1qxb7wr", "Prework, conferences, observed evidence, reflection, human ratings, acknowledgment, and finalization remain distinct.")}</p></div>{role === 'evaluator' && <button type="button" className="ae-btn ae-btn-primary" disabled={!selectedTeacher || records.some((record) => record.teacherId === selectedTeacher.id && !record.finalizedAt)} onClick={() => setOpenId(createObservation(selectedTeacher.id))}>{t("educator_evaluation.assign_formal_observation_1cwk6vs", "+ Assign formal observation")}</button>}</div>
     {role === 'evaluator' ? <div className="ae-toolbar"><label className="ae-field" style={{ minWidth: 260, margin: 0 }}><span>{t("educator_evaluation.educator_8c1rq4", "Educator")}</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => { const teacherId = event.target.value; setSelectedTeacherId(teacherId); const found = recordsFor(teacherId)[0]; setOpenId(found ? found.id : ''); }}><option value="">{t("educator_evaluation.choose_an_educator_1l6d6bg", "Choose an educator")}</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label>{selectedTeacher && teacherRecords.length > 0 && <label className="ae-field" style={{ minWidth: 280, margin: 0 }}><span>{t("educator_evaluation.observation_record_ihk066", "Observation record")}</span><select className="ae-select" value={active ? active.id : ''} onChange={(event) => setOpenId(event.target.value)}>{teacherRecords.map((record) => <option key={record.id} value={record.id}>{observationLabel(record)}</option>)}</select></label>}</div> : selectedTeacher && <div className="ae-toolbar"><div className="ae-note">{t("educator_evaluation.viewing_records_for_1hjcyfh", "Viewing records for")} {selectedTeacher.name} · {selectedTeacher.code}</div>{teacherRecords.length > 0 && <label className="ae-field" style={{ minWidth: 280, margin: 0 }}><span>{t("educator_evaluation.observation_record_ihk066", "Observation record")}</span><select className="ae-select" value={active ? active.id : ''} onChange={(event) => setOpenId(event.target.value)}>{teacherRecords.map((record) => <option key={record.id} value={record.id}>{observationLabel(record)}</option>)}</select></label>}</div>}
     {!active ? <div className="ae-card ae-empty">{selectedTeacher ? t("educator_evaluation.no_formal_observation_has_been_assigned_for_this_educator_1c5ay0f", 'No formal observation has been assigned for this educator.') : t("educator_evaluation.choose_an_educator_to_begin_151xqgy", 'Choose an educator to begin.')}</div> : (() => {
@@ -2772,7 +2952,38 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
   React.useEffect(() => {
     if (active && role === 'evaluator' && active.status === 'submitted' && !active.firstOpenedAt) updateSpm(active.id, { firstOpenedAt: aeNow() }, 'OPENED', 'SPM plan first opened by evaluator');
   }, [active && active.id, active && active.status, role]);
-  const patch = (changes, event, summary) => updateSpm(active.id, changes, event, summary);
+  const requestActionReview = aeUseActionReview();
+  const performPatch = (changes, event, summary) => updateSpm(active.id, changes, event, summary);
+  const patch = (changes, event, summary) => {
+    if (event !== 'APPROVED' || !requestActionReview) { performPatch(changes, event, summary); return; }
+    const teacher = workspace.teachers.find((item) => item.id === active.teacherId);
+    requestActionReview({
+      title: 'Approve this SPM / SLO plan?',
+      description: 'Approval locks the submitted plan version as the agreed goal and opens the year-end results stage.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : active.teacherId], ['Plan version', active.version || 1], ['Goal', active.goal || 'Not recorded'], ['Measures', active.measures || 'Not recorded']],
+      warning: 'A material plan change after approval requires a new submitted version and renewed approval.',
+      acknowledgement: 'I reviewed the submitted goal, baseline, measures, and action plan for this educator.',
+      confirmLabel: 'Approve plan version',
+      onConfirm: () => performPatch(changes, event, summary),
+    });
+  };
+  const lockSpm = () => {
+    const teacher = workspace.teachers.find((item) => item.id === active.teacherId);
+    const perform = () => {
+      updateTeacher(active.teacherId, (draft) => { draft.ratings.lea = active.rating; }, 'RATING_UPDATED', 'LEA Selected Measure rating recorded');
+      performPatch({ status: 'locked', lockedAt: aeNow() }, 'FINALIZED', 'SPM record rated and locked');
+    };
+    if (!requestActionReview) { perform(); return; }
+    requestActionReview({
+      title: 'Rate and lock this SPM / SLO record?',
+      description: 'The year-end results, educator reflection, human-selected rating, and rationale will become a locked annual evidence record.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : active.teacherId], ['Rating', active.rating + ' · ' + aeBand(active.rating)], ['Rationale', active.ratingRationale], ['Lock effect', 'The SPM / SLO becomes read-only and eligible for annual provenance.']],
+      warning: 'Confirm the result and rationale against the submitted evidence before locking.',
+      acknowledgement: 'I reviewed the results, reflection, rating, and rationale and am ready to lock this record.',
+      confirmLabel: 'Rate and lock record',
+      onConfirm: perform,
+    });
+  };
   const canEditPlan = active && role === 'teacher' && !readOnlyPreview && ['draft', 'returned'].includes(active.status);
   return <div className="ae-page"><div className="ae-heading"><div><h2>{t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")}</h2><p>{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.current_act_13_terminology_is_lea_selected_measure_student_81f9h8", 'Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.') : t("educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b", 'Under Maine PEPG this record holds the Student Learning &amp; Growth measure; SPM/SLO remain familiar aliases.')}</p></div>{role === 'teacher' && selectedTeacher && !records.some((record) => record.teacherId === selectedTeacher.id) && <button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview} title={readOnlyPreview ? t("educator_evaluation.preview_only_no_proposal_is_created_10gjfc9", 'Preview only; no proposal is created.') : undefined} onClick={() => setOpenId(createSpm(selectedTeacher.id))}>{t("educator_evaluation.start_spm_proposal_9v6z62", "+ Start SPM proposal")}</button>}</div>
     {role === 'evaluator' ? <div className="ae-toolbar"><label className="ae-field" style={{ minWidth: 260, margin: 0 }}><span>{t("educator_evaluation.educator_8c1rq4", "Educator")}</span><select className="ae-select" value={selectedTeacher ? selectedTeacher.id : ''} onChange={(event) => { setSelectedTeacherId(event.target.value); const found = workspace.spms.find((record) => record.teacherId === event.target.value); setOpenId(found ? found.id : ''); }}><option value="">{t("educator_evaluation.choose_an_educator_1l6d6bg", "Choose an educator")}</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name} · {teacher.code}</option>)}</select></label></div> : selectedTeacher && <div className="ae-note">{t("educator_evaluation.viewing_records_for_1hjcyfh", "Viewing records for")} {selectedTeacher.name} · {selectedTeacher.code}</div>}
@@ -2784,7 +2995,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
       {active.status === 'submitted' && role === 'teacher' && <div className="ae-note" style={{ marginTop: 12 }}>{t("educator_evaluation.submitted_12at4de", "Submitted")} {aeDateTime(active.submittedAt)}. Awaiting evaluator action.</div>}
       {active.status === 'approved' && role === 'teacher' && <fieldset disabled={readOnlyPreview} style={{ border: 0, padding: 0, margin: '14px 0 0' }}><div className="ae-note ae-ok">{t("educator_evaluation.plan_approved_by_j6ro4u", "Plan approved by")} {active.approvedBy} {aeDateTime(active.approvedAt)}.</div><label className="ae-field"><span>{t("educator_evaluation.year_end_results_ikr7ri", "Year-end results")}</span><textarea className="ae-textarea" value={active.results || ''} onChange={(event) => patch({ results: event.target.value }, 'DRAFT_SAVED', 'SPM results draft saved')}/></label><label className="ae-field"><span>{t("educator_evaluation.teacher_reflection_2fxaai", "Teacher reflection")}</span><textarea className="ae-textarea" value={active.reflection || ''} onChange={(event) => patch({ reflection: event.target.value }, 'DRAFT_SAVED', 'SPM reflection draft saved')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={!active.results || !active.reflection} onClick={() => patch({ status: 'results_submitted', resultsSubmittedAt: aeNow() }, 'SUBMITTED', 'SPM results submitted')}>{t("educator_evaluation.submit_results_and_reflection_2n81bf", "Submit results and reflection")}</button></fieldset>}
       {active.status === 'approved' && role === 'evaluator' && <div className="ae-note ae-ok" style={{ marginTop: 12 }}>{t("educator_evaluation.plan_approved_awaiting_year_end_results_from_the_teacher_84nklh", "Plan approved. Awaiting year-end results from the teacher.")}</div>}
-      {active.status === 'results_submitted' && role === 'evaluator' && <div style={{ marginTop: 14 }}><h4>{t("educator_evaluation.year_end_results_ikr7ri", "Year-end results")}</h4><div className="ae-evidence">{active.results}</div><h4>{t("educator_evaluation.teacher_reflection_2fxaai", "Teacher reflection")}</h4><div className="ae-evidence">{active.reflection}</div><label className="ae-field"><span>{t("educator_evaluation.human_selected_spm_rating_o8r5z7", "Human-selected SPM rating")}</span><select className="ae-select" value={active.rating == null ? '' : active.rating} onChange={(event) => patch({ rating: event.target.value === '' ? null : Number(event.target.value) }, 'RATING_UPDATED', 'SPM rating updated')}><option value="">{t("educator_evaluation.not_rated_17t3qdk", "Not rated")}</option>{AE_RATINGS.map((rating) => <option value={rating.value} key={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}</select></label><label className="ae-field"><span>{t("educator_evaluation.rating_rationale_7du1ct", "Rating rationale")}</span><textarea className="ae-textarea" value={active.ratingRationale || ''} onChange={(event) => patch({ ratingRationale: event.target.value }, 'DRAFT_SAVED', 'SPM rating rationale updated')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={active.rating == null || !active.ratingRationale} onClick={() => { updateTeacher(active.teacherId, (draft) => { draft.ratings.lea = active.rating; }, 'RATING_UPDATED', 'LEA Selected Measure rating recorded'); patch({ status: 'locked', lockedAt: aeNow() }, 'FINALIZED', 'SPM record rated and locked'); }}>{t("educator_evaluation.rate_and_lock_record_12kl89a", "Rate and lock record")}</button></div>}
+      {active.status === 'results_submitted' && role === 'evaluator' && <div style={{ marginTop: 14 }}><h4>{t("educator_evaluation.year_end_results_ikr7ri", "Year-end results")}</h4><div className="ae-evidence">{active.results}</div><h4>{t("educator_evaluation.teacher_reflection_2fxaai", "Teacher reflection")}</h4><div className="ae-evidence">{active.reflection}</div><label className="ae-field"><span>{t("educator_evaluation.human_selected_spm_rating_o8r5z7", "Human-selected SPM rating")}</span><select className="ae-select" value={active.rating == null ? '' : active.rating} onChange={(event) => patch({ rating: event.target.value === '' ? null : Number(event.target.value) }, 'RATING_UPDATED', 'SPM rating updated')}><option value="">{t("educator_evaluation.not_rated_17t3qdk", "Not rated")}</option>{AE_RATINGS.map((rating) => <option value={rating.value} key={rating.value}>{rating.value} · {(AE_ACTIVE_FW.ratingLabels && AE_ACTIVE_FW.ratingLabels[rating.value]) || rating.label}</option>)}</select></label><label className="ae-field"><span>{t("educator_evaluation.rating_rationale_7du1ct", "Rating rationale")}</span><textarea className="ae-textarea" value={active.ratingRationale || ''} onChange={(event) => patch({ ratingRationale: event.target.value }, 'DRAFT_SAVED', 'SPM rating rationale updated')}/></label><button type="button" className="ae-btn ae-btn-primary" disabled={active.rating == null || !active.ratingRationale} onClick={lockSpm}>{t("educator_evaluation.review_rating_and_lock", "Review rating & lock")}</button></div>}
       {active.status === 'results_submitted' && role === 'teacher' && <div className="ae-note" style={{ marginTop: 12 }}>{t("educator_evaluation.results_submitted_nvv11s", "Results submitted")} {aeDateTime(active.resultsSubmittedAt)}. Awaiting evaluator rating.</div>}
       {active.status === 'locked' && <div className="ae-note ae-ok" style={{ marginTop: 12 }}><strong>{t("educator_evaluation.rated_and_locked_145iw5n", "Rated and locked ·")} {active.rating} ({aeBand(active.rating)})</strong><br/>{t("educator_evaluation.locked_hvffeb", "Locked")} {aeDateTime(active.lockedAt)}. Plan approval and final result rating remain separate audit events.</div>}
       <AeThread workspace={workspace} recordType="spm" recordId={active.id} teacherId={active.teacherId} role={role} onAdd={addComment} readOnlyPreview={readOnlyPreview}/>
@@ -3444,6 +3655,7 @@ function EducatorEvaluationPanel(props) {
   const [remoteConflict, setRemoteConflict] = React.useState(null);
   const [notificationState, setNotificationState] = React.useState({ status: 'idle', error: '' });
   const [releaseShareState, setReleaseShareState] = React.useState({ status: 'idle', error: '', review: null, result: null });
+  const [actionReview, setActionReview] = React.useState(null);
   const dialogRef = React.useRef(null);
   const workspaceRef = React.useRef(workspace);
   const remoteRevisionRef = React.useRef(0);
@@ -3468,6 +3680,16 @@ function EducatorEvaluationPanel(props) {
     setOperationNotice({ text: String(message || ''), type: tone, id: Date.now() });
     setLiveMessage({ text: String(message || ''), id: Date.now() });
   }, [addToast]);
+  const requestActionReview = React.useCallback((review) => {
+    if (!review || typeof review.onConfirm !== 'function') return;
+    setActionReview(Object.assign({}, review, { token: aeId('review') }));
+  }, []);
+  const cancelActionReview = React.useCallback(() => setActionReview(null), []);
+  const confirmActionReview = React.useCallback(() => {
+    const current = actionReview;
+    setActionReview(null);
+    if (current && typeof current.onConfirm === 'function') current.onConfirm();
+  }, [actionReview]);
 
   React.useEffect(() => {
     workspaceRef.current = workspace;
@@ -3699,6 +3921,7 @@ function EducatorEvaluationPanel(props) {
       }
       const revision = Number(result.revision);
       if (!Number.isInteger(revision) || revision < 0) throw new Error('The district portal returned an invalid record version.');
+      const reconciliationPending = !!result.reconciliationPending;
       remoteRevisionRef.current = revision;
       if (!remoteMountedRef.current) { remoteInFlightRef.current = false; return; }
       if (job.generation === remoteSaveGenerationRef.current && result.workspace) {
@@ -3709,7 +3932,7 @@ function EducatorEvaluationPanel(props) {
       }
       remoteInFlightRef.current = false;
       if (job.generation === remoteSaveGenerationRef.current) {
-        setRemoteState((current) => ({ ...current, status: 'saved', error: '', inFlight: false }));
+        setRemoteState((current) => ({ ...current, status: reconciliationPending ? 'reconciliation' : 'saved', error: '', inFlight: false }));
       }
     }).catch(async (error) => {
       remoteInFlightRef.current = false;
@@ -3820,7 +4043,9 @@ function EducatorEvaluationPanel(props) {
         academicYear, buildingSnapshot: teacher.building, employeeTypeSnapshot: teacher.employeeType,
         finalizedAt: teacher.finalizedAt, finalScore: aeRatingValue(teacher.finalScore),
         domainRatings: aeClone(teacher.ratings.domains), weightSnapshot: aeClone(teacher.weightSnapshot || aeWeightProfile(teacher)),
-        frameworkVersion: teacher.frameworkVersion || AE_FRAMEWORK,
+        annualRationales: aeClone(teacher.annualRationales || { d1: '', d2: '', d3: '', d4: '' }),
+        annualEvidenceRefs: aeClone(teacher.annualEvidenceRefs || { d1: [], d2: [], d3: [], d4: [] }),
+        frameworkVersion: teacher.frameworkVersion || next.config.frameworkVersion || AE_ACTIVE_FW.versionTag,
       };
       if (existing) Object.assign(existing, snapshot); else next.cycleSnapshots.push(snapshot);
     }
@@ -3888,8 +4113,46 @@ function EducatorEvaluationPanel(props) {
     return id;
   };
 
-  const publishWalkthrough = (id) => {
-    const record = workspace.walkthroughs.find((item) => item.id === id);
+  const updateWalkthroughDraft = (id, data) => {
+    const record = workspaceRef.current.walkthroughs.find((item) => item.id === id);
+    if (!record || record.publishedAt) return '';
+    const fields = ['teacherId', 'date', 'startedAt', 'durationMin', 'announced', 'lessonPhase', 'subject', 'evidence', 'interpretation', 'componentTags', 'privacyChecked'];
+    commit((next) => {
+      const item = next.walkthroughs.find((value) => value.id === id);
+      if (!item || item.publishedAt) return;
+      fields.forEach((field) => { if (Object.prototype.hasOwnProperty.call(data, field)) item[field] = aeClone(data[field]); });
+      item.updatedAt = aeNow();
+      const teacher = next.teachers.find((value) => value.id === item.teacherId);
+      if (teacher) { aeFreezeTeacherCycle(teacher); teacher.lastActivityAt = item.updatedAt; }
+      aeRecalculateCycleStatus(next, item.teacherId);
+    }, { teacherId: record.teacherId, event: 'DRAFT_SAVED', summary: 'Private walkthrough draft updated', entityType: 'walkthrough', entityId: id, version: record.version || 1 }, 'Draft changes saved');
+    return id;
+  };
+
+  const discardWalkthroughDraft = (id, onDiscarded) => {
+    const record = workspaceRef.current.walkthroughs.find((item) => item.id === id);
+    if (!record || record.publishedAt) return;
+    const teacher = workspaceRef.current.teachers.find((item) => item.id === record.teacherId);
+    requestActionReview({
+      title: 'Discard this private walkthrough draft?',
+      description: 'This removes the unpublished note from the working workspace. Published records cannot be discarded here.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : record.teacherId], ['Visit', aeDate(record.date) + ' · ' + record.durationMin + ' minutes'], ['Evidence preview', String(record.evidence || '').slice(0, 500)], ['Visibility', 'Private evaluator draft; never published to the educator']],
+      warning: 'Discard cannot be undone from the interface. Follow district retention or legal-hold requirements before removing a personnel-work draft.',
+      danger: true,
+      acknowledgement: 'I confirmed this is the exact unpublished draft I intend to remove.',
+      confirmLabel: 'Discard private draft',
+      onConfirm: () => {
+        commit((next) => {
+          next.walkthroughs = next.walkthroughs.filter((item) => item.id !== id);
+          aeRecalculateCycleStatus(next, record.teacherId);
+        }, { teacherId: record.teacherId, event: 'DRAFT_DISCARDED', summary: 'Private walkthrough draft discarded', entityType: 'walkthrough', entityId: id, version: record.version || 1 }, 'Private draft discarded');
+        if (typeof onDiscarded === 'function') onDiscarded();
+      },
+    });
+  };
+
+  const performPublishWalkthrough = (id) => {
+    const record = workspaceRef.current.walkthroughs.find((item) => item.id === id);
     if (!record || record.publishedAt) return;
     commit((next) => {
       const item = next.walkthroughs.find((value) => value.id === id);
@@ -3901,6 +4164,20 @@ function EducatorEvaluationPanel(props) {
       if (teacher) { aeFreezeTeacherCycle(teacher); teacher.lastActivityAt = item.updatedAt; }
       aeRecalculateCycleStatus(next, item.teacherId);
     }, { teacherId: record.teacherId, event: 'EVIDENCE_PUBLISHED', summary: t("educator_evaluation.saved_walkthrough_draft_published_to_teacher_2eg8mi", 'Saved walkthrough draft published to teacher'), entityType: 'walkthrough', entityId: id, version: record.version || 1 }, 'Walkthrough published');
+  };
+  const publishWalkthrough = (id) => {
+    const record = workspaceRef.current.walkthroughs.find((item) => item.id === id);
+    if (!record || record.publishedAt) return;
+    const teacher = workspaceRef.current.teachers.find((item) => item.id === record.teacherId);
+    requestActionReview({
+      title: 'Publish saved walkthrough draft to ' + (teacher ? teacher.name : 'the educator') + '?',
+      description: 'This saved draft will become an educator-visible, append-only evidence snapshot.',
+      facts: [['Educator', teacher ? teacher.name + ' · ' + teacher.code : record.teacherId], ['Visit', aeDate(record.date) + ' · ' + record.durationMin + ' minutes · ' + String(record.lessonPhase || '').replace(/_/g, ' ')], ['Direct evidence', record.evidence], ['Interpretation', record.interpretation || 'None'], ['Visibility', 'Published to the educator and eligible for annual evidence provenance']],
+      warning: 'After publication, correct context with an appended comment; the evidence snapshot itself cannot be rewritten.',
+      acknowledgement: 'I removed student-identifying information and reviewed the exact saved snapshot that will be published.',
+      confirmLabel: 'Confirm publication',
+      onConfirm: () => performPublishWalkthrough(id),
+    });
   };
 
   const acknowledgeWalkthrough = (id) => {
@@ -3917,7 +4194,7 @@ function EducatorEvaluationPanel(props) {
   const createObservation = (teacherId) => {
     const id = aeId('formal'); const now = aeNow();
     commit((next) => {
-      next.observations.unshift({ id, teacherId, createdAt: now, frameworkVersion: AE_FRAMEWORK, version: 1, prework: {}, ratings: { d1: null, d2: null, d3: null, d4: null }, rationales: {}, componentTags: [] });
+      next.observations.unshift({ id, teacherId, createdAt: now, frameworkVersion: next.config.frameworkVersion || AE_ACTIVE_FW.versionTag, version: 1, prework: {}, ratings: { d1: null, d2: null, d3: null, d4: null }, rationales: {}, componentTags: [] });
       const teacher = next.teachers.find((item) => item.id === teacherId);
       if (teacher) { aeFreezeTeacherCycle(teacher); teacher.lastActivityAt = now; }
       aeRecalculateCycleStatus(next, teacherId);
@@ -4169,9 +4446,15 @@ function EducatorEvaluationPanel(props) {
       + (item.lockedAt ? t("educator_evaluation.h4_released_spm_rating_h4_p_strong_56p61t", '<h4>Released SPM rating</h4><p><strong>') + aeEsc(String(item.rating) + ' · ' + releasedRatingLabel(item.rating)) + t("educator_evaluation.strong_p_dgjddc", '</strong></p>') + field('Rating rationale', item.ratingRationale) + t("educator_evaluation.p_class_meta_locked_c1wvw1", '<p class="meta">Locked ') + aeEsc(aeDateTime(item.lockedAt)) + '.</p>' : '')
       + t("educator_evaluation.section_1xpnem7", '</section>')).join('');
     const comments = (packet.comments || []).length ? t("educator_evaluation.section_class_card_h2_shared_conversation_h2_1rqgjm4", '<section class="card"><h2>Shared conversation</h2>') + packet.comments.map((item) => t("educator_evaluation.article_class_comment_p_strong_l7ww3e", '<article class="comment"><p><strong>') + aeEsc(item.author || item.role || t("educator_evaluation.participant_1jddysu", 'Participant')) + t("educator_evaluation.strong_60hewm", '</strong> · ') + aeEsc(aeDateTime(item.at)) + t("educator_evaluation.p_div_class_evidence_1p09vbf", '</p><div class="evidence">') + aeEsc(item.text || '') + t("educator_evaluation.div_article_sddgg6", '</div></article>')).join('') + t("educator_evaluation.section_1xpnem7", '</section>') : '';
-    const annualRatings = packetTeacher.finalizedAt && packetTeacher.ratings ? t("educator_evaluation.section_class_card_h2_finalized_annual_ratings_h2_div_clas_e6yych", '<section class="card"><h2>Finalized annual ratings</h2><div class="tablewrap" tabindex="0" role="region" aria-label="Finalized annual domain ratings"><table><thead><tr><th>Domain</th><th>Rating</th><th>Rationale</th></tr></thead><tbody>') + domainRows(packetTeacher.ratings.domains, null) + t("educator_evaluation.tbody_table_div_u57d8f", '</tbody></table></div>')
+    const annualEvidenceIndex = aeAnnualEvidenceOptions(packet, packetTeacher.id).reduce((index, item) => { index[item.token] = item.label; return index; }, Object.create(null));
+    const annualEvidenceDetails = packetTeacher.finalizedAt && packetTeacher.annualEvidenceRefs ? '<section class="card"><h2>Annual evidence provenance</h2><p class="fine">These are the released records selected as evidence for each finalized annual rating.</p>' + AE_DOMAINS.map((domain) => {
+      if (!packetTeacher.ratings || !packetTeacher.ratings.domains || packetTeacher.ratings.domains[domain.id] == null) return '';
+      const refs = packetTeacher.annualEvidenceRefs[domain.id] || [];
+      return '<article><h3>' + aeEsc(domain.code + '. ' + aeRubricDisplayLabel(domain.label)) + '</h3>' + (refs.length ? '<ul>' + refs.map((token) => '<li><strong>' + aeEsc(annualEvidenceIndex[token] || 'Released evidence record') + '</strong><br><span class="meta">Reference: ' + aeEsc(token) + '</span></li>').join('') + '</ul>' : '<p class="fine">No evidence references were recorded.</p>') + '</article>';
+    }).join('') + '</section>' : '';
+    const annualRatings = packetTeacher.finalizedAt && packetTeacher.ratings ? t("educator_evaluation.section_class_card_h2_finalized_annual_ratings_h2_div_clas_e6yych", '<section class="card"><h2>Finalized annual ratings</h2><div class="tablewrap" tabindex="0" role="region" aria-label="Finalized annual domain ratings"><table><thead><tr><th>Domain</th><th>Rating</th><th>Rationale</th></tr></thead><tbody>') + domainRows(packetTeacher.ratings.domains, packetTeacher.annualRationales) + t("educator_evaluation.tbody_table_div_u57d8f", '</tbody></table></div>')
       + (packetTeacher.finalScore == null ? '' : t("educator_evaluation.p_strong_final_calculation_1wz79wz", '<p><strong>Final calculation: ') + aeEsc(Number(packetTeacher.finalScore).toFixed(2)) + ' · ' + aeEsc(aeBand(packetTeacher.finalScore)) + t("educator_evaluation.strong_p_dgjddc", '</strong></p>'))
-      + t("educator_evaluation.p_class_meta_finalized_c70m6r", '<p class="meta">Finalized ') + aeEsc(aeDateTime(packetTeacher.finalizedAt)) + '.</p></section>' : '';
+      + t("educator_evaluation.p_class_meta_finalized_c70m6r", '<p class="meta">Finalized ') + aeEsc(aeDateTime(packetTeacher.finalizedAt)) + '.</p></section>' + annualEvidenceDetails : '';
     const existingStatement = packetTeacher.educatorStatement && packetTeacher.educatorStatement.text ? packetTeacher.educatorStatement.text : '';
     const statementControl = packetTeacher.finalizedAt
       ? field('Your educator statement', existingStatement) + t("educator_evaluation.p_class_fine_the_annual_cycle_is_finalized_so_this_stateme_1q4ssim", '<p class="fine">The annual cycle is finalized, so this statement is shown read-only. Follow your district process if an addendum is needed.</p>')
@@ -4565,8 +4848,8 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     </header>
     {isRemote ? <div className={'ae-local-banner ae-remote-banner ' + (['error', 'conflict'].includes(remoteState.status) ? 'ae-sync-error' : '')} role={['error', 'conflict'].includes(remoteState.status) ? 'alert' : 'status'} aria-live="polite">
       <strong>{t("educator_evaluation.district_google_account_13vzcv9", "District Google account")}</strong>{' '}
-      <span>{remoteState.currentUser && remoteState.currentUser.email} · {role === 'teacher' ? t("educator_evaluation.educator_access_auy9u6", 'Educator access') : (remoteState.currentUser && remoteState.currentUser.role === 'admin' ? t("educator_evaluation.administrator_access_1jngftk", 'Administrator access') : t("educator_evaluation.evaluator_access_x6tmko", 'Evaluator access'))} · {remoteState.status === 'saving' ? t("educator_evaluation.saving_to_district_repository_11nzwq8", 'Saving to district repository…') : (remoteState.status === 'conflict' ? t("educator_evaluation.concurrent_edit_needs_review_xkyx0v", 'Concurrent edit needs review') : (remoteState.status === 'error' ? t("educator_evaluation.last_change_is_not_confirmed_1olht3d", 'Last change is not confirmed: ') + remoteState.error : t("educator_evaluation.saved_to_district_repository_1fq88y3", 'Saved to district repository')))}</span>
-      {remoteState.status === 'saved' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>{t("educator_evaluation.refresh_28r6qc", "Refresh")}</button>}
+      <span>{remoteState.currentUser && remoteState.currentUser.email} · {role === 'teacher' ? t("educator_evaluation.educator_access_auy9u6", 'Educator access') : (remoteState.currentUser && remoteState.currentUser.role === 'admin' ? t("educator_evaluation.administrator_access_1jngftk", 'Administrator access') : t("educator_evaluation.evaluator_access_x6tmko", 'Evaluator access'))} · {remoteState.status === 'saving' ? t("educator_evaluation.saving_to_district_repository_11nzwq8", 'Saving to district repository…') : (remoteState.status === 'conflict' ? t("educator_evaluation.concurrent_edit_needs_review_xkyx0v", 'Concurrent edit needs review') : (remoteState.status === 'error' ? t("educator_evaluation.last_change_is_not_confirmed_1olht3d", 'Last change is not confirmed: ') + remoteState.error : (remoteState.status === 'reconciliation' ? t("educator_evaluation.primary_saved_secondary_reconciliation_pending_20260824", 'Primary record saved; secondary reconciliation pending') : t("educator_evaluation.saved_to_district_repository_1fq88y3", 'Saved to district repository'))))}</span>
+      {['saved', 'reconciliation'].includes(remoteState.status) && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>{t("educator_evaluation.refresh_28r6qc", "Refresh")}</button>}
       {remoteState.status === 'error' && <button type="button" className="ae-btn" onClick={loadRemoteWorkspace}>{t("educator_evaluation.reload_district_copy_1ttxu4v", "Reload district copy")}</button>}
       {typeof repository.sendNotification === 'function' && <button type="button" className="ae-btn" disabled={!selectedTeacher || notificationState.status === 'sending' || remoteState.status === 'saving'} onClick={sendPortalNotice}>{notificationState.status === 'sending' ? t("educator_evaluation.sending_notice_1ksaxvj", 'Sending notice…') : (role === 'teacher' ? t("educator_evaluation.email_evaluator_a_portal_notice_1jtlxcv", 'Email evaluator a portal notice') : t("educator_evaluation.email_educator_a_portal_notice_1ybg2qd", 'Email educator a portal notice'))}</button>}
       {role !== 'teacher' && typeof repository.reviewReleasedEvaluation === 'function' && typeof repository.shareReleasedEvaluation === 'function' && <button type="button" className="ae-btn" title={selectedTeacher && !selectedTeacher.finalizedAt ? t("educator_evaluation.available_after_the_educator_cycle_is_finalized_1ekn2no", 'Available after the educator cycle is finalized.') : t("educator_evaluation.opens_a_required_recipient_and_disclosure_review_before_an_hr9ktn", 'Opens a required recipient and disclosure review before any Drive access changes.')} disabled={!selectedTeacher || !selectedTeacher.finalizedAt || ['reviewing', 'sending', 'recovery'].includes(releaseShareState.status) || remoteState.status === 'saving'} onClick={beginReleasedEvaluationReview}>{releaseShareState.status === 'reviewing' ? t("educator_evaluation.preparing_disclosure_review_wyzexi", 'Preparing disclosure review…') : (selectedTeacher && selectedTeacher.releasedDoc ? t("educator_evaluation.review_released_summary_access_vjbyn9", 'Review released-summary access') : t("educator_evaluation.review_and_share_released_summary_7v8a6n", 'Review & share released summary'))}</button>}
@@ -4590,18 +4873,19 @@ href="https://alloflow-cdn.pages.dev/educator-evaluation-manual" target="_blank"
     />}
     <nav className="ae-tabs" role="tablist" aria-label={t("educator_evaluation.evaluation_workspace_sections_bfw4o2", "Evaluation workspace sections")}>{tabs.map(([id, label], index) => <button type="button" role="tab" key={id} id={'ae-tab-' + id} aria-selected={tab === id} aria-controls="ae-panel" tabIndex={tab === id ? 0 : -1} className="ae-tab" onClick={() => setTab(id)} onKeyDown={(event) => tabKey(event, index)}>{label}</button>)}</nav>
     <main className="ae-main" id="ae-panel" role="tabpanel" tabIndex={-1} aria-labelledby={'ae-tab-' + tab} aria-busy={remoteState.inFlight ? 'true' : undefined} aria-disabled={isRemote && ['error', 'conflict'].includes(remoteState.status) ? 'true' : undefined} onClickCapture={blockRemoteMutation} onChangeCapture={blockRemoteMutation} onInputCapture={blockRemoteMutation} onSubmitCapture={blockRemoteMutation}>
-      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote}/>}
+      {tab === 'overview' && <AeOverview workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} aiReflectionEnabled={aiReflectionEnabled} askForReflection={askForReflection} reflection={reflection} updateTeacher={updateTeacher} setTab={setTab} readOnlyPreview={localTeacherPreview} isRemote={isRemote} requestActionReview={requestActionReview}/>}
       {tab === 'trends' && <AeTrends workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} isRemote={isRemote} repository={repository}/>}
       {tab === 'staff' && <AeStaff workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} updateTeacher={updateTeacher} addTeacher={addTeacher} addTeachersBulk={addTeachersBulk} isRemote={isRemote} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')}/>}
-      {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} addTeacher={addTeacher} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')} isRemote={isRemote} readOnlyPreview={localTeacherPreview}/>}
-      {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} setTab={setTab} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview} fictionalRehearsal={!isRemote && !!workspace.config.sampleMode}/>}
-      {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview}/>}
+      {tab === 'walkthroughs' && <AeWalkthroughs workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createWalkthrough={createWalkthrough} updateWalkthroughDraft={updateWalkthroughDraft} discardWalkthroughDraft={discardWalkthroughDraft} publishWalkthrough={publishWalkthrough} addComment={addComment} acknowledgeWalkthrough={acknowledgeWalkthrough} addTeacher={addTeacher} canAddStaff={!isRemote || !!(remoteState.currentUser && remoteState.currentUser.role === 'admin')} isRemote={isRemote} readOnlyPreview={localTeacherPreview} requestActionReview={requestActionReview}/>}
+      {tab === 'formal' && <AeFormalObservations workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} setRole={setRole} setTab={setTab} createObservation={createObservation} updateObservation={updateObservation} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview} fictionalRehearsal={!isRemote && !!workspace.config.sampleMode} requestActionReview={requestActionReview}/>}
+      {tab === 'spm' && <AeSpm workspace={workspace} selectedTeacher={selectedTeacher} setSelectedTeacherId={setSelectedTeacherId} role={role} createSpm={createSpm} updateSpm={updateSpm} updateTeacher={updateTeacher} addComment={addComment} readOnlyPreview={localTeacherPreview} requestActionReview={requestActionReview}/>}
       {tab === 'audit' && <AeAuditExport workspace={workspace} selectedTeacher={selectedTeacher} exportWorkspace={exportWorkspace} exportCsv={exportCsv} exportDueDateCalendar={exportDueDateCalendar} exportSummary={exportSummary} exportEducatorPacket={exportEducatorPacket} exportResponsePacket={exportResponsePacket} packetIncludeNames={packetIncludeNames} setPacketIncludeNames={setPacketIncludeNames} exportGrowthSnapshot={exportGrowthSnapshot} importWorkspace={importWorkspace} pendingImport={pendingImport} confirmPendingImport={confirmPendingImport} cancelPendingImport={cancelPendingImport} importUndo={importUndo} undoImport={undoImport} archiveAndResetSample={archiveAndResetSample} role={role} isRemote={isRemote}/>}
       {tab === 'about' && <AeAbout workspace={workspace} updateConfig={updateConfig} role={role} isRemote={isRemote} exportRubric={exportRubric} importRubric={importRubric} clearRubric={clearRubric} currentUser={remoteState.currentUser} repository={repository} standalone={standalone} portalUrl={(remoteState.deployment && remoteState.deployment.portalUrl) || ''} onApplySimulation={applySimulationWorkspace} onReload={loadRemoteWorkspace}/>}
     </main>
     <footer className="ae-footer"><span>{t("educator_evaluation.no_ai_scoring_evidence_and_judgments_stay_separate_publish_m8tdt1", "No AI scoring · evidence and judgments stay separate · published records are append-only in the workflow model")}</span><span>{AE_ACTIVE_FW.id === 'pa_act13' ? <><a href="https://www.pa.gov/agencies/education/programs-and-services/educators/educator-effectiveness" target="_blank" rel="noreferrer">PDE Educator Effectiveness</a> · <a href="https://www.pdesas.org/Page/Viewer/ViewPage/75" target="_blank" rel="noreferrer">Act 13 Toolkit</a></> : <><a href="https://www.maine.gov/doe/educators/educatoreval/educator" target="_blank" rel="noreferrer">Maine DOE Educator Effectiveness</a> · <a href="https://www.law.cornell.edu/regulations/maine/department-05/division-071/chapter-180" target="_blank" rel="noreferrer">PEPG Rule Ch. 180</a></>}</span></footer><div className="ae-live" aria-live="polite" aria-atomic="true"><span key={liveMessage.id}>{liveMessage.text}</span></div>
   </div>;
   const releaseReviewOpen = isRemote && !!releaseShareState.review;
-  const modalOpen = (!isRemote && showLocalOnboarding) || releaseReviewOpen;
-  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget && !modalOpen) onClose(); }}><AeStyles/><div aria-hidden={modalOpen ? 'true' : undefined} inert={modalOpen ? '' : undefined}>{body}</div>{!isRemote && showLocalOnboarding && <AeLocalOnboarding onChoose={chooseLocalStart}/>} {releaseReviewOpen && <AeReleaseReview state={releaseShareState} onCancel={cancelReleasedEvaluationReview} onConfirm={shareReleasedEvaluation}/>}</div>;
+  const actionReviewOpen = !!actionReview;
+  const modalOpen = (!isRemote && showLocalOnboarding) || releaseReviewOpen || actionReviewOpen;
+  return <div className={'ae-shell ' + (standalone ? 'ae-standalone' : 'ae-overlay')} role={standalone ? undefined : 'presentation'} onClick={standalone ? undefined : (event) => { if (event.target === event.currentTarget && !modalOpen) onClose(); }}><AeStyles/><div aria-hidden={modalOpen ? 'true' : undefined} inert={modalOpen ? '' : undefined}><AeActionReviewContext.Provider value={requestActionReview}>{body}</AeActionReviewContext.Provider></div>{!isRemote && showLocalOnboarding && <AeLocalOnboarding onChoose={chooseLocalStart}/>} {releaseReviewOpen && <AeReleaseReview state={releaseShareState} onCancel={cancelReleasedEvaluationReview} onConfirm={shareReleasedEvaluation}/>} {actionReviewOpen && <AeActionReview review={actionReview} onCancel={cancelActionReview} onConfirm={confirmActionReview}/>}</div>;
 }

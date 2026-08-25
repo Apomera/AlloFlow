@@ -805,11 +805,19 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     const success = ecosystemCore.evaluateHabitatMission('refuge', baseline, improved, 4, 'shelter');
     expect(success.success).toBe(true);
     expect(success.predictionCorrect).toBe(true);
+    expect(success.predictionMatched).toBe(true);
+    expect(success.fairTestComplete).toBe(true);
     expect(success.vitalityProtected).toBe(true);
     expect(success.stars).toBe(3);
     expect(success.points).toBe(300);
     expect(success.conditions.every((condition) => condition.met)).toBe(true);
     expect(success.deltas.shelter).toBe(38);
+
+    const differentPrediction = ecosystemCore.evaluateHabitatMission('refuge', baseline, improved, 4, 'territory');
+    expect(differentPrediction.success).toBe(true);
+    expect(differentPrediction.predictionMatched).toBe(false);
+    expect(differentPrediction.stars).toBe(3);
+    expect(differentPrediction.points).toBe(300);
 
     const premature = ecosystemCore.evaluateHabitatMission('refuge', baseline, improved, 2, 'shelter');
     expect(premature.success).toBe(false);
@@ -844,7 +852,7 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     expect(source).toContain('Add recommended structure');
     expect(source).toContain('What-if Habitat Forecast');
     expect(source).toContain('3D Habitat Field Missions');
-    expect(source).toContain('Predict → build → observe → explain');
+    expect(source).toContain('Predict → build → observe → revise and explain');
     expect(source).toContain('var habitatMissionStage =');
     expect(source).toContain('function startHabitatMission(missionId)');
     expect(source).toContain('function chooseHabitatMissionPrediction(metric)');
@@ -854,8 +862,8 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     expect(source).toContain('Mission learning-loop stages');
     expect(source).toContain('Lock intervention and observe');
     expect(source).toContain('Evaluate mission evidence');
-    expect(source).toContain('Evidence reflection');
-    expect(source).toContain('Save reflection and claim points');
+    expect(source).toContain('Prediction revision and evidence');
+    expect(source).toContain('Save revision and claim points');
     expect(source).toContain('habitatMissionObservationLayoutSignature');
     expect(source).toContain('Confounded trial: the habitat changed after observation began');
     expect(source).toContain("id: 'controlled'");

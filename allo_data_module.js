@@ -879,6 +879,8 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "interests": "string (optional - single interest to add, e.g. 'Minecraft')",
   "language": "string (optional - e.g. 'Spanish', 'French')",
   "customInstructions": "string (optional)",
+  "sourceVocabulary": "string (optional - comma-separated vocabulary or concepts the generated source must emphasize)",
+  "sourceCustomInstructions": "string (optional - requirements that apply specifically to generated source material)",
   "tone": "string (optional - one of: 'informative', 'conversational', 'narrative', 'humorous', 'step-by-step', 'persuasive')",
   "length": "string (optional - one of: 'short' (~150w), 'standard' (~250w), 'detailed' (~500w), 'exhaustive' (~1000w), OR a numeric word count like '400' if the user specifies one. Map relative phrasing: 'shorter'/'briefer'/'more concise'/'condense' -> 'short'; 'longer'/'wordier'/'lengthier'/'more detailed'/'elaborate'/'expand' -> 'detailed'; 'much longer'/'comprehensive' -> 'exhaustive')",
   "format": "string (optional - one of: 'prose', 'bullets', 'numbered')",
@@ -888,6 +890,7 @@ If they are asking to change settings (like grade level, topic, interests, langu
   "targetGroup": "string (optional - roster group key for Full Pack, e.g. 'ell-students', 'tier-2', or 'none' to clear)",
   "differentiationRange": "string (optional - multi-grade spread for leveled text, e.g. 'None', 'Grade 2-4', 'Grade 5-7')",
   "addStandard": "string (optional - a single standard code + description to ADD to the target standards list, e.g. 'CCSS.ELA.4.3: Describe in depth a character, setting, or event')",
+  "targetStandards": ["optional replacement list of up to three explicitly named target standards; omit unless the user clearly asks to set or replace the standards"],
   "voiceSpeed": "number (optional - TTS speech rate, 0.5 to 2.0)",
   "voiceVolume": "number (optional - TTS volume, 0 to 1)",
   "selectedVoice": "string (optional - voice name from the system voice list)"

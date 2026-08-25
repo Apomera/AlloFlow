@@ -1939,7 +1939,7 @@
       display: "flex",
       flexDirection: "column",
       gap: "8px"
-    } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "13px", fontWeight: 800, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9ED} "), t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#831843", lineHeight: 1.5 } }, t("humanities.positionality_edit_help") || "Name your MATERIAL relationship to this question, not a generic identity. \u2265" + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.'), /* @__PURE__ */ React.createElement(
+    } }, /* @__PURE__ */ React.createElement("h4", { style: { margin: 0, fontSize: "13px", fontWeight: 800, color: "#9d174d" } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F9ED} "), t("humanities.positionality_edit_title") || "Your standpoint \u2014 material relationship to the question"), /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "11px", color: "#831843", lineHeight: 1.5 } }, t("humanities.positionality_edit_help", { min: floors.positionality }) || "Name your MATERIAL relationship to this question, not a generic identity. \u2265" + floors.positionality + ' chars or 5s+ voice. Generic-identity statements ("as a student", "an observer") are refused.'), /* @__PURE__ */ React.createElement(
       "textarea",
       {
         value: draft,
@@ -2910,7 +2910,7 @@
       {
         t,
         label: t("humanities.question_label") || "Your contestable question",
-        help: t("humanities.question_help") || "Open a position, not a fact. \u2265" + floors.question + ' chars, ends in "?". Definitional / factoid questions are refused.',
+        help: t("humanities.question_help", { min: floors.question }) || "Open a position, not a fact. \u2265" + floors.question + ' chars, ends in "?". Definitional / factoid questions are refused.',
         value: qt,
         onChange: setQt,
         rows: 2,
@@ -2922,7 +2922,7 @@
       {
         t,
         label: t("humanities.contestability_label") || "Contestability rationale",
-        help: t("humanities.contestability_help") || "What makes this contestable, and for whom? Name a stakeholder and a contested term. \u2265" + floors.rationale + " chars.",
+        help: t("humanities.contestability_help", { min: floors.rationale }) || "What makes this contestable, and for whom? Name a stakeholder and a contested term. \u2265" + floors.rationale + " chars.",
         value: rat,
         onChange: setRat,
         rows: 4,

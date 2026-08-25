@@ -107,6 +107,148 @@ function siWorkEvidence(payload) {
   return evidence;
 }
 
+// Human-readable response manifest (submission schema v3). Student files are
+// untrusted input: normalize every field, cap sizes, and independently decide
+// which response types may enter the free-response AI grader.
+var SI_RESPONSE_MANIFEST_SCHEMA_VERSION = 1;
+var SI_RESPONSE_ENTRY_LIMIT = 500;
+var SI_AI_FREEFORM_RESPONSE_TYPES = ['short-answer', 'self-explanation', 'reflection', 'free-response', 'sentence-frame'];
+var SI_AI_FREEFORM_RESPONSE_SUFFIXES = ['short', 'explanation', 'reflection', 'free-response', 'short-answer', 'self-explanation', 'sentence-frame'];
+var SI_STRUCTURED_RESPONSE_SUFFIXES = [
+  'mcq', 'multi', 'fill', 'sequence-verdict', 'sequence-item', 'sequence-principle',
+  'wrong-pair', 'partner', 'answer', 'evidence', 'number', 'unit'
+];
+
+function siResponseText(value, max) {
+  var text = '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') text = String(value);
+  else if (value != null) {
+    try { text = JSON.stringify(value); } catch (e) { text = ''; }
+  }
+  return text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]+/g, ' ').trim().slice(0, max || 4000);
+}
+
+function siResponseManifestMap(payload) {
+  var p = payload && typeof payload === 'object' ? payload : {};
+  var raw = p.responseManifest;
+  var out = Object.create(null);
+  // Only the documented neutral-manifest shape is accepted. A future or
+  // malformed version must fail closed instead of changing grader routing.
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)
+      || Number(raw.schemaVersion) !== SI_RESPONSE_MANIFEST_SCHEMA_VERSION
+      || !Array.isArray(raw.entries)) return out;
+  var list = raw.entries;
+  list.slice(0, SI_RESPONSE_ENTRY_LIMIT).forEach(function(entry) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+    var key = siResponseText(entry.key, 240);
+    if (!key || Object.prototype.hasOwnProperty.call(out, key)) return;
+    var labels = Object.create(null);
+    var rawLabels = entry.valueLabels && typeof entry.valueLabels === 'object' && !Array.isArray(entry.valueLabels)
+      ? entry.valueLabels : {};
+    Object.keys(rawLabels).slice(0, 60).forEach(function(value) {
+      var safeValue = siResponseText(value, 120);
+      var safeLabel = siResponseText(rawLabels[value], 240);
+      if (safeValue && safeLabel) labels[safeValue] = safeLabel;
+    });
+    out[key] = {
+      key: key,
+      question: siResponseText(entry.question, 500),
+      partLabel: siResponseText(entry.partLabel, 120),
+      responseType: siResponseText(entry.responseType, 60).toLowerCase(),
+      valueLabels: labels,
+      manualReview: entry.manualReview === true
+    };
+  });
+  return out;
+}
+
+function siResponseRequiresManualReview(entry) {
+  if (!entry) return true;
+  var key = siResponseText(entry.key, 240).toLowerCase();
+  var type = siResponseText(entry.responseType, 60).toLowerCase();
+  var suffix = key.split(':').pop();
+  if (key.indexOf('allo-mcq:') === 0) return true;
+  if (SI_STRUCTURED_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return true;
+  // Legacy textareas are free response. Legacy interactive blanks are cloze /
+  // fill-in fields and need teacher review without a trusted answer adapter.
+  if (key.indexOf('allo-ta:') === 0) return false;
+  if (key.indexOf('allo-bx:') === 0) return true;
+  // New payloads promise a complete, versioned manifest. Missing rows and
+  // unsupported versions are review-only rather than silently AI-gradable.
+  if (entry.payloadSchemaVersion >= 3 || entry.manifestDeclared === true) {
+    if (entry.manifestSupported !== true || entry.hasManifest !== true) return true;
+  }
+  // Named responses are AI-gradable only when both their stable key suffix
+  // and neutral type identify a free-form field. Neither alone is trusted.
+  if (entry.hasManifest === true) {
+    if (entry.manualReview === true) return true;
+    return SI_AI_FREEFORM_RESPONSE_TYPES.indexOf(type) < 0
+      || SI_AI_FREEFORM_RESPONSE_SUFFIXES.indexOf(suffix) < 0;
+  }
+  // Backward compatibility for schema-v2 named text responses.
+  if (SI_AI_FREEFORM_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return false;
+  if (entry.manualReview === true) return true;
+  return true;
+}
+
+function siDisplayResponseValue(rawText, valueLabels) {
+  var raw = siResponseText(rawText, 12000);
+  var labels = valueLabels && typeof valueLabels === 'object' ? valueLabels : {};
+  var selected = null;
+  if (/^\s*\[/.test(raw)) {
+    try { selected = JSON.parse(raw); } catch (e) { selected = null; }
+  }
+  if (Array.isArray(selected)) {
+    return selected.map(function(value) {
+      var key = siResponseText(value, 120);
+      return Object.prototype.hasOwnProperty.call(labels, key) ? labels[key] : key;
+    }).filter(Boolean).join(', ');
+  }
+  return Object.prototype.hasOwnProperty.call(labels, raw) ? labels[raw] : raw;
+}
+
+function siResponseEntryModels(payload) {
+  var p = payload && typeof payload === 'object' ? payload : {};
+  var responses = p.responses && typeof p.responses === 'object' && !Array.isArray(p.responses) ? p.responses : {};
+  var rawManifest = p.responseManifest;
+  var manifestDeclared = rawManifest != null;
+  var manifestSupported = !!(rawManifest && typeof rawManifest === 'object' && !Array.isArray(rawManifest)
+    && Number(rawManifest.schemaVersion) === SI_RESPONSE_MANIFEST_SCHEMA_VERSION
+    && Array.isArray(rawManifest.entries));
+  var payloadSchemaVersion = Math.max(0, Number(p.schemaVersion) || 0);
+  var manifest = siResponseManifestMap(p);
+  var keys = [];
+  Object.keys(responses).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
+  if (manifestSupported) Object.keys(manifest).forEach(function(key) { if (keys.indexOf(key) < 0) keys.push(key); });
+  return keys.slice(0, SI_RESPONSE_ENTRY_LIMIT).map(function(key, index) {
+    var meta = Object.prototype.hasOwnProperty.call(manifest, key) ? manifest[key] : null;
+    var hasStoredResponse = Object.prototype.hasOwnProperty.call(responses, key);
+    var rawText = hasStoredResponse ? siResponseText(responses[key], 12000) : '';
+    var answered = hasStoredResponse && rawText !== '';
+    var model = {
+      key: key,
+      rawText: rawText,
+      displayValue: siDisplayResponseValue(rawText, meta && meta.valueLabels),
+      question: (meta && meta.question) || ('Response ' + (index + 1)),
+      partLabel: (meta && meta.partLabel) || '',
+      responseType: (meta && meta.responseType) || 'legacy-response',
+      valueLabels: (meta && meta.valueLabels) || Object.create(null),
+      manualReview: !!(meta && meta.manualReview),
+      hasManifest: !!meta,
+      answered: answered,
+      expectedFromManifest: !!meta && manifestSupported,
+      expectedCountKnown: manifestSupported,
+      metadataUnverified: !!meta,
+      manifestDeclared: manifestDeclared,
+      manifestSupported: manifestSupported,
+      payloadSchemaVersion: payloadSchemaVersion
+    };
+    model.requiresManualReview = !answered || siResponseRequiresManualReview(model);
+    model.aiGradable = answered && !model.requiresManualReview;
+    return model;
+  });
+}
+
 
 // ── Submission Inbox -> AlloSheet aggregate privacy boundary ──────────────
 // The saved gradebook contains raw student responses, feedback, rubric prose,
@@ -1377,8 +1519,40 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     );
   };
 
-  const removeRow = (idx) => setQueue(prev => prev.filter((_, i) => i !== idx));
-  const clearQueue = () => { setQueue([]); setExpandedRow(null); };
+  const remapRowIndexState = (source, removedIdx) => {
+    const next = {};
+    Object.keys(source || {}).forEach((key) => {
+      const index = Number(key);
+      if (!Number.isInteger(index) || index < 0 || index === removedIdx) return;
+      next[index > removedIdx ? index - 1 : index] = source[key];
+    });
+    return next;
+  };
+  const removeRow = (idx) => {
+    setQueue(prev => prev.filter((_, i) => i !== idx));
+    setRubrics(prev => remapRowIndexState(prev, idx));
+    setGrades(prev => remapRowIndexState(prev, idx));
+    setReviewedRows(prev => remapRowIndexState(prev, idx));
+    setConfirmedLearnerMatches(prev => remapRowIndexState(prev, idx));
+    setWorkStoryModels(prev => remapRowIndexState(prev, idx));
+    setAnchors(prev => prev.filter(anchor => anchor.fromSubmissionIdx !== idx).map(anchor => (
+      Number.isInteger(anchor.fromSubmissionIdx) && anchor.fromSubmissionIdx > idx
+        ? { ...anchor, fromSubmissionIdx: anchor.fromSubmissionIdx - 1 }
+        : anchor
+    )));
+    setExpandedRow(prev => prev === idx ? null : (Number.isInteger(prev) && prev > idx ? prev - 1 : prev));
+    setGradingRow(prev => prev === idx ? null : (Number.isInteger(prev) && prev > idx ? prev - 1 : prev));
+    setPendingAnchor(prev => {
+      if (!prev || !Number.isInteger(prev.submissionIdx)) return prev;
+      if (prev.submissionIdx === idx) return null;
+      return prev.submissionIdx > idx ? { ...prev, submissionIdx: prev.submissionIdx - 1 } : prev;
+    });
+  };
+  const clearQueue = () => {
+    setQueue([]); setExpandedRow(null); setGradingRow(null); setPendingAnchor(null);
+    setRubrics({}); setGrades({}); setReviewedRows({}); setConfirmedLearnerMatches({}); setWorkStoryModels({});
+    setAnchors(prev => prev.filter(anchor => !Number.isInteger(anchor.fromSubmissionIdx)));
+  };
 
   const rosterStudents = (rosterKey && rosterKey.students) || {};
   const rosterStudentNames = Object.keys(rosterStudents);
@@ -1528,17 +1702,22 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
 
     // Skip responses that are already anchored — they have teacher scores
     // already, no need to ask AI.
+    const allResponseEntries = siResponseEntryModels(row.payload);
+    const aiGradableKeys = new Set(allResponseEntries.filter(entry => entry.aiGradable).map(entry => entry.key));
     const anchoredKeys = new Set();
     anchors.forEach(a => {
-      if (a.fromSubmissionIdx === idx && a.fromResponseKey) anchoredKeys.add(a.fromResponseKey);
+      if (a.fromSubmissionIdx === idx && a.fromResponseKey && aiGradableKeys.has(a.fromResponseKey)) anchoredKeys.add(a.fromResponseKey);
     });
-    const responseEntries = Object.entries(row.payload.responses || {})
-      .filter(([k, v]) => v && String(v).trim() && !anchoredKeys.has(k));
+    const structuredResponseCount = allResponseEntries.filter(entry => entry.requiresManualReview).length;
+    const responseEntries = allResponseEntries
+      .filter(entry => entry.rawText && entry.aiGradable && !anchoredKeys.has(entry.key));
     if (responseEntries.length === 0) {
       if (!opts.silent) addToast && addToast(
         anchoredKeys.size > 0
           ? tr('All responses on this submission are already anchored.')
-          : tr('No responses to grade in this submission.'),
+          : structuredResponseCount > 0
+            ? tr('No written responses need AI grading. Structured responses are ready for your manual review.')
+            : tr('No responses to grade in this submission.'),
         'warn'
       );
       return { ok: 0, fail: 0, skipped: true };
@@ -1554,7 +1733,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     setGrades(prev => {
       const rowGrades = { ...(prev[idx] || {}) };
       anchors.forEach(a => {
-        if (a.fromSubmissionIdx === idx && a.fromResponseKey) {
+        if (a.fromSubmissionIdx === idx && a.fromResponseKey && aiGradableKeys.has(a.fromResponseKey)) {
           rowGrades[a.fromResponseKey] = {
             score: a.teacherScore,
             status: 'correct',
@@ -1567,11 +1746,16 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     });
     let ok = 0, fail = 0;
     for (let i = 0; i < responseEntries.length; i++) {
-      const [key, value] = responseEntries[i];
+      const entry = responseEntries[i];
+      const key = entry.key;
+      const value = entry.rawText;
       try {
+        // Prompt/part labels come from the student submission and are useful
+        // for display only. Never place that untrusted metadata into AI context.
+        const itemContext = contextText;
         const result = await QH.gradeFreeformAnswerWithCalibration({
           rubric: rubricText,
-          context: contextText || row.payload.docTitle || '',
+          context: itemContext,
           studentResponse: String(value),
           calibrationSamples: cappedSamples,
           callGemini: callGemini,
@@ -1638,22 +1822,65 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
   };
   // ── Anchor management (Phase 3 v2: multi-anchor few-shot) ──────
   const openAnchorForm = (submissionIdx, responseKey, responseText) => {
-    setPendingAnchor({ submissionIdx, responseKey, responseText, score: 95, feedback: '' });
+    setPendingAnchor({ mode: 'anchor', submissionIdx, responseKey, responseText, score: 95, scoreTouched: true, feedback: '' });
+  };
+  const openManualScoreForm = (submissionIdx, entry) => {
+    const existing = (grades[submissionIdx] || {})[entry.key];
+    const hasExistingScore = !!(existing && typeof existing.score === 'number' && Number.isFinite(existing.score));
+    setPendingAnchor({
+      mode: 'manual',
+      submissionIdx: submissionIdx,
+      responseKey: entry.key,
+      responseText: entry.rawText,
+      score: hasExistingScore ? existing.score : 0,
+      scoreTouched: hasExistingScore,
+      feedback: hasExistingScore ? String(existing.feedback || '').slice(0, 2000) : ''
+    });
   };
   const cancelPendingAnchor = () => setPendingAnchor(null);
   const confirmPendingAnchor = () => {
     if (!pendingAnchor) return;
-    const score = Math.max(0, Math.min(100, parseInt(pendingAnchor.score, 10) || 0));
+    const scoreText = String(pendingAnchor.score == null ? '' : pendingAnchor.score).trim();
+    const score = Number(scoreText);
+    if (!scoreText || !Number.isFinite(score) || score < 0 || score > 100 || (pendingAnchor.mode === 'manual' && !pendingAnchor.scoreTouched)) {
+      addToast && addToast(tr('Enter a score from 0 to 100.'), 'warn');
+      return;
+    }
+    const feedback = String(pendingAnchor.feedback || '').trim().slice(0, 2000);
+    if (pendingAnchor.mode === 'manual') {
+      const status = score >= 85 ? 'correct' : (score >= 40 ? 'partially-correct' : 'incorrect');
+      setGrades(previous => ({
+        ...previous,
+        [pendingAnchor.submissionIdx]: {
+          ...(previous[pendingAnchor.submissionIdx] || {}),
+          [pendingAnchor.responseKey]: { score: score, status: status, feedback: feedback, origin: 'teacher-edit' }
+        }
+      }));
+      setReviewedRows(previous => {
+        if (!previous[pendingAnchor.submissionIdx]) return previous;
+        const next = { ...previous };
+        delete next[pendingAnchor.submissionIdx];
+        return next;
+      });
+      setPendingAnchor(null);
+      addToast && addToast(tr('Manual score saved.'), 'success');
+      return;
+    }
     setAnchors(prev => [...prev, {
       studentResponse: pendingAnchor.responseText,
       teacherScore: score,
-      teacherFeedback: pendingAnchor.feedback || '',
+      teacherFeedback: feedback,
       fromSubmissionIdx: pendingAnchor.submissionIdx,
       fromResponseKey: pendingAnchor.responseKey,
     }]);
     setPendingAnchor(null);
     addToast && addToast('Anchor added (' + score + '/100). It will calibrate every future grading run.', 'success');
   };
+  const pendingScoreValid = !!(pendingAnchor
+    && String(pendingAnchor.score == null ? '' : pendingAnchor.score).trim()
+    && Number.isFinite(Number(pendingAnchor.score))
+    && Number(pendingAnchor.score) >= 0 && Number(pendingAnchor.score) <= 100
+    && (pendingAnchor.mode !== 'manual' || pendingAnchor.scoreTouched));
   const removeAnchor = (i) => {
     setAnchors(prev => prev.filter((_, idx) => idx !== i));
   };
@@ -1673,9 +1900,32 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     const snapshot = reviewedRows[idx];
     return !!(snapshot && snapshot.signature === siGradeReviewSignature(grades[idx] || {}));
   };
+  const rowGradeSummary = (idx) => {
+    const row = queue[idx];
+    const entries = row && row.payload ? siResponseEntryModels(row.payload) : [];
+    const rowGrades = grades[idx] || {};
+    const valid = entries.map(entry => ({ entry: entry, grade: rowGrades[entry.key] })).filter(item => {
+      const grade = item.grade;
+      if (!grade || grade.status === 'error' || typeof grade.score !== 'number'
+          || !Number.isFinite(grade.score) || grade.score < 0 || grade.score > 100) return false;
+      return !item.entry.requiresManualReview || grade.origin === 'teacher-edit';
+    }).map(item => item.grade);
+    return {
+      total: entries.length,
+      scored: valid.length,
+      complete: entries.length > 0 && valid.length === entries.length,
+      expectedCountKnown: entries.length > 0 && entries.every(entry => entry.expectedCountKnown === true),
+      average: valid.length ? Math.round(valid.reduce((sum, grade) => sum + grade.score, 0) / valid.length) : null
+    };
+  };
   const markRowReviewed = (idx) => {
     const rowGrades = grades[idx] || {};
     if (Object.keys(rowGrades).length === 0) return;
+    const summary = rowGradeSummary(idx);
+    if (!summary.complete) {
+      addToast && addToast('Score all ' + (summary.expectedCountKnown ? 'expected' : 'captured') + ' responses before marking human reviewed (' + summary.scored + ' of ' + summary.total + ' scored).', 'warn');
+      return;
+    }
     const reviewedAt = new Date().toISOString();
     setReviewedRows(previous => ({ ...previous, [idx]: { reviewedAt, signature: siGradeReviewSignature(rowGrades) } }));
     addToast && addToast(tr('Marked these saved results as human reviewed.'), 'success');
@@ -1694,7 +1944,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
     const priorRecord = siAlloSheetPlainObject(existing[submissionKey]) ? existing[submissionKey] : {};
     const reviewSnapshot = reviewedRows[idx];
     const reviewCurrent = isRowReviewCurrent(idx);
-    const savedGrades = {};
+    const savedGrades = Object.create(null);
     Object.keys(rowGrades).forEach(key => {
       const grade = siAlloSheetPlainObject(rowGrades[key]) ? rowGrades[key] : {};
       savedGrades[key] = { ...grade, origin: siGradeOrigin(grade.origin), reviewState: reviewCurrent ? 'reviewed' : 'pending' };
@@ -1714,6 +1964,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
       grades: savedGrades,
       review: {
         state: reviewCurrent ? 'reviewed' : 'pending',
+        coverageScope: rowGradeSummary(idx).expectedCountKnown ? 'manifest-expected' : 'captured-only',
+        expectedResponseCount: rowGradeSummary(idx).total,
+        scoredResponseCount: rowGradeSummary(idx).scored,
         scoreRevision: 1,
         reviewedRevision: reviewCurrent ? 1 : null,
         reviewedAt: reviewCurrent && reviewSnapshot ? reviewSnapshot.reviewedAt : null,
@@ -3125,7 +3378,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                       /*#__PURE__*/React.createElement('td', { colSpan: 4, style: { padding: 0 } },
                         /*#__PURE__*/React.createElement('div', { style: { background: '#fafafa', padding: '12px 16px', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' } },
                           /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
-                            'Decrypted responses (' + Object.keys(row.payload.responses || {}).length + ')'
+                            'Decrypted responses (' + siResponseEntryModels(row.payload).length + ')'
                           ),
                           /* Work Story (process provenance). Renders only when the
                              student chose to include it; absence is never surfaced
@@ -3133,9 +3386,11 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                           workStoryModels[idx] && window.AlloModules && window.AlloModules.ProcessPanel
                             ? /*#__PURE__*/React.createElement(window.AlloModules.ProcessPanel, { model: workStoryModels[idx] })
                             : null,
-                          Object.keys(row.payload.responses || {}).length === 0
+                          siResponseEntryModels(row.payload).length === 0
                             ? /*#__PURE__*/React.createElement('div', { style: { fontStyle: 'italic', color: '#475569', fontSize: '0.85rem' } }, tr('No responses captured.'))
-                            : Object.entries(row.payload.responses).map(([k, v], i) => {
+                            : siResponseEntryModels(row.payload).map((entry, i) => {
+                                const k = entry.key;
+                                const v = entry.rawText;
                                 const g = (grades[idx] || {})[k];
                                 const sc = g ? scoreColor(g.score) : null;
                                 const isAnchored = isResponseAnchored(idx, k);
@@ -3143,11 +3398,30 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                 return /*#__PURE__*/React.createElement('div', { key: i, style: { marginBottom: 8, padding: '6px 8px', borderRadius: 6, background: isAnchored ? '#fef3c7' : (g ? 'white' : 'transparent'), border: isAnchored ? '1.5px solid #f59e0b' : (g ? '1px solid #e2e8f0' : 'none') } },
                                   /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: '0.85rem', marginBottom: g || isAnchored ? 4 : 0 } },
                                     /*#__PURE__*/React.createElement('div', { style: { flex: 1, minWidth: 0 } },
-                                      /*#__PURE__*/React.createElement('code', { style: { fontSize: '0.72rem', color: '#475569', marginRight: 6 } }, k.length > 40 ? k.slice(0, 40) + '…' : k),
-                                      /*#__PURE__*/React.createElement('span', { style: { color: '#1e293b' } }, String(v).slice(0, 300))
+                                      /*#__PURE__*/React.createElement('div', { style: { color: '#0f172a', fontWeight: 700, lineHeight: 1.35 } }, entry.question),
+                                      entry.partLabel && /*#__PURE__*/React.createElement('div', { style: { color: '#475569', fontSize: '0.74rem', fontWeight: 600, marginTop: 2 } },
+                                        entry.partLabel + (entry.responseType ? ' · ' + entry.responseType.replace(/-/g, ' ') : '')
+                                      ),
+                                      entry.metadataUnverified && /*#__PURE__*/React.createElement('span', { title: tr('This descriptive label came from the student file. Verify it against the original resource when needed.'), style: { display: 'inline-block', marginTop: 3, padding: '1px 5px', borderRadius: 999, background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', fontSize: '0.64rem', fontWeight: 600 } }, tr('student-file label')),
+                                      /*#__PURE__*/React.createElement('div', { style: { color: '#1e293b', marginTop: 4, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } },
+                                        entry.answered
+                                          ? String(entry.displayValue).slice(0, 12000)
+                                          : /*#__PURE__*/React.createElement('em', { style: { color: '#9a3412', fontWeight: 700 } }, tr('No answer submitted'))
+                                      ),
+                                      entry.answered && String(entry.displayValue) !== String(entry.rawText) && /*#__PURE__*/React.createElement('div', { style: { color: '#64748b', marginTop: 3, fontSize: '0.7rem', overflowWrap: 'anywhere' } },
+                                        tr('Stored value:') + ' ', /*#__PURE__*/React.createElement('code', null, String(entry.rawText).slice(0, 12000))
+                                      ),
+                                      /*#__PURE__*/React.createElement('details', { style: { marginTop: 4, color: '#64748b', fontSize: '0.7rem' } },
+                                        /*#__PURE__*/React.createElement('summary', { style: { cursor: 'pointer', width: 'fit-content' } }, tr('Technical details')),
+                                        /*#__PURE__*/React.createElement('div', { style: { marginTop: 3 } }, tr('Response key:')),
+                                        /*#__PURE__*/React.createElement('code', { style: { display: 'block', overflowWrap: 'anywhere' } }, k),
+                                        /*#__PURE__*/React.createElement('div', { style: { marginTop: 5 } }, tr('Stored value:')),
+                                        /*#__PURE__*/React.createElement('code', { style: { display: 'block', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, String(entry.rawText).slice(0, 12000))
+                                      )
                                     ),
-                                    String(v).trim() && (
-                                      isAnchored
+                                    entry.requiresManualReview
+                                      ? /*#__PURE__*/React.createElement('button', { type: 'button', onClick: () => openManualScoreForm(idx, entry), title: tr('Score this response yourself. It is not sent to the free-response AI grader.'), style: { display: 'inline-flex', alignItems: 'center', padding: '3px 9px', borderRadius: 999, background: '#e0f2fe', color: '#075985', border: '1px solid #7dd3fc', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0, whiteSpace: 'nowrap', cursor: 'pointer' } }, g && g.origin === 'teacher-edit' ? tr('Edit score') : tr('Score manually'))
+                                      : entry.answered && (isAnchored
                                         ? /*#__PURE__*/React.createElement('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 999, background: '#fde68a', color: '#92400e', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0 } },
                                             '📌 Anchor ' + anchorScore + '/100'
                                           )
@@ -3157,7 +3431,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                             title: tr('Mark this response as a calibration anchor. The AI will use it as an example to match your scoring.'),
                                             style: { padding: '2px 8px', background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }
                                           }, tr('📌 Anchor'))
-                                    )
+                                      )
                                   ),
                                   g && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, fontSize: '0.78rem' } },
                                     /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof g.score === 'number' ? g.score : '–') + '/100'),
@@ -3278,7 +3552,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
                                 style: { padding: '8px 16px', background: '#16a34a', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer' }
                               }, tr('💾 Save to gradebook')),
                               Object.keys(grades[idx] || {}).length > 0 && /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.78rem', color: '#64748b' } },
-                                'Avg: ' + Math.round(Object.values(grades[idx]).reduce((s, g) => s + (g.score || 0), 0) / Object.values(grades[idx]).length) + '/100'
+                                (() => { const summary = rowGradeSummary(idx); return 'Avg: ' + (summary.average == null ? '—' : summary.average + '/100') + ' · ' + summary.scored + ' of ' + summary.total + (summary.expectedCountKnown ? ' expected' : ' captured') + ' responses scored'; })()
                               )
                             )
                           )
@@ -3306,15 +3580,17 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
         )
       ),
 
-      // Pending anchor inline form (nested overlay)
+      // Shared accessible score form: calibration anchor or teacher-only manual score.
       pendingAnchor && /*#__PURE__*/React.createElement('div', {
         role: 'presentation',
         style: { position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, zIndex: 10 }
       },
-        /*#__PURE__*/React.createElement('div', { ref: anchorDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'anchor-dialog-title', 'aria-describedby': 'anchor-dialog-description', tabIndex: -1, onKeyDown: event => { event.stopPropagation(); if (event.key === 'Escape') { event.preventDefault(); cancelPendingAnchor(); return; } containDialogFocus(event, anchorDialogRef.current); }, style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: '2px solid #fde68a' } },
-          /*#__PURE__*/React.createElement('h3', { id: 'anchor-dialog-title', style: { margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 800, color: '#92400e' } }, tr('📌 Anchor this response')),
+        /*#__PURE__*/React.createElement('div', { ref: anchorDialogRef, role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'anchor-dialog-title', 'aria-describedby': 'anchor-dialog-description', tabIndex: -1, onKeyDown: event => { event.stopPropagation(); if (event.key === 'Escape') { event.preventDefault(); cancelPendingAnchor(); return; } containDialogFocus(event, anchorDialogRef.current); }, style: { background: 'white', borderRadius: 14, boxShadow: '0 12px 40px rgba(0,0,0,0.25)', maxWidth: 540, width: '100%', padding: '20px 24px', border: pendingAnchor.mode === 'manual' ? '2px solid #7dd3fc' : '2px solid #fde68a' } },
+          /*#__PURE__*/React.createElement('h3', { id: 'anchor-dialog-title', style: { margin: '0 0 8px 0', fontSize: '1.05rem', fontWeight: 800, color: pendingAnchor.mode === 'manual' ? '#075985' : '#92400e' } }, tr(pendingAnchor.mode === 'manual' ? 'Score this response' : '📌 Anchor this response')),
           /*#__PURE__*/React.createElement('p', { id: 'anchor-dialog-description', style: { margin: '0 0 12px 0', fontSize: '0.85rem', color: '#64748b' } },
-            tr('Give this response a score. The AI will use it as a calibration example when grading every other response.')
+            tr(pendingAnchor.mode === 'manual'
+              ? 'Enter your score for this structured response. It will be saved as a teacher edit.'
+              : 'Give this response a score. The AI will use it as a calibration example when grading every other response.')
           ),
           /*#__PURE__*/React.createElement('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontSize: '0.85rem', color: '#1e293b', maxHeight: 120, overflowY: 'auto' } },
             /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#475569', fontWeight: 700, marginBottom: 4 } }, tr('Student response')),
@@ -3323,24 +3599,24 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
           /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr('Score (0-100)')),
           /*#__PURE__*/React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 } },
             /*#__PURE__*/React.createElement('input', {
-              type: 'range', min: 0, max: 100, step: 5, 'aria-label': tr('Anchor score slider'),
+              type: 'range', min: 0, max: 100, step: 5, 'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Manual score slider' : 'Anchor score slider'),
               value: pendingAnchor.score,
-              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value, scoreTouched: true }),
               style: { flex: 1 }
             }),
             /*#__PURE__*/React.createElement('input', {
-              type: 'number', min: 0, max: 100, 'aria-label': tr('Anchor score'),
+              type: 'number', min: 0, max: 100, 'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Manual score' : 'Anchor score'),
               value: pendingAnchor.score,
-              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value }),
+              onChange: e => setPendingAnchor({ ...pendingAnchor, score: e.target.value, scoreTouched: true }),
               style: { width: 70, padding: '4px 8px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.9rem', textAlign: 'center' }
             })
           ),
-          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr('Note (optional — tells the AI why this got that score)')),
+          /*#__PURE__*/React.createElement('label', { style: { display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#475569', marginBottom: 4 } }, tr(pendingAnchor.mode === 'manual' ? 'Feedback (optional)' : 'Note (optional — tells the AI why this got that score)')),
           /*#__PURE__*/React.createElement('textarea', {
-            'aria-label': tr('Anchor note'),
+            'aria-label': tr(pendingAnchor.mode === 'manual' ? 'Teacher feedback' : 'Anchor note'),
             value: pendingAnchor.feedback,
             onChange: e => setPendingAnchor({ ...pendingAnchor, feedback: e.target.value }),
-            placeholder: tr('e.g., "Clear evidence + reasoning, but missed the counter-argument."'),
+            placeholder: tr(pendingAnchor.mode === 'manual' ? 'Optional feedback for this score.' : 'e.g., "Clear evidence + reasoning, but missed the counter-argument."'),
             rows: 2,
             style: { width: '100%', padding: 8, border: '1px solid #cbd5e1', borderRadius: 6, fontSize: '0.85rem', fontFamily: 'inherit', resize: 'vertical', marginBottom: 16 }
           }),
@@ -3351,8 +3627,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSh
             }, tr('Cancel')),
             /*#__PURE__*/React.createElement('button', {
               type: 'button', onClick: confirmPendingAnchor,
-              style: { padding: '8px 16px', background: '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem' }
-            }, tr('📌 Add anchor'))
+              disabled: !pendingScoreValid,
+              style: { padding: '8px 16px', background: pendingAnchor.mode === 'manual' ? '#0284c7' : '#f59e0b', color: 'white', border: 'none', borderRadius: 8, fontWeight: 700, cursor: !pendingScoreValid ? 'not-allowed' : 'pointer', opacity: !pendingScoreValid ? 0.55 : 1, fontSize: '0.88rem' }
+            }, tr(pendingAnchor.mode === 'manual' ? 'Save score' : '📌 Add anchor'))
           )
         )
       ),

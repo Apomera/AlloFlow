@@ -18,6 +18,15 @@ self.addEventListener('install', (event) => {
     // Do not call skipWaiting(): never interrupt an active classroom tab.
 });
 
+// A waiting worker activates only after the person explicitly accepts the
+// in-app update prompt. This preserves interruption-free automatic updates
+// while making "Refresh now" deterministic when the timing is appropriate.
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'ALLOFLOW_ACTIVATE_UPDATE') {
+        self.skipWaiting();
+    }
+});
+
 self.addEventListener('activate', (event) => {
     console.log('[SW] Activating:', CACHE_NAME);
     event.waitUntil(

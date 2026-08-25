@@ -136,7 +136,7 @@ window.StemLab = window.StemLab || {
                 challengeTier: 0, challengeActive: false, launchCount: 0, targetsHit: 0,
                 // Live "show your work" formulas panel
                 showFormulas: false,
-                // Predict-then-launch
+                // Quantitative estimate-then-launch challenge
                 predictedRange: '', lastPredictionRange: null, predictionResult: null, predictionStreak: 0,
                 // Trajectory comparison overlay
                 showOverlay: false,
@@ -153,9 +153,9 @@ window.StemLab = window.StemLab || {
                 isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
               }});
             });
-            // text-slate-600 on the dark tool shell is ~2:1. Use the theme var so the
-            // placeholder stays readable in light, dark and high-contrast.
-            return React.createElement('div', { className: 'p-8 text-center', style: { color: 'var(--allo-stem-text-soft, #475569)' } }, __alloT('stem.physics.loading', 'Loading...'));
+            // This transient state owns a stable AA pair because dark theme tokens
+            // can otherwise resolve to light ink over the host's white tool card.
+            return React.createElement('div', { className: 'p-8 text-center', style: { color: '#475569', backgroundColor: '#ffffff' } }, __alloT('stem.physics.loading', 'Loading...'));
           }
 const d = labToolData.physics;
 
@@ -283,7 +283,7 @@ const d = labToolData.physics;
                 if (typeof checkTargetHit === 'function') checkTargetHit(landingMX);
               }, 0);
             };
-            // Predict-then-launch comparison. Same rebind-every-render
+            // Estimate-then-launch comparison. Same rebind-every-render
             // pattern as _onTargetLand: this closure captures the latest
             // `d.lastPredictionRange` and writes results back via fresh upd.
             // Scoring tiers:
@@ -300,10 +300,10 @@ const d = labToolData.physics;
                 if (errPct <= 5) { tier = 'bullseye'; xp = 25; }
                 else if (errPct <= 15) { tier = 'close'; xp = 10; }
                 else { tier = 'miss'; xp = 0; }
-                upd('predictionResult', { predicted: predicted, actual: actualMX, errPct: errPct, tier: tier, xp: xp });
+                upd('predictionResult', { predicted: predicted, actual: actualMX, errPct: errPct, tier: tier, xp: xp, revision: '', reason: '', reflectionComplete: false });
                 if (xp > 0) {
                   upd('predictionStreak', (d.predictionStreak || 0) + 1);
-                  if (awardStemXP) awardStemXP('predict', xp, tier === 'bullseye' ? 'Prediction Bullseye' : 'Prediction Close');
+                  if (awardStemXP) awardStemXP('estimate', xp, tier === 'bullseye' ? 'Range Estimate Bullseye' : 'Range Estimate Close');
                 } else {
                   upd('predictionStreak', 0);
                 }
@@ -1962,7 +1962,7 @@ const d = labToolData.physics;
 
           ];
           var physicsNext = (d.launchCount || 0) === 0
-            ? __alloT('stem.physics.next_predict_then_launch', 'Predict the range, then launch once and compare the result.')
+            ? __alloT('stem.physics.next_predict_then_launch', 'Estimate the range, then launch once and compare the measured result.')
             : !d.showVectors && !d.showEnergy
               ? __alloT('stem.physics.next_turn_on_vectors', 'Turn on vectors or energy and explain what changes during flight.')
               : d.targetMode
@@ -2002,7 +2002,7 @@ const d = labToolData.physics;
                 ),
                 React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": __alloT('stem.physics.investigation_pathway', 'Projectile investigation pathway') },
                   [
-                    { n: '1', title: __alloT('stem.physics.step_predict', 'Predict'), detail: __alloT('stem.physics.step_predict_detail', 'Choose variables and estimate range.') },
+                    { n: '1', title: __alloT('stem.physics.step_predict', 'Estimate'), detail: __alloT('stem.physics.step_predict_detail', 'Use the variables to estimate a range.') },
                     { n: '2', title: __alloT('stem.physics.step_launch', 'Launch'), detail: __alloT('stem.physics.step_launch_detail', 'Observe motion and collect evidence.') },
                     { n: '3', title: __alloT('stem.physics.step_explain', 'Explain'), detail: __alloT('stem.physics.step_explain_detail', 'Connect forces to the trajectory.') }
                   ].map(function(step) {
@@ -2093,6 +2093,10 @@ const d = labToolData.physics;
 
                     e.preventDefault();
 
+                    var keyboardEstimate = parseFloat(d.predictedRange);
+                    upd('lastPredictionRange', isFinite(keyboardEstimate) ? keyboardEstimate : null);
+                    upd('predictionResult', null);
+
                     var cv = document.getElementById('physicsCanvas');
 
                     if (cv && cv._launch) cv._launch();
@@ -2113,7 +2117,7 @@ const d = labToolData.physics;
 
                 onClick: function () {
 
-                  // Predict-then-launch: snapshot current prediction so the
+                  // Estimate-then-launch: snapshot the current estimate so the
                   // landing-event callback can score it against actual range.
                   // We capture here (not in the callback) so a student who
                   // changes prediction mid-flight can't game the comparison.
@@ -2129,9 +2133,9 @@ const d = labToolData.physics;
 
               }, "\uD83D\uDE80 " + __alloT('stem.physics.launch', 'Launch!')),
 
-              // \u2500\u2500 Predict-then-launch input \u2500\u2500
-              React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1" },
-                React.createElement("label", { htmlFor: "physPredict", className: "text-[11px] font-bold text-fuchsia-700" }, "\uD83D\uDD2E " + __alloT('stem.physics.predict_landing', 'Predict landing:')),
+              // \u2500\u2500 Quantitative estimation challenge \u2500\u2500
+              React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1", "data-physics-estimation-challenge": "true", title: "Quantitative estimation challenge: closeness earns XP; inquiry reflections are never graded for matching." },
+                React.createElement("label", { htmlFor: "physPredict", className: "text-[11px] font-bold text-fuchsia-700" }, "\uD83D\uDCCF " + __alloT('stem.physics.predict_landing', 'Estimate landing:')),
                 React.createElement("input", {
                   id: "physPredict",
                   type: "number",
@@ -2140,14 +2144,14 @@ const d = labToolData.physics;
                   step: 0.1,
                   value: d.predictedRange == null ? '' : d.predictedRange,
                   placeholder: "m",
-                  "aria-label": __alloT('stem.physics.aria_predicted_landing', 'Predicted landing distance in meters'),
+                  "aria-label": __alloT('stem.physics.aria_predicted_landing', 'Estimated landing distance in meters'),
                   onChange: function(e) { upd('predictedRange', e.target.value); },
                   className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-600 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
                 }),
                 React.createElement("span", { className: "text-[10px] text-fuchsia-600" }, "m")
               ),
 
-              // \u2500\u2500 Prediction result feedback (shown after landing if a prediction was made) \u2500\u2500
+              // \u2500\u2500 Estimation result feedback (shown after landing if an estimate was made) \u2500\u2500
               d.predictionResult && React.createElement("div", {
                 className: "px-2 py-1 rounded-lg text-[11px] font-bold border " + (
                   d.predictionResult.tier === 'bullseye' ? 'bg-fuchsia-700 text-white border-fuchsia-800' :
@@ -2159,7 +2163,7 @@ const d = labToolData.physics;
               },
                 (d.predictionResult.tier === 'bullseye' ? '\uD83C\uDFAF Bullseye! ' :
                  d.predictionResult.tier === 'close' ? '\uD83D\uDD2E Close! ' : '\uD83D\uDCCF ') +
-                'Predicted ' + d.predictionResult.predicted.toFixed(1) + 'm, actual ' + d.predictionResult.actual.toFixed(1) + 'm (' + d.predictionResult.errPct.toFixed(0) + '% off)' +
+                'Estimated ' + d.predictionResult.predicted.toFixed(1) + 'm, measured ' + d.predictionResult.actual.toFixed(1) + 'm (' + d.predictionResult.errPct.toFixed(0) + '% error)' +
                 (d.predictionResult.xp ? ' +' + d.predictionResult.xp + ' XP' : '')
               ),
 
@@ -2310,6 +2314,39 @@ const d = labToolData.physics;
 
             ),
 
+            d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": "Range estimation comparison and reflection" },
+              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "text-[11px] font-black uppercase tracking-wide text-fuchsia-800" }, "Quantitative estimation challenge"),
+                  React.createElement("p", { className: "mt-1 text-[11px] leading-relaxed text-slate-700" }, "Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.")
+                ),
+                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[10px] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% error")
+              ),
+              React.createElement("fieldset", { className: "mt-2" },
+                React.createElement("legend", { className: "text-[10px] font-black text-fuchsia-900" }, "How did the measured result affect your estimate?"),
+                React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the measured range affected the estimate" },
+                  [
+                    { id: 'supported', label: 'It supported my method' },
+                    { id: 'revised', label: 'I would revise my method' },
+                    { id: 'uncertain', label: 'I need another controlled trial' }
+                  ].map(function(option) {
+                    var selectedRevision = d.predictionResult.revision === option.id;
+                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[10px] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
+                      React.createElement("input", { type: "radio", name: "physics-estimation-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('predictionResult', Object.assign({}, d.predictionResult, { revision: option.id, reflectionComplete: false })); }, className: "mt-0.5 h-4 w-4 accent-fuchsia-700" }),
+                      React.createElement("span", null, option.label)
+                    );
+                  })
+                )
+              ),
+              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[10px] font-black text-fuchsia-900" }, "What will you keep or change next time?"),
+              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-200 bg-white p-2 text-[11px] text-slate-800" }),
+              React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
+                if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
+                upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
+                if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
+              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? "Reflection saved" : "Save estimation reflection")
+            ),
+
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
 
               [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }].map(function (s) {
@@ -2342,7 +2379,7 @@ const d = labToolData.physics;
             React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
               React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
               React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
-              d.predictionStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDD2E " + __alloT('stem.physics.prediction_streak_count', 'Prediction streak: ') + d.predictionStreak),
+              d.predictionStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
               d.quizStreak > 0 && React.createElement("span", { className: "text-[11px] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
             ),
 
@@ -2860,15 +2897,15 @@ const d = labToolData.physics;
 
             ),
 
-            // ── Predict the Landing Quiz ──
+            // ── Calculate the Landing Quiz ──
 
             React.createElement("div", { className: "mt-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
 
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
-                React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.predict_the_landing', 'Predict the Landing')),
+                React.createElement("p", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.predict_the_landing', 'Calculate the Landing')),
 
-                React.createElement("button", { "aria-label": __alloT('stem.physics.aria_generate_quiz', 'Generate landing prediction quiz'),
+                React.createElement("button", { "aria-label": __alloT('stem.physics.aria_generate_quiz', 'Generate range calculation quiz'),
 
                   onClick: function () {
 
@@ -2947,7 +2984,7 @@ const d = labToolData.physics;
                           upd('quizDiag', null);
                         }
 
-                        if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Predicted the landing!'); }
+                        if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Solved the landing calculation'); }
 
                         else { upd('quizStreak', 0); }
 

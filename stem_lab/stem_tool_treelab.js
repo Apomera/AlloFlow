@@ -3344,13 +3344,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // align-self:flex-start, because a fixed-height flex row STRETCHES the item to
         // that height: content past it overflowed the painted background. The explicit
         // width keeps flex-column parents from shrink-wrapping the width instead.
-        '.allo-tree-lab{position:relative;isolation:isolate;overflow:visible;width:100%;box-sizing:border-box;min-width:0;align-self:flex-start;}',
-        '.allo-tree-lab:before{content:"";position:absolute;inset:0 0 auto 0;height:280px;pointer-events:none;z-index:-1;background:radial-gradient(circle at 8% 5%,var(--tree-glow),transparent 36%),radial-gradient(circle at 92% 0,var(--sun-glow),transparent 30%);}',
-        '.allo-tree-hero{position:relative;overflow:hidden;}',
-        '.allo-tree-hero:after{content:"";position:absolute;width:180px;height:180px;right:-72px;bottom:-112px;border-radius:50%;border:28px solid var(--hero-ring);pointer-events:none;}',
-        '.allo-tree-workbench{display:grid;grid-template-columns:minmax(360px,540px) minmax(420px,1fr);gap:16px;align-items:start;}',
+        '.allo-tree-lab{position:relative;isolation:isolate;overflow:visible;width:100%;box-sizing:border-box;min-width:0;align-self:flex-start;border:1px solid var(--lab-edge);}',
+        '.allo-tree-lab:before{content:"";position:absolute;inset:0 0 auto 0;height:430px;pointer-events:none;z-index:-1;background:radial-gradient(circle at 7% 4%,var(--tree-glow),transparent 32%),radial-gradient(circle at 91% 2%,var(--sun-glow),transparent 26%),linear-gradient(155deg,var(--canopy-wash),transparent 58%);}',
+        '.allo-tree-hero{position:relative;overflow:hidden;isolation:isolate;}',
+        '.allo-tree-hero:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 76% 18%,var(--hero-speck) 0 2px,transparent 2.5px);background-size:24px 24px;opacity:.72;}',
+        '.allo-tree-hero:after{content:"";position:absolute;width:260px;height:260px;right:-98px;bottom:-174px;border-radius:50%;border:42px solid var(--hero-ring);box-shadow:0 0 0 26px var(--hero-ring-soft);pointer-events:none;}',
+        '.allo-tree-hero-copy{max-width:680px;}',
+        '.allo-tree-hero-title{font-size:clamp(27px,3vw,38px)!important;}',
+        '.allo-tree-hero-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;}',
+        '.allo-tree-hero-stat{display:grid;gap:1px;min-width:104px;padding:8px 11px;border-radius:12px;background:var(--hero-chip);border:1px solid var(--hero-chip-border);box-shadow:0 7px 18px var(--tree-shadow);}',
+        '.allo-tree-hero-stat-label{font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-hero-stat-value{font-size:13px;font-weight:850;color:var(--tree-ink);}',
+        '.allo-tree-setup-label{flex:1 0 100%;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-workbench{display:grid;grid-template-columns:minmax(360px,540px) minmax(420px,1fr);gap:20px;align-items:start;}',
         '.allo-tree-workbench>*{min-width:0;}',
         '.allo-tree-workbench-sticky{position:sticky;top:12px;}',
+        '.allo-tree-workbench-scene>.allo-tree-workbench-sticky>.allo-tree-card{border-color:var(--scene-edge)!important;box-shadow:0 22px 50px var(--scene-shadow)!important;}',
         // ── Full screen actually being full screen. ──
         //
         // The stage is `position:fixed; z-index:<high>`, which ought to be enough and
@@ -3376,20 +3385,240 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         // is on the body — it is removed on exit and on unmount.
         'body.allo-treelab-immersive .stem-active-toolbar{display:none!important;}',
         'body.allo-treelab-immersive .stem-lab-topbar,body.allo-treelab-immersive .stem-lab-tablist{display:none!important;}',
-        '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;}',
+        '.allo-tree-card{transition:border-color .18s ease,box-shadow .18s ease,transform .18s ease;background-clip:padding-box;}',
         '.allo-tree-quiz-opt{transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease;}',
         '.allo-tree-quiz-opt:not(:disabled):hover{border-color:var(--tree-accent);transform:translateY(-1px);box-shadow:0 4px 12px var(--tree-shadow);}',
 
         '.allo-tree-button,.allo-tree-tab{transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease;}',
         '.allo-tree-button:not(:disabled):hover,.allo-tree-tab:hover{transform:translateY(-1px);box-shadow:0 5px 14px var(--tree-shadow);}',
         '.allo-tree-button:focus-visible,.allo-tree-tab:focus-visible,.allo-tree-lab select:focus-visible,.allo-tree-lab input:focus-visible,.allo-tree-lab textarea:focus-visible{outline:3px solid var(--tree-focus);outline-offset:2px;}',
-        '.allo-tree-tabs{scrollbar-width:thin;}',
-        '.allo-tree-tab[aria-selected="true"]{box-shadow:0 6px 16px var(--accent-shadow);}',
+        '.allo-tree-tabs{scrollbar-width:thin;position:relative;}',
+        '.allo-tree-tab{position:relative;text-align:left;}',
+        '.allo-tree-tab-icon{display:inline-flex;flex:0 0 32px;width:32px;height:32px;align-items:center;justify-content:center;border-radius:10px;background:var(--tab-icon);font-size:16px;}',
+        '.allo-tree-tab-copy{display:grid;min-width:0;gap:1px;}',
+        '.allo-tree-tab-label{font-size:13px;font-weight:850;line-height:1.15;}',
+        '.allo-tree-tab-hint{font-size:9.5px;font-weight:650;line-height:1.2;opacity:.78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+        '.allo-tree-tab[aria-selected="true"]{box-shadow:0 8px 20px var(--accent-shadow);}',
+        '.allo-tree-tab[aria-selected="true"]:after{content:"";position:absolute;left:13px;right:13px;bottom:4px;height:3px;border-radius:99px;background:currentColor;opacity:.48;}',
+        '.allo-tree-chapter{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;margin:-2px 0 16px;padding:12px 15px;border-radius:15px;background:var(--chapter-bg);border:1px solid var(--chapter-border);box-shadow:0 10px 28px var(--tree-shadow);}',
+        '.allo-tree-chapter-number{display:grid;place-items:center;width:40px;height:40px;border-radius:13px;background:var(--tree-accent);color:var(--accent-ink);font-size:12px;font-weight:950;box-shadow:0 8px 18px var(--accent-shadow);}',
+        '.allo-tree-chapter-title{font-size:15px;font-weight:900;line-height:1.2;color:var(--tree-ink);}',
+        '.allo-tree-chapter-copy{font-size:11px;line-height:1.45;color:var(--tree-muted);margin-top:2px;}',
+        '.allo-tree-chapter-cue{max-width:205px;padding-left:12px;border-left:1px solid var(--chapter-border);font-size:10px;line-height:1.4;color:var(--tree-muted);}',
+        '.allo-tree-flow-marker{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin:7px 2px 11px;padding:2px 4px;}',
+        '.allo-tree-flow-number{display:grid;place-items:center;width:30px;height:30px;border-radius:10px;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent);font-size:11px;font-weight:950;}',
+        '.allo-tree-flow-title{font-size:12px;font-weight:900;color:var(--tree-ink);}',
+        '.allo-tree-flow-copy{font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
+        '.allo-tree-mission>.allo-tree-card{position:relative;overflow:hidden;border-color:var(--mission-border)!important;background:var(--mission-bg)!important;box-shadow:0 16px 36px var(--mission-shadow)!important;}',
+        '.allo-tree-mission>.allo-tree-card:after{content:"";position:absolute;width:130px;height:130px;right:-54px;top:-72px;border-radius:50%;background:var(--mission-orb);pointer-events:none;}',
+        '.allo-tree-mission-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0;}',
+        '.allo-tree-mission-step{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;align-items:center;padding:8px;border-radius:10px;background:var(--mission-step);border:1px solid var(--chapter-border);font-size:10.5px;line-height:1.3;color:var(--tree-ink);}',
+        '.allo-tree-mission-dot{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--flow-badge);border:1px solid var(--chapter-border);color:var(--tree-accent);font-size:10px;font-weight:950;}',
+        '.allo-tree-viewer-card{position:relative;padding:12px!important;background:var(--chapter-bg)!important;border-color:var(--scene-edge)!important;box-shadow:0 24px 54px var(--scene-shadow)!important;}',
+        '.allo-tree-viewer-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,var(--tree-accent),transparent 72%);pointer-events:none;}',
+        '.allo-tree-viewer-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:7px 6px 10px;}',
+        '.allo-tree-viewer-name{font-size:15px;font-weight:900;line-height:1.2;color:var(--tree-ink);}',
+        '.allo-tree-viewer-metrics{font-size:10.5px;font-weight:750;color:var(--tree-muted);text-align:right;}',
+        '.allo-tree-viewer-limit{grid-column:1/-1;justify-self:start;display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:var(--mission-step);font-size:9.5px;font-weight:850;color:var(--tree-ink);}',
+        '.allo-tree-viewer-limit:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--tree-accent);box-shadow:0 0 0 3px var(--flow-badge);}',
+        '.allo-tree-habitat-ribbon{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 9px;padding:7px;border-radius:13px;background:var(--mission-step);border:1px solid var(--chapter-border);}',
+        '.allo-tree-habitat-item{position:relative;min-width:0;padding:7px 8px;border-radius:9px;background:var(--hero-chip);border:1px solid var(--chapter-border);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+        '.allo-tree-habitat-item.is-limiting{transform:translateY(-1px);box-shadow:0 6px 15px var(--tree-shadow);}',
+        '.allo-tree-habitat-top{display:flex;align-items:center;justify-content:space-between;gap:4px;}',
+        '.allo-tree-habitat-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-habitat-value{display:block;margin-top:2px;font-size:12px;font-weight:900;color:var(--tree-ink);}',
+        '.allo-tree-habitat-badge{padding:2px 4px;border-radius:999px;background:var(--flow-badge);font-size:7px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-habitat-track{display:block;height:3px;margin-top:6px;border-radius:99px;background:var(--chapter-border);overflow:hidden;}',
+        '.allo-tree-habitat-fill{display:block;height:100%;border-radius:99px;}',
+        '.allo-tree-budget-card,.allo-tree-conditions-card{position:relative;overflow:hidden;}',
+        '.allo-tree-budget-card:before,.allo-tree-conditions-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--tree-accent),transparent 76%);pointer-events:none;}',
+        '.allo-tree-budget-equation{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:stretch;margin-bottom:10px;}',
+        '.allo-tree-budget-equation>.allo-tree-budget-operator{display:grid;place-items:center;padding:0;color:var(--tree-muted);font-size:20px;font-weight:950;}',
+        '.allo-tree-budget-equation>div{margin:0;min-width:0;}',
+        '.allo-tree-factor-control{position:relative;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+        '.allo-tree-factor-control:hover{transform:translateY(-1px);box-shadow:0 7px 17px var(--tree-shadow);}',
+        '.allo-tree-factor-control input[type="range"]{display:block;height:20px;margin:1px 0 0;cursor:pointer;}',
+        '.allo-tree-factor-control input[type="range"]:disabled{cursor:not-allowed;}',
+        '.allo-tree-mission-step.is-done{background:var(--flow-badge);border-color:var(--mission-border);}',
+        '.allo-tree-mission-step.is-done strong{color:var(--tree-accent);}',
+        '.allo-tree-mission-step.is-done .allo-tree-mission-dot{background:var(--tree-accent);color:var(--accent-ink);}',
+        '.allo-tree-mission-step.is-next{border-color:var(--tree-accent);box-shadow:0 6px 14px var(--tree-shadow);}',
+        '.allo-tree-chem-story,.allo-tree-transport-story{position:relative;overflow:hidden;border-color:var(--scene-edge)!important;box-shadow:0 18px 42px var(--scene-shadow)!important;}',
+        '.allo-tree-chem-story:after,.allo-tree-transport-story:after{content:"";position:absolute;width:190px;height:190px;right:-96px;top:-106px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 24px var(--hero-ring-soft);pointer-events:none;}',
+        '.allo-tree-chem-story>*,.allo-tree-transport-story>*{position:relative;z-index:1;}',
+        '.allo-tree-story-eyebrow{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--flow-badge);font-size:8.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase;color:var(--tree-accent);}',
+        '.allo-tree-story-eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--tree-accent);box-shadow:0 0 0 3px var(--hero-ring-soft);}',
+        '.allo-tree-reaction{display:grid;grid-template-columns:minmax(0,1.25fr) 28px minmax(130px,.72fr) 28px minmax(0,.9fr);gap:8px;align-items:stretch;margin-top:12px;}',
+        '.allo-tree-reaction-inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
+        '.allo-tree-reaction-outputs{display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:6px;}',
+        '.allo-tree-molecule{display:grid;align-content:center;justify-items:center;min-width:0;padding:10px 7px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);text-align:center;box-shadow:0 7px 16px var(--tree-shadow);}',
+        '.allo-tree-molecule-icon{display:grid;place-items:center;min-height:27px;font-size:23px;font-weight:950;color:var(--tree-accent);}',
+        '.allo-tree-molecule-label{margin-top:4px;font-size:9px;font-weight:900;line-height:1.2;letter-spacing:.045em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-molecule-value{margin-top:3px;font-size:11px;font-weight:900;line-height:1.25;color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
+        '.allo-tree-reaction-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:21px;font-weight:950;}',
+        '.allo-tree-leaf-engine{display:grid;place-items:center;align-content:center;min-height:142px;padding:12px 9px;border:1px solid var(--mission-border);border-radius:18px;background:linear-gradient(145deg,var(--flow-badge),var(--chapter-bg));box-shadow:inset 0 0 0 5px var(--hero-ring-soft),0 12px 25px var(--tree-shadow);text-align:center;}',
+        '.allo-tree-leaf-orbit{display:grid;place-items:center;width:51px;height:51px;border-radius:50%;background:var(--tree-accent);color:var(--accent-ink);font-size:27px;box-shadow:0 9px 20px var(--accent-shadow);}',
+        '.allo-tree-engine-kicker{margin-top:8px;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-engine-name{margin-top:2px;font-size:12px;font-weight:950;line-height:1.15;color:var(--tree-ink);}',
+        '.allo-tree-engine-setting{margin-top:4px;font-size:10px;font-weight:800;color:var(--tree-accent);}',
+        '.allo-tree-story-verdict{display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:7px 10px;align-items:center;margin-top:11px;padding:10px 12px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:12px;background:var(--chapter-bg);}',
+        '.allo-tree-story-verdict-label{font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-story-verdict strong{font-size:12px;color:var(--tree-ink);}',
+        '.allo-tree-story-verdict-copy{font-size:10.5px;line-height:1.4;color:var(--tree-muted);}',
+        '.allo-tree-curves-card,.allo-tree-chem-limits,.allo-tree-chem-trade,.allo-tree-chem-bill,.allo-tree-sugar-map,.allo-tree-trunk-card,.allo-tree-girdling-card{position:relative;overflow:hidden;}',
+        '.allo-tree-curves-card:before,.allo-tree-chem-limits:before,.allo-tree-chem-trade:before,.allo-tree-chem-bill:before,.allo-tree-sugar-map:before,.allo-tree-trunk-card:before,.allo-tree-girdling-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--tree-accent),transparent 74%);pointer-events:none;}',
+        '.allo-tree-curve-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;}',
+        '.allo-tree-curve-panel{min-width:0;padding:10px;border:1px solid var(--chapter-border);border-top:3px solid var(--tree-accent);border-radius:13px;background:var(--mission-step);transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+        '.allo-tree-curve-panel:hover{transform:translateY(-1px);box-shadow:0 9px 20px var(--tree-shadow);}',
+        '.allo-tree-curve-panel.is-limiting{transform:translateY(-2px);box-shadow:0 12px 26px var(--tree-shadow),inset 0 0 0 1px var(--flow-badge);}',
+        '.allo-tree-pipe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;}',
+        '.allo-tree-pipe-card{position:relative;overflow:hidden;padding:13px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:14px;background:var(--mission-step);box-shadow:0 9px 22px var(--tree-shadow);}',
+        '.allo-tree-pipe-card:after{content:"";position:absolute;width:76px;height:76px;right:-37px;bottom:-41px;border-radius:50%;background:var(--flow-badge);pointer-events:none;}',
+        '.allo-tree-pipe-card>*{position:relative;z-index:1;}',
+        '.allo-tree-pipe-path{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);gap:4px;align-items:center;margin:10px 0;padding:8px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
+        '.allo-tree-pipe-node{display:grid;align-content:center;justify-items:center;min-width:0;min-height:64px;padding:5px 3px;border-radius:9px;background:var(--hero-chip);text-align:center;}',
+        '.allo-tree-pipe-icon{font-size:19px;font-weight:950;color:var(--tree-accent);}',
+        '.allo-tree-pipe-label{margin-top:2px;font-size:9.5px;font-weight:950;line-height:1.15;color:var(--tree-ink);}',
+        '.allo-tree-pipe-note{margin-top:2px;font-size:7.5px;font-weight:800;line-height:1.15;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-pipe-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:15px;font-weight:950;}',
+        '.allo-tree-sink-list{display:grid;gap:8px;}',
+        '.allo-tree-source-card,.allo-tree-sink-deficit{padding:11px!important;border-radius:12px!important;box-shadow:0 8px 18px var(--tree-shadow);}',
+        '.allo-tree-sink-rows{display:grid;gap:2px;padding:3px 2px 0;}',
+        '.allo-tree-sink-row{padding:7px 8px;border:1px solid var(--chapter-border);border-radius:10px;background:var(--mission-step);}',
+        '.allo-tree-trunk-section>div:first-child{padding:9px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg);}',
+        '.allo-tree-consequence{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 4px;}',
+        '.allo-tree-consequence-step{position:relative;min-width:0;padding:11px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);box-shadow:0 8px 18px var(--tree-shadow);}',
+        '.allo-tree-consequence-number{display:grid;place-items:center;width:24px;height:24px;margin-bottom:7px;border-radius:8px;background:var(--tree-accent);color:var(--accent-ink);font-size:10px;font-weight:950;}',
+        '.allo-tree-consequence-title{font-size:11px;font-weight:950;line-height:1.25;color:var(--tree-ink);}',
+        '.allo-tree-consequence-copy{margin-top:3px;font-size:9.5px;line-height:1.4;color:var(--tree-muted);}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-curve-panel,.allo-tree-pipe-card,.allo-tree-consequence-step{transition:none!important;animation:none!important}}',
+        '@media (max-width:760px){.allo-tree-reaction{grid-template-columns:minmax(0,1fr)}.allo-tree-reaction-arrow{min-height:16px;transform:rotate(90deg)}.allo-tree-leaf-engine{min-height:126px}.allo-tree-reaction-outputs{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none}.allo-tree-story-verdict{grid-template-columns:minmax(0,1fr)}.allo-tree-pipe-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-consequence{grid-template-columns:minmax(0,1fr)}}',
+        '@media (max-width:420px){.allo-tree-reaction-inputs{grid-template-columns:minmax(0,1fr)}.allo-tree-pipe-path{grid-template-columns:minmax(0,1fr)}.allo-tree-pipe-arrow{min-height:13px;transform:rotate(90deg)}}',
+        '.allo-tree-spread-hero,.allo-tree-compare-hero{position:relative;overflow:hidden;border-color:var(--scene-edge)!important;box-shadow:0 20px 46px var(--scene-shadow)!important;}',
+        '.allo-tree-spread-hero:after,.allo-tree-compare-hero:after{content:"";position:absolute;width:230px;height:230px;right:-128px;top:-138px;border-radius:50%;background:var(--flow-badge);box-shadow:0 0 0 30px var(--hero-ring-soft);pointer-events:none;}',
+        '.allo-tree-spread-hero>*,.allo-tree-compare-hero>*{position:relative;z-index:1;}',
+        '.allo-tree-spread-journey{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);gap:5px;align-items:stretch;margin:12px 0;}',
+        '.allo-tree-spread-journey-step{display:grid;align-content:center;justify-items:center;min-width:0;min-height:104px;padding:10px 7px;border:1px solid var(--chapter-border);border-radius:14px;background:var(--mission-step);text-align:center;box-shadow:0 8px 18px var(--tree-shadow);}',
+        '.allo-tree-spread-journey-icon{display:grid;place-items:center;width:38px;height:38px;margin-bottom:6px;border-radius:12px;background:var(--flow-badge);font-size:21px;}',
+        '.allo-tree-spread-journey-step strong{font-size:10.5px;line-height:1.2;color:var(--tree-ink);}',
+        '.allo-tree-spread-journey-step>span:last-child{margin-top:3px;font-size:8.5px;line-height:1.3;color:var(--tree-muted);}',
+        '.allo-tree-spread-journey-arrow{display:grid;place-items:center;color:var(--tree-accent);font-size:16px;font-weight:950;}',
+        '.allo-tree-spread-budget-meter{margin:12px 0 8px;padding:11px 12px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg);}',
+        '.allo-tree-spread-budget-meter.is-over{border-color:var(--tree-accent);box-shadow:0 7px 17px var(--tree-shadow);}',
+        '.allo-tree-spread-budget-head{display:flex;justify-content:space-between;gap:10px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--tree-muted);}',
+        '.allo-tree-spread-budget-head strong{font-size:11px;color:var(--tree-ink);}',
+        '.allo-tree-spread-budget-track{display:block;height:9px;margin-top:7px;border:1px solid var(--chapter-border);border-radius:99px;background:var(--mission-step);overflow:hidden;}',
+        '.allo-tree-spread-budget-fill{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--tree-accent),var(--tree-focus));transition:width .18s ease;}',
+        '.allo-tree-spread-budget-note{margin-top:5px;font-size:9.5px;font-weight:750;color:var(--tree-muted);text-align:right;}',
+        '.allo-tree-spread-budget-grid,.allo-tree-spread-record-totals,.allo-tree-spread-outcome-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px;}',
+        '.allo-tree-strategy-stage,.allo-tree-spread-results-stage,.allo-tree-species-stage{margin-bottom:14px;}',
+        '.allo-tree-strategy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:12px;align-items:stretch;}',
+        '.allo-tree-strategy-slot,.allo-tree-species-slot{min-width:0;}',
+        '.allo-tree-strategy-slot>.allo-tree-card,.allo-tree-species-slot>.allo-tree-card{height:100%;margin-bottom:0!important;box-sizing:border-box;}',
+        '.allo-tree-strategy-card{position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+        '.allo-tree-strategy-card:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--tree-accent),transparent 78%);pointer-events:none;}',
+        '.allo-tree-strategy-card:hover,.allo-tree-strategy-card.is-active{transform:translateY(-2px);border-color:var(--tree-accent)!important;box-shadow:0 15px 32px var(--tree-shadow)!important;}',
+        '.allo-tree-strategy-head{min-height:92px;}',
+        '.allo-tree-strategy-meta{display:grid;justify-items:end;gap:3px;}',
+        '.allo-tree-strategy-meta>div{padding:3px 6px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--mission-step);font-size:8.5px;font-weight:800;}',
+        '.allo-tree-strategy-profile{display:grid;gap:7px;margin:10px 0;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
+        '.allo-tree-strategy-metric-head,.allo-tree-species-trait-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:8.5px;font-weight:850;color:var(--tree-muted);}',
+        '.allo-tree-strategy-metric-head strong,.allo-tree-species-trait-head strong{color:var(--tree-ink);font-variant-numeric:tabular-nums;}',
+        '.allo-tree-strategy-track,.allo-tree-species-trait-track{display:block;height:5px;margin-top:4px;border-radius:99px;background:var(--chapter-border);overflow:hidden;}',
+        '.allo-tree-strategy-fill,.allo-tree-species-trait-fill{display:block;height:100%;border-radius:99px;}',
+        '.allo-tree-strategy-slider{padding-top:9px;border-top:1px dashed var(--chapter-border);}',
+        '.allo-tree-spread-launch{position:relative;overflow:hidden;border-color:var(--mission-border)!important;background:var(--mission-bg)!important;box-shadow:0 16px 36px var(--mission-shadow)!important;}',
+        '.allo-tree-spread-plan{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin:8px 0 12px;padding:11px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--mission-step);}',
+        '.allo-tree-spread-plan-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--flow-badge);font-size:21px;}',
+        '.allo-tree-spread-plan strong{display:block;font-size:12px;color:var(--tree-ink);}',
+        '.allo-tree-spread-plan div div{margin-top:3px;font-size:10px;line-height:1.4;color:var(--tree-muted);}',
+        '.allo-tree-spread-actions{gap:7px;padding-top:2px;}',
+        '.allo-tree-spread-results-stage{animation:tree-panel-in .3s ease-out;}',
+        '.allo-tree-spread-results-grid{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(380px,1.22fr);gap:14px;align-items:stretch;}',
+        '.allo-tree-spread-result-slot>.allo-tree-card,.allo-tree-spread-map-slot>.allo-tree-card{height:100%;margin-bottom:0!important;box-sizing:border-box;}',
+        '.allo-tree-spread-outcome-card,.allo-tree-spread-map-card,.allo-tree-spread-record-card{position:relative;overflow:hidden;}',
+        '.allo-tree-spread-outcome-card:before,.allo-tree-spread-map-card:before,.allo-tree-spread-record-card:before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--tree-accent),transparent 74%);pointer-events:none;}',
+        '.allo-tree-spread-event{position:relative;overflow:hidden;padding:13px!important;border-radius:13px!important;box-shadow:0 9px 20px var(--tree-shadow);}',
+        '.allo-tree-spread-event:after{content:"";position:absolute;width:64px;height:64px;right:-32px;top:-35px;border-radius:50%;background:var(--flow-badge);pointer-events:none;}',
+        '.allo-tree-spread-outcome-rows{display:grid;gap:5px;}',
+        '.allo-tree-spread-outcome-row{padding:8px 9px!important;border:1px solid var(--chapter-border)!important;border-radius:10px;background:var(--mission-step);}',
+        '.allo-tree-spread-lesson,.allo-tree-spread-record-verdict{padding:10px 11px;border-left:4px solid var(--tree-accent);border-radius:10px;background:var(--chapter-bg);color:var(--tree-ink)!important;}',
+        '.allo-tree-spread-map{padding:8px;border:1px solid var(--chapter-border);border-radius:18px;background:var(--chapter-bg);filter:drop-shadow(0 12px 18px var(--tree-shadow));}',
+        '.allo-tree-spread-map-legend{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;}',
+        '.allo-tree-spread-map-legend>span{margin:0!important;padding:4px 7px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--mission-step);}',
+        '.allo-tree-spread-record-timeline{display:grid;gap:6px;margin-top:6px;}',
+        '.allo-tree-spread-record-row{padding:8px 10px!important;border:1px solid var(--chapter-border)!important;border-radius:10px;background:var(--mission-step);}',
+        '.allo-tree-compare-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:10px 0 12px;}',
+        '.allo-tree-compare-control{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--mission-step);}',
+        '.allo-tree-compare-control.is-variable{border-color:var(--tree-accent);background:var(--flow-badge);box-shadow:0 8px 18px var(--tree-shadow);}',
+        '.allo-tree-compare-control-icon{grid-row:1/3;display:grid;place-items:center;width:29px;height:29px;border-radius:9px;background:var(--hero-chip);font-size:15px;}',
+        '.allo-tree-compare-control-label{font-size:8px;font-weight:950;letter-spacing:.07em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-compare-control-value{overflow:hidden;font-size:9.5px;line-height:1.3;color:var(--tree-ink);}',
+        '.allo-tree-compare-timeline{padding:10px 12px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--chapter-bg);}',
+        '.allo-tree-compare-timeline input{display:block;height:22px;cursor:pointer;}',
+        '.allo-tree-compare-timeline-ticks{display:flex;justify-content:space-between;margin-top:1px;font-size:8px;font-weight:800;color:var(--tree-muted);}',
+        '.allo-tree-compare-chart-shell{padding:10px;border:1px solid var(--chapter-border);border-radius:16px;background:var(--mission-step);box-shadow:inset 0 0 0 4px var(--hero-ring-soft);}',
+        '.allo-tree-compare-chart{border-radius:10px;background:var(--hero-chip);}',
+        '.allo-tree-compare-legend{gap:6px!important;}',
+        '.allo-tree-compare-legend>span{padding:4px 7px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--chapter-bg);}',
+        '.allo-tree-compare-chart-key{padding-top:6px;border-top:1px dashed var(--chapter-border);}',
+        '.allo-tree-compare-insights{margin-top:12px;padding:11px;border:1px solid var(--chapter-border);border-radius:14px;background:var(--chapter-bg);}',
+        '.allo-tree-compare-insights-title{margin-bottom:8px;font-size:11px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;color:var(--tree-ink);}',
+        '.allo-tree-compare-insights-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}',
+        '.allo-tree-compare-insight{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;align-items:center;min-width:0;padding:9px;border:1px solid var(--chapter-border);border-radius:11px;background:var(--mission-step);}',
+        '.allo-tree-compare-insight-icon{grid-row:1/4;display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--flow-badge);font-size:15px;}',
+        '.allo-tree-compare-insight-kicker{font-size:7.5px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-compare-insight-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--tree-ink);}',
+        '.allo-tree-compare-insight-detail{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8.5px;color:var(--tree-muted);}',
+        '.allo-tree-compare-insight-prompt{margin:9px 0 0;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:10px;line-height:1.45;color:var(--tree-muted);}',
+        '.allo-tree-species-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:12px;align-items:stretch;}',
+        '.allo-tree-species-card{position:relative;overflow:hidden;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;}',
+        '.allo-tree-species-card:hover{transform:translateY(-2px);box-shadow:0 15px 32px var(--tree-shadow)!important;}',
+        '.allo-tree-species-card.is-current{border-color:var(--tree-accent)!important;box-shadow:0 15px 34px var(--accent-shadow)!important;}',
+        '.allo-tree-species-card-head{min-height:45px;}',
+        '.allo-tree-species-spark{filter:drop-shadow(0 6px 10px var(--tree-shadow));}',
+        '.allo-tree-species-traits{margin-top:9px;padding:9px;border:1px solid var(--chapter-border);border-radius:12px;background:var(--chapter-bg);}',
+        '.allo-tree-species-traits-label{margin-bottom:7px;font-size:8px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-species-trait-meters{display:grid;gap:6px;}',
+        '.allo-tree-species-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;padding-top:7px;border-top:1px dashed var(--chapter-border);}',
+        '.allo-tree-species-pills span{padding:3px 6px;border:1px solid var(--chapter-border);border-radius:999px;background:var(--mission-step);font-size:8px;font-weight:800;color:var(--tree-muted);}',
+        '.allo-tree-species-why{padding-top:7px;border-top:1px dashed var(--chapter-border);}',
+        '.allo-tree-compare-conclusion{position:relative;overflow:hidden;border-style:dashed!important;background:var(--chapter-bg)!important;}',
+        '.allo-tree-compare-next{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:10px;padding:11px;border:1px solid var(--chapter-border);border-radius:13px;background:var(--mission-step);}',
+        '.allo-tree-compare-next-icon{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--flow-badge);font-size:20px;}',
+        '.allo-tree-compare-next-copy{display:grid;gap:2px;}',
+        '.allo-tree-compare-next-copy strong{font-size:11px;color:var(--tree-ink);}',
+        '.allo-tree-compare-next-copy span{font-size:9.5px;line-height:1.4;color:var(--tree-muted);}',
+        '@media (prefers-reduced-motion:reduce){.allo-tree-strategy-card,.allo-tree-species-card,.allo-tree-spread-results-stage,.allo-tree-spread-budget-fill{transition:none!important;animation:none!important}}',
+        '@media (max-width:900px){.allo-tree-spread-results-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-compare-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}',
+        '@media (max-width:760px){.allo-tree-spread-journey{grid-template-columns:minmax(0,1fr)}.allo-tree-spread-journey-step{min-height:82px}.allo-tree-spread-journey-arrow{min-height:13px;transform:rotate(90deg)}.allo-tree-compare-insights-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-compare-next{grid-template-columns:auto minmax(0,1fr)}.allo-tree-compare-next>.allo-tree-button{grid-column:1/-1;width:100%;margin:0!important}}',
+        '@media (max-width:620px){.allo-tree-strategy-grid,.allo-tree-species-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-spread-budget-grid,.allo-tree-spread-record-totals,.allo-tree-spread-outcome-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-compare-controls{grid-template-columns:minmax(0,1fr)}.allo-tree-strategy-head{min-height:0}.allo-tree-strategy-meta{justify-items:start;text-align:left!important}}',
+        '.allo-tree-effect{position:relative;overflow:hidden;margin-top:12px;padding:12px;border:1px solid var(--chapter-border);border-left:4px solid var(--tree-accent);border-radius:13px;background:var(--chapter-bg);box-shadow:0 10px 24px var(--tree-shadow);animation:tree-effect-in .28s ease-out;}',
+        '.allo-tree-effect:after{content:"";position:absolute;width:92px;height:92px;right:-42px;top:-54px;border-radius:50%;background:var(--flow-badge);pointer-events:none;}',
+        '.allo-tree-effect-title{position:relative;z-index:1;display:flex;align-items:center;gap:7px;margin-bottom:8px;font-size:11px;font-weight:900;color:var(--tree-ink);}',
+        '.allo-tree-effect-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}',
+        '.allo-tree-effect-tile{min-width:0;padding:8px 9px;border:1px solid var(--chapter-border);border-radius:10px;background:var(--mission-step);}',
+        '.allo-tree-effect-kicker{font-size:8.5px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--tree-muted);}',
+        '.allo-tree-effect-value{margin-top:2px;font-size:12px;font-weight:900;line-height:1.25;color:var(--tree-ink);}',
+        '.allo-tree-effect-detail{margin-top:2px;font-size:10px;line-height:1.35;color:var(--tree-muted);}',
+        '.allo-tree-effect-response{position:relative;z-index:1;margin-top:8px;padding-top:8px;border-top:1px dashed var(--chapter-border);font-size:11px;line-height:1.5;color:var(--tree-ink);}',
+        '.allo-tree-scene-effect{animation:tree-effect-chip .32s ease-out;box-shadow:0 10px 24px var(--scene-shadow);}',
+        '.allo-tree-advanced-gateway>.allo-tree-card{border-style:dashed!important;background:var(--chapter-bg)!important;}',
+        '.allo-tree-advanced-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;}',
+        '.allo-tree-advanced-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--flow-badge);border:1px solid var(--chapter-border);font-size:20px;}',
+        '.allo-tree-advanced-title{font-size:14px;font-weight:900;color:var(--tree-ink);}',
+        '.allo-tree-advanced-copy{margin-top:2px;font-size:10.5px;line-height:1.45;color:var(--tree-muted);}',
+        '.allo-tree-advanced-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px;}',
+        '.allo-tree-advanced-pill{padding:3px 7px;border-radius:999px;background:var(--mission-step);border:1px solid var(--chapter-border);font-size:9px;font-weight:800;color:var(--tree-muted);}',
+        '.allo-tree-advanced-work{animation:tree-panel-in .24s ease-out;}',
+        '@keyframes tree-effect-in{from{opacity:.35;transform:translateY(-5px) scale(.99)}to{opacity:1;transform:none}}',
+        '@keyframes tree-effect-chip{from{opacity:.25;transform:translateY(6px) scale(.96)}to{opacity:1;transform:none}}',
         '.allo-tree-panel{animation:tree-panel-in .22s ease-out;}',
         '@keyframes tree-panel-in{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}',
-        '@media (prefers-reduced-motion:reduce){.allo-tree-card,.allo-tree-button,.allo-tree-tab,.allo-tree-panel,.allo-tree-quiz-opt{transition:none!important;animation:none!important}}',
-        '@media (max-width:960px){.allo-tree-workbench{grid-template-columns:minmax(0,1fr)}.allo-tree-workbench-sticky{position:static}}',
-        '@media (max-width:620px){.allo-tree-lab{padding:10px!important}.allo-tree-hero{padding:15px!important}.allo-tree-hero-controls{width:100%;justify-content:flex-start!important}.allo-tree-hero-field{flex:1 1 130px;flex-direction:column;align-items:stretch!important}.allo-tree-hero-field select{width:100%}.allo-tree-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding-bottom:7px!important}.allo-tree-tab{flex:0 0 auto}.allo-tree-card{border-radius:14px!important;padding:12px!important}.allo-tree-workbench-scene [role="img"]{height:clamp(280px,55svh,420px)!important}}'
+        '@media (prefers-reduced-motion:reduce){.allo-tree-card,.allo-tree-button,.allo-tree-tab,.allo-tree-panel,.allo-tree-quiz-opt,.allo-tree-effect,.allo-tree-scene-effect,.allo-tree-advanced-work,.allo-tree-habitat-item,.allo-tree-factor-control{transition:none!important;animation:none!important}}',
+        '@media (max-width:960px){.allo-tree-workbench{grid-template-columns:minmax(0,1fr)}.allo-tree-workbench-sticky{position:static}.allo-tree-chapter-cue{display:none}.allo-tree-chapter{grid-template-columns:auto minmax(0,1fr)}}',
+        '@media (max-width:620px){.allo-tree-viewer-head{grid-template-columns:minmax(0,1fr)}.allo-tree-viewer-metrics{text-align:left}.allo-tree-habitat-ribbon{grid-template-columns:repeat(2,minmax(0,1fr))}.allo-tree-budget-equation{grid-template-columns:minmax(0,1fr) 12px minmax(0,1fr) 12px minmax(0,1fr);gap:3px}.allo-tree-budget-equation>div{padding:7px 4px!important}.allo-tree-budget-equation>.allo-tree-budget-operator{padding:0!important;font-size:15px}.allo-tree-factor-control{padding:8px!important}}',
+        '@media (max-width:620px){.allo-tree-lab{padding:10px!important;border-radius:15px!important}.allo-tree-hero{padding:17px!important}.allo-tree-hero-controls{width:100%;justify-content:flex-start!important}.allo-tree-hero-field{flex:1 1 130px;flex-direction:column;align-items:stretch!important}.allo-tree-hero-field select{width:100%}.allo-tree-hero-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.allo-tree-hero-stat{min-width:0;padding:7px 8px}.allo-tree-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding-bottom:8px!important}.allo-tree-tab{flex:0 0 146px!important}.allo-tree-tab-hint{white-space:normal}.allo-tree-chapter{padding:10px 11px}.allo-tree-chapter-number{width:36px;height:36px}.allo-tree-mission-steps{grid-template-columns:minmax(0,1fr)}.allo-tree-effect-grid{grid-template-columns:minmax(0,1fr)}.allo-tree-advanced-head{grid-template-columns:auto minmax(0,1fr)}.allo-tree-advanced-head>.allo-tree-button{grid-column:1/-1;width:100%;margin:2px 0 0!important}.allo-tree-card{border-radius:14px!important;padding:12px!important}.allo-tree-workbench-scene [role="img"]{height:clamp(300px,55svh,430px)!important}}'
       ].join('');
       var view = d.view || 'grow';
       var sp = speciesById(d.speciesId || 'oak');
@@ -3414,6 +3643,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var experimentTrials = normaliseExperimentTrials(d.experimentTrials);
       var experimentActive = experiment.phase !== 'idle';
       var experimentLocked = experiment.phase === 'ready' || experiment.phase === 'explain';
+      var advancedHasEvidence = !!(experimentTrials.A || experimentTrials.B);
+      var advancedPinned = experimentActive;
+      var advancedOpen = advancedPinned || d.growAdvancedOpen === true ||
+        (advancedHasEvidence && d.growAdvancedOpen !== false);
       playing = playing && !experimentActive;
 
       // Live readout for the CURRENT settings, independent of the yearly step.
@@ -3432,11 +3665,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       var transpirationPerDay =
         (tree.leafArea * aperture * clamp((envCfg.tempC - 5) / 30, 0.05, 1) * 210) / 180;
       function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+      var effectRaw = d.lastEffect;
+      var lastEffect = effectRaw && typeof effectRaw === 'object' &&
+        ['light', 'water', 'temperature', 'co2'].indexOf(effectRaw.factor) >= 0 &&
+        typeof effectRaw.before === 'number' && isFinite(effectRaw.before) &&
+        typeof effectRaw.after === 'number' && isFinite(effectRaw.after) &&
+        typeof effectRaw.netBefore === 'number' && isFinite(effectRaw.netBefore) &&
+        typeof effectRaw.netAfter === 'number' && isFinite(effectRaw.netAfter)
+        ? effectRaw : null;
+
+      function buildConditionEffect(factor, before, after, nextCfg, mode) {
+        var nextEnv = envForYear(nextCfg, tree.age);
+        var nextAperture = stomatalAperture(nextEnv.soilWater, sp.droughtTol, false);
+        var nextLive = grossPhotosynthesis(sp, nextEnv, tree.leafArea, nextAperture);
+        var nextResp = maintenanceRespiration(sp, tree);
+        var nextLim = nextLive.limiting || live.limiting || {};
+        return {
+          seq: lastEffect && typeof lastEffect.seq === 'number' ? lastEffect.seq + 1 : 1,
+          factor: factor,
+          before: before,
+          after: after,
+          netBefore: liveNet,
+          netAfter: nextLive.gross - nextResp,
+          limiting: nextLim.viaStomata ? 'water' : (nextLim.id || factor),
+          mode: mode || 'slider'
+        };
+      }
+
+      function changeCondition(field, value, factor) {
+        if (!tree.alive || experimentLocked) return;
+        var nextCfg = Object.assign({}, envCfg);
+        nextCfg[field] = value;
+        var patch = { lastEffect: buildConditionEffect(factor, envCfg[field], value, nextCfg, 'slider') };
+        patch[field] = value;
+        updMulti(patch);
+      }
+
+      function causeAwareLimiter(result) {
+        var nextLim = result && result.limiting;
+        return nextLim && nextLim.viaStomata ? 'water' : (nextLim && nextLim.id);
+      }
+
+      function effectValue(effect, value) {
+        if (effect.factor === 'temperature') return round(value, 0) + ' ' + DEG + 'C';
+        if (effect.factor === 'co2') return round(value, 0) + ' ppm';
+        return Math.round(value * 100) + '%';
+      }
 
       // ── Shared UI atoms ──
-      function card(children, extra) {
+      function card(children, extra, className) {
         return h('div', {
-          className: 'allo-tree-card',
+          className: 'allo-tree-card' + (className ? ' ' + className : ''),
           style: Object.assign({
             background: T.card, border: '1px solid ' + T.border, borderRadius: 16,
             padding: 16, marginBottom: 14,
@@ -3477,6 +3756,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           'aria-label': o.ariaLabel || undefined,
           title: o.ariaLabel || undefined,
           'aria-pressed': o.pressed == null ? undefined : !!o.pressed,
+          'aria-expanded': o.expanded == null ? undefined : !!o.expanded,
+          'aria-controls': o.controls || undefined,
           style: {
             padding: o.small ? '5px 10px' : '8px 14px',
             borderRadius: 10, cursor: o.disabled ? 'not-allowed' : 'pointer',
@@ -3493,7 +3774,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       // reader labelled for free, which a div with role="slider" is not.
       function slider(key, labelTxt, value, min, max, step, onChange, fmt, disabled, hue) {
         var id = 'treelab-' + key;
-        return h('div', { key: key, style: { marginBottom: 10 } }, [
+        var factorId = key === 'temp' ? 'temperature' : key;
+        var sliderStyle = { marginBottom: 10 };
+        if (hue) {
+          sliderStyle.padding = '9px 10px';
+          sliderStyle.borderRadius = 11;
+          sliderStyle.background = T.cardAlt;
+          sliderStyle.border = '1px solid ' + T.border;
+          sliderStyle.borderLeft = '4px solid ' + hue;
+        }
+        return h('div', {
+          key: key, className: hue ? 'allo-tree-factor-control' : undefined,
+          'data-factor': hue ? factorId : undefined, style: sliderStyle
+        }, [
           h('label', { key: 'l', htmlFor: id, style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
             h('span', { key: 'a', style: hue ? { display: 'flex', alignItems: 'center', gap: 6 } : undefined }, hue ? [
               h('span', { key: 'sw', 'aria-hidden': 'true', style: { width: 10, height: 10, borderRadius: 2, background: hue, display: 'inline-block', flex: '0 0 auto', border: isContrast ? '1px solid ' + T.text : 'none' } }),
@@ -3762,14 +4055,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       function sendDrought(years) {
         var list = [];
         for (var i = 0; i < years; i++) list.push(tree.age + i);
-        upd('droughtYears', list);
+        var nextCfg = Object.assign({}, envCfg, { droughtYears: list });
+        var nextWater = envForYear(nextCfg, tree.age).soilWater;
+        updMulti({
+          droughtYears: list,
+          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-start')
+        });
         sfxBad();
         srSay(__alloT('stem.treelab.drought_started', 'A drought begins. It will last ') + years +
           __alloT('stem.treelab.drought_years', ' years.'));
         if (addToast) addToast('☀️ ' + __alloT('stem.treelab.drought_toast', 'Drought'), 'error');
       }
       function endDrought() {
-        upd('droughtYears', []);
+        var nextCfg = Object.assign({}, envCfg, { droughtYears: [] });
+        var nextWater = envForYear(nextCfg, tree.age).soilWater;
+        updMulti({
+          droughtYears: [],
+          lastEffect: buildConditionEffect('water', liveEnv.soilWater, nextWater, nextCfg, 'drought-end')
+        });
         srSay(__alloT('stem.treelab.drought_over', 'The rains return.'));
       }
 
@@ -3783,7 +4086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         updMulti({
           tree: newTree(sid), speciesId: sid, spend: {}, lastSpread: null, playing: false,
           selectedPart: null,
-          yearPhase: 0, droughtYears: [],
+          yearPhase: 0, droughtYears: [], lastEffect: null, growAdvancedOpen: false,
           // The record belongs to the tree that earned it, and the 3D scene reads its
           // clone count from spreadTotals — a fresh seedling was inheriting the
           // previous tree's whole stand of clones.
@@ -3984,17 +4287,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             return btn('place-' + pl.id, pl.emoji + ' ' + __alloT('stem.treelab.place_' + pl.id, pl.label), function () {
               // Writes the SAME inputs the sliders write, so a place is a shortcut
               // through the model rather than a costume laid over it.
-              updMulti({ light: pl.light, soilWater: pl.soilWater, tempC: pl.tempC });
+              updMulti({ light: pl.light, soilWater: pl.soilWater, tempC: pl.tempC, lastEffect: null });
               srSay(pl.label + '. ' + __alloT('stem.treelab.place_note_' + pl.id, pl.note));
-            }, { small: true, pressed: on, disabled: experimentLocked });
+            }, { small: true, pressed: on, disabled: experimentLocked || !tree.alive });
           })),
           slider('fs-light', __alloT('stem.treelab.light', 'Light'), envCfg.light, 0, 1, 0.05,
-            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+            function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive),
           slider('fs-water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
-            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked),
+            function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive),
           atLeast(band, 'g68')
             ? slider('fs-co2', CO2, envCfg.co2ppm, 180, 900, 10,
-              function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked)
+              function (v) { changeCondition('co2ppm', v, 'co2'); }, function (v) { return v + ' ppm'; }, experimentLocked || !tree.alive)
             : null,
           // ── What it COSTS to stay alive. ──
           //
@@ -4065,10 +4368,185 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      function conditionResponse(effect, delta) {
+        if (effect.factor === 'water') {
+          if (effect.mode === 'drought-start') {
+            return __alloT('stem.treelab.effect_drought_start',
+              'Visible response: leaves droop and dull as water pressure falls. Stomata close, so less ' + CO2 + ' reaches the leaf.');
+          }
+          if (effect.mode === 'drought-end') {
+            return __alloT('stem.treelab.effect_drought_end',
+              'Visible response: leaves lift and green as water stress eases. Stomata can reopen and admit more ' + CO2 + '.');
+          }
+          return effect.after < effect.before
+            ? __alloT('stem.treelab.effect_water_down',
+              'Visible response: the crown wilts as water pressure falls. Closing stomata save water but also slow carbon intake.')
+            : __alloT('stem.treelab.effect_water_up',
+              'Visible response: the crown recovers as water pressure rises. Reopening stomata can restore carbon intake.');
+        }
+        if (Math.abs(delta) < 0.005) {
+          return __alloT('stem.treelab.effect_limited_elsewhere',
+            'The budget barely moved because another factor is still setting the rate. Fix the factor named above, then try this change again.');
+        }
+        if (effect.factor === 'light') {
+          return delta > 0
+            ? __alloT('stem.treelab.effect_light_up',
+              'More usable light raises this year\'s carbon surplus. Run the clock to turn that surplus into leaves, roots, wood, or seeds.')
+            : __alloT('stem.treelab.effect_light_down',
+              'Less usable light shrinks this year\'s carbon surplus. Run the clock and the slower growth will appear in the tree and its next ring.');
+        }
+        if (effect.factor === 'temperature') {
+          var closer = Math.abs(effect.after - sp.optTemp) < Math.abs(effect.before - sp.optTemp);
+          return closer
+            ? __alloT('stem.treelab.effect_temp_closer',
+              'The temperature moved closer to this species\' optimum, so its carbon-making machinery can work more effectively.')
+            : __alloT('stem.treelab.effect_temp_farther',
+              'The temperature moved away from this species\' optimum, so the carbon budget tightens before the tree visibly grows.');
+        }
+        return delta > 0
+          ? __alloT('stem.treelab.effect_co2_up',
+            'More ' + CO2 + ' reached open stomata and lifted the carbon budget. Run the clock to turn that gain into visible growth.')
+          : __alloT('stem.treelab.effect_co2_down',
+            'Less ' + CO2 + ' reached the leaves, reducing the carbon available for visible growth.');
+      }
+
+      function causeEffectPanel() {
+        if (!lastEffect || !tree.alive) return null;
+        var delta = lastEffect.netAfter - lastEffect.netBefore;
+        var factorLabel = experimentFactorLabel(lastEffect.factor);
+        var limitingLabel = experimentFactorLabel(lastEffect.limiting || lastEffect.factor);
+        var factorTone = tone(FACTOR_HUE(lastEffect.factor));
+        var limitingTone = tone(FACTOR_HUE(lastEffect.limiting || lastEffect.factor));
+        var deltaTone = delta > 0.005 ? T.good : (delta < -0.005 ? T.bad : T.dim);
+        var signedDelta = (delta > 0.005 ? '+' : '') + round(delta, 2) + ' kg C';
+        function effectTile(key, kicker, value, detail, valueTone) {
+          return h('div', { key: key, className: 'allo-tree-effect-tile' }, [
+            h('div', { key: 'k', className: 'allo-tree-effect-kicker' }, kicker),
+            h('div', { key: 'v', className: 'allo-tree-effect-value', style: valueTone ? { color: valueTone } : undefined }, value),
+            h('div', { key: 'd', className: 'allo-tree-effect-detail' }, detail)
+          ]);
+        }
+        return h('section', {
+          key: 'effect-' + (lastEffect.seq || 0),
+          className: 'allo-tree-effect',
+          'data-tree-effect': lastEffect.factor,
+          role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          style: { borderLeftColor: factorTone }
+        }, [
+          h('div', { key: 'title', className: 'allo-tree-effect-title' }, [
+            h('span', { key: 'dot', 'aria-hidden': 'true', style: { width: 9, height: 9, borderRadius: 99, background: factorTone } }),
+            h('span', { key: 'text' }, __alloT('stem.treelab.effect_title', 'Cause \u2192 effect'))
+          ]),
+          h('div', { key: 'grid', className: 'allo-tree-effect-grid' }, [
+            effectTile('changed',
+              __alloT('stem.treelab.effect_changed', 'You changed'),
+              factorLabel,
+              effectValue(lastEffect, lastEffect.before) + ' \u2192 ' + effectValue(lastEffect, lastEffect.after)),
+            effectTile('budget',
+              __alloT('stem.treelab.effect_budget', 'Carbon budget'),
+              round(lastEffect.netBefore, 2) + ' \u2192 ' + round(lastEffect.netAfter, 2) + ' kg C',
+              signedDelta + __alloT('stem.treelab.effect_from_change', ' from this change'),
+              deltaTone),
+            effectTile('limit',
+              __alloT('stem.treelab.effect_limiting', 'Now limiting'),
+              limitingLabel,
+              __alloT('stem.treelab.effect_smallest', 'The smallest input sets the rate.'),
+              limitingTone)
+          ]),
+          h('div', { key: 'response', className: 'allo-tree-effect-response' }, [
+            h('strong', { key: 'label' }, __alloT('stem.treelab.effect_tree_response', 'Tree response: ')),
+            h('span', { key: 'copy' }, conditionResponse(lastEffect, delta).replace(/^Visible response:\s*/, ''))
+          ])
+        ]);
+      }
+
+      function sceneEffectChip(full) {
+        if (!lastEffect || !tree.alive) return null;
+        var delta = lastEffect.netAfter - lastEffect.netBefore;
+        var arrow = delta > 0.005 ? '\u2191' : (delta < -0.005 ? '\u2193' : '\u2192');
+        var signed = (delta > 0.005 ? '+' : '') + round(delta, 2) + ' kg C';
+        var factorTone = tone(FACTOR_HUE(lastEffect.factor));
+        return h('div', {
+          key: 'scene-effect-' + (lastEffect.seq || 0),
+          className: 'allo-tree-scene-effect',
+          'data-tree-scene-effect': lastEffect.factor,
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute', top: full ? 56 : 14, left: 14, zIndex: 4,
+            display: 'inline-flex', alignItems: 'center', gap: 7, maxWidth: 'calc(100% - 28px)',
+            padding: '6px 9px', borderRadius: 999, pointerEvents: 'none',
+            background: T.card, color: T.text, border: '1px solid ' + T.border,
+            borderLeft: '4px solid ' + factorTone, fontSize: 10.5, fontWeight: 850
+          }
+        }, [
+          h('span', { key: 'factor' }, experimentFactorLabel(lastEffect.factor)),
+          h('span', { key: 'delta', style: { color: delta > 0.005 ? T.good : (delta < -0.005 ? T.bad : T.dim) } },
+            arrow + ' ' + signed)
+        ]);
+      }
+      function habitatRibbon() {
+        var limiterId = causeAwareLimiter(live);
+        var items = [
+          {
+            id: 'light',
+            label: __alloT('stem.treelab.light', 'Light'),
+            value: Math.round(envCfg.light * 100) + '%',
+            strength: live.factors.light
+          },
+          {
+            id: 'water',
+            label: __alloT('stem.treelab.water', 'Water'),
+            value: Math.round(liveEnv.soilWater * 100) + '%',
+            strength: live.factors.water
+          },
+          {
+            id: 'temperature',
+            label: __alloT('stem.treelab.temperature', 'Temperature'),
+            value: round(envCfg.tempC, 0) + ' ' + DEG + 'C',
+            strength: live.factors.temp
+          }
+        ];
+        if (atLeast(band, 'g68')) {
+          items.push({
+            id: 'co2',
+            label: CO2,
+            value: round(envCfg.co2ppm, 0) + ' ppm',
+            strength: live.factors.co2
+          });
+        }
+        return h('div', {
+          key: 'habitat', className: 'allo-tree-habitat-ribbon',
+          role: 'group',
+          'aria-label': __alloT('stem.treelab.habitat_now', 'Current growing conditions')
+        }, items.map(function (item) {
+          var limiting = tree.alive && limiterId === item.id;
+          var itemTone = tone(FACTOR_HUE(item.id));
+          var valueLabel = item.label + ': ' + item.value + (limiting
+            ? '. ' + __alloT('stem.treelab.current_limit', 'Current limiting factor') : '');
+          return h('div', {
+            key: item.id,
+            className: 'allo-tree-habitat-item' + (limiting ? ' is-limiting' : ''),
+            'aria-label': valueLabel,
+            style: { borderTop: '3px solid ' + itemTone }
+          }, [
+            h('div', { key: 'top', className: 'allo-tree-habitat-top' }, [
+              h('span', { key: 'label', className: 'allo-tree-habitat-label' }, item.label),
+              limiting ? h('span', { key: 'badge', className: 'allo-tree-habitat-badge' },
+                __alloT('stem.treelab.limit_badge', 'Limiting')) : null
+            ]),
+            h('strong', { key: 'value', className: 'allo-tree-habitat-value' }, item.value),
+            h('span', { key: 'track', className: 'allo-tree-habitat-track', 'aria-hidden': 'true' },
+              h('span', {
+                className: 'allo-tree-habitat-fill',
+                style: { width: Math.round(clamp(item.strength, 0, 1) * 100) + '%', background: itemTone }
+              }))
+          ]);
+        }));
+      }
       function viewerPanel() {
         var status = d.viewerStatus || 'idle';
         var full = !!d.viewerFull;
-        var viewerLimit = experimentFactorLabel(live.limiting && live.limiting.id);
+        var viewerLimit = experimentFactorLabel(causeAwareLimiter(live));
         // This is the ONLY description of the scene a screen-reader user gets, so it
         // is translated like any other visible text rather than left in English.
         var sceneCondition = !tree.alive
@@ -4105,21 +4583,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           }
           : { position: 'relative' };
         return card([
-          h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexWrap: 'wrap', gap: 6 } }, [
-            h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
+          h('div', { key: 'hd', className: 'allo-tree-viewer-head' }, [
+            h('div', { key: 'a', className: 'allo-tree-viewer-name' },
               sp.emoji + ' ' + __alloT('stem.treelab.species_' + sp.id, sp.name) + ' · ' + __alloT('stem.treelab.age', 'age') + ' ' + tree.age),
-            h('div', { key: 'b', style: { fontSize: 12, color: T.dim } },
+            h('div', { key: 'b', className: 'allo-tree-viewer-metrics' },
               round(tree.heightM, 1) + ' ' + __alloT('stem.treelab.m_tall', 'm tall') + ' · '
               + round(tree.dbhCm, 1) + ' ' + __alloT('stem.treelab.cm_across', 'cm across')),
             // Same dead-gate the full-screen HUD carries: naming a limiting factor for
             // a dead tree invites the student to go and fix it.
-            h('div', { key: 'lim', style: { padding: '4px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + (tree.alive ? T.accent : T.bad), fontSize: 10, fontWeight: 800, color: tree.alive ? T.text : T.bad } },
+            h('div', { key: 'lim', className: 'allo-tree-viewer-limit', style: { border: '1px solid ' + (tree.alive ? T.accent : T.bad), color: tree.alive ? T.text : T.bad } },
               tree.alive
                 ? __alloT('stem.treelab.limiting_now_short', 'Limiting now: ') + viewerLimit
                 : __alloT('stem.treelab.dead_chip', 'This tree has died'))
           ]),
+          full ? null : habitatRibbon(),
           h('div', {
-            key: 'stage', style: stageStyle,
+            key: 'stage', className: 'allo-tree-stage', style: stageStyle,
             // Escape leaves full screen. Bound to the STAGE rather than to window: a
             // window key listener from a tool outranks the host's own handling and
             // keeps firing after the student has moved on to a different tool.
@@ -4150,6 +4629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   background: isDark ? '#020617' : '#e2e8f0', border: '1px solid ' + T.border
                 }
             }),
+            sceneEffectChip(full),
             // ── Full-screen read-out, over the scene rather than beside it. ──
             //
             // Going full screen used to hide the very numbers the picture is a picture
@@ -4305,7 +4785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           status === 'failed' ? h('div', { key: 'fb', style: { fontSize: 12, color: T.warn, marginTop: 8, lineHeight: 1.5 } },
             __alloT('stem.treelab.threed_failed', 'The 3D engine could not load, which school network filters sometimes cause. Every number and control on this page still works.')) : null,
           full ? null : seasonRow()
-        ]);
+        ], undefined, 'allo-tree-viewer-card');
       }
 
       // A conifer and a broadleaf have genuinely different seasons, and that difference
@@ -4351,13 +4831,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
       }
 
       // ── Views ──
+      function flowMarker(number, title, copy) {
+        return h('div', { className: 'allo-tree-flow-marker' }, [
+          h('span', { key: 'n', className: 'allo-tree-flow-number', 'aria-hidden': 'true' }, number),
+          h('div', { key: 'c' }, [
+            h('div', { key: 't', className: 'allo-tree-flow-title' }, title),
+            h('div', { key: 'p', className: 'allo-tree-flow-copy' }, copy)
+          ])
+        ]);
+      }
+
+      function missionPanel() {
+        var changed = inDrought || d.alloc != null ||
+          d.light != null || d.soilWater != null || d.tempC != null || d.co2ppm != null;
+        var grown = tree.age > 1;
+        var explained = experiment.phase === 'explain' ||
+          !!(experimentTrials.A || experimentTrials.B);
+        var steps = [
+          [changed, __alloT('stem.treelab.mission_change', 'Change one thing'),
+            __alloT('stem.treelab.mission_change_note', 'Shape the conditions or carbon split.')],
+          [grown, __alloT('stem.treelab.mission_grow', 'Let time pass'),
+            __alloT('stem.treelab.mission_grow_note', 'Grow the tree and watch its budget respond.')],
+          [explained, __alloT('stem.treelab.mission_explain', 'Explain the evidence'),
+            __alloT('stem.treelab.mission_explain_note', 'Predict, test, and tell the biological story.')]
+        ];
+        var nextStepIndex = -1;
+        for (var mi = 0; mi < steps.length; mi++) {
+          if (!steps[mi][0]) { nextStepIndex = mi; break; }
+        }
+        return h('div', { className: 'allo-tree-mission' }, card([
+          h('div', {
+            key: 'eyebrow',
+            style: {
+              position: 'relative', zIndex: 1, display: 'inline-flex', padding: '4px 8px',
+              borderRadius: 999, background: T.card, border: '1px solid ' + T.border,
+              color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 9, fontWeight: 900, letterSpacing: '.09em',
+              textTransform: 'uppercase'
+            }
+          }, __alloT('stem.treelab.mission_label', 'Your field mission')),
+          h('div', { key: 'title', style: { position: 'relative', zIndex: 1, marginTop: 9 } },
+            heading(__alloT('stem.treelab.mission_title', 'Grow a tree that can make the next generation'),
+              __alloT('stem.treelab.mission_sub',
+                'Start small: change one thing, let time pass, then use the limiting factor and carbon budget to explain what happened.'))),
+          h('div', { key: 'steps', className: 'allo-tree-mission-steps', style: { position: 'relative', zIndex: 1 } },
+            steps.map(function (item, i) {
+              var stepClass = 'allo-tree-mission-step' + (item[0] ? ' is-done' : (i === nextStepIndex ? ' is-next' : ''));
+              return h('div', { key: i, className: stepClass, 'aria-current': i === nextStepIndex ? 'step' : undefined }, [
+                h('span', { key: 'd', className: 'allo-tree-mission-dot', 'aria-hidden': 'true' },
+                  item[0] ? '\u2713' : String(i + 1)),
+                h('span', { key: 't' }, [
+                  h('strong', { key: 'h', style: { display: 'block' } }, item[1]),
+                  h('span', { key: 'p', style: { display: 'block', color: T.dim, marginTop: 2 } }, item[2])
+                ])
+              ]);
+            })),
+          h('div', { key: 'actions', style: { position: 'relative', zIndex: 1, display: 'flex', flexWrap: 'wrap' } }, [
+            btn('mission-weather', inDrought
+              ? '\uD83C\uDF27 ' + __alloT('stem.treelab.end_drought', 'Bring back the rain')
+              : '\u2600 ' + __alloT('stem.treelab.mission_try_drought', 'Try a 3-year drought'),
+              function () { if (inDrought) endDrought(); else sendDrought(3); },
+              { small: true, pressed: inDrought, disabled: !tree.alive || experimentLocked }),
+            btn('mission-grow', '\u2192 ' + __alloT('stem.treelab.mission_grow_10', 'Grow 10 years'),
+              function () { stepYears(10); },
+              { small: true, disabled: !tree.alive || experimentActive }),
+            btn('mission-investigate', '\uD83D\uDD2C ' + __alloT('stem.treelab.begin_investigation', 'Start investigation'),
+              function () {
+                beginExperiment();
+                setTimeout(function () {
+                  var target = document.getElementById('treelab-investigation');
+                  if (target && target.scrollIntoView) target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+                }, 0);
+              },
+              { small: true, tone: 'ghost', disabled: experimentActive })
+          ])
+        ], { borderTop: '4px solid ' + T.accent }));
+      }
+      function advancedGateway() {
+        var copy = advancedPinned
+          ? __alloT('stem.treelab.advanced_active_copy',
+            'Advanced tools stay open while an investigation is active.')
+          : (advancedOpen
+            ? __alloT('stem.treelab.advanced_open_copy',
+              'The evidence workspace is open below. Hide it whenever you want a calmer Grow view.')
+            : __alloT('stem.treelab.advanced_closed_copy',
+              'Open the Investigation studio, survival diagnostics, A/B notebook, and ring evidence when you are ready.'));
+        var buttonLabel = advancedPinned
+          ? __alloT('stem.treelab.advanced_in_use', 'Advanced tools in use')
+          : (advancedOpen
+            ? __alloT('stem.treelab.advanced_hide', 'Hide advanced tools')
+            : __alloT('stem.treelab.advanced_show', 'Go deeper'));
+        return h('div', { className: 'allo-tree-advanced-gateway' }, card([
+          h('div', { key: 'head', className: 'allo-tree-advanced-head' }, [
+            h('span', { key: 'icon', className: 'allo-tree-advanced-icon', 'aria-hidden': 'true' }, '\uD83D\uDD2C'),
+            h('div', { key: 'copy' }, [
+              h('div', { key: 'title', className: 'allo-tree-advanced-title' },
+                __alloT('stem.treelab.advanced_title', 'Ready to go deeper?')),
+              h('div', { key: 'body', className: 'allo-tree-advanced-copy' }, copy),
+              h('div', { key: 'pills', className: 'allo-tree-advanced-pills', 'aria-hidden': 'true' }, [
+                __alloT('stem.treelab.advanced_survival', 'Survival'),
+                __alloT('stem.treelab.investigation_title', 'Investigation studio'),
+                __alloT('stem.treelab.advanced_notebook', 'A/B notebook'),
+                __alloT('stem.treelab.advanced_rings', 'Ring evidence')
+              ].map(function (label, i) {
+                return h('span', { key: i, className: 'allo-tree-advanced-pill' }, label);
+              }))
+            ]),
+            btn('advanced-toggle', buttonLabel, function () {
+              if (advancedPinned) return;
+              var next = !advancedOpen;
+              upd('growAdvancedOpen', next);
+              if (next) {
+                setTimeout(function () {
+                  var target = document.getElementById('treelab-advanced-work');
+                  if (target && target.scrollIntoView) {
+                    target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+                  }
+                }, 0);
+              }
+            }, {
+              small: true, tone: 'ghost', disabled: advancedPinned,
+              expanded: advancedOpen, controls: 'treelab-advanced-work'
+            })
+          ])
+        ], { borderLeft: '4px solid ' + T.accent }));
+      }
+
       function viewGrow() {
         var lim = live.limiting;
-        var limName = { light: 'Light', co2: CO2, water: 'Water', temperature: 'Temperature' }[lim.id] || lim.id;
+        var limId = lim.viaStomata ? 'water' : lim.id;
+        var limName = { light: 'Light', co2: CO2, water: 'Water', temperature: 'Temperature' }[limId] || limId;
         var kids = [];
         var scene = viewerPanel();
 
-        pushKeyed(kids, experimentPanel(), 'grow-experiment');
+        pushKeyed(kids, missionPanel(), 'grow-mission');
+        pushKeyed(kids, flowMarker('1',
+          __alloT('stem.treelab.flow_observe', 'Observe and grow'),
+          __alloT('stem.treelab.flow_observe_note', 'Read the living tree, move time forward, and see what its carbon budget can afford.')), 'grow-flow-observe');
         pushKeyed(kids, playbackPanel(), 'grow-playback');
 
         pushKeyed(kids, card([
@@ -4375,11 +4984,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 13, color: T.dim, lineHeight: 1.55, marginBottom: 10 }
             }, __alloT('stem.treelab.dead_budget',
               'Nothing. A dead tree makes no sugar and spends none. Its stored carbon stays in the wood.'))
-            : h('div', { key: 'nums', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
+            : h('div', { key: 'nums', className: 'allo-tree-budget-equation', role: 'group', 'aria-label': __alloT('stem.treelab.budget_equation', 'Carbon budget equation') }, [
               statTile('made', atLeast(band, 'g68') ? 'Gross photosynthesis' : 'Sugar made', round(live.gross, 2) + ' kg C', T.good),
+              h('span', { key: 'minus', className: 'allo-tree-budget-operator', 'aria-hidden': 'true' }, '\u2212'),
               statTile('spent', atLeast(band, 'g68')
                 ? __alloT('stem.treelab.tile_resp', 'Maintenance respiration')
                 : __alloT('stem.treelab.tile_resp_k2', 'Sugar used to stay alive'), round(liveResp, 2) + ' kg C', T.warn),
+              h('span', { key: 'equals', className: 'allo-tree-budget-operator', 'aria-hidden': 'true' }, '='),
               statTile('net', atLeast(band, 'g68') ? 'Net carbon' : 'Left to grow with', round(liveNet, 2) + ' kg C', liveNet >= 0 ? T.accent : T.bad)
             ]),
           // The three tiles are one subtraction, so it is also drawn AS one: a single
@@ -4451,7 +5062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.negative_year', 'The tree is spending more than it makes and is living off reserves. A few years of this is survivable. Many are not.')) : null,
           modelNote(__alloT('stem.treelab.model_note',
             'Qualitative teaching model, not a forest growth model or a measurement. The shapes are real (saturating light response, a smallest-factor gate, respiration that scales with living tissue) and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
-        ]), 'grow-budget');
+        ], undefined, 'allo-tree-budget-card'), 'grow-budget');
 
         // ── The objective ───────────────────────────────────────────────────
         //
@@ -4543,7 +5154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 h('div', { key: 'f', style: { width: Math.round(frac * 100) + '%', height: '100%', background: tone } }))
             ]);
           }
-          pushKeyed(kids, card([
+          var survivalNode = card([
             heading(__alloT('stem.treelab.survival', 'Survival margin'),
               __alloT('stem.treelab.survival_sub', 'How much room this tree has left before it starves. Both bars refill on any year it makes more than it spends.')),
             meter(__alloT('stem.treelab.good_years_left', 'Years of deficit it can still take'),
@@ -4560,22 +5171,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   : __alloT('stem.treelab.survival_bad', 'Close to starving. The next few negative years will kill it unless something changes now.'))),
             h('div', { key: 'lim', style: { fontSize: 12, color: T.dim, lineHeight: 1.5, marginTop: 4 } },
               __alloT('stem.treelab.survival_limit_is', 'What is holding it back right now: ') + limName + '.')
-          ]), 'grow-survival');
+          ]);
         }
 
+        pushKeyed(kids, flowMarker('2',
+          __alloT('stem.treelab.flow_shape', 'Shape the next year'),
+          __alloT('stem.treelab.flow_shape_note', 'Change the environment and choose where the tree invests whatever carbon remains.')), 'grow-flow-shape');
         pushKeyed(kids, card([
           heading(__alloT('stem.treelab.conditions', 'Conditions'),
             __alloT('stem.treelab.conditions_sub', 'Change one thing at a time and watch which factor takes over as the limit.')),
           // Each condition wears the same hue its factor carries everywhere else —
           // the Chemistry curves, the limit bars, the ring strip. Same idea, same ink.
           slider('light', __alloT('stem.treelab.light', 'Light reaching the leaves'), envCfg.light, 0, 1, 0.05,
-            function (v) { upd('light', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked, tone(FACTOR_HUE('light'))),
+            function (v) { changeCondition('light', v, 'light'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('light'))),
           slider('water', __alloT('stem.treelab.soil_water', 'Soil water'), envCfg.soilWater, 0, 1, 0.05,
-            function (v) { upd('soilWater', v); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked, tone(FACTOR_HUE('water'))),
+            function (v) { changeCondition('soilWater', v, 'water'); }, function (v) { return Math.round(v * 100) + '%'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('water'))),
           slider('temp', __alloT('stem.treelab.temperature', 'Temperature'), envCfg.tempC, -5, 45, 1,
-            function (v) { upd('tempC', v); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked, tone(FACTOR_HUE('temperature'))),
+            function (v) { changeCondition('tempC', v, 'temperature'); }, function (v) { return v + ' ' + DEG + 'C'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('temperature'))),
           atLeast(band, 'g68') ? slider('co2', CO2 + ' concentration', envCfg.co2ppm, 180, 900, 10,
-            function (v) { upd('co2ppm', v); }, function (v) { return v + ' ppm'; }, experimentLocked, tone(FACTOR_HUE('co2'))) : null,
+            function (v) { changeCondition('co2ppm', v, 'co2'); }, function (v) { return v + ' ppm'; }, experimentLocked || !tree.alive, tone(FACTOR_HUE('co2'))) : null,
           h('div', { key: 'drought', style: { marginTop: 10, paddingTop: 10, borderTop: '1px dashed ' + T.border } }, [
             h('div', { key: 'lbl', style: { fontSize: 12, color: T.dim, marginBottom: 6, lineHeight: 1.5 } },
               inDrought
@@ -4588,12 +5202,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               ? btn('dry8', '☀️ ' + __alloT('stem.treelab.drought_8', 'Drought for 8 years'), function () { sendDrought(8); }, { small: true, tone: 'ghost', disabled: experimentLocked })
               : null
           ]),
+          causeEffectPanel(),
           atLeast(band, 'g68') ? h('div', { key: 'ap', style: { marginTop: 6 } },
             bar(__alloT('stem.treelab.stomata_open', 'Stomata open'), aperture, T.accent,
               aperture < 0.9
                 ? __alloT('stem.treelab.stomata_closing', 'Closing to save water. Less ' + H2O + ' out, but also less ' + CO2 + ' in.')
                 : __alloT('stem.treelab.stomata_open_note', 'Wide open. Carbon is coming in and water is going out through the same pores.'))) : null
-        ]), 'grow-conditions');
+        ], undefined, 'allo-tree-conditions-card'), 'grow-conditions');
 
         pushKeyed(kids, card([
           heading(__alloT('stem.treelab.spend_it', 'Where does the surplus go?'),
@@ -4644,8 +5259,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           !tree.alive ? postMortem() : null
         ]), 'grow-spend');
 
-        pushKeyed(kids, trialComparisonPanel(), 'grow-trial-comparison');
-        if (tree.rings.length > 0) pushKeyed(kids, ringPanel(), 'grow-rings');
+        pushKeyed(kids, advancedGateway(), 'grow-advanced-gateway');
+        var advancedKids = [];
+        if (advancedOpen) {
+          pushKeyed(advancedKids, flowMarker('3',
+            __alloT('stem.treelab.flow_evidence', 'Turn the pattern into evidence'),
+            __alloT('stem.treelab.flow_evidence_note', 'Make a prediction, run a controlled trial, and compare what the tree actually did.')), 'grow-flow-evidence');
+          if (survivalNode) pushKeyed(advancedKids, survivalNode, 'grow-survival');
+          pushKeyed(advancedKids, h('div', { id: 'treelab-investigation' }, experimentPanel()), 'grow-experiment');
+          pushKeyed(advancedKids, trialComparisonPanel(), 'grow-trial-comparison');
+          if (tree.rings.length > 0) pushKeyed(advancedKids, ringPanel(), 'grow-rings');
+        }
+        pushKeyed(kids, h('div', {
+          id: 'treelab-advanced-work', className: 'allo-tree-advanced-work', hidden: !advancedOpen,
+          'aria-label': __alloT('stem.treelab.advanced_workspace', 'Advanced evidence workspace')
+        }, advancedKids), 'grow-advanced-work');
         return h('div', { key: 'workbench', className: 'allo-tree-workbench' }, [
           h('div', { key: 'scene', className: 'allo-tree-workbench-scene' },
             h('div', { key: 'sticky', className: 'allo-tree-workbench-sticky' }, scene)),
@@ -5395,6 +6023,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         return pts;
       }
 
+      function chemStoryPanel() {
+        var limiterId = causeAwareLimiter(live) || 'light';
+        var limiterLabel = experimentFactorLabel(limiterId);
+        var inputs = [
+          { id: 'light', icon: '\u2600\uFE0F', label: __alloT('stem.treelab.light', 'Light'), value: Math.round(liveEnv.light * 100) + '%' },
+          { id: 'water', icon: '\uD83D\uDCA7', label: __alloT('stem.treelab.water', 'Water'), value: Math.round(liveEnv.soilWater * 100) + '%' },
+          { id: 'co2', icon: '\uD83D\uDCA8', label: CO2, value: Math.round(liveEnv.co2ppm) + ' ppm' }
+        ];
+        return card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' },
+            __alloT('stem.treelab.chem_story_eyebrow', 'Live reaction')),
+          heading(__alloT('stem.treelab.chem_story_title', 'From sky to sugar'),
+            __alloT('stem.treelab.chem_story_sub', 'Follow the live reaction: three inputs meet in the leaf, and the slowest usable input sets the pace.')),
+          h('div', {
+            key: 'reaction', className: 'allo-tree-reaction', role: 'group',
+            'aria-label': __alloT('stem.treelab.chem_story_alt', 'Sunlight, water and carbon dioxide enter a leaf. The leaf produces sugar carbon and oxygen.')
+          }, [
+            h('div', { key: 'inputs', className: 'allo-tree-reaction-inputs' },
+              inputs.map(function (item) {
+                return h('div', {
+                  key: item.id, className: 'allo-tree-molecule',
+                  style: { borderTop: '3px solid ' + tone(FACTOR_HUE(item.id)) }
+                }, [
+                  h('span', { key: 'i', className: 'allo-tree-molecule-icon', 'aria-hidden': 'true' }, item.icon),
+                  h('span', { key: 'l', className: 'allo-tree-molecule-label' }, item.label),
+                  h('strong', { key: 'v', className: 'allo-tree-molecule-value' }, item.value)
+                ]);
+              })),
+            h('span', { key: 'a1', className: 'allo-tree-reaction-arrow', 'aria-hidden': 'true' }, ARROW),
+            h('div', { key: 'engine', className: 'allo-tree-leaf-engine' }, [
+              h('span', { key: 'leaf', className: 'allo-tree-leaf-orbit', 'aria-hidden': 'true' }, '\uD83C\uDF43'),
+              h('span', { key: 'k', className: 'allo-tree-engine-kicker' }, __alloT('stem.treelab.leaf_engine', 'Leaf engine')),
+              h('strong', { key: 'n', className: 'allo-tree-engine-name' }, __alloT('stem.treelab.photosynthesis', 'Photosynthesis')),
+              h('span', { key: 's', className: 'allo-tree-engine-setting' }, round(liveEnv.tempC, 0) + ' ' + DEG + 'C')
+            ]),
+            h('span', { key: 'a2', className: 'allo-tree-reaction-arrow', 'aria-hidden': 'true' }, ARROW),
+            h('div', { key: 'outputs', className: 'allo-tree-reaction-outputs' }, [
+              h('div', { key: 'sugar', className: 'allo-tree-molecule' }, [
+                h('span', { key: 'i', className: 'allo-tree-molecule-icon', 'aria-hidden': 'true' }, '\uD83C\uDF6F'),
+                h('span', { key: 'l', className: 'allo-tree-molecule-label' }, __alloT('stem.treelab.sugar_carbon', 'Sugar carbon')),
+                h('strong', { key: 'v', className: 'allo-tree-molecule-value' }, round(live.gross, 2) + ' kg C/year')
+              ]),
+              h('div', { key: 'oxygen', className: 'allo-tree-molecule' }, [
+                h('span', { key: 'i', className: 'allo-tree-molecule-icon', 'aria-hidden': 'true' }, O2),
+                h('span', { key: 'l', className: 'allo-tree-molecule-label' }, __alloT('stem.treelab.oxygen_output', 'Oxygen')),
+                h('strong', { key: 'v', className: 'allo-tree-molecule-value' }, __alloT('stem.treelab.released_to_air', 'Released to air'))
+              ])
+            ])
+          ]),
+          h('div', { key: 'verdict', className: 'allo-tree-story-verdict', style: { borderLeftColor: tone(FACTOR_HUE(limiterId)) } }, [
+            h('span', { key: 'l', className: 'allo-tree-story-verdict-label' }, __alloT('stem.treelab.bottleneck_now', 'Bottleneck right now')),
+            h('strong', { key: 'v' }, limiterLabel),
+            h('span', { key: 'c', className: 'allo-tree-story-verdict-copy' },
+              __alloT('stem.treelab.bottleneck_explain', 'The reaction can only run as fast as its scarcest usable input.'))
+          ])
+        ], undefined, 'allo-tree-chem-story');
+      }
+
       function curvePanel() {
         var series = CURVES.map(function (c) {
           var pts = sampleCurve(c);
@@ -5413,7 +6099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
         function panel(s2) {
           var c = s2.c;
-          var limiting = live.limiting && live.limiting.id === c.id;
+          var limiting = causeAwareLimiter(live) === c.id;
           var hue = tone(FACTOR_HUE(c.id));
           var sx = function (x) { return PADL + PW * ((x - c.min) / (c.max - c.min)); };
           var sy = function (y) { return PADT + PH * (1 - clamp(y / yMax, 0, 1)); };
@@ -5437,10 +6123,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
           return h('div', {
             key: c.id,
-            style: {
-              background: T.cardAlt, border: '1px solid ' + (limiting ? hue : T.border),
-              borderRadius: 8, padding: 8
-            }
+            className: 'allo-tree-curve-panel' + (limiting ? ' is-limiting' : ''),
+            style: { borderColor: limiting ? hue : T.border, borderTopColor: hue }
           }, [
             h('div', { key: 'hd', style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } }, [
               // Identity comes from a swatch BESIDE the text, never by colouring the
@@ -5540,10 +6224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.curves_sub_g68', 'Each panel sweeps ONE condition across its whole range and leaves the other three where you set them. Upward on every panel is gross photosynthesis in kg of carbon a year, on one shared scale. The dot is where this tree is standing, and a curve that has gone flat under the dot is telling you that more of that input buys nothing.')
               : __alloT('stem.treelab.curves_sub_k2', 'Each picture shows what happens if you change just one thing. Higher means more sugar made. The dot is where your tree is now.')),
-          h('div', {
-            key: 'grid',
-            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 10 }
-          }, series.map(panel)),
+          h('div', { key: 'grid', className: 'allo-tree-curve-grid' }, series.map(panel)),
           h('p', { key: 'read', style: { fontSize: 12, color: T.text, lineHeight: 1.55, marginTop: 10 } },
             live.limiting && live.limiting.viaStomata
               ? __alloT('stem.treelab.curves_read_stomata',
@@ -5552,7 +6233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 'The flat panels are the ones where this tree already has more than it can use. The marked one is where the next improvement would actually come from.')),
           modelNote(__alloT('stem.treelab.curves_note',
             'Every point on every curve is the model’s own annual figure for this tree, re-run with that one input changed — not a sketch of the shape. The shapes are the standard ones (a saturating light response, a saturating ' + CO2 + ' response, a temperature optimum), and the magnitudes are the right order for a temperate tree, but no figure here should be quoted as data.'))
-        ]);
+        ], undefined, 'allo-tree-curves-card');
       }
 
       function viewChem() {
@@ -5570,13 +6251,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ]),
             h('p', { key: 'p', style: { fontSize: 13, color: T.text, lineHeight: 1.6, marginTop: 6 } },
               __alloT('stem.treelab.k2_body', 'The tree makes sugar in its leaves and uses it to grow taller, grow roots, and make seeds. The wood in a tree trunk came mostly out of the air.'))
-          ]));
+          ], undefined, 'allo-tree-chem-story allo-tree-chem-k2'));
           return kids;
         }
 
         // Picture first, then the same four numbers as labelled bars directly beneath
         // it. The bars are the chart's accessible twin, not a duplicate: nothing here
         // is reachable only by reading a shape.
+        kids.push(chemStoryPanel());
         kids.push(curvePanel());
 
         kids.push(card([
@@ -5591,7 +6273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           h('div', { key: 'note', style: { marginTop: 6, fontSize: 12, color: T.dim, lineHeight: 1.55 } },
             __alloT('stem.treelab.liebig',
               'This is why enriching ' + CO2 + ' does little for a tree that is short of water. A stoma pulled most of the way shut admits very little ' + CO2 + ' however much is outside, so the extra arrives as a large share of almost nothing.'))
-        ]));
+        ], undefined, 'allo-tree-chem-limits'));
 
         if (atLeast(band, 'g68')) {
           kids.push(card([
@@ -5606,7 +6288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             ]),
             h('p', { key: 'p', style: { fontSize: 12, color: T.dim, marginTop: 8, lineHeight: 1.55 } },
               __alloT('stem.treelab.trade_body', 'A large tree can move well over 100 gallons of water in a day this way. Almost all of it is the unavoidable price of leaving the stomata open long enough to take carbon in.'))
-          ]));
+          ], undefined, 'allo-tree-chem-trade'));
         }
 
         if (atLeast(band, 'g912')) {
@@ -5629,7 +6311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               btn('hcell', __alloT('stem.treelab.open_cell', 'See the chloroplast in Cell Explorer →'),
                 function () { handoff('cell', 'Cell Explorer'); }, { small: true })
             ])
-          ]));
+          ], undefined, 'allo-tree-chem-bill'));
         }
         return kids;
       }
@@ -5669,6 +6351,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         if (addToast) addToast(__alloT('stem.treelab.say_opening', 'Opening ') + labelTxt, 'info');
       }
 
+      function transportPath(kind) {
+        var isXylem = kind === 'xylem';
+        var springDraw = season === 'spring';
+        var steps = isXylem ? [
+          { icon: '\uD83C\uDF31', label: __alloT('stem.treelab.roots', 'Roots'), note: __alloT('stem.treelab.route_absorb', 'Absorb') },
+          { icon: '\uD83D\uDCA7', label: __alloT('stem.treelab.xylem', 'Xylem'), note: __alloT('stem.treelab.route_pull', 'Pulls upward') },
+          { icon: '\uD83C\uDF43', label: __alloT('stem.treelab.leaves', 'Leaves'), note: __alloT('stem.treelab.route_release', 'Release vapor') }
+        ] : (springDraw ? [
+          { icon: '\uD83C\uDF30', label: __alloT('stem.treelab.reserves', 'Stored reserves'), note: __alloT('stem.treelab.source', 'Source') },
+          { icon: '\u21C5', label: __alloT('stem.treelab.phloem', 'Phloem'), note: __alloT('stem.treelab.route_moves_sugar', 'Moves sugar') },
+          { icon: '\uD83C\uDF43', label: __alloT('stem.treelab.new_leaves', 'New leaves'), note: __alloT('stem.treelab.sink', 'Sink') }
+        ] : [
+          { icon: '\uD83C\uDF43', label: __alloT('stem.treelab.leaves', 'Leaves'), note: __alloT('stem.treelab.source', 'Source') },
+          { icon: '\u21C5', label: __alloT('stem.treelab.phloem', 'Phloem'), note: __alloT('stem.treelab.route_moves_sugar', 'Moves sugar') },
+          { icon: '\uD83C\uDF32', label: __alloT('stem.treelab.growth_roots', 'Growth + roots'), note: __alloT('stem.treelab.sinks', 'Sinks') }
+        ]);
+        var route = [];
+        steps.forEach(function (step, i) {
+          route.push(h('div', { key: 'n' + i, className: 'allo-tree-pipe-node' }, [
+            h('span', { key: 'i', className: 'allo-tree-pipe-icon', 'aria-hidden': 'true' }, step.icon),
+            h('strong', { key: 'l', className: 'allo-tree-pipe-label' }, step.label),
+            h('span', { key: 'n', className: 'allo-tree-pipe-note' }, step.note)
+          ]));
+          if (i < steps.length - 1) route.push(h('span', { key: 'a' + i, className: 'allo-tree-pipe-arrow', 'aria-hidden': 'true' }, ARROW));
+        });
+        return h('div', {
+          key: 'route',
+          className: 'allo-tree-pipe-path ' + (isXylem ? 'is-xylem' : 'is-phloem'),
+          role: 'group',
+          'aria-label': isXylem
+            ? __alloT('stem.treelab.xylem_route_alt', 'Water route: roots to xylem to leaves.')
+            : (springDraw
+              ? __alloT('stem.treelab.phloem_route_spring_alt', 'Sugar route right now: stored reserves to phloem to new leaves.')
+              : __alloT('stem.treelab.phloem_route_summer_alt', 'Sugar route right now: leaves to phloem to growing tissues and roots.'))
+        }, route);
+      }
+
       // Where this year's sugar is actually going, straight from the student's own
       // allocation. In spring the phloem runs the other way: the tree spends stored
       // reserves building leaves BEFORE it has leaves to make sugar with, which is the
@@ -5684,15 +6403,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ].filter(function (r) { return !(springDraw && r[0] === 'store'); });
         var surplus = Math.max(0, liveNet);
         if (surplus <= 0 && !springDraw) {
-          return h('div', { key: 'deficit', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, borderLeft: '4px solid ' + T.bad } }, [
+          return h('div', { key: 'deficit', className: 'allo-tree-sink-deficit', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad, borderLeft: '4px solid ' + T.bad } }, [
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 13 } },
               __alloT('stem.treelab.no_surplus', 'Nothing to send out')),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.55 } },
               __alloT('stem.treelab.no_surplus_note', 'The tree is spending more than it makes, so there is no surplus to divide. The phloem is running the other way: stored sugar is being pulled back OUT of the roots and trunk to keep the living tissue alive. Sinks become the source.'))
           ]);
         }
-        return h('div', { key: 'sinks' }, [
-          h('div', { key: 'src', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (springDraw ? tone('#38bdf8') : tone('#22c55e')), marginBottom: 8 } }, [
+        return h('div', { key: 'sinks', className: 'allo-tree-sink-list' }, [
+          h('div', { key: 'src', className: 'allo-tree-source-card', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + (springDraw ? tone('#38bdf8') : tone('#22c55e')), marginBottom: 8 } }, [
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 13 } },
               springDraw
                 ? __alloT('stem.treelab.source_spring', 'Source right now: stored reserves in the roots and trunk')
@@ -5702,9 +6421,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 ? __alloT('stem.treelab.source_spring_note', 'The canopy is not built yet, so sugar runs UP from store to build it. The tree is spending last year to pay for this one.')
                 : round(surplus, 2) + ' kg C ' + __alloT('stem.treelab.to_spend', 'to send out this year'))
           ]),
-          h('div', { key: 'rows' }, rows.map(function (r) {
+          h('div', { key: 'rows', className: 'allo-tree-sink-rows' }, rows.map(function (r) {
             var share = r[2];
-            return h('div', { key: r[0], style: { marginBottom: 7 } }, [
+            return h('div', { key: r[0], className: 'allo-tree-sink-row', style: { marginBottom: 7 } }, [
               h('div', { key: 'l', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 3 } }, [
                 h('span', { key: 'a', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
                   h('span', { key: 's', style: { width: 9, height: 9, borderRadius: 2, background: tone(r[3]), display: 'inline-block', border: isContrast ? '1px solid ' + T.text : 'none' } }),
@@ -5806,7 +6525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           ]));
         });
 
-        return h('div', { key: 'xs' }, [
+        return h('div', { key: 'xs', className: 'allo-tree-trunk-section' }, [
           h('div', { key: 'wrap', style: { display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' } }, [
             h('svg', {
               key: 'svg', viewBox: '-84 -84 204 168',
@@ -5842,14 +6561,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         ]);
       }
 
+      function girdlingSequence() {
+        var steps = [
+          { title: __alloT('stem.treelab.girdle_step_water', 'Water still rises'), copy: __alloT('stem.treelab.girdle_step_water_copy', 'The deeper xylem stays intact.') },
+          { title: __alloT('stem.treelab.girdle_step_sugar', 'Sugar route breaks'), copy: __alloT('stem.treelab.girdle_step_sugar_copy', 'The shallow phloem ring is removed.') },
+          { title: __alloT('stem.treelab.girdle_step_roots', 'Roots starve first'), copy: __alloT('stem.treelab.girdle_step_roots_copy', 'The crown dies later, after the roots fail.') }
+        ];
+        return h('div', {
+          key: 'chain', className: 'allo-tree-consequence', role: 'group',
+          'aria-label': __alloT('stem.treelab.girdle_sequence_alt', 'What happens after a complete ring of bark is removed')
+        }, steps.map(function (step, i) {
+          return h('div', { key: i, className: 'allo-tree-consequence-step' }, [
+            h('span', { key: 'n', className: 'allo-tree-consequence-number' }, String(i + 1)),
+            h('div', { key: 't', className: 'allo-tree-consequence-title' }, step.title),
+            h('div', { key: 'c', className: 'allo-tree-consequence-copy' }, step.copy)
+          ]);
+        }));
+      }
+
+
       function viewTransport() {
         var kids = [];
         var flowUp = Math.round(aperture * 100);
         kids.push(card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' }, __alloT('stem.treelab.transport_story_eyebrow', 'Trace the flow')),
           heading(__alloT('stem.treelab.two_pipes', 'Two separate plumbing systems'),
             __alloT('stem.treelab.two_pipes_sub', 'Water goes up one way. Sugar goes wherever it is needed by another. They run side by side and they are not the same tissue.')),
-          h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10 } }, [
-            h('div', { key: 'x', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + tone('#38bdf8') } }, [
+          h('div', { key: 'g', className: 'allo-tree-pipe-grid' }, [
+            h('div', { key: 'x', className: 'allo-tree-pipe-card is-xylem', style: { borderLeftColor: tone('#38bdf8') } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↑ ' + (atLeast(band, 'g68') ? 'Xylem' : 'Water pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
@@ -5857,29 +6596,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   : (atLeast(band, 'g68')
                     ? __alloT('stem.treelab.xylem_g68', 'Dead hollow cells carrying water up from the roots. Evaporation at the leaves does the pulling.')
                     : __alloT('stem.treelab.xylem_k2', 'Carries water up from the roots to the leaves.'))),
+              transportPath('xylem'),
               h('div', { key: 'm', style: { marginTop: 8 } }, bar(__alloT('stem.treelab.flow_now', 'Flow right now'), aperture, tone('#38bdf8'),
                 fmtInt(Math.round(transpirationPerDay)) + ' ' + __alloT('stem.treelab.litres_day', 'litres a day') + ' · ' + flowUp + '%')),
               inDrought && atLeast(band, 'g912') ? h('div', { key: 'cav', style: { marginTop: 6, fontSize: 11, color: T.warn, lineHeight: 1.5 } },
                 __alloT('stem.treelab.tension_note', 'Under drought the column is pulled harder against a drier soil. Push the tension far enough and an air bubble breaks the thread, and that segment of xylem never carries water again.')) : null
             ]),
-            h('div', { key: 'p', style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + tone('#f59e0b') } }, [
+            h('div', { key: 'p', className: 'allo-tree-pipe-card is-phloem', style: { borderLeftColor: tone('#f59e0b') } }, [
               h('div', { key: 'h', style: { fontWeight: 700, color: T.text, marginBottom: 4 } }, '↓ ' + (atLeast(band, 'g68') ? 'Phloem' : 'Sugar pipes')),
               h('div', { key: 'b', style: { fontSize: 12, color: T.dim, lineHeight: 1.55 } },
                 atLeast(band, 'g912')
                   ? __alloT('stem.treelab.phloem_g912', 'Living cells moving sugar from any SOURCE to any SINK. Direction is not fixed: in autumn sugar runs down to the roots, and in early spring it runs back up to build leaves before there are leaves to make it.')
                   : (atLeast(band, 'g68')
                     ? __alloT('stem.treelab.phloem_g68', 'Living cells carrying sugar from where it is made to where it is spent. In spring the flow reverses and runs upward.')
-                    : __alloT('stem.treelab.phloem_k2', 'Carries food from the leaves to the rest of the tree.')))
+                    : __alloT('stem.treelab.phloem_k2', 'Carries food from the leaves to the rest of the tree.'))),
+              transportPath('phloem')
             ])
           ])
-        ]));
+        ], undefined, 'allo-tree-transport-story'));
 
         if (atLeast(band, 'g68')) {
           kids.push(card([
             heading(__alloT('stem.treelab.where_sugar', 'Where this year’s sugar is going'),
               __alloT('stem.treelab.where_sugar_sub', 'Straight from the allocation you set on the Grow tab. Phloem has no fixed direction: it runs from wherever sugar IS to wherever it is being spent.')),
             sinkRows()
-          ]));
+          ], undefined, 'allo-tree-sugar-map'));
 
           kids.push(card([
             heading(__alloT('stem.treelab.xs_title', 'Inside the trunk'),
@@ -5887,7 +6628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 ? __alloT('stem.treelab.xs_sub_g68', 'Cut across the trunk and the two systems are in different places: phloem in a thin band just under the bark, xylem filling the wood beneath it. The rings are this tree’s own.')
                 : __alloT('stem.treelab.xs_sub_k2', 'A slice through the trunk. Each ring is one year of growing.')),
             trunkSection()
-          ]));
+          ], undefined, 'allo-tree-trunk-card'));
 
           kids.push(card([
             heading(__alloT('stem.treelab.girdling', 'Why cutting a ring of bark kills a tree'),
@@ -5895,12 +6636,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             h('p', { key: 'p', style: { fontSize: 13, color: T.text, lineHeight: 1.6 } },
               __alloT('stem.treelab.girdling_body',
                 'Phloem sits just inside the bark; xylem is deeper in the wood. Remove a complete ring of bark and the leaves keep receiving water, so the tree looks fine for a whole season. But no sugar can reach the roots. The roots starve first, and only then does the top die.')),
+            girdlingSequence(),
             atLeast(band, 'g912') ? h('p', { key: 'p2', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 8 } },
               __alloT('stem.treelab.girdling_adv',
                 'This is also why the cambium matters so much: it is the single living layer between the two, and it is what a ground fire has to get through. A species with thick bark is buying insulation for that one layer.')) : null
-          ]));
+          ], undefined, 'allo-tree-girdling-card'));
         }
         return kids;
+      }
+
+      function spreadJourney() {
+        var steps = [
+          { icon: '\uD83C\uDF33', title: __alloT('stem.treelab.journey_parent', 'Parent tree'), copy: __alloT('stem.treelab.journey_parent_copy', 'Banks reproduction carbon') },
+          { icon: '\u2728', title: __alloT('stem.treelab.journey_choice', 'Your wager'), copy: __alloT('stem.treelab.journey_choice_copy', 'Seeds, clones, or both') },
+          { icon: '\u26C5', title: __alloT('stem.treelab.journey_decade', 'A decade passes'), copy: __alloT('stem.treelab.journey_decade_copy', 'Chance and disturbance intervene') },
+          { icon: '\uD83C\uDF31', title: __alloT('stem.treelab.journey_forest', 'Next generation'), copy: __alloT('stem.treelab.journey_forest_copy', 'Survivors establish') }
+        ];
+        var path = [];
+        steps.forEach(function (step, i) {
+          path.push(h('div', { key: 's' + i, className: 'allo-tree-spread-journey-step' }, [
+            h('span', { key: 'i', className: 'allo-tree-spread-journey-icon', 'aria-hidden': 'true' }, step.icon),
+            h('strong', { key: 't' }, step.title),
+            h('span', { key: 'c' }, step.copy)
+          ]));
+          if (i < steps.length - 1) path.push(h('span', { key: 'a' + i, className: 'allo-tree-spread-journey-arrow', 'aria-hidden': 'true' }, ARROW));
+        });
+        return h('div', {
+          key: 'journey', className: 'allo-tree-spread-journey', role: 'group',
+          'aria-label': __alloT('stem.treelab.journey_alt', 'The reproduction journey: bank carbon, choose a strategy, pass through a decade of chance, and count the next generation.')
+        }, path);
+      }
+
+      function spreadBudgetMeter(budget, totalSpent, remaining) {
+        var rawPct = budget > 0 ? Math.round((totalSpent / budget) * 100) : 0;
+        var fillPct = clamp(rawPct, 0, 100);
+        return h('div', { key: 'meter', className: 'allo-tree-spread-budget-meter' + (remaining < 0 ? ' is-over' : '') }, [
+          h('div', { key: 'head', className: 'allo-tree-spread-budget-head' }, [
+            h('span', { key: 'l' }, __alloT('stem.treelab.carbon_bank_meter', 'Carbon bank committed')),
+            h('strong', { key: 'v' }, rawPct + '%')
+          ]),
+          h('div', {
+            key: 'track', className: 'allo-tree-spread-budget-track', role: 'progressbar',
+            'aria-label': __alloT('stem.treelab.carbon_bank_meter', 'Carbon bank committed'),
+            'aria-valuemin': 0, 'aria-valuemax': budget > 0 ? budget : 1,
+            'aria-valuenow': budget > 0 ? clamp(totalSpent, 0, budget) : 0
+          }, h('span', { className: 'allo-tree-spread-budget-fill', style: { width: fillPct + '%' } })),
+          h('div', { key: 'note', className: 'allo-tree-spread-budget-note' },
+            remaining >= 0
+              ? round(remaining, 2) + ' kg C ' + __alloT('stem.treelab.uncommitted', 'still uncommitted')
+              : round(Math.abs(remaining), 2) + ' kg C ' + __alloT('stem.treelab.over_bank', 'beyond the bank'))
+        ]);
+      }
+
+      function strategyProfile(s) {
+        var metrics = [
+          { key: 'take', label: __alloT('stem.treelab.establishment', 'Establishment'), value: Math.round(s.establish * 100) + '%', strength: s.establish, hue: tone('#22c55e') },
+          { key: 'reach', label: __alloT('stem.treelab.relative_reach', 'Relative reach'), value: Math.round(s.distance * 100) + '%', strength: s.distance, hue: tone('#38bdf8') },
+          { key: 'genes', label: __alloT('stem.treelab.genetic_variety', 'Genetic variety'), value: s.diversity ? __alloT('stem.treelab.new_mix', 'New genetic mix') : __alloT('stem.treelab.exact_copy', 'Exact copy'), strength: s.diversity ? 1 : 0.16, hue: tone(s.diversity ? '#ec4899' : '#f59e0b') }
+        ];
+        return h('div', {
+          key: 'profile', className: 'allo-tree-strategy-profile', role: 'group',
+          'aria-label': __alloT('stem.treelab.strategy_signature', 'Strategy signature')
+        }, metrics.map(function (m) {
+          return h('div', { key: m.key, className: 'allo-tree-strategy-metric', 'aria-label': m.label + ': ' + m.value }, [
+            h('div', { key: 'h', className: 'allo-tree-strategy-metric-head' }, [
+              h('span', { key: 'l' }, m.label),
+              h('strong', { key: 'v' }, m.value)
+            ]),
+            h('span', { key: 't', className: 'allo-tree-strategy-track' },
+              h('span', { className: 'allo-tree-strategy-fill', style: { width: Math.round(m.strength * 100) + '%', background: m.hue } }))
+          ]);
+        }));
+      }
+
+      function spreadPlanInsight(legal, spend, totalSpent) {
+        var seedCarbon = 0, cloneCarbon = 0;
+        legal.forEach(function (s) {
+          if (s.diversity) seedCarbon += spend[s.id] || 0;
+          else cloneCarbon += spend[s.id] || 0;
+        });
+        var icon, title, copy;
+        if (totalSpent <= 0) {
+          icon = '\uD83E\uDDED';
+          title = __alloT('stem.treelab.plan_empty', 'Build your strategy');
+          copy = __alloT('stem.treelab.plan_empty_copy', 'Move at least one carbon slider. The model will turn that investment into attempts.');
+        } else if (seedCarbon > 0 && cloneCarbon > 0) {
+          icon = '\u2696\uFE0F';
+          title = __alloT('stem.treelab.plan_mixed', 'A hedged forest');
+          copy = __alloT('stem.treelab.plan_mixed_copy', 'Some descendants can travel and differ; others stay close and establish more reliably.');
+        } else if (seedCarbon > 0) {
+          icon = '\uD83C\uDF2C\uFE0F';
+          title = __alloT('stem.treelab.plan_seed', 'Betting on variation');
+          copy = __alloT('stem.treelab.plan_seed_copy', 'Your attempts can travel and recombine, but most will fail before establishment.');
+        } else {
+          icon = '\uD83C\uDF3F';
+          title = __alloT('stem.treelab.plan_clone', 'Betting on reliability');
+          copy = __alloT('stem.treelab.plan_clone_copy', 'Your copies are likely to establish nearby, with the same genes and often the same roots.');
+        }
+        return h('div', { key: 'insight', className: 'allo-tree-spread-plan' }, [
+          h('span', { key: 'i', className: 'allo-tree-spread-plan-icon', 'aria-hidden': 'true' }, icon),
+          h('div', { key: 'c' }, [
+            h('strong', { key: 't' }, title),
+            h('div', { key: 'p' }, copy)
+          ])
+        ]);
       }
 
       function viewSpread() {
@@ -5917,11 +6756,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
 
         var kids = [];
         kids.push(card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' }, __alloT('stem.treelab.spread_story_eyebrow', 'From one tree to a forest')),
           heading('🌱 ' + __alloT('stem.treelab.spread', 'Making more trees'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.spread_sub_g68', 'Seeds recombine and travel, but almost none survive. Clonal routes nearly always take and cost little, but they produce genetic copies on a shared root system. Spend the reproduction carbon you banked and see what a decade throws at you.')
               : __alloT('stem.treelab.spread_sub_k2', 'Trees make new trees in more than one way. Some grow from seeds. Some grow straight out of the parent tree. Try spending your seed budget different ways.')),
-          h('div', { key: 'bud', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
+          spreadJourney(),
+          spreadBudgetMeter(budget, totalSpent, remaining),
+          h('div', { key: 'bud', className: 'allo-tree-spread-budget-grid' }, [
             statTile('b', __alloT('stem.treelab.banked', 'Carbon banked'), budget + ' kg C', T.accent),
             statTile('s', __alloT('stem.treelab.committed', 'Committed'), round(totalSpent, 2) + ' kg C', T.warn),
             statTile('r', __alloT('stem.treelab.left', 'Left'), remaining + ' kg C', remaining >= 0 ? T.good : T.bad)
@@ -5930,27 +6772,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             __alloT('stem.treelab.no_budget', 'No reproduction carbon banked yet. Go back to Grow, put some of the surplus into Reproduction, and run some years.')) : null,
           modelNote(__alloT('stem.treelab.spread_model_note',
             'The take rates below are tuned so that one decade is playable, not measured. What is real is the ORDER: a clonal shoot establishes far more reliably than a seed, and a wind-carried seed in the wild succeeds far more rarely than the figure here suggests. Compare the strategies against each other, not against the world.'))
-        ]));
+        ], undefined, 'allo-tree-spread-hero'));
 
+        var strategyCards = [];
         legal.forEach(function (s) {
           var val = spend[s.id] || 0;
           var id = 'treelab-spend-' + s.id;
-          kids.push(card([
-            h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } }, [
+          strategyCards.push(h('div', { key: s.id, className: 'allo-tree-strategy-slot' }, card([
+            h('div', { key: 'hd', className: 'allo-tree-strategy-head', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } }, [
               h('div', { key: 'a', style: { flex: '1 1 200px' } }, [
                 h('div', { key: 'n', style: { fontWeight: 700, color: T.text, fontSize: 14 } },
                   s.icon + ' ' + __alloT('stem.treelab.strategy_' + s.id, s.name)),
                 h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3, lineHeight: 1.55 } },
                   __alloT('stem.treelab.strategy_blurb_' + s.id, s.blurb))
               ]),
-              h('div', { key: 'c', style: { textAlign: 'right', fontSize: 11, color: T.dim, minWidth: 96 } }, [
+              h('div', { key: 'c', className: 'allo-tree-strategy-meta', style: { textAlign: 'right', fontSize: 11, color: T.dim, minWidth: 96 } }, [
                 h('div', { key: '1' }, __alloT('stem.treelab.cost', 'Cost ') + s.cost + ' kg C'),
                 h('div', { key: '2' }, __alloT('stem.treelab.takes', 'Takes ') + Math.round(s.establish * 100) + '%'),
                 h('div', { key: '3', style: { color: s.diversity ? T.good : T.warn } },
                   s.diversity ? __alloT('stem.treelab.new_mix', 'New genetic mix') : __alloT('stem.treelab.exact_copy', 'Exact copy'))
               ])
             ]),
-            h('div', { key: 'sl', style: { marginTop: 8 } }, [
+            strategyProfile(s),
+            h('div', { key: 'sl', className: 'allo-tree-strategy-slider', style: { marginTop: 8 } }, [
               h('label', { key: 'l', htmlFor: id, style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
                 h('span', { key: 'a' }, __alloT('stem.treelab.commit', 'Commit carbon')),
                 h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, round(val, 2) + ' kg (' + Math.floor(val / s.cost) + ' attempts)')
@@ -5965,23 +6809,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 style: { width: '100%', accentColor: T.accent }
               })
             ])
-          ]));
+          ], undefined, 'allo-tree-strategy-card ' + (s.diversity ? 'is-seed' : 'is-clone') + (val > 0 ? ' is-active' : ''))));
         });
+        kids.push(h('section', {
+          key: 'strategies', className: 'allo-tree-strategy-stage',
+          'aria-label': __alloT('stem.treelab.choose_strategy', 'Choose a reproduction strategy')
+        }, [
+          h('div', { key: 'guide' }, flowMarker('1',
+            __alloT('stem.treelab.choose_wager', 'Choose the wager'),
+            __alloT('stem.treelab.choose_wager_copy', 'Balance reliability, distance, and genetic variety.'))),
+          h('div', { key: 'grid', className: 'allo-tree-strategy-grid' }, strategyCards)
+        ]));
 
         kids.push(card([
-          h('div', { key: 'run', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center' } }, [
+          h('div', { key: 'guide' }, flowMarker('2',
+            __alloT('stem.treelab.release_decade', 'Release the decade'),
+            __alloT('stem.treelab.release_decade_copy', 'Lock in the carbon wager, then let chance and disturbance act.'))),
+          spreadPlanInsight(legal, spend, totalSpent),
+          h('div', { key: 'run', className: 'allo-tree-spread-actions', style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center' } }, [
             btn('go', __alloT('stem.treelab.run_decade', 'Run the decade'), function () { runSpread(spend, remaining); },
               { disabled: totalSpent <= 0 || remaining < 0 }),
             btn('clr', __alloT('stem.treelab.clear', 'Clear'), function () { upd('spend', {}); }, { tone: 'ghost' })
           ]),
           remaining < 0 ? h('div', { key: 'over', style: { fontSize: 12, color: T.bad, marginTop: 6 } },
             __alloT('stem.treelab.overcommitted', 'You have committed more carbon than the tree banked. Pull something back.')) : null
-        ]));
+        ], undefined, 'allo-tree-spread-launch'));
 
         if (last) {
           var mapCard = spreadMap(last);
-          if (mapCard) kids.push(mapCard);
-          kids.push(spreadResult(last));
+          var resultItems = [
+            h('div', { key: 'outcome', className: 'allo-tree-spread-result-slot' }, spreadResult(last))
+          ];
+          if (mapCard) resultItems.push(h('div', { key: 'map', className: 'allo-tree-spread-map-slot' }, mapCard));
+          kids.push(h('section', {
+            key: 'results', className: 'allo-tree-spread-results-stage',
+            'aria-label': __alloT('stem.treelab.decade_reveal', 'Decade reveal')
+          }, [
+            h('div', { key: 'guide' }, flowMarker('3',
+              __alloT('stem.treelab.read_decade', 'Read the decade'),
+              __alloT('stem.treelab.read_decade_copy', 'Connect the event, the survivor counts, and the spatial pattern.'))),
+            h('div', { key: 'grid', className: 'allo-tree-spread-results-grid' }, resultItems)
+          ]));
         }
         var rec = spreadRecord();
         if (rec) kids.push(rec);
@@ -6047,9 +6915,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         }
 
         return card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' },
+            __alloT('stem.treelab.record_eyebrow', 'Forest legacy')),
           heading(__alloT('stem.treelab.record', 'Your record so far'),
             __alloT('stem.treelab.record_sub', 'Every decade you have run with this tree.')),
-          h('div', { key: 'tot', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 8, marginBottom: 10 } }, [
+          h('div', { key: 'tot', className: 'allo-tree-spread-record-totals' }, [
             statTile('r', __alloT('stem.treelab.decades', 'Decades run'), String(log.length), T.accent),
             statTile('d', __alloT('stem.treelab.from_seed', 'From seed'), String(totals.diverse), tone('#ec4899')),
             statTile('c', __alloT('stem.treelab.clonal', 'Clonal copies'), String(totals.clonal), tone('#86efac')),
@@ -6058,11 +6928,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 (all > 0 ? Math.round((totals.diverse / all) * 100) : 0) + '%', T.accent)
               : null
           ].filter(Boolean)),
-          h('div', { key: 'rows' }, log.map(function (r, i) {
+          h('div', { key: 'rows', className: 'allo-tree-spread-record-timeline' }, log.map(function (r, i) {
             var e = eventById(r.event);
             var took = r.diverse + r.clonal;
             return h('div', {
               key: 'lr' + i,
+              className: 'allo-tree-spread-record-row',
               style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '6px 0', borderBottom: '1px solid ' + T.border, fontSize: 12 }
             }, [
               h('span', { key: 'a', style: { color: T.dim } },
@@ -6072,8 +6943,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 + (took > 0 ? '  (' + r.diverse + ' / ' + r.clonal + ')' : ''))
             ]);
           })),
-          h('p', { key: 'v', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } }, verdict)
-        ]);
+          h('p', { key: 'v', className: 'allo-tree-spread-record-verdict', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } }, verdict)
+        ], null, 'allo-tree-spread-record-card');
       }
 
       // ── The forest floor ────────────────────────────────────────────────────
@@ -6194,12 +7065,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           + (anyWiped ? ' The clonal stems marked with a cross were killed together.' : ''));
 
         return card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' },
+            __alloT('stem.treelab.map_eyebrow', 'Dispersal map')),
           heading(__alloT('stem.treelab.map_title', 'Where they landed'),
             atLeast(band, 'g35')
               ? __alloT('stem.treelab.map_sub_g35', 'The same decade, seen from above. Distance is the half of this trade the numbers do not show: a clonal stem almost always takes, and it arrives next to its parent.')
               : __alloT('stem.treelab.map_sub_k2', 'Looking down at the ground around the tree. Each mark is one try.')),
           h('svg', {
-            key: 'map', viewBox: '0 0 ' + SIZE + ' ' + SIZE, role: 'img', 'aria-label': alt,
+            key: 'map', className: 'allo-tree-spread-map', viewBox: '0 0 ' + SIZE + ' ' + SIZE, role: 'img', 'aria-label': alt,
             style: { width: '100%', maxWidth: 420, height: 'auto', display: 'block', margin: '0 auto' }
           }, (function () {
             // An overhead map that is supposed to be the ground around a tree was a
@@ -6277,7 +7150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             }
             return kids;
           })()),
-          h('div', { key: 'leg', style: { marginTop: 8, textAlign: 'center' } }, [
+          h('div', { key: 'leg', className: 'allo-tree-spread-map-legend', style: { marginTop: 8, textAlign: 'center' } }, [
             legendItem('a', sw('diverse'), __alloT('stem.treelab.map_leg_seed', 'Grew from seed')),
             legendItem('b', sw('clonal'), __alloT('stem.treelab.map_leg_clone', 'Clonal stem')),
             legendItem('c', sw('dead'), __alloT('stem.treelab.map_leg_failed', 'Did not take')),
@@ -6288,28 +7161,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               'Showing ' + (nodes.length) + ' of ' + (nodes.length + dropped) + ' attempts, in the same proportion. The table above is the full count.')) : null,
           modelNote(__alloT('stem.treelab.map_note',
             'Distances here are RELATIVE, not a scale in metres — what is real is the ordering, that a wind-carried seed can travel orders of magnitude further than a root sucker can push. The counts are exactly the ones resolved above; nothing is re-rolled to draw this.'))
-        ]);
+        ], null, 'allo-tree-spread-map-card');
       }
 
       function spreadResult(last) {
         var ev = eventById(last.event);
         var res = last.res;
         return card([
-          h('div', { key: 'ev', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, marginBottom: 10 } }, [
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' },
+            __alloT('stem.treelab.outcome_eyebrow', 'Decade outcome')),
+          h('div', { key: 'ev', className: 'allo-tree-spread-event', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, borderLeft: '4px solid ' + T.accent, marginBottom: 10 } }, [
             h('div', { key: 'a', style: { fontWeight: 700, color: T.text } },
               ev.icon + ' ' + __alloT('stem.treelab.event_' + ev.id, ev.name)),
             h('div', { key: 'b', style: { fontSize: 12, color: T.dim, marginTop: 3 } },
               __alloT('stem.treelab.event_blurb_' + ev.id, ev.blurb))
           ]),
-          h('div', { key: 'g', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 8, marginBottom: 10 } }, [
+          h('div', { key: 'g', className: 'allo-tree-spread-outcome-grid' }, [
             statTile('e', __alloT('stem.treelab.established', 'Established'), String(res.established), T.good),
             statTile('d', __alloT('stem.treelab.from_seed', 'From seed'), String(res.diverseCount), '#ec4899'),
             statTile('c', __alloT('stem.treelab.clonal', 'Clonal copies'), String(res.clonalCount), '#86efac'),
             atLeast(band, 'g68') ? statTile('x', __alloT('stem.treelab.diversity', 'Genetic diversity'), Math.round(res.diversityIndex * 100) + '%', T.accent) : null
           ].filter(Boolean)),
-          h('div', { key: 'rows' }, res.results.map(function (r) {
+          h('div', { key: 'rows', className: 'allo-tree-spread-outcome-rows' }, res.results.map(function (r) {
             return h('div', {
               key: r.id,
+              className: 'allo-tree-spread-outcome-row',
               style: { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '7px 0', borderBottom: '1px solid ' + T.border, fontSize: 12, flexWrap: 'wrap' }
             }, [
               h('span', { key: 'a', style: { color: T.text, fontWeight: 600 } },
@@ -6319,13 +7195,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 __alloT('stem.treelab.spread_note_' + (r.noteKind || 'plain'), r.note)) : null
             ]);
           })),
-          atLeast(band, 'g68') ? h('p', { key: 'lesson', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } },
+          atLeast(band, 'g68') ? h('p', { key: 'lesson', className: 'allo-tree-spread-lesson', style: { fontSize: 12, color: T.dim, lineHeight: 1.55, marginTop: 10 } },
             res.clonalCount > 0 && res.diverseCount === 0
               ? __alloT('stem.treelab.all_clonal', 'Every descendant this round is a genetic copy sharing one root system. That is reliable now and fragile against anything that beats this exact genotype.')
               : (res.diverseCount > 0 && res.clonalCount === 0
                 ? __alloT('stem.treelab.all_seed', 'Every descendant came from seed, so each one is genetically different and landed away from the parent. You paid for that in how few of them took.')
                 : __alloT('stem.treelab.mixed', 'A mixed strategy: copies close by that almost always take, plus a few genetically different seedlings further out. Most real trees hedge exactly like this.'))) : null
-        ]);
+        ], null, 'allo-tree-spread-outcome-card');
       }
 
       // One dot per question in this band: filled when answered, and the running score
@@ -6461,9 +7337,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 : 'reached ' + round(r.tree.heightM, 1) + ' metres');
           }).join('; ') + '.');
 
-        return h('div', { key: 'chart', style: { marginTop: 4 } }, [
+        return h('div', { key: 'chart', className: 'allo-tree-compare-chart-shell', style: { marginTop: 4 } }, [
           h('svg', {
-            key: 'svg', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': alt,
+            key: 'svg', className: 'allo-tree-compare-chart', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': alt,
             style: { width: '100%', height: 'auto', display: 'block' }
           }, [
             h('g', { key: 'grid', stroke: T.border, strokeWidth: 1, fill: 'none' }, [
@@ -6494,7 +7370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           // A legend is always present once there is more than one series: it is the
           // dependable identity channel, and nobody should have to match hues by eye.
           h('div', {
-            key: 'legend',
+            key: 'legend', className: 'allo-tree-compare-legend',
             style: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6, justifyContent: 'center' }
           }, runs.map(function (r, i) {
             return h('span', {
@@ -6514,10 +7390,95 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 + (r.diedAt != null ? ' ✕' + r.diedAt : ''))
             ]);
           })),
-          h('div', { key: 'key', style: { fontSize: 11, color: T.dim, marginTop: 4, textAlign: 'center' } },
+          h('div', { key: 'key', className: 'allo-tree-compare-chart-key', style: { fontSize: 11, color: T.dim, marginTop: 4, textAlign: 'center' } },
             __alloT('stem.treelab.compare_key', 'A cross is where a run ended. Every figure is also written out species by species below.'))
         ]);
       }
+      function compareExperimentStrip(years) {
+        var controls = [
+          { key: 'climate', icon: '\u2600\uFE0F', label: __alloT('stem.treelab.control_climate', 'Climate'), value: round(envCfg.tempC, 0) + ' ' + DEG + 'C / ' + Math.round(envCfg.light * 100) + '% ' + __alloT('stem.treelab.light', 'Light') + ' / ' + Math.round(envCfg.soilWater * 100) + '% ' + __alloT('stem.treelab.water', 'Water') },
+          { key: 'carbon', icon: '\u25C8', label: __alloT('stem.treelab.control_carbon', 'Carbon plan'), value: Math.round(alloc.leaf * 100) + '% ' + __alloT('stem.treelab.leaves', 'Leaves') + ' / ' + Math.round(alloc.root * 100) + '% ' + __alloT('stem.treelab.roots', 'Roots') + ' / ' + Math.round(alloc.wood * 100) + '% ' + __alloT('stem.treelab.wood_short', 'Wood') },
+          { key: 'time', icon: '\u23F3', label: __alloT('stem.treelab.control_time', 'Time window'), value: years + ' ' + __alloT('stem.treelab.yr', 'yr') },
+          { key: 'species', icon: '\uD83C\uDF32', label: __alloT('stem.treelab.only_variable', 'Only variable'), value: __alloT('stem.treelab.species_biology', 'Species biology'), variable: true }
+        ];
+        return h('div', {
+          key: 'controls', className: 'allo-tree-compare-controls', role: 'group',
+          'aria-label': __alloT('stem.treelab.controlled_comparison', 'Controlled comparison setup')
+        }, controls.map(function (item) {
+          return h('div', { key: item.key, className: 'allo-tree-compare-control' + (item.variable ? ' is-variable' : '') }, [
+            h('span', { key: 'i', className: 'allo-tree-compare-control-icon', 'aria-hidden': 'true' }, item.icon),
+            h('span', { key: 'l', className: 'allo-tree-compare-control-label' }, item.label),
+            h('strong', { key: 'v', className: 'allo-tree-compare-control-value' }, item.value)
+          ]);
+        }));
+      }
+
+      function compareInsightPanel(runs, years) {
+        var earlyYear = Math.min(20, years);
+        var earlyIndex = Math.floor(earlyYear / 2);
+        function earlyHeight(r) {
+          if (!r.track.length) return 0;
+          return r.track[Math.min(earlyIndex, r.track.length - 1)] || 0;
+        }
+        var early = runs[0], tallest = runs[0], alive = [];
+        runs.forEach(function (r) {
+          if (earlyHeight(r) > earlyHeight(early)) early = r;
+          if (r.tree.heightM > tallest.tree.heightM) tallest = r;
+          if (r.tree.alive) alive.push(r);
+        });
+        var aliveNames = alive.map(function (r) { return __alloT('stem.treelab.species_' + r.sp.id, r.sp.name); }).join(', ');
+        var insights = [
+          { icon: '\u26A1', kicker: __alloT('stem.treelab.fastest_first', 'Fastest first') + ' ' + earlyYear + ' ' + __alloT('stem.treelab.years_word', 'years'), name: __alloT('stem.treelab.species_' + early.sp.id, early.sp.name), detail: round(earlyHeight(early), 1) + ' m' },
+          { icon: '\u2191', kicker: __alloT('stem.treelab.greatest_height', 'Greatest height reached'), name: __alloT('stem.treelab.species_' + tallest.sp.id, tallest.sp.name), detail: round(tallest.tree.heightM, 1) + ' m' },
+          { icon: '\uD83C\uDF3F', kicker: __alloT('stem.treelab.still_alive_at', 'Still alive at') + ' ' + years + ' ' + __alloT('stem.treelab.yr', 'yr'), name: alive.length + ' / ' + runs.length, detail: alive.length ? aliveNames : __alloT('stem.treelab.none_survived', 'No species survived the full run') }
+        ];
+        return h('div', {
+          key: 'insights', className: 'allo-tree-compare-insights',
+          'aria-label': __alloT('stem.treelab.run_reveals', 'What this run reveals')
+        }, [
+          h('div', { key: 'title', className: 'allo-tree-compare-insights-title' }, __alloT('stem.treelab.run_reveals', 'What this run reveals')),
+          h('div', { key: 'grid', className: 'allo-tree-compare-insights-grid' }, insights.map(function (item) {
+            return h('div', { key: item.kicker, className: 'allo-tree-compare-insight' }, [
+              h('span', { key: 'i', className: 'allo-tree-compare-insight-icon', 'aria-hidden': 'true' }, item.icon),
+              h('span', { key: 'k', className: 'allo-tree-compare-insight-kicker' }, item.kicker),
+              h('strong', { key: 'n', className: 'allo-tree-compare-insight-name' }, item.name),
+              h('span', { key: 'd', className: 'allo-tree-compare-insight-detail' }, item.detail)
+            ]);
+          })),
+          h('p', { key: 'prompt', className: 'allo-tree-compare-insight-prompt' },
+            __alloT('stem.treelab.insight_prompt', 'These are outcomes in this environment, not a universal ranking. Use each strategy signature below to explain why the lines separate.'))
+        ]);
+      }
+
+      function speciesTraitProfile(sp2, hasClonalRoute) {
+        var traits = [
+          { key: 'shade', label: __alloT('stem.treelab.shade_tolerance', 'Shade tolerance'), value: sp2.shadeTol, hue: tone('#8b5cf6') },
+          { key: 'drought', label: __alloT('stem.treelab.drought_tolerance', 'Drought tolerance'), value: sp2.droughtTol, hue: tone('#38bdf8') },
+          { key: 'bark', label: __alloT('stem.treelab.bark_defense', 'Bark defense'), value: sp2.barkThick, hue: tone('#f59e0b') }
+        ];
+        return h('div', {
+          key: 'traits', className: 'allo-tree-species-traits', role: 'group',
+          'aria-label': __alloT('stem.treelab.strategy_signature', 'Strategy signature')
+        }, [
+          h('div', { key: 'label', className: 'allo-tree-species-traits-label' }, __alloT('stem.treelab.strategy_signature', 'Strategy signature')),
+          h('div', { key: 'meters', className: 'allo-tree-species-trait-meters' }, traits.map(function (trait) {
+            var pct = Math.round(clamp(trait.value, 0, 1) * 100);
+            return h('div', { key: trait.key, className: 'allo-tree-species-trait', 'aria-label': trait.label + ': ' + pct + '%' }, [
+              h('div', { key: 'h', className: 'allo-tree-species-trait-head' }, [
+                h('span', { key: 'l' }, trait.label),
+                h('strong', { key: 'v' }, pct + '%')
+              ]),
+              h('span', { key: 't', className: 'allo-tree-species-trait-track' },
+                h('span', { className: 'allo-tree-species-trait-fill', style: { width: pct + '%', background: trait.hue } }))
+            ]);
+          })),
+          h('div', { key: 'pills', className: 'allo-tree-species-pills' }, [
+            h('span', { key: 'leaf' }, sp2.leafType === 'needle' ? __alloT('stem.treelab.needles', 'Needles') : __alloT('stem.treelab.broad_leaves', 'Broad leaves')),
+            h('span', { key: 'route' }, hasClonalRoute ? __alloT('stem.treelab.seed_and_clone', 'Seed + clonal routes') : __alloT('stem.treelab.seed_only', 'Seed only'))
+          ])
+        ]);
+      }
+
 
       function viewCompare() {
         var years = clamp(d.compareYears || 120, 20, 400);
@@ -6526,11 +7487,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         runs.forEach(function (r) { r.track.forEach(function (v) { if (v > maxH) maxH = v; }); });
 
         var kids = [card([
+          h('div', { key: 'eyebrow', className: 'allo-tree-story-eyebrow' }, __alloT('stem.treelab.compare_eyebrow', 'A controlled forest experiment')),
           heading(__alloT('stem.treelab.compare', 'Five strategies, one set of conditions'),
             atLeast(band, 'g68')
               ? __alloT('stem.treelab.compare_sub_g68', 'Every species below is grown under exactly the conditions and the allocation you set on the Grow tab. Nothing else differs, so what you see is the strategy each one is built around.')
               : __alloT('stem.treelab.compare_sub_k2', 'The same weather for all five trees. They still grow differently.')),
-          h('div', { key: 'yrs', style: { marginBottom: 10 } }, [
+          h('div', { key: 'guide' }, flowMarker('1',
+            __alloT('stem.treelab.hold_still', 'Hold everything else still'),
+            __alloT('stem.treelab.hold_still_copy', 'The same climate, carbon plan, and time window expose the biology.'))),
+          compareExperimentStrip(years),
+          h('div', { key: 'yrs', className: 'allo-tree-compare-timeline', style: { marginBottom: 10 } }, [
             h('label', { key: 'l', htmlFor: 'treelab-compare-years', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: T.dim, marginBottom: 4 } }, [
               h('span', { key: 'a' }, __alloT('stem.treelab.compare_years', 'Years to run')),
               h('span', { key: 'b', style: { fontWeight: 700, color: T.text } }, String(years))
@@ -6539,11 +7505,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
               key: 'i', id: 'treelab-compare-years', type: 'range', min: 20, max: 400, step: 10, value: years,
               onChange: function (e) { upd('compareYears', parseInt(e.target.value, 10)); },
               style: { width: '100%', accentColor: T.accent }
-            })
+            }),
+            h('div', { key: 'ticks', className: 'allo-tree-compare-timeline-ticks', 'aria-hidden': 'true' }, [
+              h('span', { key: '20' }, '20'), h('span', { key: '100' }, '100'),
+              h('span', { key: '200' }, '200'), h('span', { key: '400' }, '400')
+            ])
           ]),
-          compareChart(runs, years, maxH)
-        ])];
+          compareChart(runs, years, maxH),
+          compareInsightPanel(runs, years)
+        ], undefined, 'allo-tree-compare-hero')];
 
+        var speciesCards = [];
         runs.forEach(function (r, ri) {
           var isCurrent = r.sp.id === sp.id;
           var W = 100, H = 44;
@@ -6557,8 +7529,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           var cardHue = isContrast ? T.accent : (isDark ? SPECIES_HUE_DARK : SPECIES_HUE_LIGHT)[ri % 5];
           var cardDash = isContrast ? SPECIES_DASH[ri % 5] : '';
           var lastPX = r.track.length ? ((r.track.length - 1) / span) * W : 0;
-          kids.push(card([
-            h('div', { key: 'hd', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' } }, [
+          speciesCards.push(h('div', { key: r.sp.id, className: 'allo-tree-species-slot' }, card([
+            h('div', { key: 'hd', className: 'allo-tree-species-card-head', style: { display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' } }, [
               h('div', { key: 'a', style: { fontWeight: 700, color: T.text, fontSize: 14, display: 'flex', alignItems: 'center', gap: 7 } }, [
                 isContrast ? null : h('span', {
                   key: 'sw', 'aria-hidden': 'true',
@@ -6577,7 +7549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                   : round(r.tree.heightM, 1) + ' m · ' + round(r.tree.dbhCm, 0) + ' cm')
             ]),
             h('svg', {
-              key: 'spark', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
+              key: 'spark', className: 'allo-tree-species-spark', viewBox: '0 0 ' + W + ' ' + H, preserveAspectRatio: 'none',
               style: { width: '100%', height: 52, marginTop: 6, background: T.cardAlt, borderRadius: 6, border: '1px solid ' + (isCurrent ? T.accent : T.border) },
               role: 'img',
               'aria-label': __alloT('stem.treelab.species_' + r.sp.id, r.sp.name) + ': '
@@ -6605,19 +7577,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 strokeWidth: 2, vectorEffect: 'non-scaling-stroke'
               }) : null
             ]),
-            atLeast(band, 'g35') ? h('div', { key: 'why', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } },
+            speciesTraitProfile(r.sp, r.clonal),
+            atLeast(band, 'g35') ? h('div', { key: 'why', className: 'allo-tree-species-why', style: { fontSize: 11, color: T.dim, marginTop: 6, lineHeight: 1.5 } },
               (r.clonal
                 ? __alloT('stem.treelab.cmp_clonal', 'Can copy itself without seeds. ')
                 : __alloT('stem.treelab.cmp_seed', 'Seed only — no clonal route. '))
               + __alloT('stem.treelab.cmp_life', 'Lifespan about ') + r.sp.maxAgeYears + ' ' + __alloT('stem.treelab.yr', 'yr')
               + ', ' + __alloT('stem.treelab.cmp_max', 'tops out near ') + r.sp.maxHeight + ' m.') : null
-          ]));
+          ], { borderTop: '4px solid ' + cardHue }, 'allo-tree-species-card' + (isCurrent ? ' is-current' : ''))));
         });
+        kids.push(h('section', {
+          key: 'species', className: 'allo-tree-species-stage',
+          'aria-label': __alloT('stem.treelab.species_strategies', 'Five species strategies')
+        }, [
+          h('div', { key: 'guide' }, flowMarker('2',
+            __alloT('stem.treelab.read_strategies', 'Read the strategies'),
+            __alloT('stem.treelab.read_strategies_copy', 'Trace each outcome back to tolerance, defense, lifespan, and reproductive route.'))),
+          h('div', { key: 'grid', className: 'allo-tree-species-grid' }, speciesCards)
+        ]));
 
         kids.push(card([
           modelNote(__alloT('stem.treelab.compare_note',
             'One run each, under one set of conditions. A species that loses here is not a worse tree — it is a tree built for different conditions. Change the light or the water on the Grow tab and the order can change.'))
-        ]));
+          ,h('div', { key: 'next', className: 'allo-tree-compare-next' }, [
+            h('span', { key: 'i', className: 'allo-tree-compare-next-icon', 'aria-hidden': 'true' }, '\uD83D\uDD0E'),
+            h('div', { key: 'c', className: 'allo-tree-compare-next-copy' }, [
+              h('strong', { key: 't' }, __alloT('stem.treelab.try_controlled_change', 'Try one controlled change')),
+              h('span', { key: 'p' }, __alloT('stem.treelab.try_controlled_change_copy', 'Change only light or water, run the same time window, and explain why the order changed.'))
+            ]),
+            btn('grow', __alloT('stem.treelab.change_in_grow', 'Change conditions in Grow') + ' ' + ARROW, function () { upd('view', 'grow'); }, { small: true })
+          ])
+        ], undefined, 'allo-tree-compare-conclusion'));
         return kids;
       }
 
@@ -6708,7 +7698,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
         { id: 'compare', label: __alloT('stem.treelab.tab_compare', 'Compare'), icon: '⚖️', min: 'g35' },
         { id: 'quiz', label: __alloT('stem.treelab.tab_quiz', 'Check'), icon: '✓' }
       ].filter(function (t) { return !t.min || atLeast(band, t.min); });
+      var TAB_GUIDE = {
+        grow: {
+          hint: __alloT('stem.treelab.tab_grow_hint', 'Run the life cycle'),
+          title: __alloT('stem.treelab.chapter_grow', 'Grow a tree through time'),
+          intro: __alloT('stem.treelab.chapter_grow_intro', 'Change one condition, advance the years, and watch the living carbon budget respond.'),
+          cue: __alloT('stem.treelab.chapter_grow_cue', 'Start here: try one change, then grow 10 years.')
+        },
+        chem: {
+          hint: __alloT('stem.treelab.tab_chem_hint', 'Find the bottleneck'),
+          title: __alloT('stem.treelab.chapter_chem', 'Discover what limits growth'),
+          intro: __alloT('stem.treelab.chapter_chem_intro', 'Read the response curves and see why adding more of everything does not always help.'),
+          cue: __alloT('stem.treelab.chapter_chem_cue', 'Look for the factor with the least headroom.')
+        },
+        transport: {
+          hint: __alloT('stem.treelab.tab_transport_hint', 'Trace two flows'),
+          title: __alloT('stem.treelab.chapter_transport', 'Follow water and sugar'),
+          intro: __alloT('stem.treelab.chapter_transport_intro', 'Trace xylem upward and phloem from each carbon source to the places that need it.'),
+          cue: __alloT('stem.treelab.chapter_transport_cue', 'Water and sugar use different living systems.')
+        },
+        spread: {
+          hint: __alloT('stem.treelab.tab_spread_hint', 'Build a forest'),
+          title: __alloT('stem.treelab.chapter_spread', 'Make the next generation'),
+          intro: __alloT('stem.treelab.chapter_spread_intro', 'Spend stored carbon on seeds or clones and see how distance, survival, and diversity trade off.'),
+          cue: __alloT('stem.treelab.chapter_spread_cue', 'Try a mixed strategy, then run another decade.')
+        },
+        compare: {
+          hint: __alloT('stem.treelab.tab_compare_hint', 'Test tree strategies'),
+          title: __alloT('stem.treelab.chapter_compare', 'Compare five ways to be a tree'),
+          intro: __alloT('stem.treelab.chapter_compare_intro', 'Keep the climate fixed and reveal how each species strategy changes the outcome.'),
+          cue: __alloT('stem.treelab.chapter_compare_cue', 'Same conditions. Different biology.')
+        },
+        quiz: {
+          hint: __alloT('stem.treelab.tab_quiz_hint', 'Show your thinking'),
+          title: __alloT('stem.treelab.chapter_quiz', 'Check the story you can explain'),
+          intro: __alloT('stem.treelab.chapter_quiz_intro', 'Answer one idea at a time and use the feedback to strengthen your biological reasoning.'),
+          cue: __alloT('stem.treelab.chapter_quiz_cue', 'Read the explanation after every answer.')
+        }
+      };
+      TABS.forEach(function (tab) {
+        var guide = TAB_GUIDE[tab.id] || TAB_GUIDE.grow;
+        tab.hint = guide.hint;
+        tab.chapterTitle = guide.title;
+        tab.chapterIntro = guide.intro;
+        tab.chapterCue = guide.cue;
+      });
       if (!TABS.some(function (t) { return t.id === view; })) view = 'grow';
+      var activeTabIndex = Math.max(0, TABS.map(function (t) { return t.id; }).indexOf(view));
+      var activeTab = TABS[activeTabIndex] || TABS[0];
 
       var body;
       switch (view) {
@@ -6730,7 +7767,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
           '--accent-shadow': isDark ? 'rgba(52,211,153,.2)' : 'rgba(5,150,105,.2)',
           '--tree-focus': isContrast ? '#ffffff' : (isDark ? '#a7f3d0' : '#34d399'),
           '--tree-accent': T.accent,
-          background: T.bg, color: T.text, padding: 16, borderRadius: 18, minHeight: 400
+          '--lab-edge': isContrast ? T.border : (isDark ? 'rgba(52,211,153,.16)' : 'rgba(5,150,105,.14)'),
+          '--canopy-wash': isContrast ? 'transparent' : (isDark ? 'rgba(6,78,59,.2)' : 'rgba(167,243,208,.22)'),
+          '--hero-speck': isContrast ? 'transparent' : (isDark ? 'rgba(167,243,208,.08)' : 'rgba(5,150,105,.08)'),
+          '--hero-ring-soft': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.025)' : 'rgba(255,255,255,.13)'),
+          '--hero-chip': isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.38)' : 'rgba(255,255,255,.78)'),
+          '--hero-chip-border': T.border,
+          '--tree-muted': T.dim,
+          '--tree-ink': T.text,
+          '--scene-edge': isContrast ? T.border : (isDark ? 'rgba(52,211,153,.35)' : 'rgba(5,150,105,.26)'),
+          '--scene-shadow': isContrast ? 'transparent' : (isDark ? 'rgba(2,6,23,.45)' : 'rgba(6,78,59,.15)'),
+          '--tab-icon': isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.55)'),
+          '--chapter-bg': isContrast ? T.card : (isDark ? 'linear-gradient(120deg,rgba(30,41,59,.96),rgba(16,53,48,.9))' : 'linear-gradient(120deg,rgba(255,255,255,.96),rgba(236,253,245,.94))'),
+          '--chapter-border': T.border,
+          '--accent-ink': T.onAccent,
+          '--flow-badge': isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.08)' : 'rgba(5,150,105,.07)'),
+          '--mission-border': isContrast ? T.border : (isDark ? '#2f6a5b' : '#86c9ae'),
+          '--mission-bg': isContrast ? T.card : (isDark ? 'linear-gradient(145deg,#15322d,#172033)' : 'linear-gradient(145deg,#ecfdf5,#ffffff)'),
+          '--mission-shadow': isContrast ? 'transparent' : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(6,78,59,.1)'),
+          '--mission-orb': isContrast ? 'transparent' : (isDark ? 'rgba(52,211,153,.07)' : 'rgba(16,185,129,.08)'),
+          '--mission-step': isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.22)' : 'rgba(255,255,255,.7)'),
+          background: isContrast ? T.bg : (isDark ? 'linear-gradient(180deg,#0b1f1c 0,#0f172a 390px,#0f172a 100%)' : 'linear-gradient(180deg,#eefaf4 0,#f8fafc 390px,#f8fafc 100%)'), color: T.text, padding: 16, borderRadius: 20, minHeight: 400, boxShadow: isContrast ? 'none' : (isDark ? '0 26px 70px rgba(2,6,23,.28)' : '0 26px 70px rgba(15,23,42,.08)')
         }
       }, [
         h('style', { key: 'visual-css' }, visualCss),
@@ -6746,23 +7803,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
             boxShadow: isContrast ? 'none' : (isDark ? '0 18px 42px rgba(2,6,23,.25)' : '0 18px 42px rgba(5,46,22,.09)')
           }
         }, [
-          h('div', { key: 'a', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
+          h('div', { key: 'a', className: 'allo-tree-hero-copy', style: { flex: '1 1 330px', position: 'relative', zIndex: 1 } }, [
             h('div', { key: 'eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 9px', marginBottom: 8, borderRadius: 999, border: '1px solid ' + T.border, background: isContrast ? T.cardAlt : (isDark ? 'rgba(52,211,153,.1)' : 'rgba(255,255,255,.7)'), color: (isDark || isContrast) ? T.accent : '#047857', fontSize: 10, fontWeight: 800, letterSpacing: '.09em', textTransform: 'uppercase' } },
               '● ' + __alloT('stem.treelab.studio_label', 'Living systems studio')),
-            h('h3', { key: 't', style: { fontSize: 25, lineHeight: 1.08, fontWeight: 900, letterSpacing: '-0.035em', margin: 0, color: T.text } },
+            h('h3', { key: 't', className: 'allo-tree-hero-title', style: { fontSize: 25, lineHeight: 1.04, fontWeight: 900, letterSpacing: '-0.045em', margin: 0, color: T.text } },
               '🌳 ' + __alloT('stem.treelab.title', 'Tree Life Lab')),
             h('div', { key: 's', style: { fontSize: 13, color: T.dim, marginTop: 7, maxWidth: 570, lineHeight: 1.55 } },
-              __alloT('stem.treelab.subtitle', 'What limits a tree, what it costs to stay alive, and how it makes more of itself')),
-            h('div', { key: 'quick', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 13 } }, [
-              h('span', { key: 'age', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 700 } },
-                __alloT('stem.treelab.age', 'Age') + ' ' + tree.age),
-              h('span', { key: 'height', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: T.text, fontSize: 11, fontWeight: 700 } },
-                round(tree.heightM, 1) + ' m ' + __alloT('stem.treelab.tall_short', 'tall')),
-              h('span', { key: 'carbon', style: { padding: '5px 9px', borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.28)' : 'rgba(255,255,255,.78)'), border: '1px solid ' + T.border, color: tree.seedsBanked > 0 ? T.accent : T.dim, fontSize: 11, fontWeight: 700 } },
-                round(tree.seedsBanked, 1) + ' kg C ' + __alloT('stem.treelab.banked_short', 'banked'))
+              __alloT('stem.treelab.subtitle', 'Grow a tree through changing conditions, discover what limits it, and help it make the next generation.')),
+            h('div', { key: 'quick', className: 'allo-tree-hero-stats' }, [
+              h('span', { key: 'age', className: 'allo-tree-hero-stat' }, [
+                h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.age', 'Age')),
+                h('strong', { key: 'v', className: 'allo-tree-hero-stat-value' }, tree.age + ' ' + (tree.age === 1 ? __alloT('stem.treelab.year_one', 'year') : __alloT('stem.treelab.year_many', 'years')))
+              ]),
+              h('span', { key: 'height', className: 'allo-tree-hero-stat' }, [
+                h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.height_label', 'Height')),
+                h('strong', { key: 'v', className: 'allo-tree-hero-stat-value' }, round(tree.heightM, 1) + ' m ' + __alloT('stem.treelab.tall_short', 'tall'))
+              ]),
+              h('span', { key: 'carbon', className: 'allo-tree-hero-stat' }, [
+                h('span', { key: 'l', className: 'allo-tree-hero-stat-label' }, __alloT('stem.treelab.reproduction_bank', 'Reproduction bank')),
+                h('strong', { key: 'v', className: 'allo-tree-hero-stat-value', style: { color: tree.seedsBanked > 0 ? T.accent : T.text } }, round(tree.seedsBanked, 1) + ' kg C')
+              ])
             ])
           ]),
           h('div', { key: 'b', className: 'allo-tree-hero-controls', style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 1, padding: 8, borderRadius: 12, background: isContrast ? T.cardAlt : (isDark ? 'rgba(2,6,23,.34)' : 'rgba(255,255,255,.7)'), border: '1px solid ' + T.border } }, [
+            h('div', { key: 'setup-label', className: 'allo-tree-setup-label' }, __alloT('stem.treelab.setup_tree', 'Set up your tree')),
             h('div', { key: 'band-field', className: 'allo-tree-hero-field', style: { display: 'flex', alignItems: 'center', gap: 6 } }, [
               h('label', { key: 'bl', htmlFor: 'treelab-band', style: { fontSize: 11, color: T.dim } },
               __alloT('stem.treelab.level', 'Level')),
@@ -6817,13 +7881,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('treeLab'))) {
                 } catch (err) {}
               },
               style: {
-                padding: '9px 13px', minHeight: 38, borderRadius: 10, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 9, flex: '1 1 152px', padding: '9px 12px', minHeight: 56, borderRadius: 11, fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 border: '1px solid ' + (selected ? T.accent : T.border),
                 background: selected ? ('linear-gradient(135deg,' + T.accent + ',' + (isContrast ? T.accent : (isDark ? '#6ee7b7' : '#10b981')) + ')') : 'transparent',
                 color: selected ? T.onAccent : T.dim
               }
-            }, t.icon + ' ' + t.label);
+            }, [
+              h('span', { key: 'i', className: 'allo-tree-tab-icon', 'aria-hidden': 'true' }, t.icon),
+              h('span', { key: 'c', className: 'allo-tree-tab-copy' }, [
+                h('span', { key: 'l', className: 'allo-tree-tab-label' }, t.label),
+                h('span', { key: 'h', className: 'allo-tree-tab-hint' }, t.hint)
+              ])
+            ]);
           })),
+        h('section', {
+          key: 'chapter', className: 'allo-tree-chapter',
+          'data-tree-chapter': activeTab.id,
+          'aria-label': __alloT('stem.treelab.chapter_label', 'Current learning chapter')
+        }, [
+          h('span', { key: 'n', className: 'allo-tree-chapter-number', 'aria-hidden': 'true' },
+            (activeTabIndex + 1) + ' / ' + TABS.length),
+          h('div', { key: 'copy' }, [
+            h('div', { key: 't', className: 'allo-tree-chapter-title' }, activeTab.chapterTitle),
+            h('div', { key: 'p', className: 'allo-tree-chapter-copy' }, activeTab.chapterIntro)
+          ]),
+          h('div', { key: 'cue', className: 'allo-tree-chapter-cue' }, activeTab.chapterCue)
+        ]),
         h('div', {
           key: 'body', className: 'allo-tree-panel',
           role: 'tabpanel',

@@ -5186,7 +5186,7 @@ const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onG
             });
         }
     } else {
-        setAnnouncement(t('games.crossword.announce_incorrect_count', { count: incorrectCount }) || `${incorrectCount} square${incorrectCount === 1 ? '' : 's'} need attention.`);
+        setAnnouncement(t('games.crossword.announce_incorrect_count', { count: incorrectCount, squareLabel: incorrectCount === 1 ? 'square' : 'squares' }) || `${incorrectCount} square${incorrectCount === 1 ? '' : 's'} need attention.`);
         if (playSound) playSound('incorrect');
     }
     setScore(currentScore);

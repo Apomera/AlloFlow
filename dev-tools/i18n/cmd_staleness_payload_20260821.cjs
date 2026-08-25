@@ -37,11 +37,11 @@ const FULL_PACK_KEYS = [
   'cmd.plan_full_pack_failed',
   'cmd.plan_full_pack_hint',
   'cmd.plan_full_pack_working',
-  'cmd.start_lesson_blueprint',
-  'cmd.start_lesson_blueprint_done',
-  'cmd.start_lesson_blueprint_done_topic',
-  'cmd.start_lesson_blueprint_done_topic2',
-  'cmd.start_lesson_blueprint_hint',
+  'cmd.start_blueprint_mode',
+  'cmd.start_blueprint_mode_done',
+  'cmd.start_blueprint_mode_done_topic',
+  'cmd.start_blueprint_mode_done_topic2',
+  'cmd.start_blueprint_mode_hint',
 ];
 
 // These six source edits landed in 11c236d90 after the 22,930 watermark.
@@ -64,7 +64,12 @@ const TOUR_STALE_KEYS = [
 
 const IMMEDIATE_STALE_KEYS = [...SESSION_STALE_KEYS, ...TOUR_STALE_KEYS];
 const REFERENCE_BACKLOG_SLUG = 'spanish_castilian';
-const EXPECTED_REFERENCE_BACKLOG_COUNT = 207;
+// Twelve non-Full-Pack identity keys were added after the original 207-key
+// ledger snapshot: three command-blueprint labels and nine palette labels.
+// Three exact command/UI catalog reuses were subsequently reviewed and
+// applied, reducing the Spanish reference backlog from 219 to 216. Keep this
+// pinned so source edits cannot silently change the worklist.
+const EXPECTED_REFERENCE_BACKLOG_COUNT = 216;
 const HELD_STALENESS_SLUGS = new Set(['maay_maay']);
 
 function readJson(file) {
@@ -154,10 +159,10 @@ function assertPayloadShape(payload) {
   if (payload.commandBacklog.referenceCount !== EXPECTED_REFERENCE_BACKLOG_COUNT) {
     errors.push(`reference command backlog expected ${EXPECTED_REFERENCE_BACKLOG_COUNT}, got ${payload.commandBacklog.referenceCount}`);
   }
-  if (payload.fullPackBlueprint.source['cmd.start_lesson_blueprint_done_topic'] !== 'Auto-Fill Blueprint mode is open for “') {
+  if (payload.fullPackBlueprint.source['cmd.start_blueprint_mode_done_topic'] !== 'Blueprint Mode is open for “') {
     errors.push('done_topic must preserve the opening curly quote split fragment');
   }
-  if (payload.fullPackBlueprint.source['cmd.start_lesson_blueprint_done_topic2'] !== '”. Continue with AlloBot to review the resource plan before generating.') {
+  if (payload.fullPackBlueprint.source['cmd.start_blueprint_mode_done_topic2'] !== '”. Continue with AlloBot to review the resource plan before generating.') {
     errors.push('done_topic2 must preserve the closing curly quote split fragment');
   }
   if (errors.length) throw new Error(errors.join('\n'));
@@ -178,7 +183,7 @@ function buildPayload() {
   const fullPackSource = Object.fromEntries(FULL_PACK_KEYS.map((key) => [key, englishCommands[key]]));
   const staleSource = Object.fromEntries(IMMEDIATE_STALE_KEYS.map((key) => [key, englishUi[key]]));
   // Keep the newly introduced Full Pack/Blueprint keys in their own P0 lane;
-  // the historical command-value ledger is the 207-key set that predates
+  // the command-value ledger is the 216-key set at this snapshot, before
   // those 16 additions.
   const referenceKeys = identityKeys(packs[REFERENCE_BACKLOG_SLUG], englishCommands, allowlist)
     .filter((key) => !FULL_PACK_KEYS.includes(key));
@@ -224,8 +229,8 @@ function buildPayload() {
       unresolvedByPack: fullPackUnresolved,
       unresolvedEntries: Object.values(fullPackUnresolved).reduce((n, keys) => n + keys.length, 0),
       splitDoneTopic: {
-        leftKey: 'cmd.start_lesson_blueprint_done_topic',
-        rightKey: 'cmd.start_lesson_blueprint_done_topic2',
+        leftKey: 'cmd.start_blueprint_mode_done_topic',
+        rightKey: 'cmd.start_blueprint_mode_done_topic2',
         rule: 'Keep the opening and closing curly quote fragments separate; do not merge or trim either fragment.',
       },
     },
@@ -250,7 +255,7 @@ function buildPayload() {
       englishIdentityCountsByPack: Object.fromEntries(slugs.map((slug) => [slug, identityKeys(packs[slug], englishCommands, allowlist).length])),
       unresolvedByPack: backlogUnresolved,
       unresolvedEntries: Object.values(backlogUnresolved).reduce((n, keys) => n + keys.length, 0),
-      note: 'Reference backlog is the current 207-key Spanish baseline used by the command staleness ledger. The all-pack intersection is reported separately so integration does not overstate universality when a pack has already translated a key.',
+      note: 'Reference backlog is the current 216-key Spanish baseline used by the command staleness ledger after the reviewed exact UI-catalog reuse batch. The all-pack intersection is reported separately so integration does not overstate universality when a pack has already translated a key.',
     },
     integrationOrder: [
       'Apply reviewed translations for fullPackBlueprint.keys across all 63 packs, including both split done_topic fragments.',

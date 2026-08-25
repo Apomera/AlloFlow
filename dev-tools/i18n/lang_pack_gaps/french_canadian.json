@@ -1,8 +1,8 @@
 {
   "langName": "french_canadian",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
-  "totalEnglishKeys": 1427,
-  "translatedKeys": 1390,
+  "totalEnglishKeys": 1430,
+  "translatedKeys": 1393,
   "missingKeys": 0,
   "passthroughKeys": 37,
   "coveragePct": 97.4,

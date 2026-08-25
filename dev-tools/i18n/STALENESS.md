@@ -16,7 +16,9 @@ This tooling closes that gap with a committed **English baseline snapshot**.
 | `lang_src_lib.cjs` | shared loaders (canonical English from `ui_strings.js` + `help_strings.js`, hashing, pack flatten) |
 | `bless_lang_sources.cjs` | writes/updates `lang_source_baseline.json` — the English each translation is "current against" |
 | `check_lang_staleness.cjs` | flags packs whose translations predate a reworded English string |
+| `record_pack_translation_review.cjs` | records an explicitly reviewed translation for one language pack without blessing every pack |
 | `lang_source_baseline.json` | **committed** snapshot: `{ "<key>": "<englishHash>" }` |
+| `lang_pack_review_baseline.json` | **committed** per-pack ledger: reviewed English and translation hashes |
 | `lang_staleness/<lang>.json` | per-pack stale report (gitignored — regenerated on demand) |
 | `check_staleness_delta.cjs` | point-of-edit check: which packs the English edit you are *committing right now* strands (see below) |
 
@@ -44,6 +46,34 @@ GEMINI_API_KEY=... npm run i18n:merge-stale -- --apply   # actually write (with 
 node dev-tools/i18n/bless_lang_sources.cjs --key common.foo --key alerts.bar
 ```
 
+When a key has been hand-refreshed in only selected packs, record those reviews
+without globally blessing the key:
+
+```bash
+node dev-tools/i18n/record_pack_translation_review.cjs \
+  --lang=spanish_latin_america --key=tour.actions_text \
+  --key=tour.brainstorm_text --key=tour.note_taking_text --apply
+```
+
+For a translation that is intentionally a shorter, already-accurate summary, record
+the decision explicitly rather than replacing good non-English text. Use this only
+after checking that the English change is absent from the summary and that the
+summary still communicates the feature:
+
+```bash
+node dev-tools/i18n/record_pack_translation_review.cjs \
+  --lang=french --key=tour.note_taking_text \
+  --reason=preserved-condensed-summary --apply
+```
+
+The optional `reviewReason` is audit metadata; the source and translation hashes remain
+the actual guard, so a later edit to either value makes the entry stale again.
+
+The guarded command requires a current non-passthrough string, placeholder/tag parity,
+and byte-identical root/deploy mirrors. It stores both the English hash and the
+translation hash, so a later edit to either one re-enters the normal stale worklist.
+Use `bless_lang_sources.cjs` only when every affected pack has been reviewed.
+
 `merge_stale_translations.cjs` deliberately defaults to a dry run and never auto-blesses
 (replacing a stale string with fresh AI output doesn't prove it's correct) — re-blessing
 stays a deliberate act after review.
@@ -60,8 +90,9 @@ same shape the `merge_*_missing` tools consume, so a re-translation pass can rea
 - **Granularity:** the baseline is per-key (one English hash), not per-(key, language).
   Re-blessing a key with `--key` asserts it's current in every pack — appropriate because
   the `merge_*_missing` flow re-translates a key across all packs in one run. If you
-  re-translate a key in only *some* packs (e.g. while native-review holds lag), re-bless
-  it only after the lagging packs are caught up, or the held packs will read as current.
+  re-translate a key in only *some* packs (e.g. while native-review holds lag), use
+  `record_pack_translation_review.cjs` for those packs. Do not globally re-bless until
+  the lagging packs are caught up, or the held packs will read as current.
 - **Non-string keys:** the detector flags array/object-valued keys too (e.g. the 3 in
   `ui_strings.js`: `codenames.adjectives`, `codenames.animals`, `about.features_list.items`),
   but `merge_stale` will NOT machine-translate them — feeding structured data to a

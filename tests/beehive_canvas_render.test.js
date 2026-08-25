@@ -32,7 +32,7 @@ describe('beehive — main render wraps the whole simulator (comma-operator regr
   it('queen view renders its UI (the whole tree was previously discarded → empty render)', () => {
     const html = render({ viewMode: 'queen' });
     expect(html.length).toBeGreaterThan(0);
-    expect(html).toContain('Queen Signals: Colony Strategy Model');
+    expect(html).toContain('Colony Network: Distributed Strategy Model');
   });
 
   it('drone view renders its UI', () => {

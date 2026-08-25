@@ -1,7 +1,8 @@
 // Which STEM tools break specifically in the DARK theme?
 //
-//   node dev-tools/theme_contrast_sweep.cjs <out-prefix> [tool,tool,...]
+//   node dev-tools/theme_contrast_sweep.cjs [out-prefix] [tool,tool,...]
 //   (no tool list = every stem_lab/stem_tool_*.js)
+//   (default out-prefix: dev-tools/.cache/theme-contrast-sweep)
 //
 // The host wraps every tool in a white card when the shell is dark, so a
 // light-palette tool lands on white rather than on #0f172a. That closes most
@@ -30,8 +31,10 @@
 // (or `npm run verify:contrast-sweep`, which builds then sweeps).
 const fs = require('fs');
 const path = require('path');
-const OUT = process.argv[2];
+const { pathToFileURL } = require('url');
 const ROOT = process.cwd();
+const OUT = path.resolve(process.argv[2] || path.join(ROOT, 'dev-tools', '.cache', 'theme-contrast-sweep'));
+fs.mkdirSync(path.dirname(OUT), { recursive: true });
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const axe = read('node_modules/axe-core/axe.min.js');
 
@@ -200,12 +203,18 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
     // strings, which is the only place the sequence occurs.
 
     const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
-    await pg.goto('file://' + page.replace(/\\/g, '/'));
+    await pg.goto(pathToFileURL(page).href);
     // The 3.2s sleep existed to give the Tailwind CDN time to compile. The
     // stylesheet is now static and inline, so there is nothing to wait for
     // beyond the tool's own scripts having evaluated.
     await pg.waitForFunction(() => typeof window.__mount === 'function', null, { timeout: 20_000 });
-    const row = { id, light: [], dark: [], lightIncomplete: [], darkIncomplete: [], note: '' };
+    const row = {
+      id,
+      light: [], dark: [],
+      lightIncomplete: [], darkIncomplete: [],
+      lightDetails: [], darkDetails: [],
+      note: '', verdict: '',
+    };
     // REPEAT each theme. A single reading is not trustworthy: the Tailwind CDN
     // compiles classes on demand, so a run can be audited before every rule
     // exists. Measured on `calculus`, the light count came back 5, 9, 11 and 11
@@ -248,8 +257,15 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
         if (broken) { row.note = 'renders an error card — not measurable here'; break; }
         const n = await pg.evaluate(async () => {
           const r = await window.axe.run('#slot', { runOnly: { type: 'rule', values: ['color-contrast'] } });
+          const nodes = r.violations.flatMap((violation) => violation.nodes.map((node) => ({
+            rule: violation.id,
+            target: node.target,
+            html: String(node.html || '').replace(/\s+/g, ' ').slice(0, 220),
+            message: (node.any[0] && node.any[0].message) || '',
+          })));
           return {
-            v: r.violations.reduce((a, x) => a + x.nodes.length, 0),
+            v: nodes.length,
+            nodes,
             // INCOMPLETE is not noise, it is "axe could not compute this". A
             // gradient or image background defeats the rule entirely, so a tool
             // painted on one returns 0 violations no matter how bad it is.
@@ -261,6 +277,7 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
         });
         row[theme === 'dark' ? 'dark' : 'light'].push(n.v);
         row[theme === 'dark' ? 'darkIncomplete' : 'lightIncomplete'].push(n.i);
+        row[theme === 'dark' ? 'darkDetails' : 'lightDetails'].push(n.nodes);
         await pg.evaluate(() => window.__unmount());
         await pg.waitForTimeout(80);
       }
@@ -282,7 +299,9 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
       const maxIncomplete = Math.max(hi(row.lightIncomplete.length ? row.lightIncomplete : [0]),
                                      hi(row.darkIncomplete.length ? row.darkIncomplete : [0]));
       if (darkMin > lightMax) verdict = 'DARK-SPECIFIC (+' + (darkMin - lightMax) + ')';
-      else if (hi(row.light) > 0 || hi(row.dark) > 0) verdict = 'pre-existing in BOTH themes';
+      else if (hi(row.light) > 0 && hi(row.dark) > 0) verdict = 'pre-existing in BOTH themes';
+      else if (hi(row.light) > 0) verdict = 'LIGHT-ONLY candidate (not reproduced in dark)';
+      else if (hi(row.dark) > 0) verdict = 'DARK-ONLY candidate (not reproduced on every run)';
       // A zero violation count is only "clean" if axe could actually SEE the
       // elements. With unresolved elements it means "not measured", and saying
       // clean there is the false assurance that let kitchenlab ship invisible.
@@ -290,12 +309,21 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
       else verdict = 'clean';
       if (unstable) verdict += '   [unstable spread ' + unstable + ']';
     }
+    row.verdict = verdict;
     const fmt = (a) => (a.length ? (lo(a) === hi(a) ? String(lo(a)) : lo(a) + '-' + hi(a)) : '-');
     console.log(id.padEnd(14) + 'light ' + fmt(row.light).padStart(6) + '   dark ' + fmt(row.dark).padStart(6) + '   ' + verdict);
   }
   await b.close();
   const darkSpecific = results.filter((r) => !r.note && r.dark.length && r.light.length
     && Math.min.apply(null, r.dark) > Math.max.apply(null, r.light));
+  const reportPath = OUT + '-results.json';
+  fs.writeFileSync(reportPath, JSON.stringify({
+    timestamp: new Date().toISOString(),
+    repeats: 3,
+    results,
+    darkSpecific: darkSpecific.map((r) => r.id),
+  }, null, 2));
+  console.log('JSON detail: ' + path.relative(ROOT, reportPath));
   console.log('\ntools where DARK is worse than light on EVERY run: '
     + (darkSpecific.length ? darkSpecific.map((r) => r.id).join(', ') : 'none'));
   console.log('Anything not on that line is unproven — re-read the elements before acting on it.');

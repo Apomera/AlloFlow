@@ -1388,13 +1388,24 @@ const RoleSelectionModal = React.memo(({
   } = useContext(LanguageContext);
   const roleRef = useRef(null);
   useFocusTrap(roleRef, true);
-  const handleRoleClick = role => {
-    const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key;
-    if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
-      if (onGateRequired) onGateRequired(role);
-    } else {
-      onSelect(role);
+  const handleRoleClick = (role, event) => {
+    const button = event && event.currentTarget;
+    if (button) {
+      button.disabled = true;
+      button.setAttribute('aria-busy', 'true');
+      button.style.opacity = '0.72';
     }
+    setTimeout(() => {
+      const selectRole = () => {
+        const accessCodeRequired = typeof window._alloEducatorAccessCodeRequired === 'function' ? window._alloEducatorAccessCodeRequired() : !!APP_CONFIG._cfg_validation_key;
+        if (accessCodeRequired && ['teacher', 'parent', 'independent'].includes(role)) {
+          if (onGateRequired) onGateRequired(role);
+        } else {
+          onSelect(role);
+        }
+      };
+      if (typeof React.startTransition === 'function') React.startTransition(selectRole);else selectRole();
+    }, 80);
   };
   // The host remembers the last chosen role (executeRoleSelect writes it). Shown
   // as a badge on the matching card — a hint, never an auto-skip, because the
@@ -1488,7 +1499,7 @@ const RoleSelectionModal = React.memo(({
   }, t('roles.subtitle')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
   }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('student'),
+    onClick: event => handleRoleClick('student', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-teal-400 hover:bg-teal-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_student"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1498,7 +1509,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
   }, t('roles.student'))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('teacher'),
+    onClick: event => handleRoleClick('teacher', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1508,7 +1519,7 @@ const RoleSelectionModal = React.memo(({
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
   }, t('roles.teacher')), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('parent'),
+    onClick: event => handleRoleClick('parent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1520,7 +1531,7 @@ const RoleSelectionModal = React.memo(({
   }, t('roles.parent')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]"
   }, t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleRoleClick('independent'),
+    onClick: event => handleRoleClick('independent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-cyan-400 hover:bg-cyan-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-cyan-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_independent"
   }, /*#__PURE__*/React.createElement("div", {

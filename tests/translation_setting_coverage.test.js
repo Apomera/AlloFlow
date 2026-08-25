@@ -22,9 +22,9 @@ describe('the setting reaches every emitting path in the audit', () => {
   // reads the resolved policy. Asserting the gate, not the prose.
   const DISPATCHER_PATHS = {
     'glossary (translation language list)': `if (!_xlate.enabled) {`,
-    'adapted text (per-chunk gloss round trip)': `if (_xlate.enabled) {\n              if (isMultiChunk) setGenerationStep(\`Translating section`,
+    'adapted text (per-chunk gloss round trip)': `if (_xlate.enabled) {\n              if (isMultiChunk) setGenerationStatus(\`Translating section`,
     'adapted text (bilingual compose)': `_xlate.enabled && bilingualTranslationValid`,
-    'adapted text (length-repair gloss)': `if (_xlate.enabled) {\n                  setGenerationStep(t('status_steps.translating')`,
+    'adapted text (length-repair gloss)': `if (_xlate.enabled) {\n                  setGenerationStatus(t('status_steps.translating')`,
     'outline / graphic organizer': `_xlate.enabled ? \`"main_en"`,
     'quiz (json example fields)': `if (_xlate.enabled) {\n                example.question_en =`,
     'quiz (reflection field)': `_xlate.enabled ? { text: 'Reflection prompt', text_en:`,
@@ -90,7 +90,7 @@ describe('the setting reaches every emitting path in the audit', () => {
       expect(src, `${name} resolves a policy`).toContain('const _xlate = (typeof resolveTranslationPolicy === \'function\')');
       expect(src, `${name} uses the resolved target`).toContain("_xlate.target + ' translation in parentheses.'");
     }
-    expect(genHelpers).toContain('generateBilingualText(prompt, leveledTextLanguage, callGemini, _xlate)');
+    expect(genHelpers).toContain('generateBilingualText(prompt, effectiveLanguage, callGemini, _xlate)');
   });
 
   it('persona dialogue turns honour it', () => {

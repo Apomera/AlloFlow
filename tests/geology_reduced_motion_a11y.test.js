@@ -17,7 +17,7 @@ describe('Geology Explorer reduced-motion accessibility', () => {
 
   it('retains the existing reduced-motion gate for first-person movement', () => {
     expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
-    expect(source).toContain('E.setFirstPerson(fpOn, { reduced: reduced })');
+    expect(source).toContain('E.setFirstPerson(fpOn, { reduced: reduced, tool: fpTool })');
   });
 
   it('gates long history and eruption playback when reduced motion is requested', () => {

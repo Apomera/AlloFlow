@@ -102,5 +102,29 @@ function writeBaseline(obj) {
   // Deterministic key order so the committed file diffs cleanly.
   const sorted = {};
   for (const k of Object.keys(obj).sort()) sorted[k] = obj[k];
-  fs.writeFileSync(L.BASELINE_PATH, JSON.stringify(sorted, null, 0) + '\n');
+  const temporary = `${L.BASELINE_PATH}.bless-${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(temporary, JSON.stringify(sorted, null, 0) + '\n');
+    let lastError = null;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      try {
+        fs.renameSync(temporary, L.BASELINE_PATH);
+        return;
+      } catch (renameError) {
+        if (!['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN'].includes(renameError.code)) throw renameError;
+        lastError = renameError;
+        try {
+          fs.copyFileSync(temporary, L.BASELINE_PATH);
+          return;
+        } catch (copyError) {
+          lastError = copyError;
+          if (!['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN'].includes(copyError.code)) throw copyError;
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 350);
+        }
+      }
+    }
+    throw lastError;
+  } finally {
+    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
+  }
 }

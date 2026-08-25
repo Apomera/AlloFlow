@@ -37500,14 +37500,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const isWorksheet = cfg.isWorksheet === true;
       const ruledLines = (numLines = 4, label = '') => {
           const lines = Array.from({length: Math.max(1, numLines)}, () =>
-              '<div style="border-bottom: 1px solid #94a3b8; height: 28px; margin-bottom: 4px; break-inside: avoid;"></div>'
+              '<div class="alloflow-ruled-line" style="border-bottom: 1px solid #94a3b8; height: 28px; margin-bottom: 4px; break-inside: avoid;"></div>'
           ).join('');
-          return `<div style="margin-top: 8px; break-inside: avoid;">${label ? `<div style="font-size: 0.85em; color: #64748b; margin-bottom: 6px; font-weight: 600;">${label}</div>` : ''}${lines}</div>`;
+          return `<div class="alloflow-ruled-response" data-allo-print-response="lines" style="margin-top: 8px; break-inside: avoid;">${label ? `<div style="font-size: 0.85em; color: #64748b; margin-bottom: 6px; font-weight: 600;">${_escTxt(label)}</div>` : ''}${lines}</div>`;
       };
       const fillableCircle = () =>
-          '<span aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+          '<span class="alloflow-print-bubble" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+      const fillableSquare = () =>
+          '<span class="alloflow-print-box" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 2px; vertical-align: middle; margin-right: 6px; background: white;"></span>';
       const fillableBlank = (widthPx = 150) =>
-          `<span aria-hidden="true" style="display: inline-block; width: ${widthPx}px; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
+          `<span class="alloflow-print-blank" data-allo-print-response="blank" aria-hidden="true" style="display: inline-block; width: ${widthPx}px; max-width: 100%; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
       // ── Printable cloze (fill in the blanks) ──
       // Paper twin of the on-screen cloze in text_utility_helpers_source.jsx
       // (highlightGlossaryTerms with isCloze true). That one returns React nodes
@@ -38072,10 +38074,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           ];
           const _pairColor = (i) => _PAIR_PALETTE[i % _PAIR_PALETTE.length];
           let innerContent = '';
+          let _vennExportModeForFallback = 'completed';
           if (type === 'Venn Diagram') {
                const setA = branches[0] || { title: 'Set A', items: [] };
                const setB = branches[1] || { title: 'Set B', items: [] };
                const shared = branches[2] || { title: 'Shared', items: [] };
+               const _vennRequestedMode = ['completed', 'activity', 'both'].includes(cfg.vennExportMode)
+                 ? cfg.vennExportMode
+                 : 'completed';
+               // A graded export must not carry the completed reference or
+               // machine-readable answer zones. Keep the sorter usable, but
+               // leave checking to the teacher after submission.
+               const _vennMode = cfg.assessmentMode === true ? 'activity' : _vennRequestedMode;
+               const _vennCanSelfCheck = cfg.assessmentMode !== true;
+               _vennExportModeForFallback = _vennMode;
                const sharedCount = (shared.items || []).length;
                const sharedFontSize = sharedCount > 6 ? '0.78em' : sharedCount > 4 ? '0.85em' : '0.95em';
                const sharedItemPad = sharedCount > 6 ? '4px 10px' : '6px 12px';
@@ -38102,9 +38114,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </ul>
                     </div>`
                  : '';
-               innerContent = `
+               const _completedVennHtml = `
                   <style>
-                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 32px 24px; border-radius: 16px; }
+                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; color: #0f172a; padding: 32px 24px; border-radius: 16px; max-width: 100%; }
                     .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     .venn-print-wrapper .venn-visual { font-size: 16px; line-height: 1.35; max-width: 100%; overflow: visible; }
                     .venn-print-wrapper .venn-visual li { overflow-wrap: anywhere; hyphens: auto; }
@@ -38114,35 +38126,37 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        viewport, which missed the case that actually bites: a normal
                        window whose section got narrow because the reader turned the
                        text up. Unconditional here; a no-op when there is room. */
-                    .venn-print-wrapper { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+                    .venn-visual-viewport { max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
                     .venn-print-wrapper .venn-visual { min-width: 720px; }
-                    @media print { .venn-print-wrapper { overflow-x: visible; } }
+                    html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc !important; color: #0f172a !important; }
                     @media print {
-                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 16px; }
+                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 12px 0; }
+                      .venn-visual-viewport { position: relative; height: 410px; overflow: visible; }
+                      .venn-print-wrapper .venn-visual { position: absolute !important; top: 0; left: 50%; margin: 0 !important; transform: translateX(-50%) scale(0.82); transform-origin: top center; }
                       .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
                       .venn-print-wrapper li { box-shadow: none !important; }
-                      .venn-print-wrapper h3, .venn-print-wrapper h4 { color: #000 !important; }
                     }
                   </style>
                   <div class="venn-print-wrapper">
                   <div style="text-align:center; margin-bottom: 32px;">
-                      <h3 style="margin:0; font-size: 1.9em; color: #1e293b; font-weight: 800; letter-spacing: -0.02em;">${main}</h3>
-                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                      <div role="heading" aria-level="3" class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a; font-weight: 800; letter-spacing: -0.02em;">${main}</div>
+                      ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
                       <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
-                        <span style="font-size: 0.7em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
+                        <span class="venn-compare-label" style="font-size: 0.7em; font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
                       </div>
                   </div>
+                  <div class="venn-visual-viewport" tabindex="0" role="region" aria-label="Scrollable Venn diagram">
                   <div class="venn-visual" role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header pill -->
                           <div style="text-align: center; margin-bottom: 14px; padding-right: 120px;">
-                              <h4 style="margin: 0; color: #9f1239; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
+                              <div role="heading" aria-level="4" class="venn-set-a-title" style="margin: 0; color:#9f1239; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setA.title}
-                              </h4>
-                              ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
+                              </div>
+                              ${setA.title_en ? `<div style="font-size:0.85em; background:transparent; color:#9f1239; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body — solid fill so backdrop never bleeds through; radial gradient adds soft depth -->
                           <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
@@ -38155,10 +38169,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <div style="position: absolute; top: 0; right: 0; width: 440px;">
                           <!-- Header pill -->
                           <div style="text-align: center; margin-bottom: 14px; padding-left: 120px;">
-                              <h4 style="margin: 0; color: #1e40af; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
+                              <div role="heading" aria-level="4" class="venn-set-b-title" style="margin: 0; color:#1e40af; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setB.title}
-                              </h4>
-                              ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
+                              </div>
+                              ${setB.title_en ? `<div style="font-size:0.85em; background:transparent; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
                           <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
@@ -38170,22 +38184,277 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <!-- Shared Region (Absolute Center, in the lens overlap) -->
                       <div style="position: absolute; top: 90px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 15;">
                           <!-- Prominent SHARED badge -->
-                          <h4 style="font-size: 0.95em; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #c4b5fd; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25); position: relative;">
+                          <div role="heading" aria-level="4" class="venn-shared-title" style="font-size: 0.95em; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color:#6d28d9; margin: 0 0 14px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #c4b5fd; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25); position: relative;">
                               <span style="display: inline-flex; align-items: center; gap: 6px;">
                                 <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
                                 ${shared.title || 'Shared'}
                                 <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
                               </span>
-                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; color: #6d28d9;"> (${shared.title_en})</span>` : ''}
-                          </h4>
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; background:transparent; color:#6d28d9;"> (${shared.title_en})</span>` : ''}
+                          </div>
                           <ul style="list-style: none; padding: 0; margin: 0;">
                                ${renderListShared(shared.items, shared.items_en, 5)}
                           </ul>
                       </div>
                   </div>
+                  </div>
                   ${sharedOverflowHtml}
                   </div>
                `;
+               const _vennItemText = (value) => {
+                 if (value && typeof value === 'object') return String(value.text || value.label || value.content || '');
+                 return String(value == null ? '' : value);
+               };
+               const _vennItemsFor = (branch, zone) => (Array.isArray(branch.items) ? branch.items : [])
+                 .map((value, index) => ({
+                   text: _vennItemText(value).trim(),
+                   translation: String((branch.items_en && branch.items_en[index]) || (value && typeof value === 'object' && value.translation) || '').trim(),
+                   zone,
+                   sourceIndex: index,
+                 }))
+                 .filter(entry => entry.text);
+               const _vennStableHash = (value) => {
+                 let hash = 2166136261;
+                 const text = String(value || '');
+                 for (let i = 0; i < text.length; i++) {
+                   hash ^= text.charCodeAt(i);
+                   hash = Math.imul(hash, 16777619);
+                 }
+                 return hash >>> 0;
+               };
+               const _vennActivityItems = [
+                 ..._vennItemsFor(setA, 'setA'),
+                 ..._vennItemsFor(setB, 'setB'),
+                 ..._vennItemsFor(shared, 'shared'),
+               ].map((entry, index) => ({ ...entry, itemIndex: index }))
+                .sort((a, b) => _vennStableHash(`${item.id || ''}:${a.text}:${a.itemIndex}`) - _vennStableHash(`${item.id || ''}:${b.text}:${b.itemIndex}`));
+               const _vennSectionId = `alloflow-venn-${String(item.id || 'activity').replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 96)}`;
+               const _vennSetATitle = _escTxt(setA.title || 'Set A');
+               const _vennSetBTitle = _escTxt(setB.title || 'Set B');
+               const _vennSharedTitle = _escTxt(shared.title || 'Shared / Both');
+               const _vennDigitalCards = _vennActivityItems.map(entry => `
+                 <div role="listitem" class="alloflow-venn-card" data-venn-item-index="${entry.itemIndex}"${_vennCanSelfCheck ? ` data-answer-zone="${entry.zone}"` : ''}>
+                   <button type="button" class="alloflow-venn-card-button" aria-pressed="false">
+                     <span>${_escTxt(entry.text)}</span>
+                     ${entry.translation ? `<span class="alloflow-venn-card-translation">(${_escTxt(entry.translation)})</span>` : ''}
+                   </button>
+                 </div>
+               `).join('');
+               const _vennPrintCards = _vennActivityItems.map((entry, index) => `
+                 <div role="listitem" class="alloflow-venn-print-card">
+                   <span class="alloflow-venn-card-number" aria-hidden="true">&#9986; ${index + 1}</span>
+                   <span>${_escTxt(entry.text)}</span>
+                   ${entry.translation ? `<span class="alloflow-venn-card-translation">(${_escTxt(entry.translation)})</span>` : ''}
+                 </div>
+               `).join('');
+               const _renderVennZone = (zone, title, tone) => `
+                 <section class="alloflow-venn-zone alloflow-venn-zone-${tone}" aria-label="${title}">
+                   <h4>${title}</h4>
+                   <button type="button" class="alloflow-venn-place-button" data-venn-place-zone="${zone}" disabled>Place selected item in ${title}</button>
+                   <div class="alloflow-venn-zone-target" data-venn-zone-target="${zone}" role="list" aria-label="Items placed in ${title}"></div>
+                 </section>
+               `;
+               const _vennCheckButton = _vennCanSelfCheck
+                 ? '<button type="button" class="alloflow-venn-check-button">&#127919; Check my sort</button>'
+                 : '';
+               const _vennActivityHtml = `
+                 <style>
+                   .alloflow-venn-activity { color:#1e293b; }
+                   .alloflow-venn-screen-instructions { margin:0 0 16px;padding:12px 16px;border-left:4px solid #7c3aed;border-radius:6px;background:#f5f3ff;color:#4c1d95;line-height:1.5; }
+                   .alloflow-venn-digital-zones { display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:12px;margin:0 0 16px; }
+                   .alloflow-venn-zone { min-width:0;padding:14px;border:2px solid #64748b;border-radius:14px;background:#f8fafc;break-inside:avoid; }
+                   .alloflow-venn-zone-set-a { border-color:#be123c;background:#fff1f2; }
+                   .alloflow-venn-zone-shared { border-color:#6d28d9;background:#f5f3ff; }
+                   .alloflow-venn-zone-set-b { border-color:#1d4ed8;background:#eff6ff; }
+                   .alloflow-venn-zone h4 { margin:0 0 8px;font-size:1rem;color:#1e293b; }
+                   .alloflow-venn-place-button { width:100%;padding:8px 10px;border:0;border-radius:7px;background:#4f46e5;color:#fff;font-weight:700;cursor:pointer; }
+                   .alloflow-venn-place-button:disabled { opacity:.52;cursor:not-allowed; }
+                   .alloflow-venn-place-button:focus-visible,.alloflow-venn-card-button:focus-visible,.alloflow-venn-controls button:focus-visible { outline:3px solid #1e3a8a;outline-offset:3px; }
+                   .alloflow-venn-zone-target { min-height:74px;margin-top:10px;padding:8px;border:2px dashed #94a3b8;border-radius:9px; }
+                   .alloflow-venn-controls { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0; }
+                   .alloflow-venn-controls button { padding:8px 13px;border:1px solid #94a3b8;border-radius:7px;background:#fff;color:#334155;font-weight:700;cursor:pointer; }
+                   .alloflow-venn-controls .alloflow-venn-check-button { border-color:#047857;background:#047857;color:#fff; }
+                   .alloflow-venn-controls button:disabled { opacity:.52;cursor:not-allowed; }
+                   .alloflow-venn-status { min-height:1.5em;font-weight:700;color:#334155; }
+                   .alloflow-venn-bank { min-height:84px;padding:12px;border:2px dashed #64748b;border-radius:12px;background:#f8fafc; }
+                   .alloflow-venn-bank-label { margin:0 0 8px;font-size:.78em;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#475569; }
+                   .alloflow-venn-card { margin:0 0 8px; }
+                   .alloflow-venn-card:last-child { margin-bottom:0; }
+                   .alloflow-venn-card-button { display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:2px solid #94a3b8;border-radius:8px;background:#fff;color:#1e293b;text-align:left;font:inherit;cursor:pointer; }
+                   .alloflow-venn-card-button:hover { border-color:#4f46e5;box-shadow:0 2px 6px rgba(15,23,42,.12); }
+                   .alloflow-venn-card.is-selected .alloflow-venn-card-button { border-color:#4f46e5;background:#eef2ff;box-shadow:0 0 0 3px #c7d2fe; }
+                   .alloflow-venn-card.is-correct .alloflow-venn-card-button { border-color:#047857;background:#ecfdf5; }
+                   .alloflow-venn-card.is-wrong .alloflow-venn-card-button { border-color:#b91c1c;background:#fef2f2; }
+                   .alloflow-venn-card-translation { display:block;font-size:.85em;font-style:italic;color:#475569; }
+                   .alloflow-venn-print-only { display:none; }
+                   .alloflow-venn-completed-reference { margin-top:32px;padding-top:24px;border-top:3px double #94a3b8; }
+                   .alloflow-venn-reference-label { margin:0 0 14px;font-size:1.05rem;font-weight:800;color:#334155; }
+                   html[data-alloflow-theme="dark"] .alloflow-venn-screen-instructions { background:#2e1065 !important;color:#f5f3ff !important;border-left-color:#c4b5fd; }
+                   html[data-alloflow-theme="dark"] .alloflow-venn-zone,html[data-alloflow-theme="dark"] .alloflow-venn-bank { background:#0f172a !important;border-color:#64748b !important;color:#fff !important; }
+                   html[data-alloflow-theme="dark"] .alloflow-venn-zone h4,html[data-alloflow-theme="dark"] .alloflow-venn-bank-label,html[data-alloflow-theme="dark"] .alloflow-venn-status,html[data-alloflow-theme="dark"] .alloflow-venn-reference-label { color:#fff !important; }
+                   html[data-alloflow-theme="dark"] .alloflow-venn-card-button { background:#1e293b !important;color:#fff !important;border-color:#64748b !important; }
+                   html[data-alloflow-theme="dark"] .alloflow-venn-card-translation { color:#cbd5e1 !important; }
+                   @media (max-width:720px) { .alloflow-venn-digital-zones { grid-template-columns:1fr; } }
+                   @media print {
+                     .alloflow-venn-screen-only { display:none !important; }
+                     .alloflow-venn-print-only { display:block !important; }
+                     .alloflow-venn-activity { background:#fff !important;color:#0f172a !important; }
+                     .alloflow-venn-print-board { padding:12px 0;break-inside:avoid;page-break-inside:avoid; }
+                     .alloflow-venn-print-title { margin:0 0 6px;text-align:center;font-size:1.25rem;color:#0f172a !important; }
+                     .alloflow-venn-print-directions { margin:0 0 12px;text-align:center;color:#334155 !important; }
+                     .alloflow-venn-print-circles { position:relative;width:100%;max-width:620px;aspect-ratio:1.62 / 1;margin:0 auto 18px; }
+                     .alloflow-venn-print-circle { position:absolute;top:0;width:61.5%;aspect-ratio:1;border:3px solid #334155;border-radius:50%;box-sizing:border-box;background:rgba(255,255,255,.01); }
+                     .alloflow-venn-print-circle-a { left:0;border-color:#be123c; }
+                     .alloflow-venn-print-circle-b { right:0;border-color:#1d4ed8; }
+                     .alloflow-venn-print-zone-label { position:absolute;top:8%;z-index:2;padding:4px 9px;border:1px solid #64748b;border-radius:999px;background:#fff;color:#0f172a !important;font-size:.78rem;font-weight:800; }
+                     .alloflow-venn-print-zone-label-a { left:11%; }
+                     .alloflow-venn-print-zone-label-shared { left:50%;transform:translateX(-50%); }
+                     .alloflow-venn-print-zone-label-b { right:11%; }
+                     .alloflow-venn-print-cards { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px; }
+                     .alloflow-venn-print-card { display:flex;align-items:center;gap:9px;min-height:42px;padding:8px 10px;border:2px dashed #64748b;border-radius:6px;background:#fff;color:#0f172a !important;break-inside:avoid;page-break-inside:avoid; }
+                     .alloflow-venn-card-number { flex-shrink:0;color:#475569 !important;font:700 .72rem/1 monospace; }
+                     .alloflow-venn-print-card .alloflow-venn-card-translation { margin-left:auto;color:#475569 !important; }
+                     .alloflow-venn-completed-reference { break-before:page;page-break-before:always;margin-top:0;padding-top:0;border-top:0; }
+                   }
+                 </style>
+                 <div id="${_vennSectionId}" class="alloflow-venn-activity" data-alloflow-venn-mode="${_vennMode}">
+                   <div class="alloflow-venn-screen-only">
+                     <div class="alloflow-venn-screen-instructions"><strong>How to use:</strong> Select an item, then use a named Place button to move it into <strong>${_vennSetATitle} only</strong>, <strong>${_vennSharedTitle}</strong>, or <strong>${_vennSetBTitle} only</strong>. This works with touch, mouse, Enter, or Space.${_vennCanSelfCheck ? ' Use Check my sort when you are ready.' : ' Your teacher will review your placements after you submit.'}</div>
+                     <div class="alloflow-venn-digital-zones" role="group" aria-label="Venn sorting areas">
+                       ${_renderVennZone('setA', `${_vennSetATitle} only`, 'set-a')}
+                       ${_renderVennZone('shared', _vennSharedTitle, 'shared')}
+                       ${_renderVennZone('setB', `${_vennSetBTitle} only`, 'set-b')}
+                     </div>
+                     <div class="alloflow-venn-controls">
+                       <button type="button" class="alloflow-venn-shuffle-button">&#128256; Shuffle</button>
+                       ${_vennCheckButton}
+                       <button type="button" class="alloflow-venn-return-button" disabled>Return selected to item bank</button>
+                       <button type="button" class="alloflow-venn-reset-button">&#8634; Reset</button>
+                       <div class="alloflow-venn-status" role="status" aria-live="polite" aria-atomic="true"></div>
+                     </div>
+                     <div class="alloflow-venn-bank-label">Items to sort</div>
+                     <div class="alloflow-venn-bank" data-venn-bank role="list" aria-label="Items to sort">${_vennDigitalCards}</div>
+                   </div>
+                   <div class="alloflow-venn-print-only">
+                     <div class="alloflow-venn-print-board">
+                       <h3 class="alloflow-venn-print-title">${_escTxt(main || 'Venn Diagram')} &mdash; sorting activity</h3>
+                       <p class="alloflow-venn-print-directions">Cut out the cards, then place each one in the correct part of the Venn diagram.</p>
+                       <div class="alloflow-venn-print-circles" role="img" aria-label="Blank Venn diagram comparing ${_vennSetATitle} and ${_vennSetBTitle}">
+                         <div class="alloflow-venn-print-circle alloflow-venn-print-circle-a"></div>
+                         <div class="alloflow-venn-print-circle alloflow-venn-print-circle-b"></div>
+                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-a">${_vennSetATitle} only</span>
+                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-shared">${_vennSharedTitle}</span>
+                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-b">${_vennSetBTitle} only</span>
+                       </div>
+                       <div class="alloflow-venn-print-cards" role="list" aria-label="Cut-out Venn sorting cards">${_vennPrintCards}</div>
+                     </div>
+                   </div>
+                 </div>
+                 <script>
+                   (function () {
+                     var root = document.getElementById('${_vennSectionId}');
+                     if (!root || root.getAttribute('data-venn-ready') === '1') return;
+                     root.setAttribute('data-venn-ready', '1');
+                     var bank = root.querySelector('[data-venn-bank]');
+                     var status = root.querySelector('.alloflow-venn-status');
+                     var placeButtons = Array.prototype.slice.call(root.querySelectorAll('[data-venn-place-zone]'));
+                     var returnButton = root.querySelector('.alloflow-venn-return-button');
+                     var selected = null;
+                     if (!bank) return;
+                     function cards() { return Array.prototype.slice.call(root.querySelectorAll('.alloflow-venn-card')); }
+                     function announce(message) { if (status) status.textContent = message || ''; }
+                     function clearMarks() { cards().forEach(function (card) { card.classList.remove('is-correct', 'is-wrong'); }); }
+                     function clearSelection() {
+                       if (selected) {
+                         selected.classList.remove('is-selected');
+                         var oldButton = selected.querySelector('.alloflow-venn-card-button');
+                         if (oldButton) oldButton.setAttribute('aria-pressed', 'false');
+                       }
+                       selected = null;
+                       placeButtons.forEach(function (button) { button.disabled = true; });
+                       if (returnButton) returnButton.disabled = true;
+                     }
+                     function selectCard(card) {
+                       clearMarks();
+                       if (selected === card) { clearSelection(); announce('Selection cleared.'); return; }
+                       clearSelection();
+                       selected = card;
+                       card.classList.add('is-selected');
+                       var button = card.querySelector('.alloflow-venn-card-button');
+                       if (button) button.setAttribute('aria-pressed', 'true');
+                       placeButtons.forEach(function (placeButton) { placeButton.disabled = false; });
+                       if (returnButton) returnButton.disabled = card.parentElement === bank;
+                       announce('Selected ' + ((button && button.textContent) || 'item').trim() + '. Choose a Place button.');
+                     }
+                     cards().forEach(function (card) {
+                       var button = card.querySelector('.alloflow-venn-card-button');
+                       if (button) button.addEventListener('click', function () { selectCard(card); });
+                     });
+                     placeButtons.forEach(function (button) {
+                       button.addEventListener('click', function () {
+                         if (!selected) return;
+                         var target = root.querySelector('[data-venn-zone-target="' + button.getAttribute('data-venn-place-zone') + '"]');
+                         if (!target) return;
+                         var itemButton = selected.querySelector('.alloflow-venn-card-button');
+                         var label = ((itemButton && itemButton.textContent) || 'Item').trim();
+                         target.appendChild(selected);
+                         clearSelection();
+                         announce(label + ' placed in ' + button.textContent.replace(/^Place selected item in\s*/i, '') + '.');
+                       });
+                     });
+                     if (returnButton) returnButton.addEventListener('click', function () {
+                       if (!selected) return;
+                       var itemButton = selected.querySelector('.alloflow-venn-card-button');
+                       var label = ((itemButton && itemButton.textContent) || 'Item').trim();
+                       bank.appendChild(selected);
+                       clearSelection();
+                       announce(label + ' returned to the item bank.');
+                     });
+                     var shuffleButton = root.querySelector('.alloflow-venn-shuffle-button');
+                     if (shuffleButton) shuffleButton.addEventListener('click', function () {
+                       var shuffled = cards();
+                       for (var i = shuffled.length - 1; i > 0; i--) {
+                         var j = Math.floor(Math.random() * (i + 1));
+                         var temp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = temp;
+                       }
+                       shuffled.forEach(function (card) { bank.appendChild(card); });
+                       clearSelection(); clearMarks(); announce('Items shuffled.');
+                     });
+                     var resetButton = root.querySelector('.alloflow-venn-reset-button');
+                     if (resetButton) resetButton.addEventListener('click', function () {
+                       cards().sort(function (a, b) {
+                         return Number(a.getAttribute('data-venn-item-index')) - Number(b.getAttribute('data-venn-item-index'));
+                       }).forEach(function (card) { bank.appendChild(card); });
+                       clearSelection(); clearMarks(); announce('Sort reset.');
+                     });
+                     var checkButton = root.querySelector('.alloflow-venn-check-button');
+                     if (checkButton) checkButton.addEventListener('click', function () {
+                       clearSelection(); clearMarks();
+                       var all = cards(); var correct = 0; var placed = 0;
+                       all.forEach(function (card) {
+                         var actual = card.parentElement && card.parentElement.getAttribute('data-venn-zone-target');
+                         var answer = card.getAttribute('data-answer-zone');
+                         if (!actual) return;
+                         placed += 1;
+                         if (answer && actual === answer) { correct += 1; card.classList.add('is-correct'); }
+                         else card.classList.add('is-wrong');
+                       });
+                       announce(correct + ' of ' + all.length + ' correct. ' + (all.length - placed) + ' item' + (all.length - placed === 1 ? '' : 's') + ' still in the bank.');
+                     });
+                   })();
+                 </script>
+               `;
+               const _vennCompletedReferenceHtml = `
+                 <div class="alloflow-venn-completed-reference">
+                   <div class="alloflow-venn-reference-label">Completed reference / answer key</div>
+                   ${_completedVennHtml}
+                 </div>
+               `;
+               innerContent = _vennMode === 'activity'
+                 ? _vennActivityHtml
+                 : _vennMode === 'both'
+                   ? _vennActivityHtml + _vennCompletedReferenceHtml
+                   : _completedVennHtml;
           } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
               // Pair-coded flow chart: each step uses one palette entry. The
               // connector line (vertical bar + downward triangle) above the
@@ -38700,8 +38969,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const renderItems = (items, items_en) => {
                   if (!Array.isArray(items) || items.length === 0) return '';
                   return '<ul>' + items.map((it, i) => {
+                      const itemText = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : it;
                       const en = items_en && items_en[i] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(items_en[i])})</em>` : '';
-                      return `<li>${escape(it)}${en}</li>`;
+                      return `<li>${escape(itemText)}${en}</li>`;
                   }).join('') + '</ul>';
               };
               // Per-type framing so the relationships read sensibly aloud.
@@ -38710,11 +38980,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const setA = branches[0] || { title: 'Set A', items: [] };
                   const setB = branches[1] || { title: 'Set B', items: [] };
                   const shared = branches[2] || { title: 'Shared', items: [] };
-                  body = `
-                      <h4>${escape(setA.title)} only</h4>${renderItems(setA.items, setA.items_en)}
-                      <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
-                      <h4>${escape(shared.title || 'Shared')}</h4>${renderItems(shared.items, shared.items_en)}
-                  `;
+                  if (_vennExportModeForFallback === 'activity') {
+                      const mixed = [setA, setB, shared].flatMap((branch) => (Array.isArray(branch.items) ? branch.items : []).map((value, index) => ({
+                          text: value && typeof value === 'object' ? (value.text || value.label || value.content || '') : value,
+                          translation: (branch.items_en && branch.items_en[index]) || (value && typeof value === 'object' && value.translation) || '',
+                      }))).filter(entry => String(entry.text || '').trim()).sort((a, b) => String(a.text).localeCompare(String(b.text)));
+                      body = `
+                          <p>Sorting activity: place every item under <strong>${escape(setA.title)} only</strong>, <strong>${escape(shared.title || 'Shared / Both')}</strong>, or <strong>${escape(setB.title)} only</strong>.</p>
+                          <h4>Items to sort</h4>
+                          <ul>${mixed.map(entry => `<li>${escape(entry.text)}${entry.translation ? ` <em style="font-size:0.9em;">(${escape(entry.translation)})</em>` : ''}</li>`).join('')}</ul>
+                      `;
+                  } else {
+                      body = `
+                          <h4>${escape(setA.title)} only</h4>${renderItems(setA.items, setA.items_en)}
+                          <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
+                          <h4>${escape(shared.title || 'Shared')}</h4>${renderItems(shared.items, shared.items_en)}
+                      `;
+                  }
               } else if (type === 'Cause and Effect') {
                   // Each branch's title is the cause; items[0] is the effect.
                   // Format the fallback as "Cause N: <title> → Effect: <items[0]>"
@@ -38785,9 +39067,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   `).join('');
               }
               return `
+                  <style>
+                    html[data-alloflow-theme="dark"] details.diagram-text-fallback { background:#0f172a !important;border-color:#475569 !important;color:#fff !important; }
+                    html[data-alloflow-theme="dark"] details.diagram-text-fallback summary { color:#bfdbfe !important; }
+                    html[data-alloflow-theme="dark"] .diagram-text-fallback-body,html[data-alloflow-theme="dark"] .diagram-text-fallback-body p,html[data-alloflow-theme="dark"] .diagram-text-fallback-body h4,html[data-alloflow-theme="dark"] .diagram-text-fallback-body li,html[data-alloflow-theme="dark"] .diagram-text-fallback-body strong,html[data-alloflow-theme="dark"] .diagram-text-fallback-body em { color:#fff !important; }
+                  </style>
                   <details class="diagram-text-fallback" data-diagram-auto-open="large-text" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
                       <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;">📋 View as text</summary>
-                      <div style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
+                      <div class="diagram-text-fallback-body" style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
                           <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
                           ${body}
                       </div>
@@ -38930,24 +39217,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'quiz') {
-          const reflectionInputHtml = (text) => isWorksheet
+          const quizQuestions = Array.isArray(item.data?.questions) ? item.data.questions : [];
+          const quizId = String(item.id || 'quiz');
+          const reflectionInputHtml = (text, reflectionIndex = 0) => isWorksheet
               ? ruledLines(4)
-              : `<textarea class="interactive-textarea" aria-label="${text}" placeholder="${t('common.type_answer_here')}"></textarea>`;
+              : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${_escTxt(quizId + ':reflection:' + reflectionIndex)}" aria-label="${_escTxt(text)}" placeholder="${_escTxt(t('common.type_answer_here'))}"></textarea>`;
           const reflectionHtml = Array.isArray(item.data.reflections)
-              ? item.data.reflections.map(r => {
+              ? item.data.reflections.map((r, reflectionIndex) => {
                   const text = typeof r === 'string' ? r : (r.text || r.prompt || r.question || r.q || r.label || r.title || '');
                   const textEn = typeof r === 'object' && r.text_en ? r.text_en : null;
                   return `
                       <div class="reflection-block">
-                          <p><strong>${text}</strong>${textEn ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${textEn})</span>` : ''}</p>
-                          ${reflectionInputHtml(text)}
+                          <p><strong>${_escTxt(text)}</strong>${textEn ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${_escTxt(textEn)})</span>` : ''}</p>
+                          ${reflectionInputHtml(text, reflectionIndex)}
                       </div>
                   `;
                 }).join('')
               : `
                   <div class="reflection-block">
-                      <p><strong>${item.data.reflection}</strong></p>
-                      ${reflectionInputHtml(item.data.reflection)}
+                      <p><strong>${_escTxt(item.data.reflection || '')}</strong></p>
+                      ${reflectionInputHtml(item.data.reflection || 'Reflection response', 0)}
                   </div>
               `;
           // Resolve each question's correct option to an INDEX (the radio value)
@@ -38979,45 +39268,73 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return -1;
           };
+          const hasSelfCheckableQuestions = quizQuestions.some((q) => !q?.type || q.type === 'mcq');
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <div class="quiz-box" data-quiz-id="${item.id}">
                       <h3>${t('output.quiz_mcq')}</h3>
-                      ${item.data.questions.map((q, i) => {
+                      ${quizQuestions.map((q, i) => {
                           const itemType = q.type || 'mcq';
+                          const responseKey = quizId + ':q' + i;
+                          const responseKeyAttr = _escTxt(responseKey);
+                          const controlIdBase = ('allo_' + quizId + '_' + i).replace(/[^A-Za-z0-9_-]/g, '_');
                           // Plan S Slice 5+: type-aware export rendering. Each item type
                           // gets a printable form. Teacher view shows answer keys/rubrics;
                           // student view shows blank space for response.
                           const stem = `<p><strong>${i+1}. ${_escTxt(q.question)}</strong>${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${_escTxt(q.question_en)})</span>` : ''}</p>`;
+                          if (itemType === 'multi-select') {
+                              const options = Array.isArray(q.options) ? q.options : [];
+                              const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+                              return `
+                              <div class="question" data-item-type="multi-select">
+                                  ${stem}
+                                  <fieldset class="alloflow-response-group">
+                                      <legend>Select all that apply.</legend>
+                                      <div class="options">
+                                          ${options.map((opt, optIdx) => `
+                                              <label class="mcq-label alloflow-choice-label">
+                                                  ${isWorksheet
+                                                      ? fillableSquare()
+                                                      : `<input type="checkbox" name="${controlIdBase}_multi" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:multi">`}
+                                                  <span>${_escTxt(opt)}</span>
+                                              </label>
+                                          `).join('')}
+                                      </div>
+                                  </fieldset>
+                                  ${isTeacher && correctAnswers.length ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${correctAnswers.map(_escTxt).join(', ')}</p>` : ''}
+                              </div>`;
+                          }
                           if (itemType === 'fill-blank') {
                               return `
-                              <div class="question">
+                              <div class="question" data-item-type="fill-blank">
                                   ${stem}
                                   <div style="margin:0.5rem 0;">
-                                      <input type="text" aria-label="Answer for question ${i+1}" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>
+                                      ${isWorksheet
+                                          ? `<span style="font-weight:700;">Answer:</span> ${fillableBlank(260)}`
+                                          : `<label for="${controlIdBase}_fill" class="alloflow-response-label">Answer</label><input id="${controlIdBase}_fill" type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${responseKeyAttr}:fill" aria-label="Answer for question ${i+1}" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>`}
                                   </div>
-                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.expectedFill}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.join(', ') + ')</span>' : ''}</p>` : ''}
+                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.expectedFill)}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.map(_escTxt).join(', ') + ')</span>' : ''}</p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'short-answer') {
                               return `
-                              <div class="question">
+                              <div class="question" data-item-type="short-answer">
                                   ${stem}
                                   ${isWorksheet
                                       ? ruledLines(3)
-                                      : `<textarea aria-label="Answer for question ${i+1}" placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
-                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${q.expectedAnswer}</span></p>` : ''}
+                                      : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:short" aria-label="Answer for question ${i+1}" placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
+                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${_escTxt(q.expectedAnswer)}</span></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'self-explanation') {
                               return `
-                              <div class="question">
+                              <div class="question" data-item-type="self-explanation">
                                   ${stem}
                                   ${isWorksheet
                                       ? ruledLines(5)
-                                      : `<textarea aria-label="Answer for question ${i+1}" placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
-                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${q.rubric}</span></p>` : ''}
+                                      : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:explanation" aria-label="Answer for question ${i+1}" placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
+                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${_escTxt(q.rubric)}</span></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'sequence-sense') {
@@ -39025,40 +39342,80 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               const presentedOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder : items.map((_, idx) => idx);
                               const principleOpts = Array.isArray(q.principleOptions) ? q.principleOptions : ['chronological','cause-effect','process','size','hierarchy'];
                               return `
-                              <div class="question">
+                              <div class="question" data-item-type="sequence-sense">
                                   ${stem}
                                   <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">Below is a sequence — verify and explain.</p>
                                   <ol style="margin:0.5rem 0 0.75rem 1.5rem;">
-                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${items[canonIdx] || ''}</li>`).join('')}
+                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${_escTxt(items[canonIdx] || '')}</li>`).join('')}
                                   </ol>
-                                  <div style="margin:0.5rem 0;">
-                                      <strong style="font-size:0.9rem;">1. Is this order correct?</strong>
+                                  <fieldset class="alloflow-response-group">
+                                      <legend>1. Is this order correct?</legend>
                                       ${isWorksheet
-                                          ? `<label style="margin-left:1rem;">${fillableCircle()}Yes</label><label style="margin-left:0.5rem;">${fillableCircle()}No, item # ___ is misplaced</label>`
-                                          : `<label style="margin-left:1rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> Yes</label><label style="margin-left:0.5rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> No, item # ___ is misplaced</label>`}
+                                          ? `<label class="alloflow-choice-label">${fillableCircle()}Yes</label><label class="alloflow-choice-label">${fillableCircle()}No</label>`
+                                          : `<label class="alloflow-choice-label"><input type="radio" name="${controlIdBase}_sequence_verdict" value="yes" data-allo-response-key="${responseKeyAttr}:sequence-verdict"> Yes</label><label class="alloflow-choice-label"><input type="radio" name="${controlIdBase}_sequence_verdict" value="no" data-allo-response-key="${responseKeyAttr}:sequence-verdict"> No</label>`}
+                                  </fieldset>
+                                  <div style="margin:0.5rem 0;">
+                                      ${isWorksheet
+                                          ? `<strong style="font-size:0.9rem;">If no, misplaced item #:</strong> ${fillableBlank(70)}`
+                                          : `<label for="${controlIdBase}_sequence_item" class="alloflow-response-label">If no, which item number is misplaced?</label><input id="${controlIdBase}_sequence_item" type="number" min="1" max="${Math.max(1, items.length)}" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:sequence-item" inputmode="numeric">`}
                                   </div>
                                   <div style="margin:0.5rem 0;">
-                                      <strong style="font-size:0.9rem;">2. What's the ordering principle?</strong>
-                                      <span style="margin-left:0.5rem;color:#475569;">${principleOpts.join(' / ')}</span>
+                                      ${isWorksheet
+                                          ? `<strong style="font-size:0.9rem;">2. Ordering principle:</strong> <span style="color:#475569;">${principleOpts.map(_escTxt).join(' / ')}</span> ${fillableBlank(150)}`
+                                          : `<label for="${controlIdBase}_sequence_principle" class="alloflow-response-label">2. What's the ordering principle?</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"><option value="">Choose a principle</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escTxt(opt)}</option>`).join('')}</select>`}
                                   </div>
-                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? 'order is correct' : 'item #' + (q.intentionallyWrongIndex + 1) + ' is misplaced'} · principle: <em>${q.orderingPrinciple || ''}</em></p>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? 'order is correct' : 'item #' + (q.intentionallyWrongIndex + 1) + ' is misplaced'} · principle: <em>${_escTxt(q.orderingPrinciple || '')}</em></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'relation-mismatch') {
                               const pairs = Array.isArray(q.pairs) ? q.pairs : [];
                               const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
                               return `
-                              <div class="question">
+                              <div class="question" data-item-type="relation-mismatch">
                                   ${stem}
                                   <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">One of these pairs is wrong. Find it and pick the correct partner.</p>
                                   <table style="width:100%;border-collapse:collapse;margin:0.5rem 0;">
-                                      ${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${pair.left || ''}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${pair.right || ''}</td></tr>`).join('')}
+                                      <caption style="text-align:left;font-weight:700;margin-bottom:4px;">Pairs to review</caption>
+                                      <thead><tr><th scope="col">Item</th><th scope="col">Current partner</th></tr></thead>
+                                      <tbody>${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${_escTxt(pair.left || '')}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${_escTxt(pair.right || '')}</td></tr>`).join('')}</tbody>
                                   </table>
-                                  <div style="margin:0.5rem 0;">
-                                      <strong style="font-size:0.9rem;">Wrong pair: # ___</strong>
+                                  <fieldset class="alloflow-response-group">
+                                      <legend>Wrong pair</legend>
+                                      ${pairs.map((pair, pairIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_wrong_pair" value="${pairIdx}" data-allo-response-key="${responseKeyAttr}:wrong-pair">`}Pair #${pairIdx + 1}</label>`).join('')}
+                                  </fieldset>
+                                  ${candidates.length > 0 ? `<fieldset class="alloflow-response-group"><legend>Correct partner</legend>${candidates.map((candidate, candidateIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_partner" value="${candidateIdx}" data-allo-response-key="${responseKeyAttr}:partner">`}${_escTxt(candidate)}</label>`).join('')}</fieldset>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(Number.isInteger(q.wrongPairIndex) ? q.wrongPairIndex : 0) + 1} is wrong · correct partner: <em>${_escTxt(q.correctPartnerForWrong || '')}</em></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'answer-evidence') {
+                              const answerOptions = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+                              const evidenceOptions = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+                              return `
+                              <div class="question" data-item-type="answer-evidence">
+                                  ${stem}
+                                  <fieldset class="alloflow-response-group">
+                                      <legend>Choose an answer</legend>
+                                      ${answerOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_answer" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:answer">`}<span>${_escTxt(opt)}</span></label>`).join('')}
+                                  </fieldset>
+                                  <fieldset class="alloflow-response-group">
+                                      <legend>${_escTxt(q.evidencePrompt || 'Choose the best supporting evidence')}</legend>
+                                      ${evidenceOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_evidence" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:evidence">`}<span>${_escTxt(opt)}</span></label>`).join('')}
+                                  </fieldset>
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctAnswer ?? '')} · evidence: ${_escTxt(q.correctEvidence ?? '')}</p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'numeric-response') {
+                              const acceptedUnits = [q.unit, ...(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : [])].filter((value, idx, list) => value && list.indexOf(value) === idx);
+                              const toleranceText = q.tolerance !== undefined && q.tolerance !== null ? ` ± ${_escTxt(q.tolerance)}` : '';
+                              return `
+                              <div class="question" data-item-type="numeric-response">
+                                  ${stem}
+                                  <div class="alloflow-numeric-response">
+                                      ${isWorksheet
+                                          ? `<span style="font-weight:700;">Value:</span> ${fillableBlank(130)} <span style="font-weight:700;">Unit:</span> ${fillableBlank(90)}`
+                                          : `<label for="${controlIdBase}_number" class="alloflow-response-label">Value</label><input id="${controlIdBase}_number" type="number" step="any" inputmode="decimal" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:number"><label for="${controlIdBase}_unit" class="alloflow-response-label">Unit</label><input id="${controlIdBase}_unit" type="text" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:unit">`}
                                   </div>
-                                  ${candidates.length > 0 ? `<div style="margin:0.5rem 0;"><strong style="font-size:0.9rem;">Correct partner:</strong> ${candidates.map(c => isWorksheet ? `<label style="margin-left:0.5rem;">${fillableCircle()}${c}</label>` : `<label style="margin-left:0.5rem;"><input type="radio" name="rm_${item.id}_${i}_p"/> ${c}</label>`).join('')}</div>` : ''}
-                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(q.wrongPairIndex || 0) + 1} is wrong · correct partner: <em>${q.correctPartnerForWrong || ''}</em></p>` : ''}
+                                  ${isTeacher && q.correctValue !== undefined && q.correctValue !== null ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctValue)}${toleranceText}${acceptedUnits.length ? ` ${acceptedUnits.map(_escTxt).join(' / ')}` : ''}</p>` : ''}
                               </div>`;
                           }
                           // Default: MCQ render (existing behavior preserved)
@@ -39066,30 +39423,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const correctAttr = correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
                           const optsArr = Array.isArray(q.options) ? q.options : [];
                           return `
-                          <div class="question"${correctAttr}>
+                          <div class="question" data-item-type="mcq"${correctAttr}>
                               ${stem}
-                              ${q.imageUrl ? `<img src="${q.imageUrl}" alt="${q.question || 'Question image'}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
+                              ${q.imageUrl ? `<img src="${_escTxt(q.imageUrl)}" alt="${_escTxt(q.question || 'Question image')}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
                               <div class="options" role="radiogroup" aria-label="Answer choices for question ${i+1}">
                                   ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
                                           ${isWorksheet
                                               ? fillableCircle()
-                                              : `<input type="radio" name="q_${item.id}_${i}" value="${optIdx}">`}
-                                          ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
+                                              : `<input type="radio" name="${controlIdBase}_mcq" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:mcq">`}
+                                          ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${_escTxt(q.optionImageUrls[optIdx])}" alt="${_escTxt(opt)}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
                                           <span>${_escTxt(opt)} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${_escTxt(q.options_en[optIdx])})</span>` : ''}</span>
                                       </label>
                                   `).join('')}
                               </div>
-                              ${isTeacher ? `<p class="answer-key" style="color: #16a34a; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${q.correctAnswer}</p>` : ''}
+                              ${isTeacher ? `<p class="answer-key" style="color: #16a34a; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctAnswer ?? '')}</p>` : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
                       `;
                       }).join('')}
                       ${isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                              <button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check my answers</button>
-                              <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset</button>
-                              <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
+                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check multiple-choice answers</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
+                              <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset responses</button>
+                              ${hasSelfCheckableQuestions ? `<div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>` : '<div class="quiz-results" hidden></div>'}
                           </div>
                       `}
                       <h3>${t('output.quiz_reflection')}</h3>
@@ -39615,7 +39972,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'concept-sort') {
           const categories = item.data.categories || [];
           const sortItems = item.data.items || [];
-          const catColors = ['#dc2626','#2563eb','#059669','#d97706','#7c3aed','#be185d','#0891b2','#ca8a04'];
+          // Darker category hues keep the small labels and answer-key headers
+          // readable with either white text or a dark export surface (WCAG AA).
+          const catColors = ['#b91c1c','#1d4ed8','#047857','#92400e','#6d28d9','#9d174d','#0e7490','#854d0e'];
           const hasAnyImage = sortItems.some(ci => ci.image);
           // Concept-sort image size: parallel to glossary/timeline. Default
           // 'medium' = 80px matches the prior hardcoded value.
@@ -39628,8 +39987,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const catColor = catColors[catIdx % catColors.length];
                       return `
                           <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${_escTxt(cat.id)}" data-category-label="${_escTxt(cat.label)}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
-                              <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
-                              <div style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${_escTxt(cat.label)}</div>
+                              <div class="alloflow-cs-category-kicker" style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
+                              <div class="alloflow-cs-category-label" style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${_escTxt(cat.label)}</div>
                               ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<button type="button" class="alloflow-cs-place-btn" data-place-for="${_escTxt(cat.id)}" disabled style="margin-top:8px;padding:7px 10px;background:#4f46e5;color:#fff;border:0;border-radius:6px;font-weight:700;cursor:pointer;">Place selected item in ${_escTxt(cat.label)}</button>` : ''}
                               <div class="alloflow-cs-dropzone-target" data-dropzone-for="${_escTxt(cat.id)}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
                           </div>
@@ -39648,13 +40007,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${item.id}">
                   ${sortItems.map((ci, idx) => {
                       const imageHtml = ci.image
-                          ? `<div style="flex-shrink: 0; width: ${_csImgPx}px; height: ${_csImgPx}px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 6px; overflow: hidden;"><img src="${ci.image}" alt="" style="max-width: 100%; max-height: 100%; object-fit: contain;"/></div>`
+                          ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${ci.image}" alt="" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
                           : '';
                       return `
                           <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
-                              <div style="font-family: monospace; font-size: 0.75em; color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: 0.75em; color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
-                              <div style="flex: 1; font-size: 1em; line-height: 1.5; color: #1e293b;">${ci.content}</div>
+                              <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${ci.content}</div>
                           </div>
                       `;
                   }).join('')}
@@ -39662,16 +40021,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const answerKeyHtml = `
-              <div style="margin-top: 28px; padding-top: 20px; border-top: 2px dashed #cbd5e1; break-inside: avoid; page-break-before: always;">
+              <div class="alloflow-cs-answer-key" style="margin-top: 28px; padding-top: 20px; border-top: 2px dashed #cbd5e1; break-inside: avoid; page-break-before: always;">
                   <h3 style="margin: 0 0 12px 0; font-size: 1.05em; color: #334155;">Answer Key (teacher reference)</h3>
                   <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                       ${categories.map((cat, catIdx) => {
                           const catItems = sortItems.filter(i => i.categoryId === cat.id);
                           const catColor = catColors[catIdx % catColors.length];
                           return `
-                              <div style="flex: 1; min-width: 200px; border: 1px solid ${catColor}55; border-radius: 6px; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
+                              <div class="alloflow-cs-answer-card" style="flex: 1; min-width: 200px; border: 1px solid ${catColor}55; border-radius: 6px; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
                                   <div style="background: ${catColor}; color: white; font-size: 0.9em; font-weight: bold; padding: 8px 12px;">${cat.label}</div>
-                                  <ul style="margin: 0; padding: 10px 12px 10px 28px; color: #475569; font-size: 0.9em;">
+                                  <ul class="alloflow-cs-answer-items" style="margin: 0; padding: 10px 12px 10px 28px; color: #475569; font-size: 0.9em;">
                                       ${catItems.map(ci => `<li style="margin-bottom: 4px;">${ci.content}</li>`).join('')}
                                   </ul>
                               </div>
@@ -40546,6 +40905,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const textAlign = isRtl ? 'right' : 'left';
       const seed = STYLE_SEEDS[exportTheme] || (function (sid) { try { var _BP = window.AlloModules && window.AlloModules.BrandProfile; var _p = _BP && _BP.getBrandProfile && _BP.getBrandProfile(sid); return _p ? { name: _p.name, emoji: '\u{1F3A8}', cssVars: _BP.brandProfileToCssVars(_p) } : null; } catch (e) { return null; } })(exportTheme) || STYLE_SEEDS.professional;
       const theme = seed.cssVars ? { name: seed.name, emoji: seed.emoji, ..._clampStyleSeedCssVars(seed.cssVars) } : (EXPORT_THEMES.professional);
+      // The downloaded HTML's reading-theme switcher treats "Light" as the
+      // teacher-selected baseline. Mark a Dark style explicitly so the fuller
+      // runtime dark overrides also protect HTML preview and PDF-print output.
+      const _baseReadingTheme = exportTheme === 'dark' ? 'dark' : 'light';
       // ── Brand identity bands (header/footer) — independent of style choice ──
       // If a BrandProfile is active, render its header/footer + minimal styling
       // regardless of which style seed is selected. This lets a teacher pick
@@ -40790,6 +41153,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 if (!k) continue;
                                 for (var p = 0; p < prefixes.length; p++) {
                                     if (k.indexOf(prefixes[p]) === 0) {
+                                        if (typeof _namedLegacyStorageKeys !== 'undefined' && _namedLegacyStorageKeys.has(k)) break;
                                         out[k] = localStorage.getItem(k);
                                         break;
                                     }
@@ -40798,12 +41162,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         } catch (e) { /* private mode */ }
                         // Radio MCQ selections (not auto-saved, captured live)
                         document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) {
+                            if (q.querySelector('[data-allo-response-key]')) return;
                             var checked = q.querySelector('input[type="radio"]:checked');
                             if (checked) {
                                 var name = checked.getAttribute('name') || ('q' + idx);
                                 out['allo-mcq:' + name] = checked.value;
                             }
                         });
+                        var named = typeof _collectNamedResponses === 'function' ? _collectNamedResponses() : {};
+                        Object.keys(named).forEach(function(key) { out[key] = named[key]; });
                         return out;
                     };
                     btn.addEventListener('click', async function() {
@@ -40824,7 +41191,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 docTitle: document.title || 'Worksheet',
                                 timestamp: new Date().toISOString(),
                                 responses: _collectResponses(),
-                                schemaVersion: 2,
+                                responseManifest: _collectResponseManifest(),
+                                schemaVersion: 3,
                                 ...(identity.classId ? { classId: identity.classId } : {}),
                                 ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
                                 ...(identity.dueDate ? { dueDate: identity.dueDate } : {})
@@ -40995,7 +41363,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _headerColors = _accessibleHeaderColors(theme.headerBg) || { bg: theme.headerBg, fg: theme.headerText || '#ffffff' };
       const rawHtml = `
       <!DOCTYPE html>
-      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[leveledTextLanguage || currentUiLanguage] || 'en'}" dir="${direction}">
+      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[leveledTextLanguage || currentUiLanguage] || 'en'}" dir="${direction}" data-alloflow-base-theme="${_baseReadingTheme}"${_baseReadingTheme === 'dark' ? ' data-alloflow-theme="dark"' : ''}>
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41143,6 +41511,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .interactive-textarea:focus { outline: 2px solid #6366f1; border-color: #6366f1; }
           .interactive-blank { border: none; border-bottom: 2px solid #cbd5e1; padding: 0 5px; background: transparent; font-family: inherit; width: 150px; transition: border-color 0.2s; font-weight: bold; color: #1e40af; }
           .interactive-blank:focus { border-bottom-color: #4f46e5; outline: 2px solid #4f46e5; outline-offset: 2px; }
+          .alloflow-response-group { border: 0; padding: 0; margin: 0.75rem 0; min-width: 0; break-inside: avoid; }
+          .alloflow-response-group legend { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.35rem; padding: 0; color: inherit; }
+          .alloflow-choice-label { display: inline-flex; align-items: center; gap: 7px; margin: 0 0.75rem 0.4rem 0; line-height: 1.45; }
+          .alloflow-response-label { display: inline-block; font-size: 0.85rem; font-weight: 700; margin: 0.2rem 0.4rem 0.2rem 0; }
+          input.alloflow-response-input:not(.interactive-blank), .alloflow-response-select {
+            min-height: 38px; padding: 7px 10px; border: 1px solid #94a3b8; border-radius: 6px;
+            background: #ffffff; color: #1e293b; font: inherit;
+          }
+          .alloflow-response-input-short { width: 120px; max-width: 100%; margin-right: 0.75rem; }
+          .alloflow-response-select { max-width: 100%; }
+          .alloflow-numeric-response { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0.6rem 0; }
+          input.alloflow-response-input:focus, .alloflow-response-select:focus { outline: 2px solid #4f46e5; outline-offset: 2px; border-color: #4f46e5; }
           .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
           .mcq-label:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
           /* Keyboard focus: a visible 2px indigo outline + soft outer ring.
@@ -41243,6 +41623,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
             .interactive-blank { border-bottom: 1px solid #333; }
+            .alloflow-response-group, .alloflow-numeric-response, .alloflow-ruled-response { break-inside: avoid; page-break-inside: avoid; }
             .worksheet-header { border: none; padding: 0; margin-bottom: 30px; }
             .line { border-bottom: 1px solid #000; }
             .export-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -41326,15 +41707,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
              light page for print only (scoped to the non-light themes, so default/light print is
              untouched). The runtime switcher sets data-alloflow-theme on <html> for dark/sepia/hc. */
           @media print {
-            html[data-alloflow-theme="dark"] body, html[data-alloflow-theme="sepia"] body, html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #1a1a1a !important; }
-            html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4, html[data-alloflow-theme="dark"] h5, html[data-alloflow-theme="dark"] h6,
+            html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) body, html[data-alloflow-theme="sepia"] body, html[data-alloflow-theme="hc"] body { background: #ffffff !important; color: #1a1a1a !important; }
+            html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h1, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h2, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h3, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h4, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h5, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) h6,
             html[data-alloflow-theme="sepia"] h1, html[data-alloflow-theme="sepia"] h2, html[data-alloflow-theme="sepia"] h3, html[data-alloflow-theme="sepia"] h4, html[data-alloflow-theme="sepia"] h5, html[data-alloflow-theme="sepia"] h6,
             html[data-alloflow-theme="hc"] h1, html[data-alloflow-theme="hc"] h2, html[data-alloflow-theme="hc"] h3, html[data-alloflow-theme="hc"] h4, html[data-alloflow-theme="hc"] h5, html[data-alloflow-theme="hc"] h6 { color: #000000 !important; }
-            html[data-alloflow-theme="dark"] p, html[data-alloflow-theme="dark"] li, html[data-alloflow-theme="dark"] td, html[data-alloflow-theme="dark"] th, html[data-alloflow-theme="dark"] blockquote, html[data-alloflow-theme="dark"] dd, html[data-alloflow-theme="dark"] dt,
+            html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) p, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) li, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) td, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) th, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) blockquote, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) dd, html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) dt,
             html[data-alloflow-theme="sepia"] p, html[data-alloflow-theme="sepia"] li, html[data-alloflow-theme="sepia"] td, html[data-alloflow-theme="sepia"] th, html[data-alloflow-theme="sepia"] blockquote, html[data-alloflow-theme="sepia"] dd, html[data-alloflow-theme="sepia"] dt,
             html[data-alloflow-theme="hc"] p, html[data-alloflow-theme="hc"] li, html[data-alloflow-theme="hc"] td, html[data-alloflow-theme="hc"] th, html[data-alloflow-theme="hc"] blockquote, html[data-alloflow-theme="hc"] dd, html[data-alloflow-theme="hc"] dt { color: #1a1a1a !important; }
-            html[data-alloflow-theme="dark"] a, html[data-alloflow-theme="sepia"] a, html[data-alloflow-theme="hc"] a { color: #0000a8 !important; }
-            html[data-alloflow-theme="dark"] th, html[data-alloflow-theme="sepia"] th, html[data-alloflow-theme="hc"] th { background: #f1f5f9 !important; }
+            html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) a, html[data-alloflow-theme="sepia"] a, html[data-alloflow-theme="hc"] a { color: #0000a8 !important; }
+            html[data-alloflow-theme="dark"]:not([data-alloflow-base-theme="dark"]) th, html[data-alloflow-theme="sepia"] th, html[data-alloflow-theme="hc"] th { background: #f1f5f9 !important; }
+          }
+          @media print {
+            html[data-alloflow-base-theme="dark"],
+            html[data-alloflow-base-theme="dark"] body,
+            html[data-alloflow-base-theme="dark"] .export-header,
+            html[data-alloflow-base-theme="dark"] .section,
+            html[data-alloflow-base-theme="dark"] .alloflow-toc,
+            html[data-alloflow-base-theme="dark"] .alloflow-cs-dropzone,
+            html[data-alloflow-base-theme="dark"] .alloflow-cs-strip,
+            html[data-alloflow-base-theme="dark"] .alloflow-cs-image-frame,
+            html[data-alloflow-base-theme="dark"] .alloflow-cs-answer-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
           /* Zero the browser-default page box margin so it does not stack with the body's 0.5in print padding (~1in combined otherwise). */
           @page { margin: 0; }
@@ -41456,7 +41848,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           /* ─── Dark theme ─── */
           html[data-alloflow-theme="dark"] { color-scheme: dark; background: #0f172a !important; }
           html[data-alloflow-theme="dark"] body { background: #0f172a !important; color: #ffffff !important; }
-          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4 { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] h1, html[data-alloflow-theme="dark"] h2, html[data-alloflow-theme="dark"] h3, html[data-alloflow-theme="dark"] h4, html[data-alloflow-theme="dark"] h5, html[data-alloflow-theme="dark"] h6 { color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .section { background: #1e293b !important; }
           html[data-alloflow-theme="dark"] .card, html[data-alloflow-theme="dark"] .quiz-box, html[data-alloflow-theme="dark"] .alloflow-bs-card { background: #1e293b !important; border-color: #334155 !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .resource-header { color: #ffffff !important; background: #1e293b !important; }
@@ -41467,9 +41859,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] tbody tr:hover { background: #334155 !important; }
           html[data-alloflow-theme="dark"] .interactive-textarea { background: #1e293b !important; color: #ffffff !important; border-color: #475569 !important; background-image: linear-gradient(#334155 1px, transparent 1px) !important; }
           html[data-alloflow-theme="dark"] .interactive-blank { color: #93c5fd !important; border-bottom-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] input.alloflow-response-input, html[data-alloflow-theme="dark"] .alloflow-response-select { background: #0f172a !important; color: #ffffff !important; border-color: #64748b !important; }
           html[data-alloflow-theme="dark"] .mcq-label { color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .mcq-label:hover { background: #334155 !important; }
-          html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
+          html[data-alloflow-theme="dark"] .mcq-label:has(input[type="radio"]:checked), html[data-alloflow-theme="dark"] .mcq-label:has(input[type="checkbox"]:checked) { background: #312e81 !important; border-color: #818cf8 !important; }
           html[data-alloflow-theme="dark"] .reflection-block { background: rgba(79,70,229,0.12) !important; border-left-color: #6366f1 !important; }
           html[data-alloflow-theme="dark"] .reflection-block > p:first-child { color: #c7d2fe !important; }
           html[data-alloflow-theme="dark"] details { background: #1e293b !important; border-color: #334155 !important; color: #ffffff !important; }
@@ -41542,6 +41935,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="dark"] .alloflow-cs-controls .alloflow-cs-check-btn { background: #4f46e5 !important; color: white !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-controls .alloflow-cs-reset-btn { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-results { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-dropzone { background: #172033 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-category-kicker,
+          html[data-alloflow-theme="dark"] .alloflow-cs-scissor { color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-category-label,
+          html[data-alloflow-theme="dark"] .alloflow-cs-item-text { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-answer-key h3,
+          html[data-alloflow-theme="dark"] .alloflow-cs-answer-items,
+          html[data-alloflow-theme="dark"] .alloflow-cs-answer-items li { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-answer-card { background: #0f172a !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-image-frame { background: #f8fafc !important; border-color: #94a3b8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-image { opacity: 1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-place-btn:disabled { color: #ffffff !important; opacity: 1; }
 
           /* ─── Sepia theme (warm, low-glare; popular for dyslexic readers) ─── */
           html[data-alloflow-theme="sepia"] { background: #f5ecd9 !important; }
@@ -41554,6 +41959,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="sepia"] tbody tr:nth-child(even) { background: #f5ecd9 !important; }
           html[data-alloflow-theme="sepia"] tbody tr:hover { background: #ede0c4 !important; }
           html[data-alloflow-theme="sepia"] .interactive-textarea { background: #fdf6e3 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] input.alloflow-response-input, html[data-alloflow-theme="sepia"] .alloflow-response-select { background: #fdf6e3 !important; color: #5b4636 !important; border-color: #a58b62 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools { background: rgba(245,236,217,0.96); border-bottom-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools-group { background: #fdf6e3; border-color: #d4c5a0; }
           html[data-alloflow-theme="sepia"] .alloflow-reading-tools-label { background: #ede0c4; color: #6b5334; border-right-color: #d4c5a0; }
@@ -41629,6 +42035,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] tbody tr:hover { background: #ffff00 !important; }
           html[data-alloflow-theme="hc"] a { color: #0000ee !important; text-decoration: underline !important; }
           html[data-alloflow-theme="hc"] .interactive-textarea { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
+          html[data-alloflow-theme="hc"] input.alloflow-response-input, html[data-alloflow-theme="hc"] .alloflow-response-select { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-rt-btn[aria-pressed="true"] { background: #000000; color: #ffff00; }
 
@@ -41710,6 +42117,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] #alloflow-savejson-cta button { background: #000000 !important; color: #ffff00 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] #alloflow-reader-line { background: rgba(255,255,0,0.38); border-color: #000000; }
           html[data-alloflow-theme="hc"] .alloflow-reader-mask { background: rgba(0,0,0,0.72); }
+          /* Keep the banner title at its palette-verified foreground in every
+             reader mode. Generic h1 theme rules used to override this inline
+             color, leaving the title gray or dark against the banner. */
+          .export-header .export-title,
+          .export-header .export-meta { color: ${_headerColors.fg} !important; opacity: 1 !important; }
         </style>
       </head>
       <body>
@@ -41942,6 +42354,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           (function () {
             var KEY = 'alloflow-reading-theme';
             var root = document.documentElement;
+            var baseTheme = root.getAttribute('data-alloflow-base-theme') || 'light';
             function setPressed(theme) {
               var btns = document.querySelectorAll('[data-rt-theme]');
               for (var i = 0; i < btns.length; i++) {
@@ -41950,7 +42363,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
             function applyTheme(theme, save) {
               if (!theme || theme === 'light') {
-                root.removeAttribute('data-alloflow-theme');
+                if (baseTheme === 'dark') root.setAttribute('data-alloflow-theme', 'dark');
+                else root.removeAttribute('data-alloflow-theme');
                 theme = 'light';
               } else {
                 root.setAttribute('data-alloflow-theme', theme);
@@ -44089,8 +44503,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         </script>
         <main id="main-export-content" role="main">
         <div class="export-header" style="background:${_headerColors.bg};color:${_headerColors.fg};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
-          <h1 style="color:${_headerColors.fg};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
-          ${!isWorksheet ? `<p style="opacity:0.85;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
+          <h1 class="export-title" style="color:${_headerColors.fg};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
+          ${!isWorksheet ? `<p class="export-meta" style="color:${_headerColors.fg};opacity:1;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
         </div>
         ${worksheetHeader}
         ${studentTOC}
@@ -44137,8 +44551,169 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
                     return Math.abs(h).toString(36);
                 };
+                // Submission files and their neutral review manifest must use
+                // exactly the same bounded key. Preserve a readable prefix,
+                // then detect and disambiguate even rare hash/whitespace
+                // collisions so one response can never overwrite another.
+                const _responsePayloadKeyOwners = Object.create(null);
+                const _responsePayloadKeyByRaw = Object.create(null);
+                const _responsePayloadKey = (key) => {
+                    const original = String(key == null ? '' : key);
+                    if (Object.prototype.hasOwnProperty.call(_responsePayloadKeyByRaw, original)) return _responsePayloadKeyByRaw[original];
+                    const normalized = original.trim();
+                    const bounded = normalized.length > 200 ? normalized.slice(0, 200) + ':' + _hash(normalized) : normalized;
+                    const base = 'allo-response:' + bounded;
+                    let candidate = base;
+                    let attempt = 0;
+                    while (Object.prototype.hasOwnProperty.call(_responsePayloadKeyOwners, candidate)
+                        && _responsePayloadKeyOwners[candidate] !== original) {
+                        attempt += 1;
+                        candidate = base + ':' + _hash(original + ':' + attempt) + ':' + attempt.toString(36);
+                    }
+                    _responsePayloadKeyOwners[candidate] = original;
+                    _responsePayloadKeyByRaw[original] = candidate;
+                    return candidate;
+                };
+                // One response contract for every exported quiz control. Grouped
+                // radios/checkboxes share a key; compound questions use one key
+                // per sub-part so saved files preserve their full response.
+                const _responseGroups = {};
+                document.querySelectorAll('[data-allo-response-key]').forEach((control) => {
+                    const key = control.getAttribute('data-allo-response-key') || '';
+                    if (!key) return;
+                    if (!_responseGroups[key]) _responseGroups[key] = [];
+                    _responseGroups[key].push(control);
+                });
+                const _responseValue = (controls) => {
+                    if (!controls || !controls.length) return '';
+                    const type = String(controls[0].type || '').toLowerCase();
+                    if (type === 'checkbox') return JSON.stringify(controls.filter((control) => control.checked).map((control) => control.value));
+                    if (type === 'radio') {
+                        const checked = controls.find((control) => control.checked);
+                        return checked ? checked.value : '';
+                    }
+                    return String(controls[0].value == null ? '' : controls[0].value);
+                };
+                const _restoreResponseGroup = (key, controls) => {
+                    let saved = '';
+                    try { saved = localStorage.getItem('allo-response:' + _docKey + ':' + _hash(key)) || ''; } catch (e) {}
+                    if (!saved) return;
+                    const type = String(controls[0]?.type || '').toLowerCase();
+                    if (type === 'checkbox') {
+                        let selected = [];
+                        try { selected = JSON.parse(saved); } catch (e) { selected = []; }
+                        controls.forEach((control) => { control.checked = Array.isArray(selected) && selected.includes(control.value); });
+                    } else if (type === 'radio') {
+                        controls.forEach((control) => { control.checked = control.value === saved; });
+                    } else if (!controls[0].value) {
+                        controls[0].value = saved;
+                    }
+                };
+                const _saveResponseGroup = (key) => {
+                    const controls = _responseGroups[key] || [];
+                    const value = _responseValue(controls);
+                    try {
+                        const storageKey = 'allo-response:' + _docKey + ':' + _hash(key);
+                        if (value && value !== '[]') localStorage.setItem(storageKey, value);
+                        else localStorage.removeItem(storageKey);
+                    } catch (e) {}
+                };
+                const _responseTimers = {};
+                Object.keys(_responseGroups).forEach((key) => {
+                    const controls = _responseGroups[key];
+                    _restoreResponseGroup(key, controls);
+                    controls.forEach((control) => {
+                        const save = () => {
+                            const isTextEntry = control.tagName === 'TEXTAREA' || ['text', 'number', 'search', 'email', 'url'].includes(String(control.type || '').toLowerCase());
+                            if (!isTextEntry) { _saveResponseGroup(key); return; }
+                            if (_responseTimers[key]) clearTimeout(_responseTimers[key]);
+                            _responseTimers[key] = setTimeout(() => _saveResponseGroup(key), 250);
+                        };
+                        control.addEventListener('input', save);
+                        control.addEventListener('change', save);
+                    });
+                });
+                const _collectNamedResponses = () => {
+                    const out = {};
+                    Object.keys(_responseGroups).slice(0, 500).forEach((key) => {
+                        const value = _responseValue(_responseGroups[key]);
+                        if (value && value !== '[]') out[_responsePayloadKey(key)] = value;
+                    });
+                    return out;
+                };
+                // Neutral response metadata for teacher review. This manifest
+                // describes only what the student can already see. It never
+                // reads answer markers, answer-key markup, rubrics, or expected
+                // answers.
+                const _collectResponseManifest = () => {
+                    const entries = [];
+                    const clean = (value, max) => String(value == null ? '' : value).replace(/\\s+/g, ' ').trim().slice(0, max || 500);
+                    const partLabels = {
+                        'mcq': 'Answer', 'multi': 'Selected answers', 'fill': 'Fill-in answer',
+                        'short': 'Short answer', 'explanation': 'Explanation',
+                        'sequence-verdict': 'Is the order correct?', 'sequence-item': 'Misplaced item number',
+                        'sequence-principle': 'Ordering principle', 'wrong-pair': 'Wrong pair',
+                        'partner': 'Correct partner', 'answer': 'Answer', 'evidence': 'Evidence',
+                        'number': 'Value', 'unit': 'Unit', 'reflection': 'Reflection'
+                    };
+                    const aiFreeformTypes = ['short-answer', 'self-explanation', 'reflection', 'free-response', 'sentence-frame'];
+                    Object.keys(_responseGroups).slice(0, 500).forEach((key) => {
+                        const controls = _responseGroups[key] || [];
+                        const control = controls[0];
+                        if (!control) return;
+                        const questionEl = control.closest ? control.closest('.question') : null;
+                        const keyPart = clean(String(key).split(':').pop(), 60).toLowerCase();
+                        let responseType = questionEl ? clean(questionEl.getAttribute('data-item-type'), 60).toLowerCase() : '';
+                        if (!responseType && key.indexOf(':reflection:') >= 0) responseType = 'reflection';
+                        if (!responseType) responseType = control.tagName === 'TEXTAREA' ? 'free-response' : 'structured-response';
+                        let question = '';
+                        if (questionEl) {
+                            const prompt = questionEl.querySelector('p strong');
+                            if (prompt) question = clean(prompt.textContent, 500).replace(/^\\d+\\.\\s*/, '');
+                        }
+                        if (!question) question = clean(control.getAttribute('aria-label'), 500);
+                        if (!question) {
+                            const section = control.closest ? control.closest('.section') : null;
+                            const heading = section && section.querySelector ? section.querySelector('h1,h2,h3') : null;
+                            if (heading) question = clean(heading.textContent, 500);
+                        }
+                        const valueLabels = {};
+                        const firstType = String(control.type || '').toLowerCase();
+                        if (firstType === 'radio' || firstType === 'checkbox') {
+                            controls.slice(0, 60).forEach((choice) => {
+                                const label = choice.closest ? choice.closest('label') : null;
+                                const value = clean(choice.value, 120);
+                                const text = clean(label ? label.textContent : choice.getAttribute('aria-label'), 240);
+                                if (value && text) valueLabels[value] = text;
+                            });
+                        } else if (control.tagName === 'SELECT') {
+                            Array.prototype.slice.call(control.options || [], 0, 60).forEach((option) => {
+                                const value = clean(option.value, 120);
+                                const text = clean(option.textContent, 240);
+                                if (value && text) valueLabels[value] = text;
+                            });
+                        }
+                        entries.push({
+                            key: _responsePayloadKey(key),
+                            question: question || 'Response',
+                            responseType: responseType,
+                            partLabel: partLabels[keyPart] || clean(keyPart.replace(/[-_]+/g, ' '), 100) || 'Response',
+                            valueLabels: valueLabels,
+                            manualReview: aiFreeformTypes.indexOf(responseType) === -1
+                        });
+                    });
+                    return { schemaVersion: 1, entries: entries };
+                };
+                try {
+                    window.__alloflowSubmissionResponseContract = {
+                        schemaVersion: 1,
+                        collectNamedResponses: _collectNamedResponses,
+                        collectManifest: _collectResponseManifest
+                    };
+                } catch (e) {}
                 // Default soft cap. Honors any explicit maxlength on the textarea.
                 const _DEFAULT_MAX = 1500;
+                const _namedLegacyStorageKeys = new Set();
                 textareas.forEach((tx, idx) => {
                     // ── Auto-resize (existing behavior) ──
                     tx.style.height = 'auto';
@@ -44146,9 +44721,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     // ── Build a stable storage key per textarea ──
                     const labelKey = (tx.getAttribute('aria-label') || tx.getAttribute('placeholder') || ('ta' + idx)).slice(0, 80);
                     const storageKey = 'allo-ta:' + _docKey + ':' + _hash(labelKey);
+                    const hasNamedResponse = tx.hasAttribute('data-allo-response-key');
+                    if (hasNamedResponse) _namedLegacyStorageKeys.add(storageKey);
                     // ── Restore prior value (autosave) ──
                     try {
-                        const saved = localStorage.getItem(storageKey);
+                        const saved = hasNamedResponse ? '' : localStorage.getItem(storageKey);
                         if (saved && !tx.value) {
                             tx.value = saved;
                             tx.style.height = 'auto';
@@ -44179,13 +44756,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         this.style.height = (this.scrollHeight) + 'px';
                         updateCounter();
                         // debounce save 400ms — feels instant but avoids a write per keystroke
-                        if (saveTimer) clearTimeout(saveTimer);
-                        saveTimer = setTimeout(() => {
-                            try {
-                                if (tx.value) localStorage.setItem(storageKey, tx.value);
-                                else localStorage.removeItem(storageKey);
-                            } catch (e) { /* swallow */ }
-                        }, 400);
+                        if (!hasNamedResponse) {
+                            if (saveTimer) clearTimeout(saveTimer);
+                            saveTimer = setTimeout(() => {
+                                try {
+                                    if (tx.value) localStorage.setItem(storageKey, tx.value);
+                                    else localStorage.removeItem(storageKey);
+                                } catch (e) { /* swallow */ }
+                            }, 400);
+                        }
                     });
                 });
                 // ── Quiz check-my-work + reset ──
@@ -44258,8 +44837,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         resultsEl.textContent = parts.join(' · ');
                     });
                     resetBtn.addEventListener('click', () => {
-                        // Also clear the chosen radios so the student can retry honestly.
-                        quiz.querySelectorAll('input[type="radio"]:checked').forEach((r) => { r.checked = false; });
+                        // Clear every response type, then fire change so the
+                        // shared autosave contract removes the stored value too.
+                        quiz.querySelectorAll('[data-allo-response-key]').forEach((control) => {
+                            if (control.type === 'radio' || control.type === 'checkbox') control.checked = false;
+                            else control.value = '';
+                            control.dispatchEvent(new Event('change', { bubbles: true }));
+                        });
                         reset();
                     });
                 });
@@ -44267,19 +44851,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 document.querySelectorAll('.interactive-blank').forEach((bx, idx) => {
                     const labelKey = (bx.getAttribute('aria-label') || bx.getAttribute('placeholder') || ('bx' + idx)).slice(0, 80);
                     const storageKey = 'allo-bx:' + _docKey + ':' + _hash(labelKey);
+                    const hasNamedResponse = bx.hasAttribute('data-allo-response-key');
+                    if (hasNamedResponse) _namedLegacyStorageKeys.add(storageKey);
                     try {
-                        const saved = localStorage.getItem(storageKey);
+                        const saved = hasNamedResponse ? '' : localStorage.getItem(storageKey);
                         if (saved && !bx.value) bx.value = saved;
                     } catch (e) {}
                     let saveTimer = null;
                     bx.addEventListener('input', function() {
-                        if (saveTimer) clearTimeout(saveTimer);
-                        saveTimer = setTimeout(() => {
-                            try {
-                                if (bx.value) localStorage.setItem(storageKey, bx.value);
-                                else localStorage.removeItem(storageKey);
-                            } catch (e) {}
-                        }, 400);
+                        if (!hasNamedResponse) {
+                            if (saveTimer) clearTimeout(saveTimer);
+                            saveTimer = setTimeout(() => {
+                                try {
+                                    if (bx.value) localStorage.setItem(storageKey, bx.value);
+                                    else localStorage.removeItem(storageKey);
+                                } catch (e) {}
+                            }, 400);
+                        }
                     });
                 });
                 // ── Glossary flash-card interactions (May 11 2026) ──
@@ -44618,20 +45206,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     catch (e) { identity = {}; }
                     var pcta = document.getElementById('alloflow-savejson-cta');
                     if (document.getElementById('alloflow-save-submission-btn')) { if (pcta) pcta.style.display = 'none'; return; }
-                    if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
+                    if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct], [data-allo-response-key]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
                     if (pcta) pcta.style.display = 'block';
                     var _pcollect = function() {
                         var out = {};
                         var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
-                        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (!k) continue; for (var p = 0; p < prefixes.length; p++) { if (k.indexOf(prefixes[p]) === 0) { out[k] = localStorage.getItem(k); break; } } } } catch (e) {}
-                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) { var ch = q.querySelector('input[type=\"radio\"]:checked'); if (ch) { out['allo-mcq:' + (ch.getAttribute('name') || ('q' + idx))] = ch.value; } });
+                        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (!k) continue; for (var p = 0; p < prefixes.length; p++) { if (k.indexOf(prefixes[p]) === 0) { if (typeof _namedLegacyStorageKeys !== 'undefined' && _namedLegacyStorageKeys.has(k)) break; out[k] = localStorage.getItem(k); break; } } } } catch (e) {}
+                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) { if (q.querySelector('[data-allo-response-key]')) return; var ch = q.querySelector('input[type=\"radio\"]:checked'); if (ch) { out['allo-mcq:' + (ch.getAttribute('name') || ('q' + idx))] = ch.value; } });
+                        var named = typeof _collectNamedResponses === 'function' ? _collectNamedResponses() : {};
+                        Object.keys(named).forEach(function(key) { out[key] = named[key]; });
                         return out;
                     };
                     pbtn.addEventListener('click', async function() {
                         var up = new URLSearchParams(window.location.search);
                         var nick = up.get('nickname') || await window.__alloflowPrompt({ title: 'Save your answers', description: 'Enter a name or nickname so your teacher can identify this answer file.', label: 'Name or nickname', confirmLabel: 'Save answers', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var payload = { schemaVersion: 2, kind: 'alloflow-student-submission', nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
+                        var payload = { schemaVersion: 3, kind: 'alloflow-student-submission', nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);

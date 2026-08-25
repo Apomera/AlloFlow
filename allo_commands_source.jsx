@@ -871,7 +871,8 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'open_pictionary_host', icon: '🎨', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openPictionaryHost, label: t('cmd.open_pictionary_host', 'Start Concept Pictionary'), aliases: ['concept pictionary', 'pictionary', 'drawing game', 'draw a concept', 'class drawing game'], hint: t('cmd.open_pictionary_host_hint', 'Open the teacher host for Concept Pictionary'), run: (c) => { c.openPictionaryHost(); return t('cmd.open_pictionary_host_done', 'Concept Pictionary opened. Choose a concept and start the round from there.'); } },
     { id: 'open_group_tools', icon: '👥', roles: 'teacher', when: (c) => !!c.activeSessionCode && !!c.openGroupTools, label: t('cmd.open_group_tools', 'Open group tools'), aliases: ['group tools', 'groups', 'manage groups', 'student groups', 'make groups'], hint: t('cmd.open_group_tools_hint', 'Manage live-session groups'), run: (c) => { c.openGroupTools(); return t('cmd.open_group_tools_done', 'Group tools opened.'); } },
     { id: 'open_student_signal', icon: '✋', roles: 'student', when: (c) => !!c.activeSessionCode && !c.isTeacherMode && !!c.openStudentSignals, label: t('cmd.open_student_signal', 'Send a teacher signal'), aliases: ['signal teacher', 'help signal', 'quick signal', 'i need help', 'i am confused', 'send signal'], hint: t('cmd.open_student_signal_hint', 'Tell the teacher you need help, more time, or are ready'), run: (c) => { c.openStudentSignals(); return t('cmd.open_student_signal_done', 'Teacher signal panel opened. Pick one option to send.'); } },
-    { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data', 'research suite', 'research dashboard', 'embedded research', 'study', 'irb', 'likert', 'assessment center', 'progress monitoring'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
+    { id: 'open_class_analytics', opensPanel: 'classAnalytics', icon: '📈', roles: 'teacher', label: t('cmd.open_class_analytics', 'Open class analytics'), aliases: ['analytics', 'class data', 'progress data', 'assessment center', 'educator hub assessment center', 'progress monitoring'], hint: t('cmd.open_class_analytics_hint', 'Whole-class progress'), run: (c) => { c.setShowClassAnalytics(true); return t('cmd.open_class_analytics_done', 'Class analytics opened.'); } },
+    { id: 'open_research_suite', opensPanel: 'researchSuite', icon: '📇', roles: 'teacher', when: (c) => typeof c.setIsResearchSuiteOpen === 'function', label: t('cmd.open_research_suite', 'Open Research Suite'), aliases: ['research suite', 'educator hub research suite', 'research dashboard', 'embedded research', 'study dashboard', 'irb study', 'likert study'], hint: t('cmd.open_research_suite_hint', 'Open study design, consent, fidelity, and research export tools'), run: (c) => { if (typeof c.setShowClassAnalytics === 'function') c.setShowClassAnalytics(false); c.setIsResearchSuiteOpen(true); return t('cmd.open_research_suite_done', 'Research Suite opened.'); } },
     { id: 'open_share_collect', opensPanel: 'recentQrShares', icon: '🔗', roles: 'teacher', label: t('cmd.open_share_collect', 'Open Share & Collect'), aliases: ['share and collect', 'share collect', 'polls', 'poll results', 'sign-up sheet', 'signup results', 'survey', 'surveys', 'send survey', 'survey link', 'survey results', 'collect responses', 'availability poll', 'parent survey'], hint: t('cmd.open_share_collect_hint', 'Polls, sign-ups, surveys and their results'), run: (c) => { c.setShowRecentQrShares(true); return t('cmd.open_share_collect_done', 'Share & Collect opened.'); } },
     { id: 'open_export_menu', opensPanel: 'exportMenu', icon: '📤', roles: 'teacher', label: t('cmd.open_export_menu', 'Open the export menu'), aliases: ['export', 'download menu', 'share'], hint: t('cmd.open_export_menu_hint', 'Export the current content'), run: (c) => { c.setShowExportMenu(true); return t('cmd.open_export_menu_done', 'Export menu opened.'); } },
     { id: 'open_ai_settings', icon: '🤖', roles: 'teacher', label: t('cmd.open_ai_settings', 'Open AI settings'), aliases: ['ai settings', 'ai backend', 'api key', 'model settings', 'configure Gemini voice', 'Gemini cloud services key', 'forget Gemini backend key'], hint: t('cmd.open_ai_settings_hint', 'Configure the AI backend'), run: (c) => { c.setShowAIBackendModal(true); return t('cmd.open_ai_settings_done', 'AI settings opened.'); } },
@@ -919,6 +920,7 @@ function buildAlloCommands(ctx, opts = {}) {
 
     // ── Navigate (added 2026-06-13: dashboard + roster + project-settings parity) ──
     { id: 'go_dashboard', opensPanel: 'dashboard', icon: '🏠', roles: 'all', label: t('cmd.go_dashboard', 'Go to the dashboard'), aliases: ['dashboard', 'home', 'go home', 'main view', 'overview'], hint: t('cmd.go_dashboard_hint', 'Back to the main lesson view'), run: (c) => { c.goToDashboard(); return t('cmd.go_dashboard_done', 'Dashboard.'); } },
+    { id: 'return_to_start', icon: '↩️', roles: 'all', when: (c) => typeof c.returnToStart === 'function', label: t('cmd.return_to_start', 'Return to Start'), aliases: ['return to start', 'back to start', 'start screen', 'launch screen', 'choose another mode'], hint: t('cmd.return_to_start_hint', 'Return to the AlloFlow launch choices without reloading'), run: (c) => { c.returnToStart(); return t('cmd.return_to_start_done', 'Returned to Start.'); } },
     { id: 'open_roster', icon: '🧑‍🤝‍🧑', roles: 'teacher', label: t('cmd.open_roster', 'Open the class roster'), aliases: ['roster', 'manage roster', 'class roster', 'roster key'], hint: t('cmd.open_roster_hint', 'Manage your class groups'), run: (c) => { c.openRoster(); return t('cmd.open_roster_done', 'Class roster opened.'); } },
     { id: 'open_project_settings', icon: '⚙️', roles: 'teacher', label: t('cmd.open_project_settings', 'Open project settings'), aliases: ['project settings', 'student settings', 'lesson settings', 'permissions', 'allow ai'], hint: t('cmd.open_project_settings_hint', 'Per-project AI, dictation, and Socratic gating'), run: (c) => { c.openProjectSettings(); return t('cmd.open_project_settings_done', 'Project settings opened.'); } },
     { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', requiresCapabilities: ['assignmentDirectionsEditor'], label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
@@ -938,14 +940,14 @@ function buildAlloCommands(ctx, opts = {}) {
       hint: t('cmd.run_lesson_blueprint_hint', 'Generates every resource in the current plan'),
       run: (c) => { c.runBlueprint(); return t('cmd.run_lesson_blueprint_done', 'Generating the plan now — you can watch each step on the card.'); } },
     { id: 'start_lesson_blueprint', icon: '\u{1F9ED}', roles: 'teacher', when: (c) => typeof c.startLessonFlow === 'function',
-      label: t('cmd.start_lesson_blueprint', 'Start Auto-Fill lesson blueprint'),
-      aliases: ['start auto fill', 'start autofill', 'auto fill mode', 'autofill mode', 'start blueprint mode', 'make a lesson blueprint', 'create a lesson blueprint', 'plan with allobot'],
-      hint: t('cmd.start_lesson_blueprint_hint', 'Opens AlloBot in Auto-Fill mode so you can describe and review a lesson plan'),
+      label: t('cmd.start_blueprint_mode', 'Blueprint Mode — build a lesson'),
+      aliases: ['blueprint mode', 'build a lesson', 'start auto fill', 'start autofill', 'auto fill mode', 'autofill mode', 'start blueprint mode', 'make a lesson blueprint', 'create a lesson blueprint', 'plan with allobot'],
+      hint: t('cmd.start_blueprint_mode_hint', 'Open Blueprint Mode to describe and review a lesson plan'),
       run: (c, p) => {
         c.startLessonFlow(p || {});
         return (p && p.topic)
-          ? t('cmd.start_lesson_blueprint_done_topic', 'Auto-Fill Blueprint mode is open for “') + p.topic + t('cmd.start_lesson_blueprint_done_topic2', '”. Continue with AlloBot to review the resource plan before generating.')
-          : t('cmd.start_lesson_blueprint_done', 'Auto-Fill Blueprint mode is open. Tell AlloBot the topic, grade, goals, and learner needs; you will review the plan before generating.');
+          ? t('cmd.start_blueprint_mode_done_topic', 'Blueprint Mode is open for “') + p.topic + t('cmd.start_blueprint_mode_done_topic2', '”. Continue with AlloBot to review the resource plan before generating.')
+          : t('cmd.start_blueprint_mode_done', 'Blueprint Mode is open. Tell AlloBot the topic, grade, goals, and learner needs; you will review the plan before generating.');
       } },
     { id: 'plan_full_pack', icon: '\u{1F4CB}', roles: 'teacher', when: (c) => !!c.hasSourceOrAnalysis && typeof c.planFullPack === 'function',
       label: t('cmd.plan_full_pack', 'Plan a Full Pack'),
@@ -1091,7 +1093,7 @@ function buildAlloCommands(ctx, opts = {}) {
       c.startWordScrambleGame();
       return t("cmd.start_word_scramble_done", "Word scramble on.");
     } },
-    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
+    { id: "toggle_content_editing", icon: "\u270F\uFE0F", roles: "teacher", when: (c) => typeof c.toggleContentEditing === "function" && !!c.contentLoaded, label: t("cmd.toggle_content_editing", "Edit this content"), aliases: ["edit this", "edit mode", "let me edit", "stop editing", "glossary audio review", "review glossary audio"], hint: t("cmd.toggle_content_editing_hint", "Toggles edit mode on whatever is currently on screen"), run: (c) => {
       const kind = c.toggleContentEditing();
       return kind ? t("cmd.toggle_content_editing_done", "Edit mode toggled for the ") + kind + "." : t("cmd.toggle_content_editing_miss", "This view doesn\u2019t have an edit mode.");
     } },
@@ -1213,7 +1215,7 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'pipeline_tour', icon: '\uD83D\uDD0E', roles: 'teacher', when: (c) => !!c.pipelineOpen && !!c.startPipelineTour, label: t('cmd.pipeline_tour', 'Show me around these results'), aliases: ['pipeline tour', 'explain this screen', 'walk me through the results'], hint: t('cmd.pipeline_tour_hint', 'A 60-second tour of the remediation results'), run: (c) => { c.startPipelineTour('results'); return t('cmd.pipeline_tour_done', 'Starting the results tour.'); } },
 
     // ── Parameter-carrying commands (S3) ──
-    { id: 'create_lesson', icon: '🧑‍🏫', roles: 'teacher', when: (c) => !!c.startLessonFlow, label: t('cmd.create_lesson', 'Create a lesson (tell me the topic)'), aliases: ['create a lesson', 'make a lesson', 'new lesson about', 'plan a lesson', 'lesson about'], hint: t('cmd.create_lesson_hint', 'Starts the guided flow — say a topic and grade'), run: (c, p) => { c.startLessonFlow(p || {}); return (p && p.topic) ? (t('cmd.create_lesson_done', 'Starting a lesson flow about “') + p.topic + '”' + (p.grade ? (t('cmd.create_lesson_done2', ' for grade ') + p.grade) : '') + t('cmd.create_lesson_done3', ' — AlloBot will guide the next steps.')) : t('cmd.create_lesson_done_blank', 'Starting the guided lesson flow — AlloBot will ask for your topic.'); } },
+    { id: 'create_lesson', icon: '🧑‍🏫', roles: 'teacher', when: (c) => !!c.startLessonFlow, label: t('cmd.create_lesson', 'Create a lesson (tell me the topic)'), aliases: ['create a lesson', 'generate a lesson', 'make a lesson', 'new lesson about', 'plan a lesson', 'lesson about', 'turn this discussion into a lesson', 'turn this conversation into a lesson'], hint: t('cmd.create_lesson_hint', 'Starts the guided flow — say a topic and grade'), run: (c, p) => { c.startLessonFlow(p || {}); return (p && p.topic) ? (t('cmd.create_lesson_done', 'Starting a lesson flow about “') + p.topic + '”' + (p.grade ? (t('cmd.create_lesson_done2', ' for grade ') + p.grade) : '') + t('cmd.create_lesson_done3', ' — AlloBot will guide the next steps.')) : t('cmd.create_lesson_done_blank', 'Starting the guided lesson flow — AlloBot will ask for your topic.'); } },
     { id: 'use_contextual_suggestion', re: /^(?:use|choose|do|take|select)\s+(?:the\s+)?(?:suggested\s+)?(?:option|step|choice)\s*(?:number\s*)?([123])\s*\??$/i, params: (m) => ({ option: m[1] }) },
     { id: 'set_grade_level', icon: '🎚️', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupGradeLevel, label: t('cmd.set_grade_level', 'Set the grade level'), aliases: ['set grade level', 'grade level', 'target grade', 'reading level', 'set target level'], hint: t('cmd.set_grade_level_hint', 'e.g. set grade level to 5'), run: (c, p) => { const v = c.setSetupGradeLevel(p && p.grade); return v ? (t('cmd.set_grade_level_done', 'Grade level set to ') + v + '.') : t('cmd.set_grade_level_pick', 'Say a grade like grade 5.'); } },
     { id: 'set_source_tone', icon: '🎙️', roles: ['teacher', 'independent', 'parent'], when: (c) => !!c.setSetupSourceTone, label: t('cmd.set_source_tone', 'Set source tone'), aliases: ['set source tone', 'source tone', 'change tone', 'tone to', 'make the tone'], hint: t('cmd.set_source_tone_hint', 'Informative, narrative, dialogue, persuasive, humorous, or step-by-step'), run: (c, p) => { const v = c.setSetupSourceTone(p && p.tone); return v ? (t('cmd.set_source_tone_done', 'Source tone set to ') + v + '.') : t('cmd.set_source_tone_pick', 'Say a tone like narrative.'); } },
@@ -1228,7 +1230,7 @@ function buildAlloCommands(ctx, opts = {}) {
 
     // ── More coverage (2026-06-13, discovery w59vf8skj) — each maps to ONE existing host handler
     //    (verified by symbol in AlloFlowANTI.txt). Grouped via CMD_GROUP / CMD_CONTEXT above. ──
-    { id: 'stop_reading', icon: '⏹️', roles: 'all', label: t('cmd.stop_reading', 'Stop reading aloud'), aliases: ['stop reading', 'stop talking', 'be quiet', 'silence', 'stop speech', 'stop the voice'], hint: t('cmd.stop_reading_hint', 'Interrupt the current text-to-speech'), run: (c) => { c.stopReading(); return t('cmd.stop_reading_done', 'Stopped reading aloud.'); } },
+    { id: 'stop_reading', icon: '⏹️', roles: 'all', label: t('cmd.stop_reading', 'Stop reading aloud'), aliases: ['stop reading', 'stop talking', 'be quiet', 'silence', 'stop speech', 'stop the voice', 'skip audio', 'stop audio', 'cut off audio'], hint: t('cmd.stop_reading_hint', 'Interrupt the current text-to-speech'), run: (c) => { c.stopReading(); return t('cmd.stop_reading_done', 'Stopped reading aloud.'); } },
     { id: 'toggle_mute', icon: '🔇', roles: 'all', label: t('cmd.toggle_mute', 'Mute or unmute all audio'), aliases: ['mute', 'unmute', 'mute audio', 'sound off', 'sound on', 'silence audio'], hint: t('cmd.toggle_mute_hint', 'Toggle all app audio'), run: (c) => { const m = c.toggleMute(); return m ? t('cmd.toggle_mute_on', 'Audio muted.') : t('cmd.toggle_mute_off', 'Audio unmuted.'); } },
     { id: 'cycle_reading_theme', icon: '🎨', roles: 'all', label: t('cmd.cycle_reading_theme', 'Change the reading theme'), aliases: ['reading theme', 'next reading theme', 'sepia', 'dyslexia theme', 'reading color', 'paper color'], hint: t('cmd.cycle_reading_theme_hint', 'Cycle warm, sepia, dark, dyslexia-friendly, and more'), run: (c) => { const th = c.cycleReadingTheme(); return t('cmd.cycle_reading_theme_done', 'Reading theme: ') + th + '.'; } },
     { id: 'line_spacing_more', icon: '↕️', roles: 'all', label: t('cmd.line_spacing_more', 'Increase line spacing'), aliases: ['more line spacing', 'increase spacing', 'wider lines', 'space out lines'], hint: t('cmd.line_spacing_more_hint', '+0.1 to the line height'), run: (c) => { const v = c.lineSpacingMore(); return t('cmd.line_spacing_more_done', 'Line spacing set to ') + v + '.'; } },
@@ -2714,7 +2716,7 @@ const DIRECT_ACT_COMMAND_IDS = new Set([
   'read_this_page', 'stop_reading', 'pause_read_this_page', 'resume_read_this_page',
   'next_read_this_page', 'previous_read_this_page', 'repeat_read_this_page', 'close_read_this_page',
   'read_assignment_directions', 'read_media_descriptions', 'describe_current_screen',
-  'describe_current_media', 'repeat_last_response', 'go_back', 'close_current_surface',
+  'describe_current_media', 'repeat_last_response', 'go_back', 'return_to_start', 'close_current_surface',
   'open_text_settings', 'open_voice_settings', 'list_current_actions', 'check_assignment_progress',
   'next_assignment_step', 'show_success_criteria', 'review_teacher_feedback', 'where_is',
   'resource_next', 'resource_previous', 'resource_read', 'resource_describe', 'resource_list',
@@ -2786,7 +2788,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
   const _grammars = [
     { id: 'find_reading', re: /^(?:find|recommend|suggest|show|get|help me find)\s+(?:me\s+)?(?:a\s+|some\s+|the\s+)?(?:books|book|readings|reading|stories|story|articles|article|sources|source|texts|text)\s*(?:about|on|for)?\s*(.*?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: 'find_reading', re: /^(?:i\s+want\s+to\s+(?:learn|read)\s+about|i'?m\s+looking\s+for\s+(?:a\s+)?(?:book|source|reading|article|text)\s+about|something\s+about|what\s+can\s+i\s+read\s+about)\s+(.+?)\??$/i, params: (m) => _readingParams(m[1], null) },
-    { id: 'create_lesson', re: /^(?:create|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || '').trim() || null, grade: m[2] || null }) },
+    { id: 'create_lesson', re: /^(?:turn|use)\s+(?:this|our|the)\s+(?:lesson\s+)?(?:discussion|conversation|idea|guidance)\s+(?:into|for)\s+(?:a\s+)?lesson\s*\??$/i, params: () => ({ topic: null, grade: null }) },
+    { id: 'create_lesson', re: /^(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || '').trim() || null, grade: m[2] || null }) },
     { id: 'set_grade_level', re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
     { id: 'set_source_tone', re: /^(?:set|change|make)\s+(?:the\s+)?(?:source\s+)?tone\s*(?:to)?\s*([a-z -]{3,40})\s*\??$/i, params: (m) => ({ tone: m[1].trim() }) },
     { id: 'set_source_length', re: /^(?:set|change|make)\s+(?:the\s+)?(?:source|text|reading|passage)?\s*(?:length|word count)\s*(?:to)?\s*([a-z]+|\d{1,4})(?:\s*words?)?\s*\??$/i, params: (m) => ({ length: m[1] || null }) },
@@ -3816,7 +3819,7 @@ const micLevelMonitor = (function () {
 try { if (typeof window !== 'undefined') window.__alloMicLevelMonitor = micLevelMonitor; } catch (_) {}
 
 function createVoiceLoop(getCtx, opts = {}) {
-  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null;
+  let rec = null, active = false, errStreak = 0, routeController = null, routeSerial = 0, pageHideHandler = null, muteChangeHandler = null, speechSkipKeyHandler = null;
   let micMeterRelease = null;
   let sharedRecognition = null;
   let whisperState = null, engineName = "webspeech", standby = false, awake = false, awakeTimer = null;
@@ -3965,20 +3968,43 @@ function createVoiceLoop(getCtx, opts = {}) {
     bargeOwnsStream = false;
     if (bargeAudioCtx) { try { bargeAudioCtx.close(); } catch (_) {} bargeAudioCtx = null; }
   };
+  // One cancellation path owns every kind of spoken output: browser speech,
+  // neural audio, an app-owned narration lease, and a reply waiting for the
+  // user to finish talking. Incrementing speakSerial is essential here: it
+  // invalidates delayed synthesis promises, watchdogs, end events, and every
+  // remaining chunk of a long response instead of accidentally advancing to
+  // the next chunk after the current clip is paused.
+  const interruptSpeech = (reason = "speech-skipped", interruptOpts = {}) => {
+    const currentExternal = externalSpeech;
+    const hadOutput = !!(speaking || currentExternal || replyAudio || pendingReply);
+    if (!hadOutput) return false;
+    clearPendingReply();
+    ++speakSerial;
+    externalSpeech = null;
+    const currentAudio = replyAudio;
+    replyAudio = null;
+    speaking = false;
+    activeResume = null;
+    try { if (currentAudio) currentAudio.pause(); } catch (_) {}
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+    stopBargeWatch();
+    // Clear state before invoking app-owned audio. Its stop callback may call
+    // lease.end(), which must be a harmless no-op rather than recurse here.
+    if (currentExternal && typeof currentExternal.stop === "function") {
+      try { currentExternal.stop(reason || "speech-skipped"); } catch (_) {}
+    }
+    if (interruptOpts.userSpeaking) noteUserSpeech(true);
+    else noteUserTurnEnd();
+    if (!interruptOpts.suppressResume) resumeInputAfterOutput();
+    if (!interruptOpts.suppressStatus && active) {
+      updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
+    }
+    return hadOutput;
+  };
   // Stop the audio AND hand the floor straight back, so the words the user is
   // already saying are heard instead of landing in the gap.
   const cutReply = () => {
-    if (!speaking) return;
-    const externalStop = externalSpeech && externalSpeech.stop;
-    const resumeNow = activeResume;
-    try { if (replyAudio) replyAudio.pause(); } catch (_) {}
-    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
-    noteUserSpeech(true);
-    if (typeof externalStop === "function") {
-      try { externalStop("barge-in"); } catch (_) {}
-    }
-    stopBargeWatch();
-    if (resumeNow) resumeNow();
+    interruptSpeech("barge-in", { userSpeaking: true });
   };
   const startBargeWatch = () => {
     stopBargeWatch();
@@ -4057,15 +4083,10 @@ function createVoiceLoop(getCtx, opts = {}) {
   // The recognizer is stopped while output is audible; learner speech calls
   // the surface handler and hands the microphone back immediately.
   const stopReplyOutputForMute = () => {
+    if (interruptSpeech("global-muted")) return;
+    // A muted reply can be rejected before it ever acquires an output turn.
+    // Restore the observable state without cancelling unrelated app speech.
     clearPendingReply();
-    ++speakSerial;
-    if (externalSpeech) stopExternalSpeech("global-muted", { suppressResume: true });
-    try { if (replyAudio) replyAudio.pause(); } catch (_) {}
-    replyAudio = null;
-    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
-    speaking = false;
-    activeResume = null;
-    stopBargeWatch();
     resumeInputAfterOutput();
     if (active) updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening for a command.");
   };
@@ -4353,9 +4374,12 @@ function createVoiceLoop(getCtx, opts = {}) {
   // spoken by THIS loop rather than by the avatar, because only this loop stops
   // the microphone while it talks and supports barge-in. That also means a
   // hidden AlloBot still answers out loud (A3).
-  const converseWith = async (text, ctx) => {
+  const converseWith = async (text, ctx, conversationOpts = {}) => {
     const c = ctx || getCtx() || {};
     const t = _mkT(c && c.t);
+    const isCurrent = typeof conversationOpts.isCurrent === "function"
+      ? conversationOpts.isCurrent
+      : () => true;
     if (typeof c.converse !== "function") {
       // No conversational surface wired (an older host, or a standalone test
       // harness). Say what is true. Do NOT report a failed command.
@@ -4363,15 +4387,32 @@ function createVoiceLoop(getCtx, opts = {}) {
       return;
     }
     updateVoiceSession("processing", "Asking AlloBot.");
+    // Processing is presented as a closed-microphone state in the host UI.
+    // Actually suspend recognition as well: otherwise another final transcript
+    // can create a second model request while the first waiter is unresolved.
+    suspendInputForOutput();
     let reply = null;
     try { reply = await Promise.resolve(c.converse(text, { channel: "voice" })); }
     catch (_) { reply = null; }
-    if (!active) return;
+    // A buffered transcript can supersede this route just before suspension
+    // takes effect. Its late reply belongs in the visual transcript, but it
+    // must never speak over the newer turn or reopen that turn's microphone.
+    if (!active || !isCurrent()) return;
     const replyText = typeof reply === "string" ? reply : (reply && typeof reply === "object" ? reply.narration : "");
-    if (replyText && String(replyText).trim()) { announce(String(replyText).trim(), true, { toast: false }); return; }
+    if (replyText && String(replyText).trim()) {
+      announce(String(replyText).trim(), true, { toast: false });
+      // Muted/disabled/failed speech does not acquire an output turn, so the
+      // thinking suspension still needs an explicit release.
+      if (!speaking && !pendingReply) {
+        resumeInputAfterOutput();
+        updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
+      }
+      return;
+    }
     // Delivered, but the answer did not come back as text (a slow model, or the
     // chat handled it visually). Stay quiet and keep listening: silence reads
     // as "still thinking", which is true, where an apology reads as rejection.
+    resumeInputAfterOutput();
     updateVoiceSession(paused ? "paused" : "listening", paused ? "Microphone paused." : "Listening.");
   };
   const armPendingConfirmation = (pending) => {
@@ -4408,7 +4449,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
   };
   const stop = (reason, stopOpts = {}) => {
-    if (externalSpeech) stopExternalSpeech("voice-stopped", { suppressResume: true });
+    interruptSpeech("voice-stopped", { suppressResume: true, suppressStatus: true });
     cancelRoute();
     clearPendingConfirmation();
     try { if (commandKernel && commandKernel.cancel) commandKernel.cancel(reason || "voice-stopped", { silent: true }); } catch (_) {}
@@ -4431,6 +4472,10 @@ function createVoiceLoop(getCtx, opts = {}) {
     if (muteChangeHandler) {
       try { window.removeEventListener("alloflow-mute-changed", muteChangeHandler); } catch (_) {}
       muteChangeHandler = null;
+    }
+    if (speechSkipKeyHandler) {
+      try { window.removeEventListener("keydown", speechSkipKeyHandler, true); } catch (_) {}
+      speechSkipKeyHandler = null;
     }
     if (!active) return;
     active = false;
@@ -4471,7 +4516,12 @@ function createVoiceLoop(getCtx, opts = {}) {
       if (c && c.setVoiceActive) c.setVoiceActive(false);
     } catch (_) {
     }
-    if (reason) announce(reason);
+    // A stopped loop no longer owns either the microphone or the global
+    // speech-skip controls. Keep the acknowledgement visual/live-region only:
+    // starting managed TTS here would create an uninterruptible orphan reply,
+    // and a quick restart could make the old "voice off" message talk over the
+    // newly active session.
+    if (reason) announce(reason, false);
   };
   // Shared by BOTH engines: one utterance in, one routed command (or wake
   // handling) out. "Stop listening" always works — even in standby, and even
@@ -4621,7 +4671,20 @@ function createVoiceLoop(getCtx, opts = {}) {
     const controller = typeof AbortController === "function" ? new AbortController() : null;
     routeController = controller;
     const signal = controller ? controller.signal : null;
+    const routeIsCurrent = () => active && currentRouteSerial === routeSerial && !(signal && signal.aborted);
+    const converseCurrent = () => converseWith(text, cc, { isCurrent: routeIsCurrent });
     try {
+      // A pending guided choice owns ordinary speech just as it owns typed
+      // replies and choice-pill clicks. This keeps phrases such as "full pack"
+      // inside Blueprint Mode instead of letting the global command router
+      // reinterpret them. An explicit "command …" prefix remains an escape.
+      const pendingGuidedChoice = typeof cc.hasPendingGuidedChoice === "function"
+        ? !!cc.hasPendingGuidedChoice()
+        : !!cc.hasPendingGuidedChoice;
+      if (pendingGuidedChoice && !explicitCommand) {
+        await converseCurrent();
+        return;
+      }
       // Spoken multi-step requests use the same non-executing planner as chat.
       // They are reviewed aloud and require an explicit yes before runPlan;
       // an unsafe or unrecognized sequence never degrades into silently
@@ -4632,9 +4695,9 @@ function createVoiceLoop(getCtx, opts = {}) {
         // A1: a request the planner could not turn into steps is not an error.
         // "Get me ready for tomorrow" is a perfectly good thing to say to an
         // assistant; it just is not a plan. Hand it to conversation.
-        if (!steps || steps.length < 2) { await converseWith(text, cc); return; }
+        if (!steps || steps.length < 2) { await converseCurrent(); return; }
         const report = validatePlan(cc, steps, { allowInteractive: false, maxSteps: COMMAND_PLAN_MAX_STEPS });
-        if (!report.ok) { await converseWith(text, cc); return; }
+        if (!report.ok) { await converseCurrent(); return; }
         const exactSteps = report.items.map((item) => ({ commandId: item.commandId, params: Object.freeze(Object.assign({}, item.params || {})), why: item.why || '' }));
         const prompts = voicePlanPrompt(cc, exactSteps);
         armPendingConfirmation({ kind: "plan", steps: exactSteps, prompt: prompts.prompt, detailPrompt: prompts.detailPrompt });
@@ -4652,10 +4715,10 @@ function createVoiceLoop(getCtx, opts = {}) {
       // A1, the whole point: nothing matched, so this was conversation all
       // along. It was NEVER a failed command, and saying so out loud is what
       // made hands-free mode feel command-first.
-      else await converseWith(text, cc);
+      else await converseCurrent();
     } catch (error) {
       if (!active || currentRouteSerial !== routeSerial || error && error.name === "AbortError") return;
-      await converseWith(text, cc);
+      await converseCurrent();
     } finally {
       if (currentRouteSerial === routeSerial) routeController = null;
     }
@@ -4719,7 +4782,11 @@ function createVoiceLoop(getCtx, opts = {}) {
         updateVoiceSession("recovering", message + " Listening will continue.");
       }
     });
-    const started = sharedRecognition && sharedRecognition.start();
+    if (!sharedRecognition || typeof sharedRecognition.start !== "function") {
+      sharedRecognition = null;
+      return false;
+    }
+    const started = sharedRecognition.start();
     if (started === false) {
       sharedRecognition = null;
       return false;
@@ -4845,7 +4912,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     activeRecognitionEngine = "";
     activeRecognitionEngineLabel = "";
     let acquiredLease = null;
-    const coordinator = (opts && opts.voiceCoordinator) || (typeof window !== "undefined" && window.AlloFlowVoice);
+    const coordinator = (opts && (opts.voiceCoordinator || opts.voiceService)) || (typeof window !== "undefined" && window.AlloFlowVoice);
     if (coordinator && typeof coordinator.acquireVoiceSession === "function") {
       try {
         acquiredLease = coordinator.acquireVoiceSession("agent-command", {
@@ -4884,9 +4951,41 @@ function createVoiceLoop(getCtx, opts = {}) {
     };
     try { window.addEventListener("alloflow-mute-changed", muteChangeHandler); }
     catch (_) { muteChangeHandler = null; }
+    // Plain Space is an intentionally global floor-taking shortcut while the
+    // bot owns the audio turn. Never steal it from typing, native controls, or
+    // another keyboard interaction; outside active speech this listener is a
+    // complete no-op.
+    speechSkipKeyHandler = (event) => {
+      if (!active || !speaking || !event || event.defaultPrevented || event.repeat || event.isComposing) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (event.code !== "Space" && event.key !== " " && event.key !== "Spacebar") return;
+      const target = event.target;
+      const tag = String(target && target.tagName || "").toLowerCase();
+      if (target && (target.isContentEditable || tag === "input" || tag === "textarea" || tag === "select")) return;
+      if (target && typeof target.closest === "function" && target.closest('button, a[href], summary, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="slider"], [role="tab"], [role="textbox"]')) return;
+      event.preventDefault();
+      event.stopPropagation();
+      interruptSpeech("keyboard-skip");
+    };
+    try { window.addEventListener("keydown", speechSkipKeyHandler, true); }
+    catch (_) { speechSkipKeyHandler = null; }
     const standbyWanted = _voiceStandbyPref();
-    const sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
-    if (sharedStarted !== null) return sharedStarted;
+    let sharedStarted = null;
+    try {
+      sharedStarted = startSharedRecognition(c, _voiceEnginePref(), standbyWanted);
+    } catch (error) {
+      // A provider may fail before it can emit its own onError callback. Fully
+      // unwind the optimistic active state so the UI, coordinator lease, and
+      // global keyboard handler cannot remain stuck on after start() failed.
+      stop(tx(c, 'voice.control_start_failed', 'Voice control could not start: {error}', { error: error && error.message || 'unknown' }));
+      return false;
+    }
+    if (sharedStarted !== null) {
+      if (sharedStarted === false) {
+        stop(tx(c, 'voice.control_start_failed', 'Voice control could not start: {error}', { error: 'recognizer unavailable' }));
+      }
+      return sharedStarted;
+    }
     // Policy 'auto': first voice use quietly fetches the on-device speech
     // model in the background so the local engine is ready next start.
     // Never blocks the loop; failures stay silent (the explicit
@@ -4957,7 +5056,10 @@ function createVoiceLoop(getCtx, opts = {}) {
   // holds the device is not a pause a teacher can trust.
   const pause = (pauseOpts = {}) => {
     if (!active || paused) return false;
-    if (externalSpeech) stopExternalSpeech("voice-paused", { suppressResume: true });
+    // Pausing from the visible control must stop internal TTS as reliably as
+    // app-owned narration; otherwise the microphone says "paused" while the
+    // previous reply keeps talking.
+    interruptSpeech("voice-paused", { suppressResume: true, suppressStatus: true });
     const hasAutoResume = !!pauseOpts && Object.prototype.hasOwnProperty.call(pauseOpts, "autoResumeMs");
     const requestedAutoResumeMs = Number(pauseOpts && pauseOpts.autoResumeMs);
     const autoResumeMs = hasAutoResume && Number.isFinite(requestedAutoResumeMs)
@@ -5042,6 +5144,7 @@ function createVoiceLoop(getCtx, opts = {}) {
     stop: () => stop("Voice control off — the microphone is released."),
     pause,
     resume,
+    stopSpeaking: (reason = "manual-skip") => interruptSpeech(reason),
     isPaused: () => paused,
     isActive: () => active,
     engine: () => engineName,
@@ -5128,6 +5231,7 @@ const CMD_GROUP = {
   open_open_groove:'tools', open_timeline_studio:'tools', open_lingua_practice:'tools', open_test_prep_hub:'tools', open_research_hub:'tools', open_lit_lab:'tools', open_learning_web_explorer:'tools', open_mind_map:'tools', open_poet_tree:'tools', find_reading:'tools',
   stop_reading:'accessibility', toggle_mute:'accessibility', line_spacing_more:'accessibility', line_spacing_less:'accessibility', open_study_timer:'accessibility',
   cycle_reading_theme:'display', set_ui_language:'display', open_sel_hub:'tools', open_submission_inbox:'navigate', toggle_cloud_sync:'navigate', generate_outline:'create', export_pack:'create',
+  open_research_suite:'navigate', return_to_start:'navigate',
   launch_flashcards:'create', clear_my_answers:'create', clear_workspace:'create', undo_settings:'create', open_persona_chat:'navigate',
   pipeline_fix_again:'pipeline', pipeline_stop:'pipeline', pipeline_new_doc:'pipeline',
   edit_assignment_directions:'create', open_assessment_builder:'create', open_udl_guide:'help', open_command_blueprints:'create', start_lesson_blueprint:'create', run_lesson_blueprint:'create', plan_full_pack:'create', generate_full_pack:'create', rebuild_lesson_step:'create', apply_lesson_template:'create', create_activity_rubric:'create', share_assignment:'create', preview_assignment_as_student:'navigate', resume_latest_work:'navigate',
@@ -5170,7 +5274,7 @@ const CMD_CONTEXT = {
   stop_reading:['reading'], line_spacing_more:['reading'], line_spacing_less:['reading'], open_submission_inbox:['educatorHub'], generate_outline:['content'], export_pack:['content'],
   launch_flashcards:['content','learningHub'], clear_my_answers:['content'], clear_workspace:['content'], open_persona_chat:['content'],
   pipeline_fix_again:['pipeline'], pipeline_stop:['pipeline'], pipeline_new_doc:['pipeline'],
-  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], open_command_blueprints:['educatorHub','content'], start_lesson_blueprint:['educatorHub','content'], run_lesson_blueprint:['content'], plan_full_pack:['content'], generate_full_pack:['content'], rebuild_lesson_step:['content'], apply_lesson_template:['content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
+  edit_assignment_directions:['content'], open_assessment_builder:['educatorHub','content'], open_udl_guide:['educatorHub','content'], open_command_blueprints:['educatorHub','content'], start_lesson_blueprint:['educatorHub','content'], open_research_suite:['educatorHub'], run_lesson_blueprint:['content'], plan_full_pack:['content'], generate_full_pack:['content'], rebuild_lesson_step:['content'], apply_lesson_template:['content'], create_activity_rubric:['content'], share_assignment:['content'], preview_assignment_as_student:['content'], resume_latest_work:['content'],
   next_assignment_step:['content'], read_assignment_directions:['content','reading'], show_success_criteria:['content'], send_teacher_signal:['liveSession'], review_teacher_feedback:['content'],
 };
 const GROUP_ORDER = ['navigate','live','create','tools','accessibility','display','pipeline','help','voice'];
@@ -5226,10 +5330,10 @@ function _recordCommandUse(commandId) {
   } catch (_) {}
 }
 // context → ctx signal (string boolean-key, OR a function for derived ones like reading).
-const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', sourceSetup:'sourceSetupOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', learningWebExplorer:'learningWebExplorerOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
+const CTX_FLAG = { liveSession:'liveSessionActive', pipeline:'pipelineOpen', educatorHub:'educatorHubOpen', learningHub:'learningHubOpen', sourceSetup:'sourceSetupOpen', symbolStudio:'symbolStudioOpen', videoStudio:'videoStudioOpen', alloStudio:'alloStudioOpen', cinematicStudio:'cinematicStudioOpen', stemLab:'stemLabOpen', openGroove:'openGrooveOpen', timelineStudio:'timelineStudioOpen', linguaPractice:'linguaPracticeOpen', testPrepHub:'testPrepHubOpen', researchSuite:'researchSuiteOpen', researchHub:'researchHubOpen', litLab:'litLabOpen', learningWebExplorer:'learningWebExplorerOpen', mindMap:'mindMapOpen', poetTree:'poetTreeOpen', behaviorLens:'behaviorLensOpen', content:'contentLoaded', reading:(c)=>!!(c.zenActive||c.focusActive) };
 // Priority when several contexts are active (tool > pipeline > hub > content > reading).
-const CTX_PRIORITY = ['sourceSetup','liveSession','videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','researchHub','litLab','learningWebExplorer','mindMap','poetTree','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
-const CONTEXT_LABEL_FALLBACK = { sourceSetup:'Here — Source setup', liveSession:'Here — Live session', pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — Page Designer', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEAM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', researchHub:'Here — Research Hub', litLab:'Here — Lit Lab', learningWebExplorer:'Here — Learning Web: Explore', mindMap:'Here — Learning Web: Unit Path', poetTree:'Here — Poet Tree', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
+const CTX_PRIORITY = ['sourceSetup','liveSession','videoStudio','alloStudio','cinematicStudio','symbolStudio','stemLab','openGroove','timelineStudio','linguaPractice','testPrepHub','researchSuite','researchHub','litLab','learningWebExplorer','mindMap','poetTree','behaviorLens','pipeline','educatorHub','learningHub','content','reading'];
+const CONTEXT_LABEL_FALLBACK = { sourceSetup:'Here — Source setup', liveSession:'Here — Live session', pipeline:'Here — Pipeline results', educatorHub:'Here — Educator Hub', learningHub:'Here — Learning Hub', symbolStudio:'Here — Symbol Studio', videoStudio:'Here — Video Studio', alloStudio:'Here — Page Designer', cinematicStudio:'Here — Cinematic Studio', stemLab:'Here — STEAM Lab', openGroove:'Here — Open Groove Studio', timelineStudio:'Here — Timeline Studio', linguaPractice:'Here — Lingua Practice', testPrepHub:'Here — Test Prep Hub', researchSuite:'Here — Research Suite', researchHub:'Here — Research Hub', litLab:'Here — Lit Lab', learningWebExplorer:'Here — Learning Web: Explore', mindMap:'Here — Learning Web: Unit Path', poetTree:'Here — Poet Tree', behaviorLens:'Here — Behavior Lens', content:'Here — this content', reading:'Here — Reading mode' };
 function _activeContexts(ctx) {
   if (!ctx) return [];
   return CTX_PRIORITY.filter((k) => { const f = CTX_FLAG[k]; return typeof f === 'function' ? f(ctx) : !!ctx[f]; });

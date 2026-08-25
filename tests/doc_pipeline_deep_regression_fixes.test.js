@@ -332,7 +332,7 @@ describe('deep remediation pipeline regression fixes', () => {
     // d49161dd7 threads a trigger label through the re-audit call; the contract that matters
     // is that the mutated HTML is re-audited under the run's abort signal.
     expect(source).toMatch(/_postMutationAudit = await auditOutputAccessibility\(accessibleHtml, \{ signal: _runAbortSignal[^}]*\}\);/);
-    expect(source).toContain("_finalAuditIncompleteReason = 'post-audit-html-changed';");
+    expect(source).toMatch(/_finalAuditIncompleteReason = _finalAuditThrottled\s*\?\s*'post-audit-reaudit-throttled'\s*:\s*'post-audit-html-changed';/);
     expect(source).toContain('&& _finalAiAuditedHtml === accessibleHtml;');
   });
 
@@ -346,7 +346,7 @@ describe('deep remediation pipeline regression fixes', () => {
     expect(host).toContain('window.__alloPdfDocumentEpoch = documentIntakeEpoch;');
     expect(host).toContain('if (window.__alloPdfBatchAbortCtrl) window.__alloPdfBatchAbortCtrl.abort();');
     expect(source).toContain('const _batchRunIsCurrent = () => _batchOwnerIsCurrent(owner);');
-    expect(source).toContain('if (!_batchRunIsCurrent()) return;');
+    expect(source).toMatch(/if \(!_batchRunIsCurrent\(\)\)\s*\{\s*warnLog\('\[Batch\] Suppressing stale completion after host document invalidation\.'\);\s*return;\s*\}/);
     expect(source).toContain('if (!_batchAbortCtrl.signal.aborted && !_quotaStopped && !_batchHandoffStopped && failedFiles.length > 0)');
     expect(source).not.toContain('failedFiles.length < queue.length');
     expect(source).toContain("status: 'pending', error: null, interrupted: true");
