@@ -966,19 +966,31 @@ and a literal `aria-label`. That was the guard being wrong, not the tools. It no
 asserts the properties that matter — announced as a dialog, modal, named,
 closable from the keyboard — and accepts either spelling.
 
-**Remaining delta:** those four restore focus to whatever opened the dialog when
-it closes; the nine do not, so focus falls to the body. Worth closing, and it
-needs the ref/effect pattern those four already use.
+**That delta is now closed.** Those four restore focus to whatever opened the
+dialog; the nine originally did not, so focus fell to the body and a student who
+pressed Escape restarted from the top of the page. The nine now use the same
+ref/effect pattern: capture `document.activeElement` when the dialog opens,
+release it in the effect cleanup, deferred a tick.
+
+Closing it required **removing the `autoFocus`** added earlier in this section.
+`autoFocus` fires during React's commit, *before* effect bodies run, so the
+effect captured the dialog's own dismiss button as the "opener" and then restored
+focus to an element that no longer existed. Measured: focus returned to the
+opener in **0 of 9** tools. Initial focus now happens inside the same effect,
+after the capture, which is exactly why the four reference tools never used
+`autoFocus` either. Measured again after the change: **9 of 9**, with a control
+assertion that focus really did enter the dialog first — otherwise "it came back"
+proves nothing.
 
 ### Guard
 
-`tests/sel_badge_popup_dialog.test.js`, 30 tests. It **mounts** each tool with a
+`tests/sel_badge_popup_dialog.test.js`, 40 tests. It **mounts** each tool with a
 real badge in state and dispatches real keyboard events, rather than grepping
 source — a source scan passes happily on a dialog that never appears.
 
 Calibrated both ways before being trusted: disabling the Tab branch in `coping`
 turns it red, restoring it turns it green; reintroducing the 3000ms timer in
-`zones` turns it red.
+`zones` turns it red; disabling focus restoration in `coping` turns it red.
 
 Two things that would have made it lie:
 

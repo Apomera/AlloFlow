@@ -540,6 +540,34 @@ window.SelHub = window.SelHub || {
         var practiceLog    = d.practiceLog || [];
         var earnedBadges   = d.earnedBadges || {};
         var showBadgePopup = d.showBadgePopup || null;
+        // Hand focus back where it came from when the badge dialog closes. Without
+        // this the dialog just unmounts and focus falls to the body, dropping a
+        // keyboard user at the top of the page instead of where they were working.
+        var badgeDialogRef = React.useRef(null);
+        var badgeOpenerRef = React.useRef(null);
+        var badgeDialogOpen = !!showBadgePopup;
+        React.useEffect(function() {
+          if (!badgeDialogOpen) return undefined;
+          // Captured BEFORE focus moves. autoFocus would defeat this: it runs during
+          // commit, so the "opener" would come out as the dialog's own button.
+          var opener = document.activeElement;
+          if (opener && typeof opener.focus === 'function') badgeOpenerRef.current = opener;
+          var focusTimer = setTimeout(function() {
+            var dlg = badgeDialogRef.current;
+            if (!dlg) return;
+            var first = dlg.querySelector('button:not([disabled]), a[href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (first) first.focus(); else dlg.focus();
+          }, 0);
+          return function() {
+            clearTimeout(focusTimer);
+            var previous = badgeOpenerRef.current;
+            badgeOpenerRef.current = null;
+            // isConnected guards the case where the opener itself went away.
+            if (previous && previous.isConnected !== false && typeof previous.focus === 'function') {
+              setTimeout(function() { previous.focus(); }, 0);
+            }
+          };
+        }, [badgeDialogOpen]);
         var showBadgesPanel = d.showBadgesPanel || false;
         var visitedTabs    = d.visitedTabs || {};
 
@@ -769,6 +797,7 @@ window.SelHub = window.SelHub || {
           var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
           if (popBadge) {
             badgePopup = h('div', {
+            ref: badgeDialogRef,
             role: 'alertdialog',
             'aria-modal': 'true',
             'aria-label': 'Badge earned: ' + popBadge.name,
@@ -796,7 +825,6 @@ window.SelHub = window.SelHub || {
                 h('div', { style: { fontSize: 13, color: _teaFg('#94a3b8') } }, popBadge.desc),
               h('button', {
                 type: 'button',
-                autoFocus: true,
                 onClick: function() { upd('showBadgePopup', null); },
                 style: { marginTop: 18, padding: '9px 22px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.14)', color: '#ffffff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }
               }, 'Nice')

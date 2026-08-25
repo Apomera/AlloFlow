@@ -227,6 +227,78 @@ describe.skipIf(!R)('SEL Hub · badge popups are dialogs, not three-second flash
     // in a full-suite run the default 5s trips on load rather than on logic.
   }, 30000);
 
+  // Opening a dialog borrows focus; closing it has to give focus back. Without
+  // this the dialog unmounts and focus falls to <body>, so a keyboard user who
+  // pressed Escape restarts from the top of the page.
+  //
+  // ★ This is why the dismiss button must NOT use autoFocus: autoFocus runs
+  // during React's commit, BEFORE effect bodies, so the effect would capture the
+  // dialog's own button as the "opener" and restore focus to a removed element.
+  // Capture first, then move focus on a deferred tick.
+  it.each(TOOLS)('%s: closing the badge dialog returns focus where it came from', async (name) => {
+    const c = cases.find((x) => x.name === name);
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const opener = document.createElement('button');
+    opener.textContent = 'the control the student was on';
+    document.body.appendChild(opener);
+
+    const stub = () => null;
+    const noop = () => {};
+    const palette = new Proxy({}, { get: () => '#888888' });
+    const theme = new Proxy({ isDark: true, isContrast: false, reduceMotion: false, palette }, { get: (o, p) => (p in o ? o[p] : '#888888') });
+    let showBadge = false;
+    const ctxFor = () => {
+      const base = {
+        React, toolData: { [c.key]: showBadge ? { showBadgePopup: c.badge, xp: 25 } : { xp: 25 } },
+        setToolData: noop, update: noop, updateMulti: noop, t: (k) => k,
+        theme, isDark: true, isContrast: false, callGemini: null,
+        icons: new Proxy({}, { get: () => stub }), gradeLevel: '5th Grade', gradeBand: 'middle',
+        toolSnapshots: [], setToolSnapshots: noop, saveSnapshot: noop, announceToSR: noop,
+        addToast: noop, awardXP: noop, getXP: () => 0, celebrate: noop, beep: noop,
+        srOnly: (x) => React.createElement('span', { className: 'sr-only' }, x),
+        a11yClick: (fn) => ({ onClick: fn, onKeyDown: noop, role: 'button', tabIndex: 0 }),
+        props: {},
+      };
+      return new Proxy(base, { get: (o, p) => (p in o ? o[p] : noop) });
+    };
+    const root = R.RDC.createRoot(host);
+    const Probe = () => registry[c.id].render(ctxFor());
+    const tick = () => new Promise((r) => { setTimeout(r, 5); });
+
+    R.act(() => { root.render(React.createElement(Probe)); });
+    opener.focus();
+    expect(document.activeElement, name + ': probe could not focus the opener').toBe(opener);
+
+    showBadge = true;
+    R.act(() => { root.render(React.createElement(Probe)); });
+    await R.act(async () => { await tick(); });
+    const dlg = host.querySelector('[role="alertdialog"]');
+    expect(dlg, name + ': dialog did not open').toBeTruthy();
+    // Control: if focus never entered the dialog, "it came back" proves nothing.
+    expect(dlg.contains(document.activeElement), name + ': focus never entered the dialog').toBe(true);
+
+    showBadge = false;
+    R.act(() => { root.render(React.createElement(Probe)); });
+    await R.act(async () => { await tick(); });
+    expect(document.activeElement, name + ': focus did not return to the opener').toBe(opener);
+
+    R.act(() => { root.unmount(); });
+    host.remove();
+    opener.remove();
+  }, 30000);
+
+  it('the badge dismiss button does not use autoFocus (it would break restoration)', () => {
+    const offenders = [];
+    TOOLS.forEach((name) => {
+      const src = readFileSync(join(SEL, 'sel_tool_' + name + '.js'), 'utf8');
+      // Look only inside the badge dialog's own button, not other autoFocus uses.
+      const m = src.match(/'aria-label': 'Badge earned[\s\S]{0,4000}?\}, 'Nice'\)/);
+      if (m && /autoFocus/.test(m[0])) offenders.push(name);
+    });
+    expect(offenders, 'autoFocus runs before effects, so the opener is captured as the dialog itself').toEqual([]);
+  });
+
   it('no SEL tool auto-dismisses a badge popup on a timer (WCAG 2.2.1)', () => {
     const offenders = [];
     readdirSync(SEL).filter((f) => /^sel_tool_.*\.js$/.test(f)).forEach((f) => {
