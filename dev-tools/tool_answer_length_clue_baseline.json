@@ -53,13 +53,13 @@
       "items": 100
     },
     "stem_lab/fisherlab": {
-      "uniq": 54,
-      "severe": 30,
+      "uniq": 0,
+      "severe": 0,
       "items": 70
     },
     "stem_lab/beehive": {
-      "uniq": 18,
-      "severe": 6,
+      "uniq": 0,
+      "severe": 0,
       "items": 24
     },
     "stem_lab/behaviorlab": {
