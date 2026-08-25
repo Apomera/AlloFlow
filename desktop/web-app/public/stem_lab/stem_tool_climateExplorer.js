@@ -1063,56 +1063,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       //  QUIZ DATA
       // ══════════════════════════════════════
       var QUIZ = [
-        { q: 'What gas do cars produce that warms the Earth?', opts: ['Oxygen', 'Carbon dioxide', 'Nitrogen'], a: 1 },
+        { q: 'What gas do cars produce that warms the Earth?', opts: ['Pure oxygen gas', 'Carbon dioxide', 'Nitrogen'], a: 1 },
         { q: 'Which uses less energy: walking or driving?', opts: ['Walking', 'Driving', 'They\'re the same'], a: 0 },
-        { q: 'Solar panels get energy from...', opts: ['Wind', 'The Sun', 'Coal'], a: 1 },
+        { q: 'Solar panels get energy from...', opts: ['The wind', 'The Sun', 'Coal'], a: 1 },
         { q: 'How much CO\u2082 does one tree absorb per year?', opts: ['~2 kg', '~22 kg', '~220 kg'], a: 1 },
         { q: 'Which energy source has the LOWEST lifecycle emissions?', opts: ['Natural gas', 'Wind', 'Solar'], a: 1 },
-        { q: 'Climate justice means...', opts: ['Weather forecasting', 'Fair distribution of climate impacts', 'Carbon trading'], a: 1 },
-        { q: 'The Paris Agreement aims to limit warming to...', opts: ['0.5\u00B0C', '1.5\u00B0C above pre-industrial', '5\u00B0C'], a: 1 },
-        { q: 'Which sector produces the most greenhouse emissions?', opts: ['Transportation', 'Energy & electricity', 'Buildings'], a: 1 },
+        { q: 'Climate justice means...', opts: ['Long-range weather forecasting systems', 'Fair distribution of climate impacts', 'Carbon trading'], a: 1 },
+        { q: 'The Paris Agreement aims to limit warming to...', opts: ['0.5°C above pre-industrial', '1.5\u00B0C above pre-industrial', '5°C above pre-industrial'], a: 1 },
+        { q: 'Which sector produces the most greenhouse emissions?', opts: ['Transportation', 'Energy & electricity', 'Residential buildings'], a: 1 },
         { q: 'Methane is how many times more potent than CO\u2082?', opts: ['2\u00D7', '10\u00D7', '28\u00D7'], a: 2 },
-        { q: 'What is the Great Green Wall?', opts: ['A border wall', 'A reforestation project across Africa', 'A type of solar panel'], a: 1 },
+        { q: 'What is the Great Green Wall?', opts: ['A border wall along the Sahara Desert', 'A reforestation project across Africa', 'A type of solar panel'], a: 1 },
         // ── Expanded: Keeling Curve & atmospheric CO₂ ──
         { q: 'In what year did atmospheric CO\u2082 first cross 400 parts per million?', opts: ['1970', '1990', '2013', '2023'], a: 2 },
-        { q: 'The Keeling Curve measures CO\u2082 at what famous location?', opts: ['Antarctica', 'Mauna Loa, Hawaii', 'The North Pole', 'Mount Everest'], a: 1 },
+        { q: 'The Keeling Curve measures CO\u2082 at what famous location?', opts: ['Antarctica', 'Mauna Loa, Hawaii', 'The North Pole ice cap', 'Mount Everest'], a: 1 },
         { q: 'Pre-industrial atmospheric CO\u2082 was about:', opts: ['180 ppm', '280 ppm', '380 ppm', '480 ppm'], a: 1 },
         // ── Tipping points ──
         { q: 'Which climate "tipping point" may already be triggered at just 1.5\u00B0C warming?', opts: ['The Sahara turning green', 'Mass coral reef bleaching', 'The Gulf Stream reversing', 'The Moon\'s orbit'], a: 1 },
-        { q: 'The AMOC (Atlantic Meridional Overturning Circulation) is famous because it:', opts: ['Moves deep-sea creatures', 'Regulates European climate', 'Creates hurricanes', 'Produces oxygen'], a: 1 },
-        { q: 'Why does permafrost melting worry climate scientists?', opts: ['It floods coastlines', 'It releases trapped methane', 'It changes the compass', 'It kills all plants'], a: 1 },
+        { q: 'The AMOC (Atlantic Meridional Overturning Circulation) is famous because it:', opts: ['Moves deep-sea creatures north', 'Regulates European climate', 'Creates hurricanes', 'Produces oxygen'], a: 1 },
+        { q: 'Why does permafrost melting worry climate scientists?', opts: ['It floods coastlines', 'It releases trapped methane', 'It changes the magnetic compass', 'It kills all plants'], a: 1 },
         // ── Phenology / pollinator link ──
-        { q: 'Climate change is disrupting which critical timing for pollinators?', opts: ['Egg laying', 'Flower bloom vs. bee emergence', 'Hibernation depth', 'Wing molting'], a: 1 },
-        { q: 'A "phenological mismatch" happens when:', opts: ['Clocks change seasons', 'Flowers bloom before pollinators are active', 'Birds fly upside down', 'Trees grow sideways'], a: 1 },
+        { q: 'Climate change is disrupting which critical timing for pollinators?', opts: ['Egg laying', 'Flower bloom vs. bee emergence', 'Hibernation depth in winter dens', 'Wing molting'], a: 1 },
+        { q: 'A "phenological mismatch" happens when:', opts: ['Daylight saving clocks shift the growing seasons', 'Flowers bloom before pollinators are active', 'Birds fly upside down', 'Trees grow sideways'], a: 1 },
         // ── Energy / grid facts ──
         { q: 'Which country generates the highest share of its electricity from wind?', opts: ['United States', 'China', 'Denmark', 'Japan'], a: 2 },
         { q: 'A modern offshore wind turbine can power approximately how many homes?', opts: ['~160', '~1,600', '~16,000', '~160,000'], a: 2 },
         // ── Justice ──
         { q: 'What share of global emissions comes from the richest 10% of people?', opts: ['~5%', '~20%', '~50%', '~80%'], a: 2 },
         // ── New content coverage: sectors, Drawdown, budget ──
-        { q: 'What single sector produces roughly 25% of global greenhouse emissions?', opts: ['Transportation', 'Electricity & heat', 'Aviation', 'Agriculture'], a: 1 },
+        { q: 'What single sector produces roughly 25% of global greenhouse emissions?', opts: ['Road transportation', 'Electricity & heat', 'Aviation', 'Agriculture'], a: 1 },
         { q: 'Agriculture + land use accounts for roughly what share of global emissions?', opts: ['~5%', '~10%', '~24%', '~50%'], a: 2 },
-        { q: 'According to Project Drawdown, which solution has the largest gigaton avoidance potential by 2050?', opts: ['Electric vehicles', 'Onshore wind turbines', 'Rooftop solar', 'Direct air capture'], a: 1 },
-        { q: 'One of Drawdown\'s top-ranked solutions is not a technology — it is:', opts: ['Skyscrapers', 'Girls\' education + family planning', 'Nuclear fission', 'Carbon trading'], a: 1 },
+        { q: 'According to Project Drawdown, which solution has the largest gigaton avoidance potential by 2050?', opts: ['Electric vehicles', 'Onshore wind turbines', 'Rooftop solar', 'Direct air capture plants'], a: 1 },
+        { q: 'One of Drawdown\'s top-ranked solutions is not a technology — it is:', opts: ['Skyscrapers', 'Girls\' education + family planning', 'Next-generation nuclear fission plants', 'Carbon trading'], a: 1 },
         { q: 'Roughly how many years of emissions remain in the 1.5°C carbon budget at today\'s burn rate?', opts: ['~60 years', '~25 years', '~6 years', 'Already exceeded'], a: 2 },
         { q: 'Which AI workload has the LARGEST per-use carbon footprint?', opts: ['Text chat', 'Image generation', 'Video generation', 'Voice TTS'], a: 2 },
         { q: 'Global temperature has risen approximately how much above pre-industrial levels (as of 2024)?', opts: ['+0.3°C', '+1.3°C', '+2.5°C', '+4.0°C'], a: 1 },
         // ── IPCC scenarios ──
         { q: 'Which IPCC scenario stays closest to the Paris Agreement 1.5°C target?', opts: ['SSP1-1.9', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5'], a: 0 },
         { q: 'Current policies put the world roughly on which IPCC pathway?', opts: ['SSP1-1.9 (Paris-aligned)', 'SSP1-2.6 (strong action)', 'SSP2-4.5 (middle)', 'SSP5-8.5 (fossil-fueled)'], a: 2 },
-        { q: 'What does "SSP" stand for in IPCC future scenarios?', opts: ['Solar and Storage Plan', 'Shared Socioeconomic Pathway', 'State Science Policy', 'Sustainable Systems Project'], a: 1 },
+        { q: 'What does "SSP" stand for in IPCC future scenarios?', opts: ['Solar and Storage Plan', 'Shared Socioeconomic Pathway', 'State Science Policy', 'Sustainable Systems Planning Project'], a: 1 },
         // ── Historical responsibility ──
-        { q: 'Which single country is responsible for approximately 25% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'Russia', 'United States', 'India'], a: 2 },
-        { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
+        { q: 'Which single country is responsible for approximately 25% of all historical CO\u2082 emissions since 1850?', opts: ['China', 'United Kingdom', 'United States', 'India'], a: 2 },
+        { q: 'What is the "Loss & Damage" fund (created at COP27, 2022)?', opts: ['A climate insurance company that is owned by the United Nations', 'A pool where high-emitting countries pay vulnerable nations', 'A carbon trading scheme', 'A weather disaster loan'], a: 1 },
         { q: 'Greta Thunberg\'s global school strike movement is called:', opts: ['Sunrise Movement', 'Fridays for Future', '350.org', 'Extinction Rebellion'], a: 1 },
         // \u2500\u2500 Per-capita inversion + climate justice deepening \u2500\u2500
         { q: 'An average American has emitted roughly 1,545 tons of CO\u2082 over their lifetime. An average Bangladeshi has emitted about 13 tons. The American per-capita figure is roughly how many times larger?', opts: ['~12\u00d7', '~50\u00d7', '~120\u00d7', '~1,200\u00d7'], a: 2 },
         { q: 'Compared to the rest of the world\u2019s oceans, the Gulf of Maine has been warming:', opts: ['Slower than average', 'About average', 'Faster than 75% of them', 'Faster than 99% of them'], a: 3 },
-        { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half', 'About 10%', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
+        { q: 'Total pledges to the COP27 Loss & Damage Fund as of COP28 are approximately what fraction of one year of the lower-bound estimated need (~$400B/yr)?', opts: ['About half (around 50%)', 'About 10% (around one tenth)', 'About 1%', 'Less than 1% (around 0.16%)'], a: 3 },
         { q: 'Approximately how many people have been internally displaced by weather disasters since IDMC began tracking in 2008?', opts: ['~3.7 million', '~37 million', '~376 million', '~3.7 billion'], a: 2 },
         { q: 'The Wabanaki Nations \u2014 Penobscot, Passamaquoddy, Maliseet, and Mi\u2019kmaq \u2014 have lived in what is now Maine for at least:', opts: ['~500 years', '~2,000 years', '~12,000 years', '~50,000 years'], a: 2 },
-        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for any country\u2019s asylum'], a: 2 }
+        { q: 'Under the 1951 UN Refugee Convention, people forced across an international border by climate impacts are currently:', opts: ['Recognized as refugees with full protections', 'Recognized as climate migrants since 2015', 'Not yet recognized as refugees \u2014 the legal category is still being built', 'Automatically eligible for asylum in any country that has signed the Convention'], a: 2 }
       ];
+
+      // Move each question's correct answer onto a cycling target slot. As
+      // authored, 27 of 30 four-option answers sat at B or C (1/14/13/2) and
+      // the scanner had excused the file on phantom arithmetic; the `a:` index
+      // spelling also hid this bank from both scanners until 2026-08-23.
+      // Slot-targeted for an exactly uniform spread; deterministic so the order
+      // is stable across renders, sessions and exports. Same pattern as
+      // economicslab / galaxy / magnetism / allobotsage / cultureexplorer.
+      (function () {
+        var SLOTS = [0, 2, 1, 3];
+        var counter = 0;
+        QUIZ.forEach(function (item) {
+          if (!item || !Array.isArray(item.opts) || typeof item.a !== 'number') return;
+          var len = item.opts.length;
+          if (len < 2 || item.a < 0 || item.a >= len) return;
+          var target = SLOTS[counter++ % SLOTS.length] % len;
+          var shift = (item.a - target + len) % len;
+          if (!shift) return;
+          item.opts = item.opts.slice(shift).concat(item.opts.slice(0, shift));
+          item.a = target;
+        });
+      })();
+
 
       // ═══ CANVAS: Donut Chart ═══
       function drawDonut(canvas, ct) {
