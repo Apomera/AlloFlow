@@ -668,6 +668,36 @@ window.SelHub = window.SelHub || {
     ]
   };
 
+  // Move each body-language answer onto a cycling target slot. As authored,
+  // 16 of 34 answers across the two banks sat at slot A (16/9/6/3 = 47%) and
+  // NEITHER bank shuffles - BL_QUIZ and BL_READER_QUIZ both render
+  // `options` in declared order every render, so "always pick the first one"
+  // scored 47% blind. Both grade by STRING (`opt === q.answer`), so rotating
+  // `options` alone is sufficient: there is no answer index to remap.
+  // Slot-targeted for an exactly uniform spread, and deterministic so the
+  // order is stable across renders, sessions and exports. Same pattern as
+  // advocacy / cultureexplorer in this hub.
+  (function () {
+    var SLOTS = [0, 2, 1, 3];
+    var counter = 0;
+    function spread(list) {
+      if (!Array.isArray(list)) return;
+      list.forEach(function (item) {
+        if (!item || !Array.isArray(item.options) || typeof item.answer !== 'string') return;
+        var len = item.options.length;
+        var cur = item.options.indexOf(item.answer);
+        if (len < 2 || cur < 0) return;
+        var target = SLOTS[counter++ % SLOTS.length] % len;
+        var shift = (cur - target + len) % len;
+        if (!shift) return;
+        item.options = item.options.slice(shift).concat(item.options.slice(0, shift));
+      });
+    }
+    spread(BL_QUIZ);
+    Object.keys(BL_READER_QUIZ).forEach(function (band) { spread(BL_READER_QUIZ[band]); });
+  })();
+
+
   // ══════════════════════════════════════════════════════════════
   // ── Active Listening Challenge — Deep Practice ──
   // ══════════════════════════════════════════════════════════════
