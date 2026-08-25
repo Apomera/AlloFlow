@@ -7436,6 +7436,30 @@ var d = labToolData.plateTectonics || {};
           }
           var ptBand = ptGradeBand();
 
+          // ── The reference shelf, and the one tab where it must not be open ──
+          // Everything below the tab content is deliberately a shelf: the three
+          // boundary types, magnitude vs intensity, the boundary simulator and
+          // the epicentre widget stay on the page whatever tab you are on, so a
+          // student can dip into them mid-task. That is right everywhere except
+          // the quiz.
+          //
+          // Measured against the bank: FOUR of the eight questions are answered
+          // by the shelf sitting under them. "What type of boundary creates the
+          // Himalayas?" has "the Andes, Japan, the Himalaya" printed under
+          // CONVERGENT about four hundred pixels below the question; "What forms
+          // at a divergent boundary in the ocean?" has the ridge under DIVERGENT;
+          // subduction is drawn in the convergent cell; and the simulator labels
+          // its own convection limbs, which is question five. Scrolling is not
+          // retrieval.
+          //
+          // So the shelf starts CLOSED on the quiz tab and opens on request — the
+          // student can still look, deliberately, which is a different act from
+          // reading an answer they did not know they were being shown. Once a
+          // full pass through the bank is done it opens on its own, because then
+          // the shelf is for review.
+          var ptQuizPassDone = quizIdx >= QUIZZES.length;
+          var ptShelfOpen = simTab !== 'quiz' || ptQuizPassDone || !!d.ptShelfOpen;
+
           // ── 🧠 Plate Tectonics Myths — grade-banded misconceptions, each falsifiable
           // in the sim. Plate tectonics is the single most misconception-dense earth-
           // science topic (solid-yet-flowing mantle, plates-float-on-magma, continents-
@@ -8066,6 +8090,12 @@ var d = labToolData.plateTectonics || {};
 
               settleBoundary(dragIdx);
 
+              // A plate you have let go of is not moving. vx is read to decide
+              // whether a gap is opening or closing, so leaving the last drag's
+              // direction on it would keep a released plate "travelling" and let
+              // a stale sign speak for a boundary nobody is touching.
+              if (plates[dragIdx]) plates[dragIdx].vx = 0;
+
               dragIdx = -1;
 
             };
@@ -8527,10 +8557,41 @@ var d = labToolData.plateTectonics || {};
                 if (gap < -cW * (PT_MAX_OVERLAP + 0.006)) return null;
                 var mid = (a.x + a.w + b.x) / 2;
                 if (gap > cW * 0.004) {
+                  // ★ A gap is not a divergent boundary. Plates MOVING APART are.
+                  //
+                  // Under mantle drift the seam that starts nearest the downwelling
+                  // limb spends its first several seconds closing through this band,
+                  // and calling it divergent meant the model opened by captioning a
+                  // closing gap "the two plates are moving APART" — directly above
+                  // its own label reading "cool rock sinks" and coupling arrows
+                  // pointing at each other. The tool's whole claim is that
+                  // convection drives the plates; the first thing a student saw
+                  // contradicted it.
+                  //
+                  // vx is the flow the drift already applies, and the drag and
+                  // keyboard routes write it too, so this asks the one question
+                  // that decides the answer: is the gap opening or closing?
+                  //
+                  // Asked of the PLATES, never of who moved them: which plate the
+                  // student happens to be dragging must not change the verdict, and
+                  // a released plate has its vx cleared so a stale sign cannot
+                  // speak for a boundary nobody is touching.
+                  var closing = (b.vx || 0) - (a.vx || 0) < -0.02;
+                  if (closing) return null;
                   var bothOcean = a.type === 'oceanic' && b.type === 'oceanic';
+                  var bothLand = a.type === 'continental' && b.type === 'continental';
                   return {
                     kind: 'divergent',
-                    label: bothOcean ? 'Divergent — mid-ocean ridge' : 'Divergent — continental rift',
+                    // ★ Ocean-meets-continent pulling apart is NOT a continental
+                    // rift — a rift splits continental lithosphere, which is why
+                    // the example given for it is East Africa. Naming this case
+                    // honestly is worth more than forcing it into one of the two
+                    // familiar labels: what a widening ocean-continent seam becomes
+                    // is a passive margin, and those are not plate boundaries.
+                    label: bothOcean ? 'Divergent — mid-ocean ridge'
+                      : bothLand ? 'Divergent — continental rift'
+                      : 'Divergent — rifting margin',
+                    sub: bothOcean || bothLand ? null : 'ocean and continent pulling apart',
                     gap: gap, mid: mid, a: a, b: b
                   };
                 }
@@ -9590,8 +9651,29 @@ var d = labToolData.plateTectonics || {};
 
               // Amplitude. Magnitude is logarithmic, so a whole unit is about ten
               // times the shaking; the trace has to reflect that or the slider is
-              // just a label. Anchored at M5 and clamped so M9 stays in the box.
-              var gain = Math.min(1, Math.pow(10, (eqMagnitude - 5) / 1.6) / 22);
+              // just a label.
+              //
+              // ★ But drawn at true log scale with M9 fitting the box, the panel's
+              // OWN DEFAULT (M5) came out at four per cent of the available
+              // amplitude — a flat line. The three arrivals this panel exists to
+              // show, and the S-minus-P gap the epicentre method rests on, were
+              // invisible until a student happened to drag the slider past about
+              // M7. The first thing shown taught nothing.
+              //
+              // The law is not the problem — the normalisation was. So the true
+              // logarithmic amplitude is still what drives this, and it is then
+              // compressed openly, which is the same choice the Magnitude vs
+              // Intensity panel makes further down the page: an abbreviation you
+              // declare beats a distortion you hide.
+              //
+              // logA is the honest ratio (M9 fills the box, M5 is four per cent of
+              // it). Taking a root of it keeps the ordering and the steepness while
+              // lifting the bottom of the slider into view, and the floor keeps a
+              // trace on the screen at M1 so the arrivals stay readable at every
+              // setting. The true ratio is the panel below's job; the ORDER and the
+              // S-minus-P gap are this one's, and those have to work everywhere.
+              var logA = Math.min(1, Math.pow(10, (eqMagnitude - 5) / 1.6) / 22);
+              var gain = 0.14 + 0.86 * Math.pow(logA, 0.45);
               // Distance also damps it: the same quake read further away is smaller.
               gain *= Math.max(0.25, Math.min(1, 700 / Math.max(120, eqDistKm)));
               // Scaled to the room actually left between the label rows above and
@@ -9921,8 +10003,10 @@ var d = labToolData.plateTectonics || {};
                           'data-pt-start-step': st.tab || st.scrollTo,
                           onClick: function () {
                             if (st.tab) { setTab(st.tab); return; }
+                            // The shelf this points at is put away on the quiz tab,
+                            // so a missing target means "open it", not "do nothing".
                             var target = document.getElementById(st.scrollTo);
-                            if (!target) return;
+                            if (!target) { upd({ ptShelfOpen: true }); return; }
                             try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
                             catch (e) { target.scrollIntoView(); }
                             // Move focus too, or a keyboard or screen-reader user is
@@ -10293,7 +10377,15 @@ var d = labToolData.plateTectonics || {};
                     motion: 'The two plates are moving APART, so a gap opens between them.',
                     rock: 'Hot mantle rock rises into the gap, melts because the pressure on it drops, and freezes as brand-new lithosphere. The plates do not stretch — new plate is MADE at the seam.',
                     look: 'Watch the stripes of new rock filling the gap. They are youngest at the middle and older toward each plate, and the pattern is a mirror image on both sides. That symmetry is how seafloor spreading was proved.',
-                    real: 'The Mid-Atlantic Ridge, which is widening the Atlantic by a few centimetres a year; the East African Rift, splitting a continent now.'
+                    // Named to match whichever divergent case is actually on screen.
+                    // A ridge, a continental rift and an ocean-continent seam pulling
+                    // apart are three different things, and the last one is the reason
+                    // this is worth splitting: it is not a plate boundary at all in
+                    // the finished Earth, it is how a passive margin is made.
+                    real: 'The Mid-Atlantic Ridge, which is widening the Atlantic by a few centimetres a year; the East African Rift, splitting a continent now.',
+                    realOceanRidge: 'The Mid-Atlantic Ridge, which is widening the Atlantic by a few centimetres a year, and the East Pacific Rise.',
+                    realContinentalRift: 'The East African Rift, splitting a continent now; the Rio Grande Rift.',
+                    realRiftingMargin: 'The Red Sea, where Arabia has pulled clear of Africa and new ocean floor has started to form between them. Keep going and the two sides stop being a boundary at all: they become quiet Atlantic-style coasts, riding along inside one plate each.'
                   }
                 };
                 var TONES = {
@@ -10358,7 +10450,17 @@ var d = labToolData.plateTectonics || {};
                         row('What is moving', note.motion),
                         row('What happens to the rock', note.rock),
                         row('What to look for on the model', note.look),
-                        row('Where this is real', note.real))
+                        // Divergence comes in three flavours and the label already
+                        // says which one is on screen; the example has to agree with
+                        // it, or a student pulling an ocean plate off a continent is
+                        // pointed at the East African Rift.
+                        row('Where this is real', (function () {
+                          var lbl = (ptFocusBoundary && ptFocusBoundary.label) || '';
+                          if (/mid-ocean ridge/i.test(lbl) && note.realOceanRidge) return note.realOceanRidge;
+                          if (/continental rift/i.test(lbl) && note.realContinentalRift) return note.realContinentalRift;
+                          if (/rifting margin/i.test(lbl) && note.realRiftingMargin) return note.realRiftingMargin;
+                          return note.real;
+                        })()))
                     : React.createElement('div', { style: { fontSize: 13, lineHeight: 1.55, marginTop: 6, color: body } },
                         'Move two plates until they meet or pull apart, and this panel will name the boundary you made and explain what the model is showing. Leaving mantle drift on lets the currents do it for you.')
                 );
@@ -10748,19 +10850,30 @@ var d = labToolData.plateTectonics || {};
 
                 // Damage scale
 
-                React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-4" },
+                // \u2605 The slider runs to M9 and the simulation's own subduction
+                // quakes land between M7.4 and M9.1, but the tiers stopped at
+                // "Strong (6-7)" and lit that card for everything above M6. So a
+                // student who built a megathrust and watched it trace here was
+                // told they had made a "Strong (6-7)" \u2014 the panel could not name
+                // the class of earthquake the rest of the tool spends its time on.
+                // Each tier now carries its own band and the top of the scale has
+                // a name; `lo` drives the highlight so the bands cannot drift out
+                // of step with the labels the way the hard-coded test had.
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" },
 
                   [
 
-                    { range: '1-3', label: __alloT('stem.platetectonics.minor', 'Minor'), desc: __alloT('stem.platetectonics.barely_felt', 'Barely felt'), color: '#22c55e', ink: '#15803d', inkDark: '#86efac', icon: '\u2705' },
+                    { range: '1-3', lo: 0, hi: 4, label: __alloT('stem.platetectonics.minor', 'Minor'), desc: __alloT('stem.platetectonics.barely_felt', 'Barely felt'), color: '#22c55e', ink: '#15803d', inkDark: '#86efac', icon: '\u2705' },
 
-                    { range: '4-5', label: __alloT('stem.platetectonics.light', 'Light'), desc: __alloT('stem.platetectonics.rattling_minor_damage', 'Rattling, minor damage'), color: '#f59e0b', ink: '#92400e', inkDark: '#fcd34d', icon: '\u26A0\uFE0F' },
+                    { range: '4-5', lo: 4, hi: 6, label: __alloT('stem.platetectonics.light', 'Light'), desc: __alloT('stem.platetectonics.rattling_minor_damage', 'Rattling, minor damage'), color: '#f59e0b', ink: '#92400e', inkDark: '#fcd34d', icon: '\u26A0\uFE0F' },
 
-                    { range: '6-7', label: __alloT('stem.platetectonics.strong', 'Strong'), desc: __alloT('stem.platetectonics.structural_damage', 'Structural damage'), color: '#ef4444', ink: '#b91c1c', inkDark: '#fca5a5', icon: '\uD83C\uDFDA\uFE0F' },
+                    { range: '6-7', lo: 6, hi: 8, label: __alloT('stem.platetectonics.strong', 'Strong'), desc: __alloT('stem.platetectonics.structural_damage', 'Structural damage'), color: '#ef4444', ink: '#b91c1c', inkDark: '#fca5a5', icon: '\uD83C\uDFDA\uFE0F' },
+
+                    { range: '8-9', lo: 8, hi: 99, label: __alloT('stem.platetectonics.great', 'Great'), desc: __alloT('stem.platetectonics.great_desc', 'Megathrust \u2014 whole regions shake'), color: '#7c3aed', ink: '#5b21b6', inkDark: '#c4b5fd', icon: '\uD83C\uDF0A' },
 
                   ].map(function(d2) {
 
-                    var isActive = (d2.range === '1-3' && eqMagnitude < 4) || (d2.range === '4-5' && eqMagnitude >= 4 && eqMagnitude < 6) || (d2.range === '6-7' && eqMagnitude >= 6);
+                    var isActive = eqMagnitude >= d2.lo && eqMagnitude < d2.hi;
 
                     return React.createElement("div", { key: d2.range, className: "p-3 rounded-xl border-2 text-center transition-all " + (isActive ? "shadow-lg scale-105" : "opacity-60"), style: { borderColor: d2.color, background: isActive ? d2.color + '20' : (isDark ? '#0f172a' : 'white'), color: isDark ? '#e2e8f0' : undefined } },
 
@@ -10826,7 +10939,7 @@ var d = labToolData.plateTectonics || {};
                     'data-pt-seis-note': 'true'
                   },
                     __alloT('stem.platetectonics.seis_note',
-                      'P waves arrive first, S waves next, and the slow surface waves last — which is why they do most of the damage, and why the ground shakes hardest well after the first jolt. The gap between P and S grows with distance, so one recording tells you HOW FAR away the quake was: about 8.4 kilometres for every second of the gap. Three stations, three distances, and you have the epicentre — which is exactly what the Epicenter Triangulation panel below does.')
+                      'P waves arrive first, S waves next, and the slow surface waves last — which is why they do most of the damage, and why the ground shakes hardest well after the first jolt. The gap between P and S grows with distance, so one recording tells you HOW FAR away the quake was: about 8.4 kilometres for every second of the gap. Three stations, three distances, and you have the epicentre — which is exactly what the Epicenter Triangulation panel below does. One honest warning about this picture: the height of the trace is compressed. A real M9 shakes the ground hundreds of times harder than an M5, and at that scale an M5 would be a flat line here, so the wiggles are squeezed to keep every arrival readable. Use the Magnitude vs Intensity panel below for the true size difference; use this one for the ORDER and the TIMING.')
                   )
                 )
 
@@ -26177,8 +26290,38 @@ var d = labToolData.plateTectonics || {};
 
             ),
 
+            // The shelf opener, shown only while the shelf is closed (quiz tab,
+            // mid-pass). Naming what is behind it matters: a student who wants
+            // the boundary table should not have to guess that it still exists.
+            !ptShelfOpen && React.createElement('div', {
+              key: 'pt-shelf-closed',
+              'data-pt-shelf-closed': 'true',
+              className: 'mt-5 mx-4 rounded-2xl border p-3',
+              style: { background: isDark ? '#1a1210' : '#fff7ed', borderColor: isDark ? 'rgba(251,146,60,0.35)' : '#fdba74' }
+            },
+              React.createElement('div', { className: 'text-[13px] font-bold mb-1', style: { color: isDark ? '#fdba74' : '#9a3412' } },
+                __alloT('stem.platetectonics.shelf_hidden_title', 'The reference shelf is put away while you answer')),
+              React.createElement('div', { className: 'text-[12px] mb-2', style: { color: isDark ? '#d6d3d1' : '#57534e' } },
+                __alloT('stem.platetectonics.shelf_hidden_body', 'The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to \u2014 it reopens on its own once you have been through all eight.')),
+              React.createElement('button', {
+                type: 'button',
+                'data-pt-shelf-open': 'true',
+                onClick: function() { upd({ ptShelfOpen: true }); },
+                className: 'px-3 py-1.5 rounded-lg text-[12px] font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none',
+                style: {
+                  background: isDark ? '#7c2d12' : '#ffedd5',
+                  // WCAG 1.4.11 wants 3:1 for the visible edge of a control. Taking
+                  // the border from the card's own palette gave 2.53:1 on dark and
+                  // 1.59:1 on light — the button read as a flat block with no edge.
+                  // These are 10.9:1 and 4.9:1 against the card behind them.
+                  borderColor: isDark ? '#fdba74' : '#c2410c',
+                  color: isDark ? '#ffedd5' : '#7c2d12'
+                }
+              }, __alloT('stem.platetectonics.shelf_open_btn', 'Show the reference shelf'))
+            ),
+
             // \u2550\u2550\u2550 TECTONIC BOUNDARIES \u2550\u2550\u2550
-            React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-red-300 bg-white p-3 shadow-sm' },
+            ptShelfOpen && React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-red-300 bg-white p-3 shadow-sm' },
               React.createElement('h4', { className: 'text-sm font-bold text-red-700 mb-2' }, __alloT('stem.platetectonics.three_boundary_types_where_plates_meet', '\ud83c\udf0b Three Boundary Types - Where plates meet')),
               // The shell's aspect ratio is a CSS class, not an inline value: the
               // panel stacks its three cells on a narrow screen, and a stacked
@@ -26537,7 +26680,7 @@ var d = labToolData.plateTectonics || {};
             ),
 
             // \u2550\u2550\u2550 MERCALLI vs RICHTER \u2550\u2550\u2550
-            React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-orange-300 bg-white p-3 shadow-sm' },
+            ptShelfOpen && React.createElement('div', { className: 'mt-5 mx-4 rounded-2xl border border-orange-300 bg-white p-3 shadow-sm' },
               React.createElement('h4', { className: 'text-sm font-bold text-orange-700 mb-2' }, __alloT('stem.platetectonics.earthquake_scales_magnitude_vs_intensi', '\ud83d\udccf Earthquake Scales - Magnitude vs Intensity')),
               // Theme-aware and taller: two captioned columns need more than a
               // 16:5 strip, and they stack on a narrow screen (see .pt-eq-shell).
@@ -26737,10 +26880,10 @@ var d = labToolData.plateTectonics || {};
             ),
 
             // ═══ INTERACTIVE PLATE BOUNDARY SIMULATOR ═══
-            React.createElement(window.AlloTectonicsInteractive, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR }),
+            ptShelfOpen && React.createElement(window.AlloTectonicsInteractive, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR }),
 
             // ═══ INTERACTIVE EPICENTER TRIANGULATION ═══
-            React.createElement(window.AlloTectonicsEpicenter, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, addToast: addToast })
+            ptShelfOpen && React.createElement(window.AlloTectonicsEpicenter, { darkMode: isDark, isContrast: isContrast, palette: props.palette, announceToSR: announceToSR, addToast: addToast })
 
           );
       })();

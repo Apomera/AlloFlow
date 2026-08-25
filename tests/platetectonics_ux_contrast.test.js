@@ -55,8 +55,11 @@ describe('Landing screen — a way in', () => {
 
   it('moves focus with the scroll, not just the viewport', () => {
     const text = src();
+    // The window is meant to be "this handler", not a byte budget for it. At 900
+    // it failed on a two-line comment being added inside the body, which is a
+    // property of the slice and not of the behaviour under test.
     const step = text.slice(text.indexOf("var target = document.getElementById(st.scrollTo)"),
-                            text.indexOf("var target = document.getElementById(st.scrollTo)") + 900);
+                            text.indexOf("var target = document.getElementById(st.scrollTo)") + 1500);
     expect(step).toMatch(/scrollIntoView/);
     expect(step).toMatch(/\[data-tect-section\]/);
     expect(step).toMatch(/focus\(/);
@@ -803,5 +806,95 @@ describe('Contrast — colour coding and legibility split apart', () => {
     expect(guardBody, 'bail-out leaves the spinner running').toMatch(/aiLoading: false/);
     expect(text, 'AI result is still consumed without a thenable check')
       .not.toMatch(/callGemini\(prompt, false, false, 0\.5\)\.then/);
+  });
+});
+
+describe('The reference shelf is not an answer key', () => {
+  // Everything below the tab content is deliberately a shelf that stays on the
+  // page whatever tab you are on — right everywhere except the quiz. Counted
+  // against the bank: FOUR of the eight questions are answered by the panels
+  // sitting under them. "What type of boundary creates the Himalayas?" has "the
+  // Andes, Japan, the Himalaya" printed under CONVERGENT about four hundred
+  // pixels below the question; "What forms at a divergent boundary in the
+  // ocean?" has the ridge under DIVERGENT; subduction is drawn in the
+  // convergent cell; and the simulator labels its own convection limbs, which
+  // is question five. Scrolling is not retrieval.
+  it('puts the shelf away while the quiz is being answered', () => {
+    const text = src();
+    expect(text).toMatch(/var ptShelfOpen = simTab !== 'quiz'/);
+    // Reopens on its own once a full pass is done — then the shelf is for review.
+    expect(text).toMatch(/var ptQuizPassDone = quizIdx >= QUIZZES\.length/);
+    expect(text).toMatch(/ptQuizPassDone \|\| !!d\.ptShelfOpen/);
+  });
+
+  it('gates every panel of the shelf, not just the one that gives away question one', () => {
+    const text = src();
+    // All four: the boundary-types panel, magnitude vs intensity, the boundary
+    // simulator and the epicentre widget.
+    const gated = text.match(/ptShelfOpen && React\.createElement/g) || [];
+    expect(gated.length, 'expected all four shelf panels to be gated').toBeGreaterThanOrEqual(4);
+    expect(text).toMatch(/ptShelfOpen && React\.createElement\(window\.AlloTectonicsInteractive/);
+    expect(text).toMatch(/ptShelfOpen && React\.createElement\(window\.AlloTectonicsEpicenter/);
+  });
+
+  it('says where the shelf went and lets the student open it anyway', () => {
+    const text = src();
+    // Hiding it silently would just look broken, and a student who wants the
+    // boundary table should not have to guess it still exists.
+    expect(text).toMatch(/'data-pt-shelf-closed': 'true'/);
+    expect(text).toMatch(/'data-pt-shelf-open': 'true'/);
+    expect(text).toMatch(/shelf_open_btn/);
+    expect(text).toMatch(/upd\(\{ ptShelfOpen: true \}\)/);
+  });
+
+  it('keeps the Start here step working when the shelf it points at is closed', () => {
+    const text = src();
+    // Step 2 scrolls to the boundary simulator, which is now conditional. A
+    // missing target must open the shelf, not leave the button inert.
+    expect(text).toMatch(/if \(!target\) \{ upd\(\{ ptShelfOpen: true \}\); return; \}/);
+  });
+});
+
+describe('The magnitude panel can name the earthquakes the tool makes', () => {
+  it('carries a tier above Strong', () => {
+    const text = src();
+    // The slider runs to M9 and settleBoundary produces 7.4-9.1 for subduction,
+    // but the tiers stopped at "Strong (6-7)" and lit that card for everything
+    // from M6 up. A student who built a megathrust, watched it trace on the
+    // seismograph and came here was told they had made a "Strong (6-7)".
+    expect(text).toMatch(/range: '8-9'/);
+    expect(text).toMatch(/stem\.platetectonics\.great'/);
+    expect(text).toMatch(/Megathrust/);
+  });
+
+  it('derives the highlight from the tier bands instead of restating them', () => {
+    const text = src();
+    // The old test was three hard-coded comparisons that had to be kept in step
+    // with three hard-coded labels by hand, which is how M8 and M9 ended up
+    // inside a card reading 6-7.
+    expect(text).toMatch(/var isActive = eqMagnitude >= d2\.lo && eqMagnitude < d2\.hi/);
+    expect(text, 'the hard-coded band test is back')
+      .not.toMatch(/d2\.range === '6-7' && eqMagnitude >= 6\)/);
+  });
+});
+
+describe('The seismogram is readable at its own default', () => {
+  it('lifts the trace off the baseline without abandoning the log law', () => {
+    const text = src();
+    // Drawn at true log scale with M9 filling the box, the panel's own default
+    // (M5) came out at four per cent of the available amplitude — a flat line,
+    // with the three arrivals it exists to show invisible until a student
+    // happened to drag past about M7. The law is still the basis; it is the
+    // normalisation that was wrong.
+    expect(text).toMatch(/Math\.pow\(10, \(eqMagnitude - 5\) \/ 1\.6\)/);
+    expect(text).toMatch(/var gain = 0\.14 \+ 0\.86 \* Math\.pow\(logA, 0\.45\)/);
+  });
+
+  it('declares the compression rather than hiding it', () => {
+    const text = src();
+    // Same choice the Magnitude vs Intensity panel makes further down the page:
+    // an abbreviation you declare beats a distortion you hide.
+    expect(text).toMatch(/the height of the trace is compressed/);
+    expect(text).toMatch(/use this one for the ORDER and the TIMING/);
   });
 });

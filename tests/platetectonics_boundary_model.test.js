@@ -513,3 +513,73 @@ describe('Plate Tectonics — deployed copies', () => {
     expect(text).toMatch(/var VP = PT_SEISMIC\.VP, VS = PT_SEISMIC\.VS, VL = PT_SEISMIC\.VL/);
   });
 });
+
+describe('Plate Tectonics — a gap is not a boundary until the plates say so', () => {
+  // Measured before this rule existed: on load, with mantle drift running, the
+  // seam nearest the DOWNWELLING limb spends its first several seconds closing
+  // through the divergent band. The model captioned it "Divergent — the two
+  // plates are moving APART" while its own label directly beneath read "cool
+  // rock sinks" and the coupling arrows under it pointed at each other. The
+  // tool's central claim is that convection drives the plates, and the first
+  // boundary it put in focus contradicted it. Probed again after: no boundary
+  // in focus until the seam closes, then "convergent, subduction".
+  it('refuses to call a CLOSING gap divergent', () => {
+    const body = fnBody('classifyPair');
+    // The question has to be asked of the plates' own motion.
+    expect(body, 'classifyPair never consults vx').toMatch(/\.vx/);
+    expect(body, 'no closing test in the divergent branch').toMatch(/closing/);
+    // And it must bail rather than label it.
+    expect(body).toMatch(/if \(closing\) return null;/);
+  });
+
+  it('asks the plates, not who dragged them', () => {
+    // The verdict must not depend on which plate the student happens to hold —
+    // the dense plate sinks either way. Guarded here as well as on the
+    // subduction branch, because the closing test was the newest place this
+    // could have crept back in.
+    const body = fnBody('classifyPair');
+    expect(body, 'classification consults dragIdx').not.toMatch(/dragIdx/);
+  });
+
+  it('clears a released plate\'s velocity so a stale sign cannot speak for it', () => {
+    const text = src();
+    // vx decides whether a gap is opening or closing. A plate you let go of is
+    // not moving, and leaving the last drag direction on it would let a boundary
+    // nobody is touching be judged by a movement that finished.
+    const up = text.slice(text.indexOf('var mouseUp = function()'), text.indexOf('var mouseUp = function()') + 600);
+    // ★ The first draft of this asserted only /plates\[dragIdx\]\.vx = 0/, which
+    // matched happily when the statement was disabled as
+    // `if (false && plates[dragIdx]) plates[dragIdx].vx = 0;`. Calibration caught
+    // it: a substring that survives its own sabotage is not an assertion. Pin the
+    // whole statement, guard included.
+    expect(up).toMatch(/if \(plates\[dragIdx\]\)\s*plates\[dragIdx\]\.vx = 0;/);
+  });
+
+  it('names all three kinds of divergence, and does not call them all rifts', () => {
+    const body = fnBody('classifyPair');
+    // A continental rift splits CONTINENTAL lithosphere — that is why the
+    // example given for it is East Africa. Ocean-meets-continent pulling apart
+    // was being handed that same label, and with it a continental-rift
+    // explanation, because the old test was a bare `bothOcean ? ridge : rift`.
+    expect(body).toMatch(/bothOcean/);
+    expect(body).toMatch(/bothLand/);
+    expect(body).toMatch(/Divergent — mid-ocean ridge/);
+    expect(body).toMatch(/Divergent — continental rift/);
+    expect(body).toMatch(/Divergent — rifting margin/);
+    // The mixed case must not fall through to either familiar label.
+    expect(body, 'a mixed pair can still be called a continental rift')
+      .not.toMatch(/bothOcean \? 'Divergent — mid-ocean ridge' : 'Divergent — continental rift'/);
+  });
+
+  it('points each kind of divergence at an example that is actually that kind', () => {
+    const text = src();
+    expect(text).toMatch(/realOceanRidge:/);
+    expect(text).toMatch(/realContinentalRift:/);
+    expect(text).toMatch(/realRiftingMargin:/);
+    // The rifting-margin case is the one worth splitting out: it is how a
+    // passive margin forms, and it stops being a plate boundary at all.
+    expect(text).toMatch(/realRiftingMargin: 'The Red Sea/);
+    // And the panel has to actually choose between them.
+    expect(text).toMatch(/rifting margin\/i\.test\(lbl\)/);
+  });
+});
