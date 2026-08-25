@@ -405,7 +405,7 @@ window.StemLab = window.StemLab || {
     easy: [
       {
         q: 'What is a genotype?',
-        a: ['The genetic makeup of an organism', 'The physical appearance', 'A type of protein', 'A chromosome number'],
+        a: ['The genetic makeup of an organism', 'The physical appearance of an organism', 'A type of protein', 'A chromosome number'],
         correct: 0,
         concept: 'genotype',
         wrongFeedback: [
@@ -525,7 +525,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Which scientist discovered the structure of DNA?',
-        a: ['Mendel', 'Watson & Crick', 'Darwin', 'Pasteur'],
+        a: ['Mendel', 'Watson & Crick', 'Charles Darwin', 'Pasteur'],
         correct: 1,
         concept: 'genotype',
         wrongFeedback: [
@@ -563,7 +563,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Why are X-linked recessive traits more common in males?',
-        a: ['Males have two X chromosomes', 'Males need only one copy on X', 'Y chromosome is dominant', 'Males have stronger alleles'],
+        a: ['Males have two X chromosomes plus a Y', 'Males need only one copy on X', 'Y chromosome is dominant', 'Males have stronger alleles'],
         correct: 1,
         concept: 'heterozygous',
         wrongFeedback: [
@@ -575,7 +575,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'What is codominance?',
-        a: ['One allele masks the other', 'Neither is expressed', 'Both alleles fully expressed', 'Alleles blend together'],
+        a: ['One allele partially masks the other', 'Neither is expressed', 'Both alleles fully expressed', 'Alleles blend together'],
         correct: 2,
         concept: 'codominance',
         wrongFeedback: [
@@ -587,7 +587,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'A test cross uses which parent genotype?',
-        a: ['Homozygous dominant', 'Heterozygous', 'Homozygous recessive', 'Codominant'],
+        a: ['Homozygous dominant only', 'Heterozygous', 'Homozygous recessive', 'Codominant'],
         correct: 2,
         concept: 'homozygous',
         wrongFeedback: [
@@ -611,7 +611,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'What separates during meiosis I?',
-        a: ['Sister chromatids', 'Homologous chromosomes', 'Centromeres', 'Nucleotides'],
+        a: ['Sister chromatids of each pair', 'Homologous chromosomes', 'Centromeres', 'Nucleotides'],
         correct: 1,
         concept: 'allele',
         wrongFeedback: [
@@ -623,7 +623,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'What is a pedigree chart used for?',
-        a: ['Making DNA', 'Tracking traits in families', 'Counting chromosomes', 'Cloning organisms'],
+        a: ['Making DNA', 'Tracking traits in families', 'Counting chromosomes in a cell', 'Cloning organisms'],
         correct: 1,
         concept: 'pedigree',
         wrongFeedback: [
@@ -709,7 +709,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Epistasis occurs when:',
-        a: ['Genes are linked', 'One gene masks another gene', 'Alleles blend', 'Mutations accumulate'],
+        a: ['Genes are linked', 'One gene masks another gene', 'Alleles blend', 'Mutations accumulate in one gene'],
         correct: 1,
         concept: 'genotype',
         wrongFeedback: [
@@ -721,7 +721,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Which is NOT a Hardy-Weinberg assumption?',
-        a: ['No mutation', 'Random mating', 'Natural selection occurs', 'Large population'],
+        a: ['No mutation', 'Random mating', 'Natural selection occurs', 'Infinitely large population'],
         correct: 2,
         concept: 'geneticDrift',
         wrongFeedback: [
@@ -757,7 +757,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'The codon AUG codes for:',
-        a: ['Stop', 'Leucine', 'Methionine (Start)', 'Alanine'],
+        a: ['Stop', 'Leucine (six codons)', 'Methionine (Start)', 'Alanine'],
         correct: 2,
         concept: 'genotype',
         wrongFeedback: [
@@ -769,7 +769,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Polygenic inheritance produces:',
-        a: ['Discrete ratios', 'Continuous variation', 'Sex-linked traits', 'Lethal alleles'],
+        a: ['Discrete Mendelian ratios', 'Continuous variation', 'Sex-linked traits', 'Lethal alleles'],
         correct: 1,
         concept: 'phenotype',
         wrongFeedback: [
@@ -793,7 +793,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'A frameshift mutation is caused by:',
-        a: ['Substitution', 'Insertion or deletion', 'Translocation', 'Inversion'],
+        a: ['Substitution', 'Insertion or deletion', 'Chromosomal translocation', 'Inversion'],
         correct: 1,
         concept: 'genotype',
         wrongFeedback: [
@@ -829,7 +829,7 @@ window.StemLab = window.StemLab || {
       },
       {
         q: 'Epigenetic changes alter gene expression by:',
-        a: ['Changing DNA sequence', 'Modifying chromatin/methylation', 'Deleting genes', 'Adding chromosomes'],
+        a: ['Changing the underlying DNA base sequence', 'Modifying chromatin/methylation', 'Deleting genes', 'Adding chromosomes'],
         correct: 1,
         concept: 'genotype',
         wrongFeedback: [
@@ -977,7 +977,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'What does a Punnett square predict?',
-      a: ['Exact offspring', 'Offspring probabilities', 'Parent age', 'Mutation rate'],
+      a: ['Exact offspring genotypes', 'Offspring probabilities', 'Parent age', 'Mutation rate'],
       correct: 1,
       dmg: 15,
       concept: 'phenotype',
@@ -1003,7 +1003,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'Which organelle has its own DNA?',
-      a: ['Ribosome', 'Mitochondria', 'Golgi body', 'Lysosome'],
+      a: ['Ribosome', 'Mitochondria', 'Golgi apparatus', 'Lysosome'],
       correct: 1,
       dmg: 20,
       concept: 'genotype',
@@ -1016,7 +1016,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'A nonsense mutation creates a:',
-      a: ['New amino acid', 'Premature stop codon', 'Stronger protein', 'Frameshift'],
+      a: ['New amino acid', 'Premature stop codon', 'Stronger, longer protein', 'Frameshift'],
       correct: 1,
       dmg: 25,
       concept: 'genotype',
@@ -1029,7 +1029,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'The law of segregation says:',
-      a: ['Genes are linked', 'Alleles separate in meiosis', 'DNA never changes', 'Cells divide equally'],
+      a: ['Genes are linked', 'Alleles separate in meiosis', 'DNA never changes', 'Cells divide their alleles equally'],
       correct: 1,
       dmg: 15,
       concept: 'allele',
@@ -1042,7 +1042,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'A karyotype shows:',
-      a: ['DNA sequence', 'Chromosome pairs arranged by size', 'Protein structure', 'Cell organelles'],
+      a: ['DNA sequence', 'Chromosome pairs arranged by size', 'Protein structure of each chromosome', 'Cell organelles'],
       correct: 1,
       dmg: 20,
       concept: 'genotype',
@@ -1055,7 +1055,7 @@ window.StemLab = window.StemLab || {
     },
     {
       q: 'What is genetic drift?',
-      a: ['Planned breeding', 'Random allele frequency change', 'Mutation accumulation', 'Natural selection'],
+      a: ['Planned breeding', 'Random allele frequency change', 'Mutation accumulation over generations', 'Natural selection'],
       correct: 1,
       dmg: 20,
       concept: 'geneticDrift',

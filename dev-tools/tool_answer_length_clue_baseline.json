@@ -13,8 +13,8 @@
       "items": 113
     },
     "stem_lab/pets": {
-      "uniq": 14,
-      "severe": 11,
+      "uniq": 0,
+      "severe": 0,
       "items": 15
     },
     "stem_lab/fireecology": {
@@ -38,8 +38,8 @@
       "items": 69
     },
     "stem_lab/lifeskills": {
-      "uniq": 10,
-      "severe": 1,
+      "uniq": 0,
+      "severe": 0,
       "items": 12
     },
     "stem_lab/roadready": {
@@ -48,13 +48,13 @@
       "items": 284
     },
     "stem_lab/behaviorlab": {
-      "uniq": 12,
-      "severe": 1,
+      "uniq": 0,
+      "severe": 0,
       "items": 16
     },
     "stem_lab/nutritionlab": {
-      "uniq": 16,
-      "severe": 13,
+      "uniq": 0,
+      "severe": 0,
       "items": 22
     },
     "stem_lab/raptorhunt": {
@@ -68,13 +68,13 @@
       "items": 62
     },
     "stem_lab/cell": {
-      "uniq": 10,
-      "severe": 1,
+      "uniq": 4,
+      "severe": 0,
       "items": 18
     },
     "stem_lab/magnetism": {
-      "uniq": 12,
-      "severe": 1,
+      "uniq": 0,
+      "severe": 0,
       "items": 22
     },
     "stem_lab/platetectonics": {
@@ -83,7 +83,7 @@
       "items": 8
     },
     "stem_lab/statslab": {
-      "uniq": 11,
+      "uniq": 0,
       "severe": 0,
       "items": 25
     },
@@ -103,7 +103,7 @@
       "items": 26
     },
     "stem_lab/punnett": {
-      "uniq": 19,
+      "uniq": 0,
       "severe": 0,
       "items": 55
     },
@@ -123,8 +123,8 @@
       "items": 14
     },
     "stem_lab/chembalance": {
-      "uniq": 19,
-      "severe": 5,
+      "uniq": 8,
+      "severe": 3,
       "items": 73
     },
     "stem_lab/universe": {

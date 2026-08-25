@@ -913,19 +913,19 @@ dataRef.current = d;
 
             1: { q: 'In positive reinforcement, what happens to the behavior?', opts: ['It decreases', 'It increases', 'It stays the same', 'It disappears'], correct: 1, explain: 'Positive reinforcement ADDS a stimulus that INCREASES the future probability of a behavior.' },
 
-            2: { q: 'What is shaping?', opts: ['Punishing wrong behaviors', 'Reinforcing successive approximations', 'Ignoring all behaviors', 'Only reinforcing the final behavior'], correct: 1, explain: 'Shaping involves differentially reinforcing successive approximations toward the target behavior.' },
+            2: { q: 'What is shaping?', opts: ['Punishing wrong behaviors', 'Reinforcing successive approximations', 'Ignoring all behaviors', 'Only reinforcing the final behavior once it appears'], correct: 1, explain: 'Shaping involves differentially reinforcing successive approximations toward the target behavior.' },
 
-            3: { q: 'What is an extinction burst?', opts: ['A permanent increase in behavior', 'A temporary increase before behavior decreases', 'When a new behavior appears', 'When reinforcement increases'], correct: 1, explain: 'An extinction burst is a temporary INCREASE in the frequency or intensity of a behavior when reinforcement is suddenly discontinued.' },
+            3: { q: 'What is an extinction burst?', opts: ['A permanent increase in behavior after reinforcement stops', 'A temporary increase before behavior decreases', 'When a new behavior appears', 'When reinforcement increases'], correct: 1, explain: 'An extinction burst is a temporary INCREASE in the frequency or intensity of a behavior when reinforcement is suddenly discontinued.' },
 
-            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After random responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
+            4: { q: 'In an FR-3 schedule, when is reinforcement delivered?', opts: ['After every response', 'After every 3rd response', 'After a random number of responses', 'After 3 minutes'], correct: 1, explain: 'Fixed Ratio (FR-3) delivers reinforcement after every 3rd response — a fixed number of responses.' },
 
-            5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
+            5: { q: 'What does SD (discriminative stimulus) signal?', opts: ['Punishment is coming', 'Reinforcement is available', 'Extinction has started for the behavior', 'The session is over'], correct: 1, explain: 'An SD signals that reinforcement is available for a specific behavior. It "sets the occasion" for that behavior.' },
 
-            7: { q: 'In a behavior chain, what serves as the SD for the next step?', opts: ['The reinforcer', 'The completion of the previous step', 'A timer', 'The first behavior'], correct: 1, explain: 'In a behavior chain, completing each step produces the discriminative stimulus (SD) for the next step in the sequence.' },
+            7: { q: 'In a behavior chain, what serves as the SD for the next step?', opts: ['The reinforcer', 'The completion of the previous step', 'A timer', 'The first behavior in the whole chain'], correct: 1, explain: 'In a behavior chain, completing each step produces the discriminative stimulus (SD) for the next step in the sequence.' },
 
-            8: { q: 'What does DRO reinforce?', opts: ['The target behavior', 'The absence of a specific behavior', 'Only aggressive behaviors', 'Random behaviors'], correct: 1, explain: 'DRO (Differential Reinforcement of Other behavior) delivers reinforcement when a specified behavior does NOT occur for a set interval.' },
+            8: { q: 'What does DRO reinforce?', opts: ['The target behavior', 'The absence of a specific behavior', 'Only aggressive behaviors that happen at a set time', 'Random behaviors'], correct: 1, explain: 'DRO (Differential Reinforcement of Other behavior) delivers reinforcement when a specified behavior does NOT occur for a set interval.' },
 
-            9: { q: 'In classical conditioning, what is the conditioned stimulus (CS)?', opts: ['The food that causes salivation', 'The salivation response', 'A neutral stimulus paired with the US', 'The lab equipment'], correct: 2, explain: 'The CS starts as a neutral stimulus (like a bell) that gains the ability to elicit a response only after being repeatedly paired with the US (food).' }
+            9: { q: 'In classical conditioning, what is the conditioned stimulus (CS)?', opts: ['The food that naturally causes salivation', 'The salivation response', 'A neutral stimulus paired with the US', 'The lab equipment'], correct: 2, explain: 'The CS starts as a neutral stimulus (like a bell) that gains the ability to elicit a response only after being repeatedly paired with the US (food).' }
 
           };
 
@@ -1258,19 +1258,19 @@ dataRef.current = d;
               explain: 'Correct! Post-reinforcement pauses are characteristic of FR schedules. Switching to a VR schedule maintains the same average ratio but eliminates the predictable pause pattern.',
               better: 'VR schedules produce steady, high rates of responding because the learner cannot predict exactly when reinforcement will occur.' },
             { id: 6, scenario: 'A student has learned to raise their hand in the classroom but does not do it at home or in other settings.', question: __alloT('stem.behaviorlab.what_aba_concept_does_this_illustrate', 'What ABA concept does this illustrate?'),
-              options: ['Extinction', 'Stimulus generalization failure', 'Shaping', 'Chaining'], correct: 1,
+              options: ['Extinction of the trained response', 'Stimulus generalization failure', 'Shaping', 'Chaining'], correct: 1,
               explain: 'The behavior has not generalized across settings. The hand-raising is under tight stimulus control of the classroom environment only.',
               better: 'Program for generalization from the start: train in multiple settings, with multiple people, and reinforce the behavior in all environments.' },
             { id: 7, scenario: 'A therapist is teaching a child to brush their teeth using forward chaining. The child can do steps 1-3 independently.', question: __alloT('stem.behaviorlab.what_should_the_therapist_do_next', 'What should the therapist do next?'),
-              options: ['Start over', 'Teach step 4 and prompt remaining steps', 'Skip to the last step', 'Remove all prompts'], correct: 1,
+              options: ['Start over', 'Teach step 4 and prompt remaining steps', 'Skip to the last step and reinforce completion', 'Remove all prompts'], correct: 1,
               explain: 'In forward chaining, you teach the chain from the beginning. Steps 1-3 are independent, so now teach step 4 while prompting/assisting remaining steps.',
               better: 'Forward chaining builds momentum because the learner always starts with mastered steps. Each new step is the SD for the next prompted step.' },
             { id: 8, scenario: 'A teacher wants to reduce a student calling out in class but does not want to use punishment.', question: __alloT('stem.behaviorlab.which_procedure_would_be_most_appropri', 'Which procedure would be MOST appropriate?'),
-              options: ['Extinction only', 'DRA (reinforce hand-raising)', 'Time-out', 'Response cost'], correct: 1,
+              options: ['Extinction only, with no replacement', 'DRA (reinforce hand-raising)', 'Time-out', 'Response cost'], correct: 1,
               explain: 'DRA (Differential Reinforcement of Alternative behavior) reinforces an appropriate alternative (hand-raising) that serves the same function. It reduces calling out without punishment.',
               better: 'DRA is preferred because it teaches what TO do (not just what NOT to do), aligns with the least restrictive principle, and builds new skills.' },
             { id: 9, scenario: 'During a Pavlovian conditioning experiment, you pair a tone (NS) with food (US) 10 times. On trial 11, you present the tone alone.', question: __alloT('stem.behaviorlab.what_do_you_expect', 'What do you expect?'),
-              options: ['No response', 'Conditioned response (salivation)', 'Extinction', 'Spontaneous recovery'], correct: 1,
+              options: ['No response', 'Conditioned response (salivation)', 'Extinction', 'Spontaneous recovery of the old response'], correct: 1,
               explain: 'After repeated CS-US pairings, the tone (now a CS) should elicit a conditioned response (CR = salivation) even without the food (US). This is acquisition!',
               better: 'The strength of the CR depends on the number of pairings, the timing (best with forward delay), and the salience of the CS and US.' },
             { id: 10, scenario: 'A BCBAs client has been making great progress on a program. The insurance company is reviewing whether to continue funding.', question: __alloT('stem.behaviorlab.what_should_the_bcba_present', 'What should the BCBA present?'),
@@ -1282,7 +1282,7 @@ dataRef.current = d;
               explain: 'In DRO, if the target behavior occurs at ANY point during the interval, the timer resets. No reinforcement is delivered. The learner must go the full interval without the behavior.',
               better: 'This is exactly what Level 8 in the simulator teaches! The mouse must refrain from pressing the lever for the full DRO interval.' },
             { id: 12, scenario: 'A parent reports that their child "had an extinction burst" when they stopped giving candy for tantrums. They want to give in.', question: __alloT('stem.behaviorlab.what_is_the_best_advice', 'What is the best advice?'),
-              options: ['Give the candy to stop the tantrum', 'Stay the course \u2014 extinction burst is expected', 'Try punishment instead', 'Increase the candy amount'], correct: 1,
+              options: ['Give the candy to stop the tantrum before it escalates', 'Stay the course \u2014 extinction burst is expected', 'Try punishment instead', 'Increase the candy amount'], correct: 1,
               explain: 'Extinction bursts are temporary increases BEFORE the behavior decreases. Giving in during a burst teaches the child that MORE INTENSE tantrums work! This is the worst time to reinforce.',
               better: 'Warn parents about extinction bursts BEFORE starting extinction. Staying consistent through the burst is critical for success.' }
           ];

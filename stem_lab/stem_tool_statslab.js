@@ -5180,7 +5180,7 @@ window.StemLab = window.StemLab || {
         'There is a 3% chance the alternative hypothesis is wrong.',
         'There is a 3% chance the null hypothesis is true.',
         'IF the null hypothesis were true, data this extreme would occur 3% of the time.',
-        'The treatment works 97% of the time.'
+        'The treatment works 97% of the time, so only 3% of patients will fail to respond.'
       ], correct: 2,
       explain: 'A p-value is conditional on H₀. It is NOT the probability that H₀ is true, NOR the probability the result is "real." It is: given H₀, how often would you see data this extreme by chance.'
     },
@@ -5205,7 +5205,7 @@ window.StemLab = window.StemLab || {
       explain: 'Type II = failing to detect a real effect. Probability = β. Power = 1 − β. Most common cause: too small a sample size to detect a small/medium effect.'
     },
     { tags: ['universal', 'type_error', 'power'], q: 'A study finds a non-significant result. Which is the most likely cause if the underlying effect is real but small?',
-      choices: ['Type I error', 'Low statistical power (small n)', 'P-hacking', 'A coding mistake'],
+      choices: ['Type I error', 'Low statistical power (small n)', 'P-hacking', 'A coding mistake in the analysis'],
       correct: 1,
       explain: 'When effects are small, you need a large sample to detect them. Non-sig + suspected real effect = consider increasing n. Power = probability of correctly detecting a real effect.'
     },
@@ -5228,7 +5228,7 @@ window.StemLab = window.StemLab || {
     { tags: ['universal', 'ci'], q: 'A 95% confidence interval for the difference between two means is [-1.2, 5.8]. Which statement is correct?',
       choices: [
         'The result is significant at α = .05 because the CI is wide.',
-        'The result is significant at α = .05 because 0 is inside the CI.',
+        'The result is significant at α = .05 because 0 is inside the CI, near its center.',
         'The result is NOT significant at α = .05 because 0 is inside the CI.',
         'There is a 95% chance the true difference is exactly 2.3.'
       ], correct: 2,
@@ -5236,7 +5236,7 @@ window.StemLab = window.StemLab || {
     },
     { tags: ['universal', 'ci'], q: 'What does it mean for a procedure to produce a 95% confidence interval?',
       choices: [
-        'There is a 95% probability the true value is in this specific interval.',
+        'There is a 95% probability the true value is in this specific interval, and a 5% chance it is outside.',
         'If you repeated the procedure many times, 95% of the resulting intervals would contain the true value.',
         '95% of the data are in the interval.',
         '95% of similar studies will agree.'
@@ -5264,7 +5264,7 @@ window.StemLab = window.StemLab || {
         'Conclude all 4 groups differ from each other.',
         'Conclude no groups differ.',
         'Run a post-hoc test (e.g., Tukey HSD) to identify which specific pairs differ.',
-        'Run separate t-tests on every pair without correction.'
+        'Run separate t-tests on every pair without correction, since the ANOVA already controls the error rate.'
       ], correct: 2,
       explain: 'Significant F just means SOMEWHERE there is a difference. Post-hoc tests like Tukey HSD identify which specific pairs and control family-wise error.'
     },
@@ -5278,7 +5278,7 @@ window.StemLab = window.StemLab || {
         'Ice cream causes drowning.',
         'Drowning causes ice cream sales.',
         'A third variable (e.g., hot weather) influences both.',
-        'Statistical artifact; r should be 0.'
+        'Statistical artifact; with n this large r should be 0.'
       ], correct: 2,
       explain: 'Classic confound: hot summer days drive both. Correlation never proves causation. Always consider lurking variables.'
     },
@@ -5288,18 +5288,18 @@ window.StemLab = window.StemLab || {
       explain: 'Predicting one continuous variable from another → linear regression. ŷ = a + b·x.'
     },
     { tags: ['chiSquareGoodnessOfFit', 'test_id'], q: 'A geneticist counts 165 brown-eyed and 35 blue-eyed offspring (n=200) and wants to test against an expected 3:1 ratio. What test fits?',
-      choices: ['t-test', 'Chi-square goodness-of-fit', 'ANOVA', 'Pearson correlation'],
+      choices: ['t-test', 'Chi-square goodness-of-fit', 'ANOVA', 'Pearson product-moment correlation'],
       correct: 1,
       explain: 'Categorical outcome compared to a theoretical proportion → chi-square goodness-of-fit. Expected: 150 brown, 50 blue. Test the gap.'
     },
     { tags: ['chiSquareIndependence', 'test_id'], q: 'You cross-tabulate handedness (left/right) by major (STEM/Humanities/Arts) and want to test for an association. What test?',
-      choices: ['ANOVA', 'Independent t-test', 'Chi-square test of independence', 'Linear regression'],
+      choices: ['ANOVA', 'Independent-samples t-test on the counts', 'Chi-square test of independence', 'Linear regression'],
       correct: 2,
       explain: 'Two categorical variables, looking for association in a contingency table → chi-square test of independence.'
     },
     { tags: ['mannWhitneyU', 'test_id', 'nonparametric'], q: 'When should you use Mann-Whitney U instead of an independent t-test?',
       choices: [
-        'When the data are continuous and normally distributed.',
+        'When the data are continuous and normally distributed with equal variances.',
         'When the data are ordinal/ranked or strongly non-normal.',
         'When you want a more powerful test.',
         'When the sample size is very large.'
@@ -5329,7 +5329,7 @@ window.StemLab = window.StemLab || {
     { tags: ['universal', 'power'], q: 'Power is the probability of:',
       choices: [
         'Rejecting H₀ when it is true.',
-        'Failing to reject H₀ when it is false.',
+        'Failing to reject H₀ when it is actually false.',
         'Correctly rejecting H₀ when it is false.',
         'Getting a small p-value.'
       ], correct: 2,
@@ -5346,7 +5346,7 @@ window.StemLab = window.StemLab || {
     },
     // Effect size translation
     { tags: ['universal', 'effect_size'], q: 'A correlation of r = .30 in absolute value is conventionally:',
-      choices: ['negligible', 'small-to-medium', 'large', 'perfect'],
+      choices: ['negligible (near zero)', 'small-to-medium', 'large', 'perfect'],
       correct: 1,
       explain: 'Cohen\'s benchmarks for r: .10 small, .30 medium, .50 large. So .30 sits at the medium threshold.'
     },
