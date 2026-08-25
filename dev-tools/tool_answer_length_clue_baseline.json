@@ -3,8 +3,8 @@
   "_rule": "uniq = key uniquely longest; severe = key >= longestDistractor + 20 AND >= longestDistractor * 1.75",
   "tools": {
     "stem_lab/learning_lab": {
-      "uniq": 62,
-      "severe": 52,
+      "uniq": 0,
+      "severe": 0,
       "items": 64
     },
     "stem_lab/autorepair": {
