@@ -1375,22 +1375,32 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(44, 1, 0.5, 2000);
-      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.95));
-      var dl = new T.DirectionalLight(0xffffff, 0.62);
+      // ★ Total scene intensity, not any one light, decides whether the rock
+      // reads as rock. r128 does no tone mapping and this is a Lambert scene,
+      // so the shaded colour is simply colour x SUM(light), clamped at 1. At the
+      // old 0.95 + 0.62 + 0.34 + 0.30 = 2.21, the country rock (0x57534e) came
+      // out around #BFB8B0 — cream — and the dark bed (0x231f1c) lifted with it,
+      // so five alternating beds collapsed into one pale block that read as
+      // plaster. That is not cosmetic: the dike cutting ACROSS the beds while
+      // the sill runs ALONG them is the whole point of this cutaway, and it
+      // needs the beds to be tellable apart. Now 1.46 total.
+      // Checked by screenshotting the block before and after, not by arithmetic.
+      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.42));
+      var dl = new T.DirectionalLight(0xffffff, 0.48);
       dl.position.set(-60, 95, 85);
       scene.add(dl);
       // Fill from the camera's own side. With the key light alone behind and to
       // the left, the flank of the cone the student is actually looking at was
       // unlit, and a grey mountain against a near-black canvas read as a black
       // triangle with no shape in it at all.
-      var fill = new T.DirectionalLight(0xffffff, 0.34);
+      var fill = new T.DirectionalLight(0xffffff, 0.30);
       fill.position.set(70, 40, 90);
       scene.add(fill);
       // The block opens by DEFAULT, so most of what the camera sees is the inside
       // of the far half — surfaces whose normals point away from every light in
       // the scene. Directional light alone left the cone a flat black triangle:
       // the anatomy view was showing the student the unlit back of the mountain.
-      scene.add(new T.AmbientLight(0xffffff, 0.30));
+      scene.add(new T.AmbientLight(0xffffff, 0.26));
 
       var CLIP = [clipPlane];
 
