@@ -100,6 +100,42 @@ if (errors.length) {
   process.exit(1);
 }
 
+// This tree lives under OneDrive, which intermittently holds a handle on a file it is
+// syncing and makes writeFileSync throw UNKNOWN (errno -4094). A run that dies between
+// the pack write and the mirror write leaves the two copies disagreeing, so write to a
+// sibling temp file and rename it into place (rename is atomic and far less contended),
+// retrying briefly while the sync settles.
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+function writeFileResilient(target, data) {
+  const tmp = target + '.tmp.' + process.pid;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      fs.writeFileSync(tmp, data, 'utf8');
+      fs.renameSync(tmp, target);
+      return;
+    } catch (err) {
+      try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (_) { /* best effort */ }
+      if (attempt >= 5) throw err;
+      sleepSync(200 * attempt);
+    }
+  }
+}
+
+function copyFileResilient(from, to) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      fs.copyFileSync(from, to);
+      return;
+    } catch (err) {
+      if (attempt >= 5) throw err;
+      sleepSync(200 * attempt);
+    }
+  }
+}
+
 function setDeep(obj, dotPath, value) {
   const segs = dotPath.split('.');
   let cur = obj;
@@ -124,21 +160,33 @@ for (const [slug, entries] of Object.entries(payload)) {
     changed++;
   }
   const out = JSON.stringify(json, null, 2) + '\n';
-  if (APPLY && changed) {
-    fs.copyFileSync(packPath, packPath + '.bak.' + STAMP);
-    fs.writeFileSync(packPath, out, 'utf8');
-    if (fs.existsSync(mirrorPath)) {
-      fs.copyFileSync(mirrorPath, mirrorPath + '.bak.' + STAMP);
-      fs.writeFileSync(mirrorPath, out, 'utf8');
+
+  // `changed` is measured against the ROOT pack only. If a previous run died between
+  // the two writes (OneDrive throws EUNKNOWN on a locked file often enough to matter),
+  // root is current while the mirror still holds the old text — and root-only accounting
+  // calls that "already correct" and skips it, leaving the deploy serving the bad string.
+  // Compare the mirror against the exact bytes we are about to write instead.
+  const mirrorExists = fs.existsSync(mirrorPath);
+  const mirrorStale = mirrorExists && fs.readFileSync(mirrorPath, 'utf8') !== out;
+
+  if (APPLY && (changed || mirrorStale)) {
+    if (changed) {
+      copyFileResilient(packPath, packPath + '.bak.' + STAMP);
+      writeFileResilient(packPath, out);
+    }
+    if (mirrorExists) {
+      copyFileResilient(mirrorPath, mirrorPath + '.bak.' + STAMP);
+      writeFileResilient(mirrorPath, out);
     } else {
-      report.push({ slug, changed, noop, warn: 'mirror missing' });
+      report.push({ slug, changed, noop, mirrorStale, warn: 'mirror missing' });
       continue;
     }
-    // Re-read and re-parse what we just wrote: a pack that no longer parses is the one
-    // failure this tool must never leave behind.
+    // Re-read and re-parse BOTH copies: a pack that no longer parses is the one failure
+    // this tool must never leave behind, and the mirror is the copy that actually ships.
     JSON.parse(fs.readFileSync(packPath, 'utf8'));
+    JSON.parse(fs.readFileSync(mirrorPath, 'utf8'));
   }
-  report.push({ slug, changed, noop });
+  report.push({ slug, changed, noop, mirrorStale });
 }
 
 const totalChanged = report.reduce((n, r) => n + r.changed, 0);
@@ -147,6 +195,8 @@ console.log(`apply_stale_hand_fix: ${entryCount} entry/entries across ${report.l
   `${totalChanged} to write, ${totalNoop} already correct. ${APPLY ? 'WRITTEN' : 'DRY RUN (pass --apply to write)'}`);
 for (const r of report) {
   console.log(`  ${r.slug.padEnd(24)} ${String(r.changed).padStart(3)} changed` +
-    (r.noop ? `, ${r.noop} already correct` : '') + (r.warn ? `  [${r.warn}]` : ''));
+    (r.noop ? `, ${r.noop} already correct` : '') +
+    (r.mirrorStale ? `  [mirror out of sync${APPLY ? ' — resynced' : ', will resync'}]` : '') +
+    (r.warn ? `  [${r.warn}]` : ''));
 }
 if (APPLY) console.log(`\nBackups: lang/<slug>.js.bak.${STAMP} (+ mirror). Next: npm run verify:stale-delta, then bless the keys.`);
