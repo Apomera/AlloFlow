@@ -388,17 +388,17 @@ var d = (labToolData.companionPlanting) || {};
 
             { q: 'What role do squash leaves play in the Three Sisters system?', opts: ['Structural support', 'Living mulch', 'Nitrogen fixation'], correct: 'Living mulch', explain: 'Squash\'s large leaves shade the soil, retaining moisture, cooling roots, and suppressing weed growth — acting as living mulch.' },
 
-            { q: 'Why are beans planted around the corn stalks?', opts: ['For shade', 'To climb the stalks', 'For color'], correct: 'To climb the stalks', explain: 'Corn provides a natural trellis for bean vines to climb, replacing the need for artificial supports.' },
+            { q: 'Why are beans planted around the corn stalks?', opts: ['For shade from the leaves', 'To climb the stalks', 'For color'], correct: 'To climb the stalks', explain: 'Corn provides a natural trellis for bean vines to climb, replacing the need for artificial supports.' },
 
-            { q: 'The milpa system originated approximately how many years ago?', opts: ['500 years', '2,000 years', '7,000+ years'], correct: '7,000+ years', explain: 'Archaeological evidence traces the milpa companion planting system to Mesoamerica over 7,000 years ago.' },
+            { q: 'The milpa system originated approximately how many years ago?', opts: ['500-600 years', '2,000 years', '7,000+ years'], correct: '7,000+ years', explain: 'Archaeological evidence traces the milpa companion planting system to Mesoamerica over 7,000 years ago.' },
 
-            { q: 'Corn and beans together provide a complete protein because:', opts: ['They taste good together', 'Their amino acid profiles complement each other', 'They grow at the same rate'], correct: 'Their amino acid profiles complement each other', explain: 'Corn is rich in methionine but low in lysine; beans are rich in lysine but low in methionine. Together they form a complete protein.' },
+            { q: 'Corn and beans together provide a complete protein because:', opts: ['They taste good together', 'Their amino acid profiles complement each other', 'They grow at the same rate and ripen in the same week'], correct: 'Their amino acid profiles complement each other', explain: 'Corn is rich in methionine but low in lysine; beans are rich in lysine but low in methionine. Together they form a complete protein.' },
 
-            { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric N₂ into plant-usable ammonia through nitrogenase enzyme.' },
+            { q: 'What organisms in bean root nodules actually fix nitrogen?', opts: ['Mycorrhizal fungi networks', 'Rhizobium bacteria', 'Earthworms'], correct: 'Rhizobium bacteria', explain: 'Rhizobium bacteria form a symbiotic relationship with legume roots, converting atmospheric N₂ into plant-usable ammonia through nitrogenase enzyme.' },
 
-            { q: 'How do prickly squash stems help the garden?', opts: ['They attract pollinators', 'They deter pests like raccoons and deer', 'They provide nutrients'], correct: 'They deter pests like raccoons and deer', explain: 'The spiny, prickly stems and vines of many squash varieties create a natural barrier that discourages animals from entering the garden.' },
+            { q: 'How do prickly squash stems help the garden?', opts: ['They attract pollinators', 'They deter pests like raccoons and deer', 'They provide nutrients when they break down in the soil'], correct: 'They deter pests like raccoons and deer', explain: 'The spiny, prickly stems and vines of many squash varieties create a natural barrier that discourages animals from entering the garden.' },
 
-            { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-há-ko', 'Teosinte'], correct: 'De-oh-há-ko', explain: 'De-oh-há-ko means "they sustain us" — the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
+            { q: 'What is the Haudenosaunee name for the Three Sisters?', opts: ['Milpa', 'De-oh-há-ko', 'Teosinte (wild corn)'], correct: 'De-oh-há-ko', explain: 'De-oh-há-ko means "they sustain us" — the Haudenosaunee view the Three Sisters as inseparable spiritual beings, not merely crops.' }
 
           ];
 

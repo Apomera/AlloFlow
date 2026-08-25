@@ -34,4 +34,19 @@ describe('tool answer-length-clue ratchet', () => {
     const base = JSON.parse(fs.readFileSync('dev-tools/tool_answer_length_clue_baseline.json', 'utf8'));
     expect(base.tools['sel_hub/civicaction']).toEqual({ uniq: 0, severe: 0, items: 24 });
   });
+
+  it('string-valued answers are measured: schema D coverage cannot silently regress', () => {
+    // 2026-08-25: `correct: 'Nitrite'` / `answer: '...'` banks were invisible
+    // to the scanner. Adding schema D lifted aquarium from 100 to 146 measured
+    // items and made flightsim (50 items) appear at all; both were then paid
+    // down to zero by hand. The ITEM counts are the coverage pin - if someone
+    // narrows the answer-field regexes again, aquarium falls back to 100 and
+    // flightsim disappears, and this test says so.
+    const base = JSON.parse(fs.readFileSync('dev-tools/tool_answer_length_clue_baseline.json', 'utf8'));
+    expect(base.tools['stem_lab/aquarium']).toEqual({ uniq: 0, severe: 0, items: 146 });
+    expect(base.tools['stem_lab/flightsim']).toEqual({ uniq: 0, severe: 0, items: 50 });
+    expect(base.tools['stem_lab/companionplanting']).toEqual({ uniq: 0, severe: 0, items: 18 });
+    expect(base.tools['stem_lab/fisherlab']).toEqual({ uniq: 0, severe: 0, items: 70 });
+    expect(base.tools['stem_lab/beehive']).toEqual({ uniq: 0, severe: 0, items: 24 });
+  });
 });

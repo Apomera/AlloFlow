@@ -70,6 +70,12 @@ function judge(opts, idx, stats) {
   // "False" being one character longer than "True" is neither a real cue nor
   // fixable. The licensure-pack rule likewise judges 4-choice items only.
   if (opts.length < 3) return;
+  // snake_case id option sets (`['el_crossed', 'el_smile', ...]` in sel social's
+  // body-language reader) are keys the tool maps to cue sentences at render
+  // time; their source length says nothing about what the learner sees. Plain
+  // lowercase words ('nucleus', 'kind') stay measured - they render as-is, and
+  // a broader "identifier" rule silently dropped 38 real allobotsage items.
+  if (opts.every((o) => /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/.test(o))) { stats.skipped++; return; }
   const lens = opts.map((o) => o.length);
   const maxLen = Math.max(...lens);
   const others = lens.filter((_, j) => j !== idx);
@@ -132,6 +138,23 @@ for (const dir of DIRS) {
       if (idx < 0 || opts.length < 2 || opts.length > 6) continue;
       judge(opts, idx, stats);
     }
+    // Schema D: STRING-valued answer (`correct: 'Nitrite'`, `answer: '...'`,
+    // `ans: '...'`) before or after the options array, matched to an option by
+    // decoded text. Until 2026-08-25 these banks were invisible (aquarium 46,
+    // flightsim 50, pets 21, weldlab 20, ...). `\b` keeps `incorrect: '...'`
+    // feedback fields from matching as answers.
+    const judgeStr = (rawOpts, rawAns) => {
+      const opts = splitOptions(rawOpts);
+      if (!opts) { stats.skipped++; return; }
+      const decoded = splitOptions("'" + rawAns + "'");
+      const idx = decoded ? opts.indexOf(decoded[0]) : -1;
+      if (idx < 0 || opts.length < 2 || opts.length > 6) return;
+      judge(opts, idx, stats);
+    };
+    const reD = /\b(?:options|opts|choices):\s*\[([^\]]{4,900})\]\s*,\s*[\r\n]*\s*\b(?:correct|answer|ans):\s*'((?:[^'\\]|\\.)*)'/g;
+    while ((m = reD.exec(src))) judgeStr(m[1], m[2]);
+    const reD2 = /\b(?:correct|answer|ans):\s*'((?:[^'\\]|\\.)*)'\s*,\s*[\r\n]*\s*\b(?:options|opts|choices):\s*\[([^\]]{4,900})\]/g;
+    while ((m = reD2.exec(src))) judgeStr(m[2], m[1]);
     flagSchemaJudge(src, stats);
 
     if (stats.n < 8) continue;

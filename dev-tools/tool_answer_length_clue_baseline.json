@@ -47,30 +47,10 @@
       "severe": 53,
       "items": 284
     },
-    "stem_lab/aquarium": {
-      "uniq": 79,
-      "severe": 36,
-      "items": 100
-    },
-    "stem_lab/fisherlab": {
-      "uniq": 0,
-      "severe": 0,
-      "items": 70
-    },
-    "stem_lab/beehive": {
-      "uniq": 0,
-      "severe": 0,
-      "items": 24
-    },
     "stem_lab/behaviorlab": {
       "uniq": 12,
       "severe": 1,
       "items": 16
-    },
-    "stem_lab/printingpress": {
-      "uniq": 182,
-      "severe": 95,
-      "items": 246
     },
     "stem_lab/nutritionlab": {
       "uniq": 16,
@@ -112,6 +92,11 @@
       "severe": 16,
       "items": 248
     },
+    "sel_hub/social": {
+      "uniq": 4,
+      "severe": 0,
+      "items": 10
+    },
     "stem_lab/music": {
       "uniq": 9,
       "severe": 0,
@@ -121,6 +106,11 @@
       "uniq": 19,
       "severe": 0,
       "items": 55
+    },
+    "sel_hub/strengths": {
+      "uniq": 7,
+      "severe": 0,
+      "items": 22
     },
     "stem_lab/economicslab": {
       "uniq": 3,
@@ -160,17 +150,32 @@
     "stem_lab/semiconductor": {
       "uniq": 5,
       "severe": 0,
-      "items": 28
+      "items": 32
+    },
+    "stem_lab/printingpress": {
+      "uniq": 182,
+      "severe": 95,
+      "items": 246
     },
     "stem_lab/anatomy": {
       "uniq": 0,
       "severe": 0,
       "items": 16
     },
+    "stem_lab/aquarium": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 146
+    },
     "stem_lab/astronomy": {
       "uniq": 0,
       "severe": 0,
       "items": 15
+    },
+    "stem_lab/beehive": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 24
     },
     "stem_lab/brainatlas": {
       "uniq": 0,
@@ -190,12 +195,22 @@
     "stem_lab/companionplanting": {
       "uniq": 0,
       "severe": 0,
-      "items": 10
+      "items": 18
     },
     "stem_lab/dinolab": {
       "uniq": 0,
       "severe": 0,
       "items": 34
+    },
+    "stem_lab/fisherlab": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 70
+    },
+    "stem_lab/flightsim": {
+      "uniq": 0,
+      "severe": 0,
+      "items": 50
     },
     "stem_lab/galaxy": {
       "uniq": 0,

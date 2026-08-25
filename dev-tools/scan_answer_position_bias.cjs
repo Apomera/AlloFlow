@@ -128,6 +128,23 @@ for (const f of files) {
     counts[opts.length][idx]++; total++;
   }
 
+  // Schema D: STRING-valued `correct:`/`answer:`/`ans:` before or after the
+  // options array (`options: ['Nitrate', 'Nitrite'], correct: 'Nitrite'`).
+  // Invisible until 2026-08-25 - aquarium alone hid 46 such questions. `\b`
+  // keeps `incorrect: '...'` feedback strings from matching as answers.
+  const tallyStr = (rawOpts, rawAns) => {
+    const opts = splitOptions(rawOpts);
+    const dec = splitOptions("'" + rawAns + "'");
+    const idx = dec ? opts.indexOf(dec[0]) : -1;
+    if (idx < 0 || opts.length < 2 || opts.length > 6) return;
+    counts[opts.length] = counts[opts.length] || new Array(opts.length).fill(0);
+    counts[opts.length][idx]++; total++;
+  };
+  const reD = /\b(?:options|opts|choices):\s*\[([^\]]{4,600})\]\s*,\s*[\r\n]*\s*\b(?:correct|answer|ans):\s*'((?:[^'\\]|\\.)*)'/g;
+  while ((m = reD.exec(src))) tallyStr(m[1], m[2]);
+  const reD2 = /\b(?:correct|answer|ans):\s*'((?:[^'\\]|\\.)*)'\s*,\s*[\r\n]*\s*\b(?:options|opts|choices):\s*\[([^\]]{4,600})\]/g;
+  while ((m = reD2.exec(src))) tallyStr(m[2], m[1]);
+
   // Schema C: flag objects
   for (const hit of flagSchemaHits(src)) {
     counts[hit.arity] = counts[hit.arity] || new Array(hit.arity).fill(0);
