@@ -166,11 +166,14 @@ for (const [slug, entries] of Object.entries(payload)) {
   // root is current while the mirror still holds the old text — and root-only accounting
   // calls that "already correct" and skips it, leaving the deploy serving the bad string.
   // Compare the mirror against the exact bytes we are about to write instead.
+  // Compare the mirror against the pack AS IT IS ON DISK, not against the bytes we are
+  // about to write: with edits pending the mirror differs from `out` for the ordinary
+  // reason, and testing against that would cry desync on every normal run.
   const mirrorExists = fs.existsSync(mirrorPath);
-  const mirrorStale = mirrorExists && fs.readFileSync(mirrorPath, 'utf8') !== out;
+  const mirrorStale = mirrorExists && fs.readFileSync(mirrorPath, 'utf8') !== raw;
 
   if (APPLY && (changed || mirrorStale)) {
-    if (changed) {
+    if (changed || raw !== out) {
       copyFileResilient(packPath, packPath + '.bak.' + STAMP);
       writeFileResilient(packPath, out);
     }
