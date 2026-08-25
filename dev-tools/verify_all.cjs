@@ -210,7 +210,7 @@ const checks = [
   {
     name: 'Deploy mirror sync',
     cmd: ['node', 'dev-tools/check_deploy_mirror.cjs', '--quiet'],
-    description: 'Root *_module.js matches desktop/web-app/public/ mirror',
+    description: 'Every file present at BOTH root and desktop/web-app/public/ matches byte-for-byte (~7,900 pairs). Was an allowlist of *_module.js/quiz_*/stem_lab/sel_hub (464 files) until 2026-08-25, which let help_strings.js sit 3 weeks stale in the deploy while reporting green.',
   },
   {
     name: 'Sample lesson smoke',
