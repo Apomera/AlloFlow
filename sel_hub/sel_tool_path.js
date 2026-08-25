@@ -174,8 +174,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
                   d.lastUpdated ? ' · updated ' + d.lastUpdated : ''
                 )
               ),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Work on my PATH',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _paFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
+              h('button', { onClick: function() { goto('edit'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _paFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
             ),
             h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: _paBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'PATH completion' },
               h('div', { style: { height: '100%', width: pct + '%', background: 'linear-gradient(90deg, #4f46e5, #fbbf24)', transition: 'width 240ms ease' } })
@@ -283,8 +282,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
             h('button', { onClick: goPrev, disabled: activeIdx === 0, 'aria-label': 'Previous stage',
               style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _paBg('#1e293b'), color: activeIdx === 0 ? _paFg('#475569') : _paFg('#cbd5e1'), cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
             h('div', { style: { flex: 1 } }),
-            h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Done editing',
-              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _paBg('#1e293b'), color: _paFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
+            h('button', { onClick: function() { goto('overview'); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _paBg('#1e293b'), color: _paFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
             h('button', { onClick: goNext, disabled: activeIdx === STAGES.length - 1, 'aria-label': 'Next stage',
               style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: activeIdx === STAGES.length - 1 ? _paBg('#1e293b') : active.color, color: activeIdx === STAGES.length - 1 ? _paFg('#475569') : '#fff', cursor: activeIdx === STAGES.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
           ),
@@ -303,8 +301,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('path'))) {
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _paFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _paFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back to overview',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _paBg('#1e293b'), color: _paFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

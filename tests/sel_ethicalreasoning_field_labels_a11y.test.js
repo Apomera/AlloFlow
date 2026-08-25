@@ -27,7 +27,9 @@ describe('Ethical Reasoning field accessibility', () => {
   it('keeps decision-tree navigation and completion controls descriptive', () => {
     const text = source();
     expect(text).toContain("'aria-label': 'Next: ' + steps[step + 1].label");
-    expect(text).toContain("'aria-label': 'Complete ethical decision tree'");
+    // Named by its visible text (WCAG 2.5.3, Label in Name); no overriding label.
+    expect(text).toContain("'\\u2705 Complete Decision Tree'");
+    expect(text).not.toContain("'aria-label': 'Complete ethical decision tree'");
     expect(text).toContain("'aria-describedby': 'ethical-tree-step-prompt'");
     expect(text).not.toContain("'aria-label': ') +'");
   });

@@ -3485,7 +3485,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('somaticReset')))
             h('button', {
               type: 'button',
               onClick: function(event) { openRemovalConfirm(event, { type: 'all' }); },
-              'aria-label': 'Remove all private reset history',
               style: secondaryButton({ borderColor: colors.danger, background: colors.dangerBg, color: colors.danger })
             }, 'Remove all history')
           )

@@ -18248,12 +18248,12 @@ window.SelHub = window.SelHub || {
             }
           }, tab.label);
         }),
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
+        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: P.textMuted, fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#3b82f633' : 'transparent', color: P.textMuted, fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
@@ -18803,8 +18803,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Save check-in
-          checkinFamily && checkinFeeling && h('button', { 'aria-label': 'Save check-in',
-            onClick: function() {
+          checkinFamily && checkinFeeling && h('button', { onClick: function() {
               var entry = {
                 family: checkinFamily,
                 feeling: checkinFeeling,

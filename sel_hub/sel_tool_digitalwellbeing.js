@@ -18205,7 +18205,6 @@
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 10 } },
             h('button', {
               onClick: tap,
-              'aria-label': 'Tap to scroll once',
               style: {
                 width: 90, height: 90, borderRadius: 18,
                 background: '#a855f7', color: '#fff', border: 'none',

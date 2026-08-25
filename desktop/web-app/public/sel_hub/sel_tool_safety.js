@@ -1258,8 +1258,7 @@ window.SelHub = window.SelHub || {
                     },
                     style: { flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid #334155', background: _safBg('#0f172a'), color: _safFg('#94a3b8'), fontSize: 12, cursor: 'pointer' }
                   }, '\uD83E\uDDE0 I already knew this'),
-                  h('button', { 'aria-label': 'Read aloud',
-                    onClick: function(e) {
+                  h('button', { onClick: function(e) {
                       e.stopPropagation();
                       var newTracked = Object.assign({}, dsTracked);
                       newTracked[card.id] = 'learned';
@@ -2363,8 +2362,7 @@ window.SelHub = window.SelHub || {
             )
           );
 
-          var printButton = (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', { 'aria-label': 'Print safety plan as PDF',
-            onClick: function() { try { window.print(); } catch (e) {} },
+          var printButton = (safetyPlanStep1.trim() || safetyPlanPlace.trim()) && h('button', { onClick: function() { try { window.print(); } catch (e) {} },
             style: { padding: '10px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _safFg('#fff'), fontSize: 13, fontWeight: 700, cursor: 'pointer' }
           }, '🖨 Print as PDF');
 

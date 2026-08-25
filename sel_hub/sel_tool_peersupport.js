@@ -438,8 +438,7 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { maxWidth: '650px', margin: '0 auto', padding: '20px' } },
           h('div', { className: 'no-print', style: { marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' } },
             h('button', { onClick: function() { setMode('menu'); }, style: btn(_peC('#f1f5f9'), _peC('#374151'), false) }, '← Back'),
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: _peC('#ecfdf5'), borderTop: '1px solid #6ee7b7', borderRight: '1px solid #6ee7b7', borderBottom: '1px solid #6ee7b7', borderLeft: '3px solid #059669', marginBottom: 14, fontSize: 12.5, color: _peC('#065f46'), lineHeight: 1.65 } },
             h('strong', null, '🖨 OARS pocket card. '),

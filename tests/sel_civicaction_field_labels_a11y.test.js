@@ -56,9 +56,14 @@ describe('Civic Action field label accessibility', () => {
   it('names the next and completion transitions in both project paths', () => {
     const text = source();
     expect(text).toContain("'aria-label': 'Next civic action plan step'");
-    expect(text).toContain("'aria-label': 'Complete civic action plan'");
+    // The completion buttons are named by their visible text (WCAG 2.5.3, Label in
+    // Name): an aria-label that does not contain "Complete My Plan" would override
+    // what a voice-control user can see and say.
+    expect(text).toContain("'\\u2728 Complete My Plan'");
+    expect(text).not.toContain("'aria-label': 'Complete civic action plan'");
     expect(text).toContain("'aria-label': 'Next service-learning phase'");
-    expect(text).toContain("'aria-label': 'Complete service-learning project plan'");
+    expect(text).toContain("'\\u2728 Complete Project Plan'");
+    expect(text).not.toContain("'aria-label': 'Complete service-learning project plan'");
     expect(text).toContain("announceToSR('Civic action plan complete')");
     expect(text).toContain("announceToSR('Service-learning project plan complete')");
   });

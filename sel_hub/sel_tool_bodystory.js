@@ -594,8 +594,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('bodyStory'))) {
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _bodFg('#fecdd3'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Body Story summary — private work; print only for yourself or a therapist conversation.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _bodFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _bodBg('#1e293b'), color: _bodFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

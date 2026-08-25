@@ -396,8 +396,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '✏️'),
               h('div', { style: { color: _carFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Take the self-check first'),
               h('div', { style: { color: _carFg('#94a3b8'), fontSize: 12, marginBottom: 12 } }, 'Rate all 36 items to see your Holland code.'),
-              h('button', { onClick: function() { goto('screener'); }, 'aria-label': 'Go to self-check',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
+              h('button', { onClick: function() { goto('screener'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _carFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Take the self-check')
             )
           );
         }
@@ -639,8 +638,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careerCompass'))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _carFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _carFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _carBg('#1e293b'), color: _carFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

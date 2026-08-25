@@ -3031,7 +3031,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               !pRehearseMode && h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
                 h('div', null,
                   h('div', { className: 'text-xs font-black text-fuchsia-300 mb-0.5' }, '🎭 Or rehearse the actual conversation'),
-                  h('div', { className: 'text-[11px] text-slate-300' }, 'AI plays ' + (selected.peer ? selected.peer.split('.')[0].toLowerCase().replace(/^a /,'').replace(/^the /,'') : 'the other person') + '. You practice what you would actually say back and forth.')
+                  h('div', { className: 'text-xs text-slate-300' }, 'AI plays ' + (selected.peer ? selected.peer.split('.')[0].toLowerCase().replace(/^a /,'').replace(/^the /,'') : 'the other person') + '. You practice what you would actually say back and forth.')
                 ),
                 h('button', {
                   onClick: startRolePlay,
@@ -3046,7 +3046,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                   h('div', { className: 'text-xs font-black text-fuchsia-300' }, '🎭 Rehearsal: ' + selected.title),
                   h('button', {
                     onClick: resetRp,
-                    className: 'px-2 py-1 rounded text-[11px] font-bold bg-slate-700 text-slate-200 hover:bg-slate-600'
+                    className: 'px-2 py-1 rounded text-xs font-bold bg-slate-700 text-slate-200 hover:bg-slate-600'
                   }, '× End rehearsal')
                 ),
                 // Chat history
@@ -3123,7 +3123,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
                     }, 'Done')
                   )
                 ),
-                h('p', { className: 'text-[11px] italic text-fuchsia-300/70 mt-1' }, 'AI-generated. The other person is a simulation, not a script. Take what is useful.'),
+                h('p', { className: 'text-xs italic text-fuchsia-300/70 mt-1' }, 'AI-generated. The other person is a simulation, not a script. Take what is useful.'),
                 // Always-on help strip — the real safety net is a trusted adult.
                 window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, viewBand === 'high' ? 'high' : 'middle')
               )

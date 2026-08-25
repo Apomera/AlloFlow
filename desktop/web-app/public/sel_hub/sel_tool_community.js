@@ -1624,8 +1624,7 @@ window.SelHub = window.SelHub || {
                       placeholder: 'Practice writing what you would say as a bystander...',
                       style: { width: '100%', minHeight: 60, padding: '8px 10px', borderRadius: 8, border: '1px solid #334155', background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 11, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box', marginBottom: 8 }
                     }),
-                    h('button', { 'aria-label': 'Mark as done',
-                      onClick: function() {
+                    h('button', { onClick: function() {
                         if (!(maResponses[currentMA.id] || '').trim()) { addToast('Write a response first.', 'error'); return; }
                         var newDone = Object.assign({}, maBystanderDone);
                         newDone[currentMA.id] = true;

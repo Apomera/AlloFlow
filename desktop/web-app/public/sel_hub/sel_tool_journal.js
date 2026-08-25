@@ -1160,8 +1160,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Save button
-            h('button', { 'aria-label': 'Save button',
-              onClick: function() {
+            h('button', { onClick: function() {
                 if (ciMood == null) { addToast('Please select a mood first!', 'warning'); return; }
                 var entry = {
                   timestamp: Date.now(),

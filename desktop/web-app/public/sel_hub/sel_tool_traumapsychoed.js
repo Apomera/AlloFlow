@@ -516,8 +516,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('traumaPsychoed')
             'A one-page take-home: SAMHSA\'s 6 trauma-informed principles, common trauma responses framed as adaptations, and Herman\'s three stages of recovery. Useful as a staff PD handout, a family-conference resource, or a personal reference. Not a screener.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #047857 0%, #10b981 100%)', color: _traFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #047857 0%, #10b981 100%)', color: _traFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,

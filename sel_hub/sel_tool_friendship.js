@@ -736,7 +736,6 @@ window.SelHub = window.SelHub || {
             }),
             h('button', {
               onClick: function() { upd({ digitalShown: true, digitalDone: Object.assign({}, digitalDone, (function() { var o = {}; o[curD.id] = true; return o; })()) }); if (soundEnabled) sfxClick(); if (digitalDraft.trim() && awardXP) awardXP(8, 'Worked through a digital dilemma'); },
-              'aria-label': 'Show the skillful response',
               style: { marginTop: '8px', padding: '8px 18px', background: AMBER, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
             }, 'See a skillful response →')
           ),

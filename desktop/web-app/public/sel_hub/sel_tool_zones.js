@@ -35591,8 +35591,8 @@ window.SelHub = window.SelHub || {
           })
         ),
         h('button', {
-          'aria-label': soundEnabled ? 'Mute sounds' : 'Unmute sounds',
-          'aria-pressed': soundEnabled,
+          'aria-label': 'Sound effects',
+          'aria-pressed': !!soundEnabled,
           onClick: function() {
             var nextSound = !soundEnabled;
             upd('soundEnabled', nextSound);
@@ -35603,7 +35603,7 @@ window.SelHub = window.SelHub || {
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', {
           'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + BADGES.length + ')',
-          'aria-pressed': showBadgesPanel,
+          'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           title: 'View badges',
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#7c3aed33' : 'transparent', color: _zoFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
@@ -35945,8 +35945,7 @@ window.SelHub = window.SelHub || {
               style: { width: '100%', padding: 12, borderRadius: 10, border: '1px solid #334155', background: _zoBg('#1e293b'), color: _zoFg('#f1f5f9'), fontSize: 13, resize: 'vertical', boxSizing: 'border-box', fontFamily: 'inherit' }
             }),
             // Save button
-            h('button', { 'aria-label': 'Save button',
-              onClick: function() {
+            h('button', { onClick: function() {
                 var entry = { zone: selectedZone, note: checkInNote, intensity: intensityLevel, timestamp: Date.now() };
                 var newLog = (checkInLog || []).concat([entry]);
                 upd({

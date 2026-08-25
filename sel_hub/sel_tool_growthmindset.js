@@ -1001,7 +1001,6 @@ window.SelHub = window.SelHub || {
                   if (announceToSR) announceToSR('Letter saved');
                 },
                 disabled: !letterDraft.trim(),
-                'aria-label': 'Seal and save this letter',
                 style: { padding: '8px 18px', background: letterDraft.trim() ? '#b45309' : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: letterDraft.trim() ? 'pointer' : 'not-allowed' }
               }, '\uD83D\uDD8B\uFE0F Seal This Letter')
             )

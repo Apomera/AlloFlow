@@ -1001,3 +1001,134 @@ Two things that would have made it lie:
 - **A second JSDOM is not the focused document,** so `element.focus()` silently
   does nothing inside it. The first draft stood one up next to the one vitest
   already provides and read as nine failures that were not real.
+
+---
+
+## 17. 2026-08-25 — pedagogy, visuals, UI/UX pass across the hub  (local, unpushed)
+
+Measured first, then fixed. Five things shipped; four things are yours to decide.
+
+### 17a. FIXED — 54 tab bars said "use the arrow keys" and ignored them
+
+66 tool tab bars declare `role="tablist"` / `role="tab"`. A screen reader
+announces that as "use the arrow keys to switch tabs". Only 12 handled a key.
+Rather than patch 54 tools, the host shell now listens once, on the wrapper every
+tool renders inside (`sel_hub_module.js` `_tablistKeyNav`, wired on the dark-shell
+div in `renderTool` and on the standard-shell `section`): Left/Right (Up/Down for
+a vertical list) move focus between the tabs of the focused tab's OWN tablist,
+wrapping; Home/End jump to the ends. Focus moves; activation stays on Enter/Space
+(manual activation), so arrowing past a tab never fires that tab's onClick side
+effects (stopping a breathing timer, playing a sound, saving). A tool that already
+handles its own keys calls `preventDefault` first and the shell stays out of it.
+
+Guard: `tests/sel_tablist_arrow_keys.test.js` mounts five tools through the REAL
+`renderTool` and dispatches real key events, with a calibration case that mounts
+the bare tool (no shell) and asserts the arrows do nothing there. Passed first
+run; the calibration proves the shell is the mechanism, not the tools.
+
+### 17b. FIXED — the mute button was announced as "3/12"
+
+Ten tools share a tab-bar toolbar with a sound toggle and a badge-panel toggle.
+In four (coping, emotions, mindfulness, perspective) BOTH buttons carried the
+badge-count label, so the sound toggle read "trophy 3/12". In social both read
+"View badges". In advocacy and conflict the sound toggle had no name at all;
+decisions said "Toggle sound" / "Toggle panel"; teamwork and zones were close but
+inconsistent. Every sound toggle is now "Sound effects" with `aria-pressed`;
+every badge toggle is "N/M badges earned" with `aria-expanded`.
+
+Searching the SYMPTOM (a trophy in a label) found 4 tools. Asserting the CONTRACT
+in the guard found 10. `tests/sel_toolbar_toggle_names.test.js` asserts the
+contract (a name about sound plus exposed state; a badge name carrying the total
+plus expanded state) and accepts either legitimate spelling.
+
+### 17c. FIXED — the Culture Quiz taught nothing
+
+`cultureexplorer` ran a 30-question quiz (10 per band) whose only feedback was a
+toast: "Correct!" or "The answer was: X". A student who missed "Which city sits on
+two continents?" learned the word "Istanbul" and nothing else. Every question now
+carries a one-line `why` (the Bosphorus, Fatima al-Fihri, Madjedbebe, the 1988
+congressional resolution and the historians' debate, SASL as the 12th language in
+2023) rendered in a `role="status"` panel under the options after answering, so a
+screen reader hears it without focus leaving the options. Elementary lines are
+written at elementary reading level. The answer-position rotation IIFE mutates in
+place, so the new field survives it. Facts worth a second pair of eyes are the
+Haudenosaunee line (deliberately hedged) and the Afrobeats line (Lagos, with Accra
+acknowledged).
+
+### 17d. FIXED — 10px body copy in the Tailwind-styled tools
+
+Sub-12px text is common across the hub (2,717 declarations; 11px is the working
+convention for secondary text and was left alone). Four Tailwind-styled tools,
+though, used `text-[10px]` for actual body copy: tips, descriptions, origins,
+badge descriptions, quiz metadata. Lifted `text-[9|10|11px]` to `text-xs` (12px)
+in civicaction (66), ethicalreasoning (63), cultureexplorer (43), restorativecircle
+(30) and selfadvocacy (3): 205 sites. The numeric `fontSize: 10` sites in the
+inline-styled tools are mostly uppercase eyebrow labels and were not touched.
+
+### 17e. FIXED — 96 buttons whose visible text was not in their accessible name
+
+WCAG 2.5.3, Label in Name: 142 `<button>`s carried an aria-label that did not
+contain their visible text ("Print or save as PDF" over "Print / Save as PDF";
+"Read aloud" over "I learned something new" in safety; "Save button" over "Save
+Check-In"). A voice-control user says what they see. Where the visible text is a
+full phrase (three or more words) the aria-label was removed and the button is
+named by its content: 96 sites in 45 tools. The 46 that remain have short visible
+text ("Favorites", "Decide", "Back") where the label adds real context; those want
+a per-site rewrite that STARTS with the visible text, not a bulk edit.
+
+### 17f. AARON — four catalog tools carry ~2 MB of content no student can see
+
+`anxietytoolkit`, `bigfeelings`, `stressbucket` and `griefloss` each hold a
+"narrative library": 1,140 / 1,339 / 1,320 / 1,236 scenario objects (id, title,
+narrative[], lesson) across 75 / 90 / 89 / 83 arrays named `*_NARRATIVES_N`.
+**Not one of the 337 arrays is referenced anywhere after its declaration.** They
+are 520 / 460 / 493 / 515 KB of each file, roughly 83 to 89 percent of the tool,
+parsed on every load and never rendered. The prose is also not fit to render:
+85 to 97 percent of narrative lines are telegraphic fragments of the shape
+"I tell water-anxious: adult lessons." and the lessons read like
+"Disability isolates; disability community provides advocacy connection."
+Options: delete the libraries (fastest load, no student-visible change), or
+decide they are a feature and have them rewritten before anything reads them.
+This is a content decision, so nothing was edited.
+
+### 17g. AARON — grade-band placement vs reading level
+
+32 of 71 tools never read the grade band. For most that is fine, but nine are
+marked elementary-eligible while their student-facing prose measures at a
+secondary reading level with no band branching to soften it (median
+Flesch-Kincaid grade of strings 60+ chars): sensoryregulation (3-12, FK 9.6),
+genogram (5-12, 11.3), stressbucket (5-12, 11.2), bigfeelings (5-12, 11.1),
+landplace (5-12, 10.2), careercompass (5-12, 9.6), viastrengths (5-12, 8.8),
+windowoftolerance (5-12, 8.6), behavioralactivation (5-12, 8.5). The clinical
+vocabulary ("Dunn's framework: seeker, avoider, sensitive, registration") is
+appropriate for the tool and wrong for a 3rd grader. Either raise
+`recommendedRange` on those cards to 6-12 / 8-12, or add a band branch. Probe:
+this session's scratchpad `readability.cjs`.
+
+### 17h. Smaller notes
+
+- `ctx.callGemini` is `null` when the host omits it, and 35 call sites in 18
+  tools call it unguarded (every one has a `.catch`, which cannot catch a
+  synchronous TypeError). In practice the host always passes a function (the
+  ANTI fallback returns an empty string), so this only bites a host that drops
+  the prop. Documented, not changed.
+- The a11y audit JSON under `a11y-audit/` was OneDrive-locked during this pass;
+  `check_sel_a11y.cjs --write <path>` writes elsewhere and still exits on its
+  own verdict. Both gates were run that way.
+- Line endings: several tool files were CRLF on disk (repo policy is LF). Edit
+  scripts normalised the files they touched; the mirror copies match byte for
+  byte.
+
+### 17i. Verification
+
+Full SEL suite after the pass: 78 files, 1,096 tests passing, 2 skipped, 0
+failing (the first full run showed 6 reds: one OneDrive-locked mirror copy and
+five source-text tests that had pinned the OLD label spellings; each of those
+now asserts the new contract, not the spelling). `check_sel_render` 71/71;
+`check_sel_a11y` 0 errors / 0 warnings, 14,160 text nodes graded. Every changed
+`sel_hub` file is byte-identical with its `desktop/web-app/public/sel_hub`
+mirror. New guards: `sel_tablist_arrow_keys` (mounted, real keys, bare-mount
+calibration), `sel_toolbar_toggle_names` (contract, either spelling),
+`sel_cultureexplorer_quiz_explanations` (executes the bank; renders before and
+after an answer). Run any suspect test alone before believing a failure from a
+contended run; that pattern faked one failure again this pass.

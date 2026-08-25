@@ -340,8 +340,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('costBenefit'))) 
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cobFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _cobFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('grid'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cobBg('#1e293b'), color: _cobFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

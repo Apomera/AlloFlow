@@ -724,13 +724,13 @@ window.SelHub = window.SelHub || {
           }, t.label);
         }),
         // Sound toggle
-        h('button', { 'aria-label': 'Toggle sound',
+        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8') },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         // Badge counter
-        h('button', { 'aria-label': 'Toggle panel',
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _decFg('#94a3b8'), position: 'relative' }
         },
@@ -2006,8 +2006,7 @@ window.SelHub = window.SelHub || {
             'A one-page structured-decision worksheet you can carry. Apply it to anything from "what classes do I sign up for?" to "do I confront this friend?" The structure slows down the choice enough that the wise answer can show up.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _decFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _decFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

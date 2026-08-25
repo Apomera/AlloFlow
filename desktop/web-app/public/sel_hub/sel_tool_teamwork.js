@@ -740,13 +740,13 @@ window.SelHub = window.SelHub || {
           })
           ),
           // Sound toggle
-          h('button', { 'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled,
+          h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
             onClick: function() { upd('soundEnabled', !soundEnabled); },
             style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8') },
             title: soundEnabled ? 'Mute sounds' : 'Enable sounds'
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
           // Badge counter
-          h('button', { 'aria-label': 'Show teamwork badges', 'aria-expanded': showBadgesPanel,
+          h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
             onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
             style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _teaFg('#94a3b8'), position: 'relative' }
           },
@@ -2137,8 +2137,7 @@ window.SelHub = window.SelHub || {
                 },
                 style: { padding: '10px 24px', borderRadius: 10, border: 'none', background: retroSaved ? _teaBg('#334155') : ACCENT, color: retroSaved ? _teaFg('#94a3b8') : '#0f172a', fontWeight: 700, fontSize: 13, cursor: 'pointer' }
               }, retroSaved ? '\u2713 Saved' : '\uD83D\uDCBE Save Retrospective'),
-              h('button', { 'aria-label': 'Export retrospective as text',
-                onClick: function() {
+              h('button', { onClick: function() {
                   var totalCards = retroGreen.length + retroYellow.length + retroBlue.length;
                   if (totalCards === 0) { addToast('Add some cards before exporting!', 'info'); return; }
                   var text = '=== TEAM RETROSPECTIVE ===\n';

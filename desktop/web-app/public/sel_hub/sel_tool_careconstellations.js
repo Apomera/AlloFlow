@@ -660,8 +660,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('careConstellatio
             'A relational artifact: who cares for me, who I care for, and the mutual care that runs both ways. Useful for IEPs, family meetings, intake with a new counselor, or just to remember on a thin day. Private; you decide who to share it with.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fda4af 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fda4af 100%)', color: _cnsFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

@@ -727,8 +727,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('healthyRelations
             'This is private. Print only for yourself or to bring to a counselor / school psych you trust. The 8-dimension Loveisrespect spectrum + your ratings + safety contacts. Nothing is saved or shared anywhere.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be185d 0%, #ec4899 100%)', color: _hreFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be185d 0%, #ec4899 100%)', color: _hreFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,

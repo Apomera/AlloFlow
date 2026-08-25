@@ -172,8 +172,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
                   d.lastUpdated ? ' · updated ' + d.lastUpdated : ''
                 )
               ),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Work on my MAP',
-                style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _mpFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
+              h('button', { onClick: function() { goto('edit'); }, style: { padding: '8px 16px', borderRadius: 8, border: '1px solid #818cf8', background: 'rgba(129,140,248,0.18)', color: _mpFg('#e0e7ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✏️ Work on it')
             ),
             // Progress bar
             h('div', { style: { marginTop: 12, height: 8, borderRadius: 4, background: _mpBg('#1e293b'), overflow: 'hidden' }, role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': 'MAP completion' },
@@ -275,8 +274,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
             h('button', { onClick: goPrev, disabled: activeIdx === 0, 'aria-label': 'Previous prompt',
               style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: activeIdx === 0 ? _mpFg('#475569') : _mpFg('#cbd5e1'), cursor: activeIdx === 0 ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 13 } }, '← Previous'),
             h('div', { style: { flex: 1 } }),
-            h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Done editing',
-              style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
+            h('button', { onClick: function() { goto('overview'); }, style: { padding: '8px 14px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '✓ Done for now'),
             h('button', { onClick: goNext, disabled: activeIdx === PROMPTS.length - 1, 'aria-label': 'Next prompt',
               style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: activeIdx === PROMPTS.length - 1 ? _mpBg('#1e293b') : active.color, color: activeIdx === PROMPTS.length - 1 ? _mpFg('#475569') : '#fff', cursor: activeIdx === PROMPTS.length - 1 ? 'not-allowed' : 'pointer', fontWeight: 800, fontSize: 13 } }, 'Next →')
           ),
@@ -295,8 +293,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('maps'))) {
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _mpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _mpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('overview'); }, 'aria-label': 'Back to overview',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _mpBg('#1e293b'), color: _mpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

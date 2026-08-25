@@ -155,8 +155,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
               h('h3', { style: { margin: '0 0 8px', color: _cirFg('#fecdd3'), fontSize: 18 } }, 'Your circles are empty'),
               h('p', { style: { margin: '0 0 14px', color: _cirFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'Four rings around you. Closest ring is the people you would tell anything to. The next ring is friends. The next is people you do things with. The outer ring is people who are part of your life because it is their job. Add a few names and see what your picture looks like.'),
-              h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Start adding people',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('edit'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start my circles')
             ),
             softPointer()
@@ -422,8 +421,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('circlesOfSupport
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _cirFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('circles'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cirBg('#1e293b'), color: _cirFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

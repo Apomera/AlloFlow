@@ -519,8 +519,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               h('strong', null, '🖨 Print preview. '),
               'Print or save as PDF; carry it in your pocket if it helps.'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', color: _deFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('script'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

@@ -620,8 +620,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('substancePsychoe
             'A one-page reference for staff, families, peer educators, or yourself. The framework is honest (use exists on a spectrum, not abstinence-or-failure), the safety information is real (overdose response, naloxone, Good Samaritan laws), and the help pathways are open. Not a substitute for clinical assessment.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)', color: _subFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #475569 0%, #94a3b8 100%)', color: _subFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

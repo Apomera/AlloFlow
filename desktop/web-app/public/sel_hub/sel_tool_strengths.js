@@ -2372,8 +2372,7 @@ window.SelHub = window.SelHub || {
                 'A one-page artifact: your selected strengths grouped by virtue category, your reflections, and the strengths-stories you logged. Useful for IEPs, student-led conferences, college applications, or carrying with you on a low day. Companion to your One-Page Profile.'
               );
               var printBtn = h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-                h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-                  style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _strFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+                h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _strFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
               );
               var printStyle = h('style', null,
                 '@media print { body * { visibility: hidden !important; } ' +

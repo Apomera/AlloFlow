@@ -2130,7 +2130,6 @@ window.SelHub = window.SelHub || {
           // \u2500\u2500 Print my action plan (take-home artifact) \u2500\u2500
           (goals && goals.length > 0) ? h('div', { style: { padding: '10px 16px', textAlign: 'center', borderTop: '1px solid rgba(99,102,241,0.15)' } },
             h('button', {
-              'aria-label': 'Print my goals as an action plan',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
                 var sections = goals.map(function(g) {

@@ -346,8 +346,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
 
           // Save / clear
           h('div', { style: { display: 'flex', gap: 10, marginTop: 8, flexWrap: 'wrap' } },
-            h('button', { onClick: saveEntry, 'aria-label': 'Save this thought record',
-              style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { onClick: saveEntry, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '✓ Save this record'),
             h('button', { onClick: clearDraft, 'aria-label': 'Clear and start over',
               style: { padding: '10px 22px', borderRadius: 10, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, 'Clear')
@@ -387,8 +386,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             h('div', { style: { padding: 20, borderRadius: 12, background: _thBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '📚'),
               h('div', { style: { color: _thFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'No past records yet'),
-              h('button', { onClick: function() { goto('new'); }, 'aria-label': 'Start one',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '+ Start a new record')
+              h('button', { onClick: function() { goto('new'); }, style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a78bfa', background: 'rgba(167,139,250,0.18)', color: _thFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '+ Start a new record')
             )
           );
         }
@@ -429,8 +427,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _thFg('#e9d5ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%)', color: _thFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('past'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _thBg('#1e293b'), color: _thFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

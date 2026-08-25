@@ -339,8 +339,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
 
             // Done buttons
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-              h('button', { onClick: function() { done(true); }, 'aria-label': 'Done. This helped.',
-                style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _tpBg('#15803d'), color: _tpFg('#fff'), fontWeight: 800, fontSize: 14 } }, '✓ Done. That helped.'),
+              h('button', { onClick: function() { done(true); }, style: { padding: '10px 18px', borderRadius: 10, border: 'none', cursor: 'pointer', background: _tpBg('#15803d'), color: _tpFg('#fff'), fontWeight: 800, fontSize: 14 } }, '✓ Done. That helped.'),
               h('button', { onClick: function() { done(false); }, 'aria-label': 'Done. Try a different one.',
                 style: { padding: '10px 18px', borderRadius: 10, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _tpFg('#fde68a'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '⤴ Try a different one'),
               h('button', { onClick: exit, 'aria-label': 'Exit without logging',
@@ -487,8 +486,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('tipp'))) {
             'Print and fold; carry in a pocket, wallet, or planner. The point is to have the four skills with you BEFORE you need them. The pocket card prints onto one page; the cautions are kept because they matter.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)', color: _tpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,

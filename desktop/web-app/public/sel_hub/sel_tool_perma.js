@@ -339,8 +339,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           }),
 
           complete ? h('div', { style: { display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'See profile',
-              style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { onClick: function() { goto('profile'); }, style: { padding: '12px 24px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '📊 See my profile')
           ) : null,
 
@@ -523,8 +522,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('perma'))) {
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _perFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview.')),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _perFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _perBg('#1e293b'), color: _perFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

@@ -186,8 +186,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               h('h3', { style: { margin: '0 0 8px', color: _ecoFg('#fecdd3'), fontSize: 18 } }, 'Your ecomap is empty'),
               h('p', { style: { margin: '0 0 14px', color: _ecoFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'An ecomap is a picture of you in the middle, surrounded by the systems in your life. Start by adding some of the people, places, or services that take up real space in your week. You decide how many; you decide which ones.'),
-              h('button', { onClick: function() { goto('list'); }, 'aria-label': 'Start adding connections',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('list'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Add my first connection')
             ),
             softPointer()
@@ -547,8 +546,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('ecomap'))) {
               h('strong', null, '🖨 Print preview. '),
               'Includes the visual map and a summary list. Use your browser\'s print dialog.'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _ecoFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Back to map',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _ecoBg('#1e293b'), color: _ecoFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

@@ -18922,8 +18922,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('howlTracker'))) 
             'Print or save as PDF for your Crew binder, student-led conference, or IEP meeting. Includes your goals, your most recent rating per HOWL, and your quarter average per HOWL.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)', color: _howFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
 
           h('style', null,

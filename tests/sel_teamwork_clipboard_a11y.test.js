@@ -43,9 +43,13 @@ describe('Teamwork clipboard fallback accessibility', () => {
 
   it('keeps auxiliary controls descriptive and outside the tablist', () => {
     const text = source();
-    expect(text).toContain("'aria-label': 'Toggle sound', 'aria-pressed': soundEnabled");
-    expect(text).toContain("'aria-label': 'Show teamwork badges', 'aria-expanded': showBadgesPanel");
-    expect(text).toContain("'aria-label': 'Export retrospective as text'");
+    // Hub-wide toolbar contract (tests/sel_toolbar_toggle_names.test.js): the sound
+    // toggle is a switch named for sound; the badge toggle carries the count.
+    expect(text).toContain("'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled");
+    expect(text).toContain("'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel");
+    // Named by its visible text (WCAG 2.5.3, Label in Name); no overriding label.
+    expect(text).toContain("'\\uD83D\\uDCE4 Export as Text'");
+    expect(text).not.toContain("'aria-label': 'Export retrospective as text'");
     expect(text).toContain("'aria-label': 'Clear retrospective cards'");
   });
 });

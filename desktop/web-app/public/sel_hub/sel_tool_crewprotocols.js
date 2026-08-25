@@ -709,8 +709,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('crewProtocols'))
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(14,165,233,0.10)', borderRadius: 8, border: '1px solid rgba(14,165,233,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _cpFg('#bae6fd'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Crew plan.')),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)', color: _cpFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('planner'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _cpBg('#1e293b'), color: _cpFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

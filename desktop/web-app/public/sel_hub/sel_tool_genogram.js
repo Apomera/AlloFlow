@@ -180,8 +180,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('h3', { style: { margin: '0 0 8px', color: _genFg('#fecdd3'), fontSize: 18 } }, 'Your genogram is empty'),
               h('p', { style: { margin: '0 0 14px', color: _genFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.65 } },
                 'A genogram is a family tree drawn with standardized symbols. Start with yourself, then add parents, then add grandparents. You can include siblings, aunts and uncles, and cousins if you want.'),
-              h('button', { onClick: function() { goto('people'); }, 'aria-label': 'Start adding people',
-                style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 14 } },
+              h('button', { onClick: function() { goto('people'); }, style: { padding: '10px 22px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 14 } },
                 '+ Start with myself')
             ),
             softPointer()
@@ -550,8 +549,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('genogram'))) {
               h('strong', null, '🖨 Print preview. '),
               'Includes a summary list (the visual is best viewed on screen).'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #be123c 0%, #fb7185 100%)', color: _genFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('tree'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _genBg('#1e293b'), color: _genFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

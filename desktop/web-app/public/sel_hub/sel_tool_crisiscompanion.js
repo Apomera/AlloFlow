@@ -690,7 +690,6 @@ window.SelHub = window.SelHub || {
         ),
         h('button', {
           onClick: reset,
-          'aria-label': 'Restart grounding exercise',
           style: { padding: '10px 20px', background: TEAL, color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: 'pointer' }
         }, '↻ Do it again')
       ) : h('div', null,
@@ -892,7 +891,6 @@ window.SelHub = window.SelHub || {
       h('div', { style: { display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' } },
         h('button', {
           onClick: printPlan,
-          'aria-label': 'Print or save my safety plan',
           style: { padding: '10px 16px', background: TEAL, color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 800, fontSize: '13px', cursor: 'pointer' }
         }, '🖨 Print / save as PDF'),
         h('button', {
@@ -1631,7 +1629,6 @@ window.SelHub = window.SelHub || {
               }, '✓ I understand — continue'),
               h('button', {
                 onClick: function() { addToast('Returning to SEL Hub menu'); if (ctx.setSelHubTool) ctx.setSelHubTool(null); },
-                'aria-label': 'Take me back to the SEL Hub menu without continuing',
                 style: { padding: '12px 18px', background: _ccC('#f1f5f9'), color: _ccCHC ? '#ffff00' : (_ccCDark ? '#e2e8f0' : SLATE_TEXT), border: '2px solid #cbd5e1', borderRadius: '12px', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }
               }, '← Take me back to the menu')
             )

@@ -726,8 +726,7 @@ window.SelHub = window.SelHub || {
             'A one-page artifact you can bring to a counselor, school psychologist, case manager, family member, or new teacher. Names what is changing, where you are in the change curve, what is holding you steady, and your next steps.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + SKY + ', #0369a1)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + SKY + ', #0369a1)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

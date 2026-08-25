@@ -325,6 +325,7 @@
 
           return h('section', {
             'data-sel-standard-shell': id,
+            onKeyDown: this._tablistKeyNav,
             style: {
               background: surface,
               color: text,
@@ -432,6 +433,40 @@
             h('div', { style: { padding: 16, minWidth: 0, flex: '1 1 auto' } }, content)
           );
         },
+        // ── Tab bars: honour the contract the role announces ──
+        // 66 SEL tool tab bars declare role="tablist" / role="tab". That tells a
+        // screen-reader user "use the arrow keys to move between tabs", and 54 of
+        // them never handled a key, so the arrows did nothing. Rather than patch
+        // each tool, the host shell listens once, on the wrapper every tool
+        // renders inside: Left/Right (Up/Down for a vertical list) move focus to
+        // the previous/next tab of the SAME tablist, wrapping; Home/End jump to
+        // the ends. Focus moves and activation stays with Enter/Space on the
+        // native button (manual activation), so arrowing past a tab never fires
+        // that tab's onClick side effects (timers stopped, sounds, saves).
+        // A tool that handles its own keys calls preventDefault first and this
+        // stays out of its way.
+        _tablistKeyNav: function(e) {
+          if (!e || e.defaultPrevented) return;
+          var k = e.key;
+          var t = e.target;
+          if (!t || !t.getAttribute || t.getAttribute('role') !== 'tab') return;
+          var list = t.closest ? t.closest('[role="tablist"]') : null;
+          if (!list) return;
+          var vertical = list.getAttribute('aria-orientation') === 'vertical';
+          var prev = vertical ? 'ArrowUp' : 'ArrowLeft';
+          var next = vertical ? 'ArrowDown' : 'ArrowRight';
+          if (k !== prev && k !== next && k !== 'Home' && k !== 'End') return;
+          var tabs = Array.prototype.filter.call(list.querySelectorAll('[role="tab"]'), function(el) {
+            return el.closest('[role="tablist"]') === list && !el.disabled && el.getAttribute('aria-disabled') !== 'true';
+          });
+          var i = tabs.indexOf(t);
+          if (i < 0 || tabs.length < 2) return;
+          var n = k === next ? (i + 1) % tabs.length
+                : k === prev ? (i - 1 + tabs.length) % tabs.length
+                : k === 'Home' ? 0 : tabs.length - 1;
+          e.preventDefault();
+          try { tabs[n].focus(); } catch (err) {}
+        },
         renderTool: function(id, ctx) {
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
@@ -479,7 +514,8 @@
                 minHeight: useStandardShell ? 520 : 'calc(100vh - 32px)',
                 overflow: 'hidden'
               },
-              'data-sel-tool-shell': id
+              'data-sel-tool-shell': id,
+              onKeyDown: this._tablistKeyNav
             }, rendered);
           }
           if (useStandardShell) return this._wrapStandardToolShell(id, tool, body, ctx);

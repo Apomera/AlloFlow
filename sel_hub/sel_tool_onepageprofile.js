@@ -235,8 +235,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
 
           // Print + Edit
           h('div', { style: { display: 'flex', gap: 10, marginTop: 18, flexWrap: 'wrap' } },
-            h('button', { onClick: function() { goto('print'); }, 'aria-label': 'Open printable view',
-              style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
+            h('button', { onClick: function() { goto('print'); }, style: { padding: '10px 20px', borderRadius: 10, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 14 } },
               '🖨 Print or save as PDF'),
             h('button', { onClick: function() { goto('edit'); }, 'aria-label': 'Edit profile',
               style: { padding: '10px 20px', borderRadius: 10, border: '1px solid #475569', background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 14 } }, '✏️ Edit profile')
@@ -412,8 +411,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('onePageProfile')
               h('strong', null, '🖨 Print preview. '),
               'This is what your profile looks like printed. Use your browser\'s print dialog (Print or Save as PDF).'
             ),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _opFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('profile'); }, 'aria-label': 'Back to profile',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _opBg('#1e293b'), color: _opFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

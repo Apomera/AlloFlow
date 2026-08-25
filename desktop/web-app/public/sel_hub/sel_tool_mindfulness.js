@@ -22306,12 +22306,12 @@ window.SelHub = window.SelHub || {
             }
           }, tab.label);
         }),
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
+        h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        h('button', { 'aria-label': '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length,
+        h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel,
           onClick: function() { upd('showBadgesPanel', !showBadgesPanel); },
           style: { padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: showBadgesPanel ? '#8b5cf633' : 'transparent', color: _minFg('#94a3b8'), fontSize: 14, flexShrink: 0 }
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
@@ -23334,7 +23334,6 @@ window.SelHub = window.SelHub || {
           // ── Print my practice log (take-home artifact) ──
           totalPractices > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
             h('button', {
-              'aria-label': 'Print my mindfulness practice log',
               onClick: function() {
                 if (!window.SelHub || !window.SelHub.printDoc) return;
                 var typeLabels = { breathe: 'Breathing', scan: 'Body scan', grounding: 'Grounding', gratitude: 'Gratitude', activity: 'Mindful activity', meditation: 'Meditation', movement: 'Mindful movement', technique: 'Technique' };

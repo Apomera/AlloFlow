@@ -19745,7 +19745,6 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
           h('div', { style: { marginTop: 6, textAlign: 'center' } },
             h('button', {
               onClick: skipTriage,
-              'aria-label': 'Skip triage — I have used this tool before',
               style: { background: 'none', border: 'none', color: _anxFg('#94a3b8'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }
             }, 'Skip — I have used this tool before')
           )
@@ -19831,9 +19830,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { style: { padding: 14, borderRadius: 10, background: _anxBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #22c55e', marginBottom: 10 } },
               h('div', { style: { fontSize: 13, color: _anxFg('#bbf7d0'), fontWeight: 800, marginBottom: 10 } }, 'Is there something I can DO about this right now (today or this week)?'),
               h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
-                h('button', { onClick: function() { setA({ worryActionable: true }); }, 'aria-label': 'Yes, actionable', 'aria-pressed': d.worryActionable === true,
+                h('button', { onClick: function() { setA({ worryActionable: true }); }, 'aria-pressed': d.worryActionable === true,
                   style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === true ? '#22c55e' : _anxFg('#475569')), background: d.worryActionable === true ? 'rgba(34,197,94,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === true ? _anxFg('#bbf7d0') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✓ Yes — there is something I can do'),
-                h('button', { onClick: function() { setA({ worryActionable: false }); }, 'aria-label': 'No, not actionable', 'aria-pressed': d.worryActionable === false,
+                h('button', { onClick: function() { setA({ worryActionable: false }); }, 'aria-pressed': d.worryActionable === false,
                   style: { flex: 1, minWidth: 140, padding: 12, borderRadius: 8, border: '2px solid ' + (d.worryActionable === false ? _anxBg('#a855f7') : _anxFg('#475569')), background: d.worryActionable === false ? 'rgba(168,85,247,0.18)' : _anxBg('#1e293b'), color: d.worryActionable === false ? _anxFg('#e9d5ff') : _anxFg('#cbd5e1'), cursor: 'pointer', fontSize: 14, fontWeight: 700 } }, '✕ No — nothing I can do right now')
               )
             ),
@@ -19867,8 +19866,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
                     setA({ parkedWorries: parked });
                     if (addToast) addToast('Worry parked. Use worry time later.', 'info');
                   }
-                }, 'aria-label': 'Park this worry for worry time',
-                  style: { padding: '6px 14px', borderRadius: 6, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _anxFg('#fde68a'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '🅿️ Park it for worry time'),
+                }, style: { padding: '6px 14px', borderRadius: 6, border: '1px solid #f59e0b', background: 'rgba(245,158,11,0.18)', color: _anxFg('#fde68a'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '🅿️ Park it for worry time'),
                 h('button', { onClick: function() { goto('ground'); }, 'aria-label': 'Use a grounding skill',
                   style: { padding: '6px 14px', borderRadius: 6, border: '1px solid #0ea5e9', background: 'rgba(14,165,233,0.18)', color: _anxFg('#bae6fd'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '🌍 Use a grounding skill')
               )
@@ -20251,8 +20249,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('anxietyToolkit')
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _anxFg('#a5f3fc'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Patterns + decatastrophizing + parked worries — useful for a therapist or counselor conversation.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: _anxFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)', color: _anxFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _anxBg('#1e293b'), color: _anxFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

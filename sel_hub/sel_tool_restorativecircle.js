@@ -1136,7 +1136,7 @@ window.SelHub = window.SelHub || {
               key: t,
               role: 'tab', 'aria-selected': tab === t, 'tabIndex': tab === t ? 0 : -1,
               onClick: function() { upd('tab', t); if (announceToSR) announceToSR(labels[t] + ' tab selected'); },
-              className: 'flex-1 px-2 py-2 rounded-lg text-[10px] font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
+              className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
                 (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700')
             }, labels[t]);
           })
@@ -1210,7 +1210,7 @@ window.SelHub = window.SelHub || {
 
           // Current prompt
           h('div', { className: 'bg-white rounded-2xl border-2 border-amber-200 p-6 text-center shadow-lg' },
-            h('div', { id: 'rc-circle-round-status', role: 'status', 'aria-live': 'polite', className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
+            h('div', { id: 'rc-circle-round-status', role: 'status', 'aria-live': 'polite', className: 'text-xs font-bold text-amber-500 uppercase tracking-widest mb-2' }, 'Round ' + (currentPromptIdx + 1) + ' of ' + prompts.length),
             h('p', { id: 'rc-circle-prompt', className: 'text-lg font-bold text-slate-800 leading-relaxed' }, prompts[currentPromptIdx] || 'Circle complete \u2014 thank you for sharing.'),
 
             // Navigation
@@ -1240,7 +1240,7 @@ window.SelHub = window.SelHub || {
             // Speak prompt aloud
             callTTS && h('button', { 'aria-label': 'Read Aloud',
               onClick: function() { callTTS(prompts[currentPromptIdx] || ''); },
-              className: 'mt-3 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
+              className: 'mt-3 text-xs text-amber-500 hover:text-amber-700 font-bold'
             }, '\uD83D\uDD0A Read Aloud')
           ),
 
@@ -1314,7 +1314,7 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-sm text-slate-700 leading-relaxed flex-1' }, prompt),
                     callTTS && h('button', { 'aria-label': 'Read discussion prompt aloud',
                       onClick: function() { callTTS(prompt); },
-                      className: 'text-[10px] text-amber-400 hover:text-amber-600 shrink-0'
+                      className: 'text-xs text-amber-400 hover:text-amber-600 shrink-0'
                     }, '\uD83D\uDD0A')
                   );
                 }),
@@ -1419,7 +1419,7 @@ window.SelHub = window.SelHub || {
               }),
               callTTS && h('button', { 'aria-label': 'Read Guidance Aloud',
                 onClick: function() { callTTS(guidance); },
-                className: 'mt-2 text-[10px] text-amber-500 hover:text-amber-700 font-bold'
+                className: 'mt-2 text-xs text-amber-500 hover:text-amber-700 font-bold'
               }, '\uD83D\uDD0A Read Guidance Aloud'),
 
               // Navigation
@@ -1457,7 +1457,7 @@ window.SelHub = window.SelHub || {
               HARM_REPAIR_STEPS.slice(0, harmStep).map(function(step, i) {
                 var response = harmResponses[step.id];
                 return h('div', { key: i, className: 'bg-white rounded-lg p-3 border border-slate-100' },
-                  h('div', { className: 'text-[10px] font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
+                  h('div', { className: 'text-xs font-bold text-amber-600' }, step.icon + ' Step ' + (i + 1) + ': ' + step.title),
                   response ? h('p', { className: 'text-xs text-slate-600 mt-1 leading-relaxed' }, response) : h('p', { className: 'text-xs text-slate-600 italic mt-1' }, '(No response recorded)')
                 );
               })
@@ -1486,7 +1486,7 @@ window.SelHub = window.SelHub || {
                   return h('button', { 'aria-label': sc.emoji + ' ' + sc.title, 'aria-current': scenarioIdx === i ? 'step' : undefined, 'aria-pressed': scenarioIdx === i,
                     key: i,
                     onClick: function() { updMulti({ scenarioIdx: i, scenarioChoice: undefined, scenarioOutcome: null }); },
-                    className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
+                    className: 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ' +
                       (scenarioIdx === i ? 'bg-amber-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                   }, sc.emoji + ' ' + sc.title);
                 })
@@ -1905,7 +1905,7 @@ window.SelHub = window.SelHub || {
                     }
                   },
                   disabled: isAdded,
-                  className: 'px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ' +
+                  className: 'px-3 py-1.5 rounded-full text-xs font-bold transition-all ' +
                     (isAdded ? 'bg-emerald-100 text-emerald-600 cursor-default' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-400 hover:bg-amber-50')
                 }, (isAdded ? '\u2713 ' : '+ ') + sug);
               })
@@ -1958,7 +1958,7 @@ window.SelHub = window.SelHub || {
                       var newAg = agreements.filter(function(_, idx) { return idx !== i; });
                       upd('communityAgreements', newAg);
                     },
-                    className: 'text-[10px] text-red-400 hover:text-red-600 font-bold shrink-0',
+                    className: 'text-xs text-red-400 hover:text-red-600 font-bold shrink-0',
                     'aria-label': 'Remove agreement'
                   }, '\u2715')
                 );
@@ -2022,11 +2022,11 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl' }, piece.emoji),
                   h('div', null,
                     h('div', { className: 'font-bold text-sm text-slate-800' }, piece.name),
-                    h('div', { className: 'text-[10px] text-amber-600 font-medium' }, piece.origin)
+                    h('div', { className: 'text-xs text-amber-600 font-medium' }, piece.origin)
                   )
                 ),
                 h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, piece.significance),
-                isSelected && h('div', { className: 'mt-2 text-[10px] font-bold text-amber-600 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
+                isSelected && h('div', { className: 'mt-2 text-xs font-bold text-amber-600 flex items-center gap-1' }, '\u2713 Selected as your talking piece')
               );
             })
           ),
@@ -2073,7 +2073,7 @@ window.SelHub = window.SelHub || {
               ].map(function(item, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3' },
                   h('div', { className: 'font-bold text-xs text-amber-800 mb-1' }, item.term),
-                  h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, item.desc)
+                  h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, item.desc)
                 );
               })
             )
@@ -2130,7 +2130,7 @@ window.SelHub = window.SelHub || {
               h('div', { className: 'flex items-center gap-2 mb-1' },
                 h('span', { className: 'text-xl' }, catData.emoji),
                 h('h4', { className: 'text-sm font-bold', style: { color: catData.color } }, catData.label),
-                h('span', { className: 'text-[10px] text-slate-600 ml-auto' }, catData.questions.length + ' questions')
+                h('span', { className: 'text-xs text-slate-600 ml-auto' }, catData.questions.length + ' questions')
               ),
               catData.questions.map(function(q, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-amber-200 p-3 flex items-start gap-3 hover:border-amber-400 transition-all' },
@@ -2139,7 +2139,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex flex-col gap-1 shrink-0' },
                     callTTS && h('button', {
                       onClick: function() { callTTS(q); incrementBadgeStat('questionsUsed', 1); },
-                      className: 'text-[10px] text-amber-400 hover:text-amber-600',
+                      className: 'text-xs text-amber-400 hover:text-amber-600',
                       'aria-label': 'Read question aloud'
                     }, '\uD83D\uDD0A'),
                     h('button', {
@@ -2150,7 +2150,7 @@ window.SelHub = window.SelHub || {
                           incrementBadgeStat('questionsUsed', 1);
                         }
                       },
-                      className: 'text-[10px] text-slate-600 hover:text-slate-600',
+                      className: 'text-xs text-slate-600 hover:text-slate-600',
                       'aria-label': 'Copy question to clipboard'
                     }, '\uD83D\uDCCB')
                   )
@@ -2175,7 +2175,7 @@ window.SelHub = window.SelHub || {
 
           // Display random question
           d.randomQuestion && h('div', { className: 'bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 p-5 text-center' },
-            h('p', { className: 'text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
+            h('p', { className: 'text-xs font-bold text-amber-500 uppercase tracking-widest mb-2' }, d.randomQuestionCat || 'Question'),
             h('p', { className: 'text-lg font-bold text-slate-800 leading-relaxed' }, d.randomQuestion),
             h('div', { className: 'flex gap-2 justify-center mt-3' },
               callTTS && h('button', { 'aria-label': 'Read Aloud',
@@ -2225,7 +2225,7 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, role.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'font-bold text-sm text-slate-800' }, role.title),
-                  h('div', { className: 'text-[10px] text-amber-600 font-medium' }, role.subtitle)
+                  h('div', { className: 'text-xs text-amber-600 font-medium' }, role.subtitle)
                 ),
                 h('span', { className: 'text-xs text-amber-500' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
@@ -2274,7 +2274,7 @@ window.SelHub = window.SelHub || {
                         h('p', { className: 'text-xs text-indigo-800 italic leading-relaxed flex-1' }, '"' + phrase + '"'),
                         callTTS && h('button', { 'aria-label': 'Read aloud',
                           onClick: function() { callTTS(phrase); },
-                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                          className: 'text-xs text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDD0A'),
                         h('button', { onClick: function() {
                             if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -2282,7 +2282,7 @@ window.SelHub = window.SelHub || {
                               addToast('Phrase copied!', 'success');
                             }
                           },
-                          className: 'text-[10px] text-indigo-400 hover:text-indigo-600 shrink-0'
+                          className: 'text-xs text-indigo-400 hover:text-indigo-600 shrink-0'
                         }, '\uD83D\uDCCB')
                       );
                     })
@@ -2467,13 +2467,13 @@ window.SelHub = window.SelHub || {
               RESTORATIVE_VS_PUNITIVE.principles.map(function(p, i) {
                 return h('div', { key: i, className: 'grid grid-cols-2 gap-2' },
                   h('div', { className: 'bg-red-50 rounded-lg p-3 border border-red-200' },
-                    i === 0 && h('div', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-xs font-bold text-red-500 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment Way' : '\uD83D\uDEAB Punitive Approach'
                     ),
                     h('p', { className: 'text-xs text-red-800 leading-relaxed' }, p.punitive)
                   ),
                   h('div', { className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-200' },
-                    i === 0 && h('div', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1' },
+                    i === 0 && h('div', { className: 'text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1' },
                       gradeBand === 'elementary' ? '\uD83D\uDC9A Making-It-Right Way' : '\uD83D\uDC9A Restorative Approach'
                     ),
                     h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, p.restorative)
@@ -2504,7 +2504,7 @@ window.SelHub = window.SelHub || {
                     return h('button', { 'aria-label': sc.emoji + ' ' + (i + 1),
                       key: i,
                       onClick: function() { upd('compareScenarioIdx', i); },
-                      className: 'px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap transition-all ' +
+                      className: 'px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ' +
                         (compareScenarioIdx === i ? 'bg-amber-700 text-white' : hasRating ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-100')
                     }, sc.emoji + ' ' + (i + 1));
                   })
@@ -2520,13 +2520,13 @@ window.SelHub = window.SelHub || {
                   // Side by side
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4' },
                     h('div', { className: 'bg-red-50 rounded-xl border border-red-200 p-4' },
-                      h('h6', { className: 'text-[10px] font-bold text-red-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-xs font-bold text-red-500 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive Response'
                       ),
                       h('p', { className: 'text-xs text-red-800 leading-relaxed' }, scenario.punitive)
                     ),
                     h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-4' },
-                      h('h6', { className: 'text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-2' },
+                      h('h6', { className: 'text-xs font-bold text-emerald-500 uppercase tracking-widest mb-2' },
                         gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative Response'
                       ),
                       h('p', { className: 'text-xs text-emerald-800 leading-relaxed' }, scenario.restorative)
@@ -2621,8 +2621,8 @@ window.SelHub = window.SelHub || {
                 'You have rated ' + totalRated + ' of ' + totalScenarios + ' scenarios'
               ),
               h('div', { className: 'flex gap-4 justify-center mt-2' },
-                h('span', { className: 'text-[10px] text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
-                h('span', { className: 'text-[10px] text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
+                h('span', { className: 'text-xs text-red-600 font-bold' }, '\uD83D\uDEAB Punitive: ' + punitiveCount),
+                h('span', { className: 'text-xs text-emerald-600 font-bold' }, '\uD83D\uDC9A Restorative: ' + restorativeCount)
               ),
               totalRated >= totalScenarios && h('div', { className: 'mt-2 text-center' },
                 h('button', { 'aria-label': 'Complete Comparison Study',
@@ -2661,7 +2661,7 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-3xl ' + (isEarned ? '' : 'grayscale opacity-40') }, badge.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', { className: 'font-bold text-sm ' + (isEarned ? 'text-amber-700' : 'text-slate-600') }, badge.name),
-                    h('p', { className: 'text-[10px] text-slate-600' }, badge.desc)
+                    h('p', { className: 'text-xs text-slate-600' }, badge.desc)
                   )
                 ),
                 h('div', { className: 'w-full bg-slate-200 rounded-full h-2 mt-1' },
@@ -2670,7 +2670,7 @@ window.SelHub = window.SelHub || {
                     style: { width: pct + '%' }
                   })
                 ),
-                h('p', { className: 'text-[10px] text-slate-600 mt-1 text-right' },
+                h('p', { className: 'text-xs text-slate-600 mt-1 text-right' },
                   isEarned ? '\u2713 Earned!' : progress + ' / ' + badge.threshold
                 )
               );
@@ -2695,11 +2695,11 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'flex items-start gap-2' },
             h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
             h('div', null,
-              h('div', { className: 'text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
+              h('div', { className: 'text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1' }, 'Circle Facilitator'),
               h('p', { className: 'text-sm text-indigo-800 leading-relaxed' }, aiResponse)
             )
           ),
-          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+          h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-xs text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
         ),
 
         // ═══ PRINT ═══
@@ -2709,8 +2709,7 @@ window.SelHub = window.SelHub || {
             'A one-page circle protocol: structure of the 4 movements, talking-piece norms, opening + closing scripts, role cards, and the questions bank for the three most common circle types. Designed for teachers and Crew leaders to carry.'
           ),
           h('div', { className: 'no-print', style: { textAlign: 'center', marginBottom: 14 } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _rcFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)', color: _rcFg('#fff'), fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

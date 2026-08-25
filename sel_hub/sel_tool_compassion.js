@@ -416,8 +416,7 @@ window.SelHub = window.SelHub || {
                 var letter = { id: Date.now().toString(), text: letterDraft.trim(), date: new Date().toLocaleDateString(), ts: Date.now() };
                 upd({ savedLetters: [letter].concat(savedLetters), letterDraft: '' });
                 if (soundOn) sfxHeart(); if (awardXP) awardXP(15, 'Wrote a self-compassion letter!');
-              }, disabled: !letterDraft.trim(), 'aria-label': 'Save letter',
-                style: { padding: '8px 18px', background: letterDraft.trim() ? PURPLE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: letterDraft.trim() ? 'pointer' : 'not-allowed' }
+              }, disabled: !letterDraft.trim(), style: { padding: '8px 18px', background: letterDraft.trim() ? PURPLE : '#d1d5db', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, fontSize: '13px', cursor: letterDraft.trim() ? 'pointer' : 'not-allowed' }
               }, '\uD83D\uDC9C Save with Love')
             )
           ),
@@ -672,8 +671,7 @@ window.SelHub = window.SelHub || {
             'A one-page reference: the three pillars (Neff), what kindness-to-self sounds like in your own words, and your saved kind letter if you wrote one. Carry it for the moments the inner critic shows up.'
           ),
           h('div', { className: 'no-print', style: { marginBottom: 14, textAlign: 'center' } },
-            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + PURPLE + ' 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
+            h('button', { onClick: function() { try { window.print(); } catch (e) {} }, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, ' + PURPLE + ' 0%, #a78bfa 100%)', color: '#fff', fontWeight: 800, fontSize: 13 } }, '\uD83D\uDDA8 Print / Save as PDF')
           ),
           h('style', null,
             '@media print { body * { visibility: hidden !important; } ' +

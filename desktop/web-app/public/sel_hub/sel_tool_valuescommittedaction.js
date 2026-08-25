@@ -408,8 +408,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
                 return c ? c.label : null;
               }).filter(Boolean).join('  ·  ')
             ),
-            h('button', { onClick: function() { goto('actions'); }, 'aria-label': 'Continue to actions',
-              style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _vcaBg('#a855f7'), color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Define committed actions')
+            h('button', { onClick: function() { goto('actions'); }, style: { marginTop: 10, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', background: _vcaBg('#a855f7'), color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '→ Define committed actions')
           ) : null,
 
           softPointer()
@@ -426,8 +425,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             h('div', { style: { padding: 20, borderRadius: 12, background: _vcaBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
               h('div', { style: { fontSize: 36, marginBottom: 8 } }, '⭐'),
               h('div', { style: { color: _vcaFg('#cbd5e1'), fontSize: 14, marginBottom: 4 } }, 'Pick your top values first'),
-              h('button', { onClick: function() { goto('top'); }, 'aria-label': 'Pick top',
-                style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a855f7', background: 'rgba(168,85,247,0.18)', color: _vcaFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Pick top values')
+              h('button', { onClick: function() { goto('top'); }, style: { marginTop: 12, padding: '8px 16px', borderRadius: 8, border: '1px solid #a855f7', background: 'rgba(168,85,247,0.18)', color: _vcaFg('#e9d5ff'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '→ Pick top values')
             )
           );
         }
@@ -515,8 +513,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('valuesCommittedA
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _vcaFg('#e0e7ff'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print preview. '),
               'Use your browser\'s print dialog to print or save as PDF.'),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)', color: _vcaFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('home'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _vcaBg('#1e293b'), color: _vcaFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

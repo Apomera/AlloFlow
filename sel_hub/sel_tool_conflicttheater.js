@@ -1171,7 +1171,6 @@ window.SelHub = window.SelHub || {
             ),
             h('button', {
               id: 'cft-memory-reset-trigger',
-              'aria-label': 'Make characters forget our past conversations',
               onClick: openMemoryResetConfirm,
               style: { padding: '4px 10px', minHeight: 24, background: 'transparent', color: _cftFg('#64748b'), border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
             }, '🧹 Reset all character memory')
@@ -1331,7 +1330,6 @@ window.SelHub = window.SelHub || {
               var sameScenario = (attemptHistory || []).filter(function(a) { return a.scenarioId === scenario.id; });
               if (sameScenario.length < 2) return null;
               return h('button', {
-                'aria-label': 'Compare this attempt to the previous one',
                 onClick: function() { upd('mode', 'compare'); announceSR('Comparing this attempt to previous attempt.'); },
                 style: { padding: '10px 20px', background: _cftBg('#0f172a'), color: _cftFg('#a5f3fc'), border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, '⇆ Compare to previous');

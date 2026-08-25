@@ -290,8 +290,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
               h('strong', null, lowSources.length + ' source' + (lowSources.length === 1 ? '' : 's') + ' rated 1-2 (thin): '),
               lowSources.map(function(s) { return s.label; }).join(', '),
               '. These are the work. ',
-              h('button', { onClick: function() { goto('build'); }, 'aria-label': 'Build these',
-                style: { background: 'transparent', border: 'none', color: _souFg('#fcd34d'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: 0 } }, 'Pick one to build →')
+              h('button', { onClick: function() { goto('build'); }, style: { background: 'transparent', border: 'none', color: _souFg('#fcd34d'), textDecoration: 'underline', cursor: 'pointer', fontSize: 12, fontWeight: 700, padding: 0 } }, 'Pick one to build →')
             ) : h('div', { style: { fontSize: 12, color: _souFg('#bbf7d0') } }, 'No sources rated 1-2. That is a strong protective profile.')
           ) : null,
 
@@ -351,8 +350,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sourcesOfStrengt
           h('div', { className: 'no-print', style: { display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap', padding: 12, background: 'rgba(245,158,11,0.10)', borderRadius: 8, border: '1px solid rgba(245,158,11,0.3)' } },
             h('div', { style: { flex: 1, minWidth: 200, fontSize: 12.5, color: _souFg('#fde68a'), lineHeight: 1.55 } },
               h('strong', null, '🖨 Print my Sources map. ')),
-            h('button', { onClick: printNow, 'aria-label': 'Print or save as PDF',
-              style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _souFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
+            h('button', { onClick: printNow, style: { padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)', color: _souFg('#fff'), fontWeight: 800, fontSize: 13 } }, '🖨 Print / Save as PDF'),
             h('button', { onClick: function() { goto('map'); }, 'aria-label': 'Back',
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _souBg('#1e293b'), color: _souFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '← Back')
           ),

@@ -160,40 +160,40 @@ window.SelHub = window.SelHub || {
   // ── Culture Quiz Banks (per grade band) ──
   var QUIZ_BANKS = {
     elementary: [
-      { q: 'Which country is famous for cherry blossom viewing called Hanami?', opts: ['China', 'Japan', 'Korea', 'Thailand'], ans: 1 },
-      { q: 'What instrument from Australia is one of the oldest in the world?', opts: ['Glockenspiel', 'Didgeridoo', 'Bagpipes', 'Ukulele'], ans: 1 },
-      { q: 'Diwali, the Festival of Lights, is celebrated in which country?', opts: ['Egypt', 'Brazil', 'India', 'Japan'], ans: 2 },
-      { q: 'What food is a staple in Ethiopia, made from teff flour?', opts: ['Naan', 'Tortilla', 'Injera', 'Pita'], ans: 2 },
-      { q: 'The haka is a ceremonial dance from which culture?', opts: ['Hawaiian', 'Samoan', 'M\u0101ori', 'Fijian'], ans: 2 },
-      { q: '"Jambo" is a greeting in which language?', opts: ['Swahili', 'Arabic', 'Hindi', 'Tagalog'], ans: 0 },
-      { q: 'Which country has more than 7,600 islands?', opts: ['Indonesia', 'New Zealand', 'Philippines', 'Greece'], ans: 2 },
-      { q: 'What is the name of the Mexican holiday honoring loved ones who have passed?', opts: ['Cinco de Mayo', 'D\u00eda de los Muertos', 'Fiesta de la Candelaria', 'Las Posadas'], ans: 1 },
-      { q: 'Kimchi is a traditional food from which country?', opts: ['Philippines', 'China', 'Vietnam', 'South Korea'], ans: 3 },
-      { q: '"Aloha" is a greeting from which culture?', opts: ['Tahitian', 'M\u0101ori', 'Hawaiian', 'Tongan'], ans: 2 }
+      { q: 'Which country is famous for cherry blossom viewing called Hanami?', opts: ['China', 'Japan', 'Korea', 'Thailand'], ans: 1, why: 'Every spring, people in Japan gather under cherry trees to enjoy the blossoms together. The custom is called hanami, which means \'flower viewing\'.' },
+      { q: 'What instrument from Australia is one of the oldest in the world?', opts: ['Glockenspiel', 'Didgeridoo', 'Bagpipes', 'Ukulele'], ans: 1, why: 'The didgeridoo is a long wooden wind instrument made by Aboriginal Australians. It has been played for well over a thousand years.' },
+      { q: 'Diwali, the Festival of Lights, is celebrated in which country?', opts: ['Egypt', 'Brazil', 'India', 'Japan'], ans: 2, why: 'Diwali began in India and is celebrated by Hindus, Sikhs and Jains around the world. Families light small lamps to celebrate light winning over darkness.' },
+      { q: 'What food is a staple in Ethiopia, made from teff flour?', opts: ['Naan', 'Tortilla', 'Injera', 'Pita'], ans: 2, why: 'Injera is a soft, spongy flatbread from Ethiopia. People tear off pieces and use them to scoop up stews instead of using forks.' },
+      { q: 'The haka is a ceremonial dance from which culture?', opts: ['Hawaiian', 'Samoan', 'M\u0101ori', 'Fijian'], ans: 2, why: 'The haka is a powerful group dance of the M\u0101ori people of New Zealand, with stamping, chanting and strong faces. It welcomes guests, celebrates, and marks big moments.' },
+      { q: '"Jambo" is a greeting in which language?', opts: ['Swahili', 'Arabic', 'Hindi', 'Tagalog'], ans: 0, why: 'Jambo means \'hello\' in Swahili, a language spoken by millions of people in East Africa, especially in Kenya and Tanzania.' },
+      { q: 'Which country has more than 7,600 islands?', opts: ['Indonesia', 'New Zealand', 'Philippines', 'Greece'], ans: 2, why: 'The Philippines is made up of more than 7,600 islands in Southeast Asia. Only about 2,000 of them have people living on them.' },
+      { q: 'What is the name of the Mexican holiday honoring loved ones who have passed?', opts: ['Cinco de Mayo', 'D\u00eda de los Muertos', 'Fiesta de la Candelaria', 'Las Posadas'], ans: 1, why: 'On D\u00eda de los Muertos, families in Mexico remember loved ones who have died. They build altars with photos, flowers and favorite foods. It is a joyful celebration, not a sad one.' },
+      { q: 'Kimchi is a traditional food from which country?', opts: ['Philippines', 'China', 'Vietnam', 'South Korea'], ans: 3, why: 'Kimchi is spicy fermented vegetables, usually cabbage, served at almost every meal in Korea. Many families make big batches together in the fall.' },
+      { q: '"Aloha" is a greeting from which culture?', opts: ['Tahitian', 'M\u0101ori', 'Hawaiian', 'Tongan'], ans: 2, why: 'Aloha is a Hawaiian word used for both hello and goodbye. It also means love, kindness and caring for others.' }
     ],
     middle: [
-      { q: 'Nowruz, celebrated at the spring equinox, is the New Year of which culture?', opts: ['Turkish/Anatolian', 'Persian/Iranian', 'Egyptian', 'Indian'], ans: 1 },
-      { q: 'Which African country uses a calendar with 13 months?', opts: ['Nigeria', 'South Africa', 'Ethiopia', 'Kenya'], ans: 2 },
-      { q: 'The Hangul alphabet was scientifically designed by a king of which country?', opts: ['Philippines', 'China', 'South Korea', 'Vietnam'], ans: 2 },
-      { q: 'Which city is the only one that sits on two continents?', opts: ['Budapest', 'Istanbul', 'Moscow', 'Dubai'], ans: 1 },
-      { q: 'Gnawa music with spiritual rhythms originates in which country?', opts: ['Turkey', 'Lebanon', 'Morocco', 'Iran'], ans: 2 },
-      { q: 'Which culture is known for tatau, one of the oldest tattoo traditions?', opts: ['Japanese', 'M\u0101ori', 'Samoan', 'Celtic'], ans: 2 },
-      { q: 'Al-Qarawiyyin, the world\'s oldest university, is in which city?', opts: ['Baghdad', 'Cairo', 'Fez', 'Damascus'], ans: 2 },
-      { q: 'Afrobeats is a global music genre that originated in which city?', opts: ['Nairobi', 'Lagos', 'Accra', 'Johannesburg'], ans: 1 },
-      { q: 'How many official languages does South Africa have?', opts: ['10', '7', '12', '3'], ans: 2 },
-      { q: 'The Great Pyramid was the tallest structure on Earth for approximately how many years?', opts: ['1,000', '2,500', '3,800', '5,000'], ans: 2 }
+      { q: 'Nowruz, celebrated at the spring equinox, is the New Year of which culture?', opts: ['Turkish/Anatolian', 'Persian/Iranian', 'Egyptian', 'Indian'], ans: 1, why: 'Nowruz means \'new day\' in Persian. It marks the first day of spring and the new year in Iran and many nearby countries, with spring cleaning, special foods and family visits. It has been celebrated for over 3,000 years.' },
+      { q: 'Which African country uses a calendar with 13 months?', opts: ['Nigeria', 'South Africa', 'Ethiopia', 'Kenya'], ans: 2, why: 'Ethiopia keeps its own calendar: 12 months of 30 days plus a short 13th month of 5 or 6 days. Its year count also runs about 7 to 8 years behind the calendar most of the world uses.' },
+      { q: 'The Hangul alphabet was scientifically designed by a king of which country?', opts: ['Philippines', 'China', 'South Korea', 'Vietnam'], ans: 2, why: 'King Sejong the Great introduced Hangul in the 1440s so that ordinary Koreans could learn to read and write. Its letter shapes are based on the shape the mouth makes for each sound.' },
+      { q: 'Which city is the only one that sits on two continents?', opts: ['Budapest', 'Istanbul', 'Moscow', 'Dubai'], ans: 1, why: 'Istanbul, Turkey, sits on both sides of the Bosphorus Strait, which separates Europe from Asia. Ferries carry people between continents every day.' },
+      { q: 'Gnawa music with spiritual rhythms originates in which country?', opts: ['Turkey', 'Lebanon', 'Morocco', 'Iran'], ans: 2, why: 'Gnawa music comes from Morocco. It grew from the traditions of people brought there from West Africa, blending spiritual chants, a bass lute called the guembri and iron castanets called qraqeb.' },
+      { q: 'Which culture is known for tatau, one of the oldest tattoo traditions?', opts: ['Japanese', 'M\u0101ori', 'Samoan', 'Celtic'], ans: 2, why: 'The English word \'tattoo\' comes from the Samoan (and wider Polynesian) word tatau. The traditional Samoan pe\'a is tapped into the skin by hand and marks a person\'s place in the community.' },
+      { q: 'Al-Qarawiyyin, the world\'s oldest university, is in which city?', opts: ['Baghdad', 'Cairo', 'Fez', 'Damascus'], ans: 2, why: 'Al-Qarawiyyin in Fez, Morocco, was founded in 859 CE by Fatima al-Fihri. UNESCO and Guinness World Records recognize it as the oldest continuously operating university in the world.' },
+      { q: 'Afrobeats is a global music genre that originated in which city?', opts: ['Nairobi', 'Lagos', 'Accra', 'Johannesburg'], ans: 1, why: 'Afrobeats grew out of the music scene in Lagos, Nigeria, in the 2000s (with Accra, Ghana close behind), blending West African rhythms with hip-hop, dancehall and pop. Artists like Wizkid and Burna Boy took it worldwide.' },
+      { q: 'How many official languages does South Africa have?', opts: ['10', '7', '12', '3'], ans: 2, why: 'South Africa has 12 official languages. Eleven were named in its 1996 constitution, and South African Sign Language became the twelfth in 2023.' },
+      { q: 'The Great Pyramid was the tallest structure on Earth for approximately how many years?', opts: ['1,000', '2,500', '3,800', '5,000'], ans: 2, why: 'The Great Pyramid of Giza, built around 2560 BCE, stayed the tallest human-made structure for roughly 3,800 years, until the spire of Lincoln Cathedral in England passed it in the 1300s.' }
     ],
     high: [
-      { q: 'Aboriginal Australians have maintained continuous culture for approximately how long?', opts: ['10,000 years', '25,000 years', '45,000+ years', '65,000+ years'], ans: 3 },
-      { q: 'The Haudenosaunee (Iroquois) Confederacy influenced which major document?', opts: ['Magna Carta', 'U.S. Constitution', 'UN Charter', 'Treaty of Westphalia'], ans: 1 },
-      { q: 'Capoeira, a martial art disguised as dance, originated among which group?', opts: ['Indigenous Brazilian communities', 'Enslaved Africans in Brazil', 'Portuguese colonists', 'Japanese immigrants'], ans: 1 },
-      { q: 'Which empire had the largest contiguous land territory in history?', opts: ['Roman Empire', 'British Empire', 'Mongol Empire', 'Ottoman Empire'], ans: 2 },
-      { q: 'The concept of "ubuntu" (I am because we are) comes from which cultural tradition?', opts: ['Hindu philosophy', 'Confucianism', 'Southern African philosophy', 'The Sufi tradition of Islam'], ans: 2 },
-      { q: 'Which ancient trade route connected East Asia to the Mediterranean for over 1,500 years?', opts: ['Spice Route', 'Silk Road', 'Trans-Saharan Route', 'Amber Road'], ans: 1 },
-      { q: 'The Rosetta Stone allowed scholars to decipher which ancient writing system?', opts: ['Mesopotamian cuneiform', 'Egyptian hieroglyphs', 'Sanskrit', 'Linear B'], ans: 1 },
-      { q: 'Which Pacific Island culture navigated thousands of miles using stars and wave patterns?', opts: ['Japanese', 'Filipino', 'Polynesian', 'Melanesian'], ans: 2 },
-      { q: 'Griot oral historians are central to the cultural traditions of which region?', opts: ['East Asia', 'West Africa', 'South America', 'Scandinavia'], ans: 1 },
-      { q: 'The concept of "wabi-sabi" (beauty in imperfection) originates from which culture?', opts: ['Korean', 'Chinese', 'Japanese', 'Vietnamese'], ans: 2 }
+      { q: 'Aboriginal Australians have maintained continuous culture for approximately how long?', opts: ['10,000 years', '25,000 years', '45,000+ years', '65,000+ years'], ans: 3, why: 'Finds at sites such as the Madjedbebe rock shelter show people living in Australia at least 65,000 years ago, making Aboriginal Australian cultures the oldest continuous cultures on Earth.' },
+      { q: 'The Haudenosaunee (Iroquois) Confederacy influenced which major document?', opts: ['Magna Carta', 'U.S. Constitution', 'UN Charter', 'Treaty of Westphalia'], ans: 1, why: 'The Haudenosaunee united six nations under the Great Law of Peace centuries before the United States existed. In 1988 the U.S. Congress formally acknowledged its influence on the Constitution, though historians still debate how large that influence was.' },
+      { q: 'Capoeira, a martial art disguised as dance, originated among which group?', opts: ['Indigenous Brazilian communities', 'Enslaved Africans in Brazil', 'Portuguese colonists', 'Japanese immigrants'], ans: 1, why: 'Capoeira was developed by enslaved Africans in Brazil, who hid fighting techniques inside music and dance so they could practice under the eyes of enslavers. It blends kicks, acrobatics, singing and the berimbau.' },
+      { q: 'Which empire had the largest contiguous land territory in history?', opts: ['Roman Empire', 'British Empire', 'Mongol Empire', 'Ottoman Empire'], ans: 2, why: 'At its height in the 1200s the Mongol Empire stretched from Korea to Eastern Europe, the largest connected land empire ever. The British Empire covered more total area, but it was spread across oceans.' },
+      { q: 'The concept of "ubuntu" (I am because we are) comes from which cultural tradition?', opts: ['Hindu philosophy', 'Confucianism', 'Southern African philosophy', 'The Sufi tradition of Islam'], ans: 2, why: 'Ubuntu is a Nguni Bantu idea from Southern Africa, often translated as \'I am because we are\': a person becomes a person through other people. It shaped South Africa\'s reconciliation after apartheid.' },
+      { q: 'Which ancient trade route connected East Asia to the Mediterranean for over 1,500 years?', opts: ['Spice Route', 'Silk Road', 'Trans-Saharan Route', 'Amber Road'], ans: 1, why: 'The Silk Road was a network of overland routes linking China with the Mediterranean from around the 2nd century BCE until the 1400s. Silk, paper, spices, religions and ideas all traveled along it.' },
+      { q: 'The Rosetta Stone allowed scholars to decipher which ancient writing system?', opts: ['Mesopotamian cuneiform', 'Egyptian hieroglyphs', 'Sanskrit', 'Linear B'], ans: 1, why: 'The Rosetta Stone carries the same decree in hieroglyphs, Demotic and Greek. Because scholars could already read the Greek, Jean-Fran\u00e7ois Champollion used it to crack hieroglyphs in 1822.' },
+      { q: 'Which Pacific Island culture navigated thousands of miles using stars and wave patterns?', opts: ['Japanese', 'Filipino', 'Polynesian', 'Melanesian'], ans: 2, why: 'Polynesian navigators crossed thousands of miles of open Pacific without instruments, reading stars, ocean swells, winds and birds. The Hawaiian voyaging canoe H\u014dk\u016ble\u02bba revived these methods in 1976.' },
+      { q: 'Griot oral historians are central to the cultural traditions of which region?', opts: ['East Asia', 'West Africa', 'South America', 'Scandinavia'], ans: 1, why: 'Griots are West African storytellers, musicians and historians who memorize and perform genealogies and histories going back centuries. The role is often passed down within families.' },
+      { q: 'The concept of "wabi-sabi" (beauty in imperfection) originates from which culture?', opts: ['Korean', 'Chinese', 'Japanese', 'Vietnamese'], ans: 2, why: 'Wabi-sabi is a Japanese way of seeing beauty in simplicity, age and imperfection, such as a handmade tea bowl with an uneven glaze. It is closely tied to Zen Buddhism and the tea ceremony.' }
     ]
   };
 
@@ -958,7 +958,7 @@ window.SelHub = window.SelHub || {
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
             return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
-              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-[10px] font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
+              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
             }, t.label);
           })
         ),
@@ -1070,7 +1070,7 @@ window.SelHub = window.SelHub || {
               },
                 h('div', {  className: 'text-3xl mb-2' }, reg.emoji),
                 h('div', {  className: 'text-sm font-bold text-slate-800' }, reg.label),
-                visited && h('div', {  className: 'text-[10px] text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
+                visited && h('div', {  className: 'text-xs text-cyan-600 font-bold mt-1' }, '\u2713 Visited')
               );
             })
           ),
@@ -1094,36 +1094,36 @@ window.SelHub = window.SelHub || {
                   h('div', {  className: 'flex items-start gap-2' },
                     h('span', {  className: 'text-sm shrink-0' }, '\uD83D\uDC4B'),
                     h('div', null,
-                      h('span', {  className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Greeting'),
+                      h('span', {  className: 'text-xs font-bold text-slate-600 uppercase' }, 'Greeting'),
                       h('p', { className: 'text-sm font-bold text-slate-800' }, hl.greeting),
-                      callTTS && h('button', {  onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
+                      callTTS && h('button', {  onClick: function() { callTTS(hl.greeting.split('(')[0].trim()); }, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear it')
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDF72'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Traditional Food'),
+                      h('span', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Traditional Food'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.food)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'text-sm shrink-0' }, '\uD83C\uDFB6'),
                     h('div', null,
-                      h('span', { className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Music & Dance'),
+                      h('span', { className: 'text-xs font-bold text-slate-600 uppercase' }, 'Music & Dance'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.music)
                     )
                   ),
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', {  className: 'text-sm shrink-0' }, '\uD83C\uDF89'),
                     h('div', null,
-                      h('span', {  className: 'text-[10px] font-bold text-slate-600 uppercase' }, 'Festival'),
+                      h('span', {  className: 'text-xs font-bold text-slate-600 uppercase' }, 'Festival'),
                       h('p', { className: 'text-sm text-slate-700' }, hl.festival)
                     )
                   ),
                   h('div', {  className: 'flex items-start gap-2 bg-amber-50 rounded-lg p-2' },
                     h('span', {  className: 'text-sm shrink-0' }, '\u2728'),
                     h('div', null,
-                      h('span', {  className: 'text-[10px] font-bold text-amber-600 uppercase' }, depthLabel),
+                      h('span', {  className: 'text-xs font-bold text-amber-600 uppercase' }, depthLabel),
                       h('p', { className: 'text-sm text-amber-800' }, hl.funFact)
                     )
                   ),
@@ -1164,7 +1164,7 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, recipe.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold text-slate-800' }, recipe.name),
-                  h('div', { className: 'text-[10px] text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
+                  h('div', { className: 'text-xs text-slate-600' }, recipe.origin + ' \u2022 ' + recipe.difficulty)
                 ),
                 wantToTry && h('span', { className: 'text-amber-500 text-sm' }, '\u2764\uFE0F'),
                 h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
@@ -1228,9 +1228,9 @@ window.SelHub = window.SelHub || {
                 h('span', { className: 'text-2xl' }, trad.emoji),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold text-slate-800' }, trad.name),
-                  h('div', { className: 'text-[10px] text-slate-600' }, trad.origin)
+                  h('div', { className: 'text-xs text-slate-600' }, trad.origin)
                 ),
-                explored && h('span', { className: 'text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
+                explored && h('span', { className: 'text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713'),
                 h('span', { className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
               ),
 
@@ -1272,11 +1272,11 @@ window.SelHub = window.SelHub || {
                       (rhythmPlaying && rhythmId === trad.id ? 'bg-purple-300 text-purple-700' : 'bg-purple-600 text-white hover:bg-purple-700') +
                       (rhythmPlaying ? ' opacity-70' : '')
                   }, rhythmPlaying && rhythmId === trad.id ? '\uD83C\uDFB5 Playing...' : '\u25B6 Play This Beat'),
-                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', {  className: 'text-[10px] text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
+                  rhythmsTried.indexOf(trad.id) >= 0 && h('div', {  className: 'text-xs text-purple-600 font-bold text-center mt-1' }, '\u2713 Beat explored!')
                 ),
 
                 // TTS button
-                callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(trad.name + '. ' + trad.description); },
+                callTTS && h('button', { onClick: function() { callTTS(trad.name + '. ' + trad.description); },
                   className: 'w-full px-3 py-2 bg-indigo-50 border border-indigo-600 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors'
                 }, '\uD83D\uDD0A Listen to Description')
               )
@@ -1317,9 +1317,9 @@ window.SelHub = window.SelHub || {
                   h('span', { className: 'text-2xl' }, story.emoji),
                   h('div', { className: 'flex-1' },
                     h('div', {  className: 'text-sm font-bold text-slate-800' }, story.name),
-                    h('div', {  className: 'text-[10px] text-slate-600' }, story.origin)
+                    h('div', {  className: 'text-xs text-slate-600' }, story.origin)
                   ),
-                  isRead && h('span', {  className: 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
+                  isRead && h('span', {  className: 'text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Read'),
                   h('span', {  className: 'text-slate-300 text-xs' }, isExpanded ? '\u25B2' : '\u25BC')
                 ),
 
@@ -1330,8 +1330,8 @@ window.SelHub = window.SelHub || {
                     h('p', { className: 'text-xs font-bold text-amber-600 uppercase mb-2' }, '\uD83D\uDCDC The Story'),
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, story.summary),
                     // TTS narration
-                    callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(story.summary); },
-                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-600 rounded-lg text-[10px] font-bold text-amber-700 hover:bg-amber-200 transition-colors'
+                    callTTS && h('button', { onClick: function() { callTTS(story.summary); },
+                      className: 'mt-2 px-3 py-1.5 bg-amber-100 border border-amber-600 rounded-lg text-xs font-bold text-amber-700 hover:bg-amber-200 transition-colors'
                     }, '\uD83D\uDD0A Listen to This Story')
                   ),
 
@@ -1407,9 +1407,9 @@ window.SelHub = window.SelHub || {
                    isViewed ? 'border-cyan-300 bg-cyan-50' : 'border-slate-200 bg-white')
               },
                 h('div', {  className: 'text-sm font-bold ' + (isCurrent ? 'text-rose-700' : 'text-slate-800') }, m.month.substring(0, 3)),
-                h('div', {  className: 'text-[11px] text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
-                isCurrent && h('div', {  className: 'text-[10px] text-rose-500 font-bold mt-0.5' }, 'This Month'),
-                isViewed && !isCurrent && h('div', {  className: 'text-[10px] text-cyan-500 font-bold mt-0.5' }, '\u2713')
+                h('div', {  className: 'text-xs text-slate-600 mt-0.5' }, m.celebrations.length + ' events'),
+                isCurrent && h('div', {  className: 'text-xs text-rose-500 font-bold mt-0.5' }, 'This Month'),
+                isViewed && !isCurrent && h('div', {  className: 'text-xs text-cyan-500 font-bold mt-0.5' }, '\u2713')
               );
             })
           ),
@@ -1433,14 +1433,14 @@ window.SelHub = window.SelHub || {
                   h('div', {  className: 'w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center text-sm font-bold text-rose-600 shrink-0' }, String(ei + 1)),
                   h('div', {  className: 'flex-1' },
                     h('div', {  className: 'text-sm font-bold text-slate-800' }, event.name),
-                    h('div', {  className: 'text-[10px] text-slate-600' }, event.origin)
+                    h('div', {  className: 'text-xs text-slate-600' }, event.origin)
                   ),
                   h('span', {  className: 'text-slate-300 text-xs' }, isEventExpanded ? '\u25B2' : '\u25BC')
                 ),
                 isEventExpanded && h('div', {  className: 'px-4 pb-4 border-t border-slate-100 pt-3' },
                   h('p', { className: 'text-sm text-slate-700 leading-relaxed' }, event.desc),
-                  callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() { callTTS(event.name + '. ' + event.desc); },
-                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-600 rounded-lg text-[10px] font-bold text-rose-700 hover:bg-rose-100 transition-colors'
+                  callTTS && h('button', { onClick: function() { callTTS(event.name + '. ' + event.desc); },
+                    className: 'mt-2 px-3 py-1.5 bg-rose-50 border border-rose-600 rounded-lg text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors'
                   }, '\uD83D\uDD0A Hear about this celebration')
                 )
               );
@@ -1462,23 +1462,23 @@ window.SelHub = window.SelHub || {
               return h('div', { key: lang.language, className: 'bg-white rounded-xl border border-slate-400 p-3 ' + (practiced ? 'ring-2 ring-cyan-300' : '') },
                 h('div', { className: 'flex items-center justify-between mb-2' },
                   h('span', { className: 'text-sm font-bold text-slate-800' }, lang.language),
-                  practiced && h('span', { className: 'text-[10px] bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
+                  practiced && h('span', { className: 'text-xs bg-cyan-100 text-cyan-700 px-2 py-0.5 rounded-full font-bold' }, '\u2713 Practiced')
                 ),
                 h('div', { className: 'space-y-1' },
                   h('div', {  className: 'flex items-center gap-2' },
-                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Hello:'),
+                    h('span', {  className: 'text-xs font-bold text-slate-600 w-14' }, 'Hello:'),
                     h('span', {  className: 'text-sm font-bold text-cyan-700' }, lang.hello)
                   ),
                   h('div', {  className: 'flex items-center gap-2' },
-                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Thanks:'),
+                    h('span', {  className: 'text-xs font-bold text-slate-600 w-14' }, 'Thanks:'),
                     h('span', {  className: 'text-sm text-slate-700' }, lang.thanks)
                   ),
                   h('div', {  className: 'flex items-center gap-2' },
-                    h('span', {  className: 'text-[10px] font-bold text-slate-600 w-14' }, 'Friend:'),
+                    h('span', {  className: 'text-xs font-bold text-slate-600 w-14' }, 'Friend:'),
                     h('span', {  className: 'text-sm text-slate-700' }, lang.friend)
                   )
                 ),
-                h('div', {  className: 'mt-2 text-[10px] text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
+                h('div', {  className: 'mt-2 text-xs text-slate-600 italic' }, '\uD83D\uDD09 ' + lang.pronunciation),
                 callTTS && h('button', { 'aria-label': 'Read aloud', onClick: function() {
                     callTTS(lang.hello + '. ' + lang.thanks + '. ' + lang.friend);
                     if (langPracticed.indexOf(lang.language) < 0) {
@@ -1545,14 +1545,14 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'bg-white rounded-xl border border-slate-400 p-4 space-y-3' },
             h('div', { className: 'grid grid-cols-2 gap-3' },
               h('div', null,
-                h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
+                h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-1' }, 'Culture 1'),
                 h('input', { type: 'text', value: compCulture1, onChange: function(e) { upd('compCulture1', e.target.value); },
                   placeholder: 'e.g., Japanese (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'First culture to compare'
                 })
               ),
               h('div', null,
-                h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
+                h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-1' }, 'Culture 2'),
                 h('input', { type: 'text', value: compCulture2, onChange: function(e) { upd('compCulture2', e.target.value); },
                   placeholder: 'e.g., Mexican (don’t share personal info)', className: 'w-full text-sm p-2.5 border border-slate-400 rounded-lg outline-none focus:ring-2 focus:ring-cyan-300',
                   'aria-label': 'Second culture to compare'
@@ -1562,11 +1562,11 @@ window.SelHub = window.SelHub || {
 
             // Topic selector
             h('div', null,
-              h('label', { className: 'text-[10px] font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
+              h('label', { className: 'text-xs font-bold text-slate-600 uppercase block mb-1' }, 'Topic'),
               h('div', {  className: 'flex flex-wrap gap-2' },
                 COMPARISON_TOPICS.map(function(topic) {
                   return h('button', { key: topic.id, onClick: function() { upd('compTopic', topic.id); },
-                    className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
+                    className: 'px-3 py-1.5 rounded-full text-xs font-bold border transition-all ' +
                       (compTopic === topic.id ? 'bg-cyan-700 text-white border-cyan-600' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
                   }, topic.emoji + ' ' + topic.label);
                 })
@@ -1597,7 +1597,7 @@ window.SelHub = window.SelHub || {
             h('div', { className: 'grid grid-cols-3 gap-2' },
               // Culture 1 unique
               h('div', { className: 'bg-blue-50 border border-blue-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[10px] font-bold text-blue-700 uppercase text-center mb-2' }, compResult.culture1Name),
+                h('h5', { className: 'text-xs font-bold text-blue-700 uppercase text-center mb-2' }, compResult.culture1Name),
                 (compResult.culture1Points || []).map(function(pt, i) {
                   return h('div', { key: i, className: 'text-xs text-blue-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-blue-400 shrink-0' }, '\u25CF'),
@@ -1607,7 +1607,7 @@ window.SelHub = window.SelHub || {
               ),
               // Similarities (middle)
               h('div', { className: 'bg-green-50 border border-green-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[10px] font-bold text-green-700 uppercase text-center mb-2' }, 'Shared'),
+                h('h5', { className: 'text-xs font-bold text-green-700 uppercase text-center mb-2' }, 'Shared'),
                 (compResult.similarities || []).map(function(sim, i) {
                   return h('div', { key: i, className: 'text-xs text-green-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-green-400 shrink-0' }, '\u25CF'),
@@ -1617,7 +1617,7 @@ window.SelHub = window.SelHub || {
               ),
               // Culture 2 unique
               h('div', { className: 'bg-purple-50 border border-purple-200 rounded-xl p-3' },
-                h('h5', { className: 'text-[10px] font-bold text-purple-700 uppercase text-center mb-2' }, compResult.culture2Name),
+                h('h5', { className: 'text-xs font-bold text-purple-700 uppercase text-center mb-2' }, compResult.culture2Name),
                 (compResult.culture2Points || []).map(function(pt, i) {
                   return h('div', { key: i, className: 'text-xs text-purple-800 mb-1.5 flex items-start gap-1' },
                     h('span', { className: 'text-purple-400 shrink-0' }, '\u25CF'),
@@ -1664,7 +1664,7 @@ window.SelHub = window.SelHub || {
             EXPLORE_ASPECTS.map(function(aspect) {
               return h('button', { key: aspect.id, 'aria-label': aspect.label, 'aria-pressed': selectedAspect === aspect.id,
                 onClick: function() { updMulti({ aspect: aspect.id, cultureData: null, cultureImage: null, followUpAnswer: null }); exploreCulture(selectedCulture, aspect.id); },
-                className: 'px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ' +
+                className: 'px-3 py-1.5 rounded-full text-xs font-bold border transition-all ' +
                   (selectedAspect === aspect.id ? 'bg-cyan-700 text-white border-cyan-600 shadow-md' : 'bg-white border-slate-200 text-slate-600 hover:border-cyan-600')
               }, aspect.emoji + ' ' + aspect.label);
             })
@@ -1683,7 +1683,7 @@ window.SelHub = window.SelHub || {
             greeting && h('div', {  className: 'bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl border border-cyan-200 p-4 text-center' },
               h('div', {  className: 'text-xs font-bold text-cyan-600 uppercase tracking-widest mb-1' }, 'Greeting'),
               h('p', { className: 'text-lg font-black text-slate-800' }, greeting),
-              callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-[10px] text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
+              callTTS && h('button', { 'aria-label': 'Hear pronunciation', onClick: function() { callTTS(greeting); }, className: 'mt-1 text-xs text-cyan-500 hover:text-cyan-700 font-bold' }, '\uD83D\uDD0A Hear pronunciation')
             ),
 
             // Image + Overview
@@ -1714,7 +1714,7 @@ window.SelHub = window.SelHub || {
             // Voice from the culture
             cultureData.voices && h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-4' },
               h('p', { className: 'text-sm text-amber-800 italic leading-relaxed' }, '\uD83D\uDCAC ', cultureData.voices),
-              callTTS && h('button', {  onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-[10px] text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
+              callTTS && h('button', {  onClick: function() { callTTS(cultureData.voices); }, className: 'mt-1 text-xs text-amber-500 hover:text-amber-700 font-bold' }, '\uD83D\uDD0A Hear this')
             ),
 
             // Reflection
@@ -1759,7 +1759,7 @@ window.SelHub = window.SelHub || {
               upd('imageLoading', true);
               var newPrompt = 'Beautiful illustration representing ' + selectedCulture + ' culture, ' + (EXPLORE_ASPECTS.find(function(a) { return a.id === selectedAspect; }) || {}).label + '. Respectful, accurate, fine art quality, warm lighting. NO text, NO stereotypes.';
               callImagen(newPrompt, 400, 0.8).then(function(img) { updMulti({ cultureImage: img, imageLoading: false }); }).catch(function() { upd('imageLoading', false); });
-            }, disabled: imageLoading, className: 'text-[10px] text-cyan-500 hover:text-cyan-700 font-bold disabled:opacity-40' }, imageLoading ? '\uD83C\uDFA8 Generating...' : '\uD83C\uDFA8 Generate new illustration')
+            }, disabled: imageLoading, className: 'text-xs text-cyan-500 hover:text-cyan-700 font-bold disabled:opacity-40' }, imageLoading ? '\uD83C\uDFA8 Generating...' : '\uD83C\uDFA8 Generate new illustration')
           )
         ),
 
@@ -1819,6 +1819,14 @@ window.SelHub = window.SelHub || {
                 })
               ),
 
+              // Why: one line of teaching after every answer, so a miss (or a
+              // lucky guess) leaves the student knowing something new. role=status
+              // so a screen reader hears it without moving focus off the options.
+              quizAnswer !== undefined && quizQuestions[quizIndex].why && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-3 rounded-lg border border-cyan-200 bg-cyan-50 px-3 py-2 text-sm text-slate-800 leading-relaxed' },
+                h('span', { className: 'font-bold text-cyan-800' }, quizAnswer === quizQuestions[quizIndex].ans ? '\u2713 Correct. ' : 'The answer is ' + quizQuestions[quizIndex].opts[quizQuestions[quizIndex].ans] + '. '),
+                quizQuestions[quizIndex].why
+              ),
+
               // Next button
               quizAnswer !== undefined && h('button', { 'aria-label': 'Next question', onClick: nextQuizQuestion,
                 className: 'w-full mt-4 px-4 py-2 bg-cyan-700 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors'
@@ -1859,15 +1867,15 @@ window.SelHub = window.SelHub || {
           h('div', { className: 'grid grid-cols-3 gap-3' },
             h('div', { className: 'bg-cyan-50 rounded-xl border border-cyan-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-cyan-600' }, exploredCultures.length),
-              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Cultures Explored')
+              h('div', { className: 'text-xs text-slate-600 font-bold' }, 'Cultures Explored')
             ),
             h('div', { className: 'bg-teal-50 rounded-xl border border-teal-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-teal-600' }, questionsAsked),
-              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Questions Asked')
+              h('div', { className: 'text-xs text-slate-600 font-bold' }, 'Questions Asked')
             ),
             h('div', { className: 'bg-amber-50 rounded-xl border border-amber-200 p-3 text-center' },
               h('div', { className: 'text-2xl font-black text-amber-600' }, comparisonsCompleted),
-              h('div', { className: 'text-[10px] text-slate-600 font-bold' }, 'Comparisons')
+              h('div', { className: 'text-xs text-slate-600 font-bold' }, 'Comparisons')
             )
           ),
 
@@ -1883,7 +1891,7 @@ window.SelHub = window.SelHub || {
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', null, jp.emoji),
                     h('span', {  className: 'text-xs font-bold text-slate-700 flex-1' }, jp.prompt),
-                    completed && h('span', {  className: 'text-[10px] text-amber-600 font-bold' }, '\u2713')
+                    completed && h('span', {  className: 'text-xs text-amber-600 font-bold' }, '\u2713')
                   ),
                   h('textarea', { 'aria-label': jp.prompt, value: entryVal, onChange: function(e) {
                       var newEntries = {};
@@ -1904,7 +1912,7 @@ window.SelHub = window.SelHub || {
                       if (announceToSR) announceToSR('Reflection saved for: ' + jp.prompt);
                       checkBadges({ journalPromptsCompleted: newCompleted, journalCount: newCount });
                     },
-                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-[10px] font-bold hover:bg-amber-600 transition-colors'
+                    className: 'mt-1 px-3 py-1.5 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
                   }, '\uD83D\uDCBE Save Reflection')
                 );
               })
@@ -1933,8 +1941,7 @@ window.SelHub = window.SelHub || {
               placeholder: 'What surprised you? What connections did you find between cultures? How does learning about others change how you see yourself?',
               className: 'w-full text-sm p-3 border border-cyan-600 rounded-lg resize-none h-32 outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': 'Culture journal entry'
             }),
-            d.journalEntry && d.journalEntry.length > 30 && h('button', { 'aria-label': 'Save entry',
-              onClick: function() {
+            d.journalEntry && d.journalEntry.length > 30 && h('button', { onClick: function() {
                 var newCount = journalCount + 1;
                 updMulti({ journalCount: newCount });
                 ctx.awardXP(10);
@@ -1952,7 +1959,7 @@ window.SelHub = window.SelHub || {
             h('p', { className: 'text-sm text-slate-600 italic leading-relaxed' },
               '"The beauty of the world lies in the diversity of its people." \u2014 Unknown'
             ),
-            h('p', { className: 'text-[10px] text-slate-600 mt-1' },
+            h('p', { className: 'text-xs text-slate-600 mt-1' },
               'Every culture on this list represents millions of unique individuals. Learning about cultures is a beginning, not an end.'
             )
           )
@@ -1979,7 +1986,7 @@ window.SelHub = window.SelHub || {
                 h('div', { className: 'text-2xl' }, earned ? badge.emoji : '\uD83D\uDD12'),
                 h('div', { className: 'flex-1' },
                   h('div', { className: 'text-sm font-bold ' + (earned ? 'text-slate-800' : 'text-slate-300') }, badge.label),
-                  h('div', { className: 'text-[10px] ' + (earned ? 'text-amber-700' : 'text-slate-300') }, badge.desc)
+                  h('div', { className: 'text-xs ' + (earned ? 'text-amber-700' : 'text-slate-300') }, badge.desc)
                 ),
                 earned && h('span', { className: 'text-green-500 text-lg font-bold' }, '\u2713')
               );

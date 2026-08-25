@@ -25,10 +25,13 @@ describe('Zones of Regulation navigation accessibility', () => {
 
   it('keeps non-tab controls out of the tablist and gives them stateful names', () => {
     const text = source();
-    expect(text).toContain("'aria-label': soundEnabled ? 'Mute sounds' : 'Unmute sounds'");
-    expect(text).toContain("'aria-pressed': soundEnabled");
+    // Hub-wide toolbar contract (tests/sel_toolbar_toggle_names.test.js): a stable
+    // name plus aria-pressed for the sound switch; the badge toggle opens a panel,
+    // so it reports aria-expanded rather than pressed.
+    expect(text).toContain("'aria-label': 'Sound effects'");
+    expect(text).toContain("'aria-pressed': !!soundEnabled");
     expect(text).toContain("'aria-label': 'View badges (' + Object.keys(earnedBadges).length + ' of ' + BADGES.length + ')'");
-    expect(text).toContain("'aria-pressed': showBadgesPanel");
+    expect(text).toContain("'aria-expanded': !!showBadgesPanel");
     expect(text).toContain("announceToSR(nextSound ? 'Sounds enabled' : 'Sounds muted')");
   });
 });
