@@ -358,6 +358,184 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(Buffer.compare(c1, c2), 'canvas did not resume after play').not.toBe(0);
   });
 
+  // ── On-screen control pads ──
+  // Until 2026-08-25 this file contained no touchstart/pointerdown of any kind, so
+  // the two hand-flown phases — the graded landing and the moonwalk — could only be
+  // played from a keyboard: unplayable on a tablet, and unplayable with a mouse
+  // alone (the EVA's click-to-move is itself behind the M key).
+  //
+  // Each test asserts BOTH halves, because either one alone passes vacuously: every
+  // button must be hit-testable at its own centre (an overlay creeping over the pad
+  // is the realistic regression), and pressing it must reach the physics.
+  // ★Scroll the pad into view BEFORE hit-testing: elementFromPoint returns null for a
+  // point outside the viewport, and the phase containers are tall enough that the pad
+  // sits below the fold in the harness. Without this every button reads as "covered"
+  // and the test fails on geometry rather than on the product.
+  const hitTest = async (page: any, sel: string) => {
+    const first = page.locator(sel + ' button').first();
+    if (await first.count()) await first.scrollIntoViewIfNeeded();
+    return page.evaluate((s: string) => {
+      const pad = document.querySelector(s);
+      if (!pad) return null;
+      return Array.from(pad.querySelectorAll('button')).map((b: any) => {
+        const r = b.getBoundingClientRect();
+        const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+        const top = document.elementFromPoint(cx, cy);
+        return {
+          label: (b.getAttribute('aria-label') || '').slice(0, 18),
+          w: Math.round(r.width), h: Math.round(r.height),
+          onScreen: cy >= 0 && cy <= window.innerHeight,
+          hit: top === b,
+          hitWas: top ? (top.tagName + (top.id ? '#' + top.id : '')) : 'nothing (off-viewport)',
+        };
+      });
+    }, sel);
+  };
+
+  test('the landing can be flown without a keyboard', async ({ page }) => {
+    await harness.mount(page, { moonMission: { missionPhase: 5, descentStarted: true } }, undefined, { expectCanvas: false });
+    await page.waitForFunction(() => {
+      const c = document.querySelector('canvas[data-descent-canvas="true"]') as HTMLCanvasElement;
+      return c && c.dataset.descentVspeed !== undefined;
+    }, null, { timeout: 20000 });
+
+    const buttons = await hitTest(page, '[data-descent-pad]');
+    expect(buttons, 'no flight control pad on the descent').not.toBeNull();
+    expect(buttons.length).toBe(3);
+    for (const b of buttons) {
+      expect(b.onScreen, 'control never scrolled into view: ' + JSON.stringify(b)).toBe(true);
+      expect(b.hit, 'flight control is covered by ' + b.hitWas + ': ' + JSON.stringify(b)).toBe(true);
+      expect(Math.min(b.w, b.h), 'touch target too small: ' + JSON.stringify(b)).toBeGreaterThanOrEqual(40);
+    }
+
+    const flown = await page.evaluate(async () => {
+      const cv = () => document.querySelector('canvas[data-descent-canvas="true"]') as HTMLCanvasElement;
+      const read = () => ({ v: Number(cv().dataset.descentVspeed), fuel: Number(cv().dataset.descentFuel), thrust: Number(cv().dataset.descentThrust) });
+      const btn = document.querySelectorAll('[data-descent-pad] button')[1] as HTMLElement;
+      const before = read();
+      btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+      const pressed = btn.getAttribute('aria-pressed');
+      await new Promise((r) => setTimeout(r, 1200));
+      const during = read();
+      btn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
+      return { before, during, pressed, released: btn.getAttribute('aria-pressed') };
+    });
+
+    expect(flown.pressed, 'THRUST did not report itself pressed').toBe('true');
+    expect(flown.released, 'THRUST stayed pressed after release').toBe('false');
+    expect(flown.during.thrust, 'holding THRUST never spun the engine up').toBeGreaterThan(0.3);
+    expect(flown.during.fuel, 'the engine burned no fuel').toBeLessThan(flown.before.fuel);
+    expect(flown.during.v, 'thrust did not slow the fall').toBeGreaterThan(flown.before.v);
+  });
+
+  test('the moonwalk can be walked without a keyboard', async ({ page }) => {
+    await harness.mount(page, AT_EVA, EVA_READY);
+
+    const buttons = await hitTest(page, '[data-eva-pad]');
+    expect(buttons, 'no control pad on the lunar surface').not.toBeNull();
+    expect(buttons.length).toBe(6);
+    for (const b of buttons) {
+      expect(b.onScreen, 'control never scrolled into view: ' + JSON.stringify(b)).toBe(true);
+      expect(b.hit, 'surface control is covered by ' + b.hitWas + ': ' + JSON.stringify(b)).toBe(true);
+      expect(Math.min(b.w, b.h), 'touch target too small: ' + JSON.stringify(b)).toBeGreaterThanOrEqual(40);
+    }
+
+    // ★The pad must not bury the controls it shares the bottom edge with. When it was
+    // first added it sat directly on top of the rover's own Board button, and because
+    // the pad has the higher z-index the hit test ABOVE still passed — the overlay
+    // regression was only visible from underneath. So check the buried side too.
+    const buried = await page.evaluate(() => ['eva-lrv-action', 'eva-lrv-sound'].map((id) => {
+      const el = document.getElementById(id);
+      if (!el) return { id, missing: true };
+      const r = el.getBoundingClientRect();
+      const top = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return { id, hit: top === el || el.contains(top as Node), coveredBy: top ? top.tagName + (top.getAttribute('aria-label') ? ' "' + top.getAttribute('aria-label')!.slice(0, 22) + '"' : '') : 'nothing' };
+    }));
+    for (const b of buried) {
+      expect(b.missing, b.id + ' is gone').toBeFalsy();
+      expect(b.hit, b.id + ' is covered by ' + b.coveredBy).toBe(true);
+    }
+
+    const steps = () => page.evaluate(() => {
+      const el = document.getElementById('eva-steps');
+      return el ? parseInt(String(el.textContent), 10) : null;
+    });
+    const before = await steps();
+    expect(before).not.toBeNull();
+
+    await page.evaluate(() => {
+      const btn = document.querySelectorAll('[data-eva-pad] button')[1] as HTMLElement; // ◀ ▲ ▼ ▶ JUMP F
+      btn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+    });
+    const walked = await page.waitForFunction(
+      (b: number) => {
+        const el = document.getElementById('eva-steps');
+        const n = el ? parseInt(String(el.textContent), 10) : null;
+        return n !== null && n > b ? n : false;
+      },
+      before, { timeout: 20000 },
+    ).catch(() => null);
+    await page.evaluate(() => {
+      const btn = document.querySelectorAll('[data-eva-pad] button')[1] as HTMLElement;
+      btn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true }));
+    });
+    expect(walked, 'the forward pad never moved the astronaut').not.toBeNull();
+
+    // Release must stop him — a control left held walks the astronaut on his own.
+    await page.waitForTimeout(900);
+    const a = await steps();
+    await page.waitForTimeout(1800);
+    expect(await steps(), 'the astronaut kept walking after the pad was released').toBe(a);
+  });
+
+  test('on a phone-width surface the pad does not bury the rover controls', async ({ page }) => {
+    // ★The collision this guards only exists at narrow widths: the pad is centred, so
+    // at 1280px it never reaches the bottom-left rover buttons, and the desktop test
+    // above passes with or without the reserved band. Calibrated by poisoning the band
+    // to 0 — this test fails there and the desktop one does not.
+    // ★Resize #wrap, not the viewport: #wrap is fixed-size, so a viewport change leaves
+    // the tool's container untouched and the test proves nothing.
+    await page.goto(`${harness.url}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.moonMission, null, { timeout: 30000 });
+    await page.evaluate(() => {
+      const w = document.getElementById('wrap')!;
+      w.style.width = '390px';
+      w.style.height = '700px';
+    });
+    await page.evaluate((d) => (window as any).__mount(d), AT_EVA);
+    await page.waitForSelector('canvas[data-eva-canvas="true"]', { timeout: 30000 });
+    await page.waitForTimeout(2500);
+    // The bottom band sits below the fold in the harness; elementFromPoint returns null
+    // outside the viewport, which reads as "covered" and fails on geometry alone.
+    await page.locator('[data-eva-pad] button').first().scrollIntoViewIfNeeded();
+
+    const rows = await page.evaluate(() => {
+      const out: any[] = [];
+      const check = (label: string, el: Element | null) => {
+        if (!el) { out.push({ label, missing: true }); return; }
+        const r = el.getBoundingClientRect();
+        const cx = r.x + r.width / 2, cy = r.y + r.height / 2;
+        const top = document.elementFromPoint(cx, cy);
+        out.push({
+          label,
+          onScreen: cy >= 0 && cy <= window.innerHeight,
+          hit: top === el || el.contains(top as Node),
+          coveredBy: top ? top.tagName + (top.getAttribute('aria-label') ? ' "' + top.getAttribute('aria-label')!.slice(0, 24) + '"' : '') : 'nothing',
+        });
+      };
+      check('lrv-action', document.getElementById('eva-lrv-action'));
+      check('lrv-sound', document.getElementById('eva-lrv-sound'));
+      Array.from(document.querySelectorAll('[data-eva-pad] button')).forEach((b, i) => check('pad-' + i, b));
+      return out;
+    });
+
+    for (const r of rows) {
+      expect(r.missing, r.label + ' is missing').toBeFalsy();
+      expect(r.onScreen, r.label + ' never rendered on screen').toBe(true);
+      expect(r.hit, r.label + ' is covered by ' + r.coveredBy).toBe(true);
+    }
+  });
+
   test('lunar orbit narrates LOI, loss of signal, then GO for undocking', async ({ page }) => {
     // Phase 4 was the one watch-then-click phase with no banner: the loss of signal
     // behind the Moon — the phase's own teaching moment — happened with nothing

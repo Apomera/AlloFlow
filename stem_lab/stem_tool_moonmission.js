@@ -194,6 +194,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // ═══════════════════════════════════════════════════════════════
 
   // Seeded PRNG — deterministic so craters/stars don't jump per frame
+  // ── On-screen hold control ──
+  // Both hand-flown phases were keyboard-only: no pointer or touch path existed
+  // anywhere in this file, so the landing game and the moonwalk were unplayable on a
+  // tablet, and unplayable with a mouse alone. These buttons hold while pressed and
+  // release on up / cancel / slide-off, and they answer Enter and Space too so a
+  // switch or keyboard user reaches the same control rather than a dead button.
+  function mmHoldButton(label, aria, size, onDown, onUp) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', aria);
+    b.setAttribute('aria-pressed', 'false');
+    b.textContent = label;
+    b.style.cssText = 'pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;' +
+      'min-width:' + size + 'px;min-height:' + size + 'px;padding:0 8px;border-radius:10px;' +
+      'border:1px solid rgba(148,163,184,0.55);background:rgba(2,6,23,0.82);color:#e2e8f0;' +
+      'font:700 13px/1 system-ui;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
+    var held = false;
+    function down(e) {
+      if (e && e.cancelable) e.preventDefault();
+      if (held) return;
+      held = true;
+      b.setAttribute('aria-pressed', 'true');
+      b.style.background = 'rgba(56,189,248,0.35)';
+      b.style.borderColor = 'rgba(125,211,252,0.9)';
+      onDown();
+    }
+    function up() {
+      if (!held) return;
+      held = false;
+      b.setAttribute('aria-pressed', 'false');
+      b.style.background = 'rgba(2,6,23,0.82)';
+      b.style.borderColor = 'rgba(148,163,184,0.55)';
+      if (onUp) onUp();
+    }
+    // No setPointerCapture: sliding a finger off the button should release it, which
+    // is what pointerleave gives us. Capture would hold the control down instead.
+    b.addEventListener('pointerdown', down);
+    b.addEventListener('pointerup', up);
+    b.addEventListener('pointercancel', up);
+    b.addEventListener('pointerleave', up);
+    b.addEventListener('keydown', function(e) {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      e.preventDefault();
+      if (!e.repeat) down(null);
+    });
+    b.addEventListener('keyup', function(e) {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      e.preventDefault();
+      up();
+    });
+    b.addEventListener('blur', up);
+    b._mmRelease = up;
+    return b;
+  }
+  function mmPadRow(aria) {
+    var row = document.createElement('div');
+    row.setAttribute('role', 'group');
+    row.setAttribute('aria-label', aria);
+    row.style.cssText = 'position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;' +
+      'align-items:center;gap:8px;z-index:14;pointer-events:none;flex-wrap:wrap;padding:0 8px';
+    return row;
+  }
+
   function _seededRand(seed) {
     var s = (seed * 16807 + 1) % 2147483647;
     return { next: function() { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }, s: s };
@@ -2603,6 +2666,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.v_3_m_s_h_5_m_s', 'V < 3 m/s, H < 5 m/s'))
               )
             ),
+            h('p', { className: 'text-[11px] text-sky-300 mb-4' },
+              t('stem.moonmission.descent_touch_hint', '\uD83D\uDC46 No keyboard? The same three controls sit along the bottom of the flight view \u2014 hold them with a finger or the mouse.')),
             // Carry the coast decision forward in words, not just in the numbers. A
             // student who declined the correction should not have to work out for
             // themselves why the ground is moving faster than the briefing implied.
@@ -2666,10 +2731,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                   // Controls
                   var keys = {};
+                  var padCtl = { thrust: false, left: false, right: false };   // on-screen pad, same effect as the keys
                   cvEl.tabIndex = 0;
                   cvEl.addEventListener('keydown', function(e) { var k = e.key.toLowerCase(); if (['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d',' '].indexOf(k) === -1) return; keys[e.key] = true; e.preventDefault(); });   // only game keys — Tab must escape (WCAG 2.1.2)
                   cvEl.addEventListener('keyup', function(e) { keys[e.key] = false; });
                   cvEl.focus();
+
+                  // ── On-screen flight controls ──
+                  // Shown to everyone, not just touch devices: the landing was the one
+                  // graded piloting task in the mission and it could only be flown from a
+                  // keyboard. React removes this with the canvas's own wrapper when the
+                  // descent unmounts (Retry Landing), so it needs no separate teardown.
+                  if (cvEl.parentElement && !cvEl.parentElement.querySelector('[data-descent-pad]')) {
+                    var dPad = mmPadRow('Lunar Module flight controls');
+                    dPad.setAttribute('data-descent-pad', 'true');
+                    var dSize = (cvEl.offsetWidth || W) < 560 ? 52 : 44;
+                    var bLeft = mmHoldButton('\u25C0', 'Tilt left \u2014 push sideways to the left. Same as the A or Left Arrow key.', dSize,
+                      function() { padCtl.left = true; }, function() { padCtl.left = false; });
+                    var bThrust = mmHoldButton('\uD83D\uDD25 THRUST', 'Fire the descent engine. Same as the W or Up Arrow key.', dSize,
+                      function() { padCtl.thrust = true; }, function() { padCtl.thrust = false; });
+                    var bRight = mmHoldButton('\u25B6', 'Tilt right \u2014 push sideways to the right. Same as the D or Right Arrow key.', dSize,
+                      function() { padCtl.right = true; }, function() { padCtl.right = false; });
+                    bThrust.style.minWidth = (dSize * 2.4) + 'px';
+                    bThrust.style.borderColor = 'rgba(251,191,36,0.75)';
+                    dPad.appendChild(bLeft); dPad.appendChild(bThrust); dPad.appendChild(bRight);
+                    cvEl.parentElement.appendChild(dPad);
+                  }
 
                   function drawDescent() {
                     tick++;
@@ -2677,16 +2764,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     if (!landed && !crashed) {
                       // Controls: up arrow = thrust, left/right = horizontal adjust
-                      if (keys['ArrowUp'] || keys['w'] || keys['W']) {
+                      if (padCtl.thrust || keys['ArrowUp'] || keys['w'] || keys['W']) {
                         thrust = Math.min(1, thrust + 0.03);
                         if (fuel > 0) fuel -= 0.08;
                       } else {
                         thrust *= 0.95;
                       }
                       var tiltCmd = 0;
-                      if (keys['ArrowLeft'] || keys['a'] || keys['A']) { hVel -= 0.5; tiltCmd = -0.32; }
-                      if (keys['ArrowRight'] || keys['d'] || keys['D']) { hVel += 0.5; tiltCmd = 0.32; }
+                      if (padCtl.left || keys['ArrowLeft'] || keys['a'] || keys['A']) { hVel -= 0.5; tiltCmd = -0.32; }
+                      if (padCtl.right || keys['ArrowRight'] || keys['d'] || keys['D']) { hVel += 0.5; tiltCmd = 0.32; }
                       tilt += (tiltCmd - tilt) * 0.07;   // eased, so the vehicle swings rather than snapping
+
+                      // Publish the flight state next to the canvas. The HUD is painted
+                      // pixels, so without this nothing outside the loop can see the
+                      // landing at all — including a test asking whether a control
+                      // actually reaches the physics.
+                      var _dsAlt = Math.max(0, Math.round(alt));
+                      if (cvEl.dataset.descentAlt !== String(_dsAlt)) cvEl.dataset.descentAlt = String(_dsAlt);
+                      var _dsV = vVel.toFixed(1);
+                      if (cvEl.dataset.descentVspeed !== _dsV) cvEl.dataset.descentVspeed = _dsV;
+                      var _dsH = hVel.toFixed(1);
+                      if (cvEl.dataset.descentHspeed !== _dsH) cvEl.dataset.descentHspeed = _dsH;
+                      var _dsF = Math.max(0, Math.round(fuel));
+                      if (cvEl.dataset.descentFuel !== String(_dsF)) cvEl.dataset.descentFuel = String(_dsF);
+                      var _dsT = thrust.toFixed(2);
+                      if (cvEl.dataset.descentThrust !== _dsT) cvEl.dataset.descentThrust = _dsT;
 
                       // Physics
                       var gravity = (diffSettings && diffSettings.gravity) || 1.62; // Moon gravity m/s^2 (difficulty-scaled)
@@ -3036,6 +3138,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', { className: 'text-[11px] text-slate-300' }, t('stem.moonmission.click_to_move_toggle', 'Click-to-move: then click the ground to walk there (no keys needed)'))
               )
             ),
+            h('p', { className: 'text-[11px] text-sky-300 mb-4' },
+              t('stem.moonmission.eva_touch_hint', '\uD83D\uDC46 No keyboard? Walk, turn, jump and collect from the buttons along the bottom of the surface view.')),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-xl mx-auto' },
               h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, t('stem.moonmission.mission_objective_apollo_facts', '🎯 Mission objective + Apollo facts:')),
               h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
@@ -4427,6 +4531,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // both strafe, so a keyboard-only student could slide around the regolith
                     // but never turn to face anything. Q/E steer the suit.
                     var moveState = { forward: false, back: false, left: false, right: false, sample: false, turnLeft: false, turnRight: false };
+                    // Height reserved along the bottom edge for the on-screen control pad.
+                    // Every other bottom-anchored overlay offsets by this, or the pad simply
+                    // covers it — on a phone that hid the rover's own Board button.
+                    var evaPadSize = (canvasEl.clientWidth || W) < 560 ? 50 : 40;
+                    var evaPadBand = evaPadSize + 16;
                     var yaw = 0, pitch = 0;
                     var playerPos = new THREE.Vector3(3, _terrainHeightAt(3, 3) + 1.8, 3);
                     var playerVelY = 0;
@@ -4543,7 +4652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var lrvActionEl = document.createElement('button');
                     lrvActionEl.type = 'button';
                     lrvActionEl.id = 'eva-lrv-action';
-                    lrvActionEl.style.cssText = 'position:absolute;left:10px;bottom:10px;z-index:13;padding:8px 11px;border-radius:9px;border:1px solid rgba(251,191,36,0.55);background:rgba(15,23,42,0.9);color:#fde68a;font:700 11px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.35)';
+                    lrvActionEl.style.cssText = 'position:absolute;left:10px;bottom:' + (evaPadBand + 10) + 'px;z-index:13;padding:8px 11px;border-radius:9px;border:1px solid rgba(251,191,36,0.55);background:rgba(15,23,42,0.9);color:#fde68a;font:700 11px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.35)';
                     var lrvSampleNoticeAt = 0;
                     function roverPlanarDistance() {
                       var rdx = playerPos.x - roverGrp.position.x;
@@ -4733,7 +4842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     lrvSoundEl.type = 'button';
                     lrvSoundEl.id = 'eva-lrv-sound';
                     lrvSoundEl.setAttribute('aria-keyshortcuts', 'B');
-                    lrvSoundEl.style.cssText = 'position:absolute;left:10px;bottom:52px;z-index:13;padding:7px 10px;border-radius:9px;border:1px solid rgba(125,211,252,0.5);background:rgba(15,23,42,0.9);color:#bae6fd;font:700 10px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.3);touch-action:manipulation';
+                    lrvSoundEl.style.cssText = 'position:absolute;left:10px;bottom:' + (evaPadBand + 52) + 'px;z-index:13;padding:7px 10px;border-radius:9px;border:1px solid rgba(125,211,252,0.5);background:rgba(15,23,42,0.9);color:#bae6fd;font:700 10px system-ui;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.3);touch-action:manipulation';
                     function updateLrvSoundControl() {
                       var state = lrvAudioEnabled ? 'On' : 'Off';
                       lrvSoundEl.textContent = 'LRV audio: ' + state + ' (B)';
@@ -4908,6 +5017,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       '</div>' +
                       '<div id="eva-key-legend" style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:9px;line-height:1.4">ON FOOT: WASD move \u2022 Q/E turn \u2022 SPACE jump \u2022 F collect / deploy<br>LRV: V board / exit \u2022 W/S drive \u2022 A/D steer \u2022 B audio \u2022 samples on foot<br>Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
                     canvasEl.parentElement.appendChild(evaHud);
+
+                    // ── On-screen surface controls ──
+                    // The moonwalk was keyboard-only for movement (click-to-move exists but
+                    // is itself behind the M key), so a tablet or a mouse-only student could
+                    // look around and never take a step. Each button drives the SAME handler
+                    // the keys do, so the rover notice, the jump gate and the collect
+                    // cooldown all behave identically rather than being re-implemented.
+                    var evaPad = mmPadRow('Moonwalk controls');
+                    evaPad.setAttribute('data-eva-pad', 'true');
+                    var evaBtnSize = evaPadSize;
+                    function evaKey(key) {
+                      return {
+                        down: function() { onEvaKeyDown({ key: key, repeat: false, preventDefault: function() {} }); },
+                        up: function() { onEvaKeyUp({ key: key }); }
+                      };
+                    }
+                    [
+                      ['\u25C0', 'Turn left. Same as the Q key.', 'q'],
+                      ['\u25B2', 'Walk forward. Same as the W key.', 'w'],
+                      ['\u25BC', 'Walk backward. Same as the S key.', 's'],
+                      ['\u25B6', 'Turn right. Same as the E key.', 'e'],
+                      ['\u2B06 JUMP', 'Jump in one-sixth gravity. Same as the Space key.', ' '],
+                      ['\uD83E\uDEA8 F', 'Collect the rock at your feet, or deploy the instrument you are standing beside. Same as the F key.', 'f']
+                    ].forEach(function(spec) {
+                      var k = evaKey(spec[2]);
+                      evaPad.appendChild(mmHoldButton(spec[0], spec[1], evaBtnSize, k.down, k.up));
+                    });
+                    canvasEl.parentElement.appendChild(evaPad);
                     // On a phone-width canvas the keyboard legend is dead weight (no keys to
                     // press) and the full HUD covered most of the scene.
                     if (W < 560) {
@@ -5518,7 +5655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (!discEl) {
                           discEl = document.createElement('div');
                           discEl.id = 'eva-discovery';
-                          discEl.style.cssText = 'position:absolute;bottom:8px;right:8px;max-width:250px;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#e2e8f0;font-family:system-ui;font-size:10px;pointer-events:none;z-index:12;border:1px solid rgba(56,189,248,0.3);opacity:0;transition:opacity 0.5s';
+                          discEl.style.cssText = 'position:absolute;bottom:' + (evaPadBand + 8) + 'px;right:8px;max-width:250px;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#e2e8f0;font-family:system-ui;font-size:10px;pointer-events:none;z-index:12;border:1px solid rgba(56,189,248,0.3);opacity:0;transition:opacity 0.5s';
                           canvasEl.parentElement.appendChild(discEl);
                         }
                         if (nearestLM && nearestLMDist < 6) {
@@ -5825,6 +5962,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
                       renderer.dispose();
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
+                      if (evaPad) {
+                        // Release anything still held, or a button removed mid-press leaves
+                        // moveState stuck true and the astronaut walks on his own.
+                        var padBtns = evaPad.querySelectorAll('button');
+                        for (var pbi = 0; pbi < padBtns.length; pbi++) {
+                          if (padBtns[pbi]._mmRelease) { try { padBtns[pbi]._mmRelease(); } catch (_padErr) {} }
+                        }
+                        if (evaPad.parentElement) evaPad.parentElement.removeChild(evaPad);
+                      }
                       if (vignetteEl && vignetteEl.parentElement) vignetteEl.parentElement.removeChild(vignetteEl);
                       if (glareEl && glareEl.parentElement) glareEl.parentElement.removeChild(glareEl);
                       ['eva-o2-out', 'eva-o2-warning', 'eva-discovery', 'eva-comms'].forEach(function(id) {
@@ -6961,7 +7107,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           function logObs() {
             setIQ({ log: (iq.log || []).concat([{ mr: iq.massRatio, bd: iq.burnDur, isp: iq.isp, dv: Math.round(deltaV), o: orbit }]).slice(-8) });
           }
-          return h('div', { className: 'mt-3 p-3 rounded-lg bg-slate-50 border border-indigo-300' },
+          return h('details', {
+            className: 'mt-3 rounded-lg border border-indigo-400/60 bg-slate-900 overflow-hidden',
+            'data-moonmission-deltav': 'true'
+          },
+            h('summary', { className: 'px-3 py-2 text-[11px] font-bold text-indigo-200 cursor-pointer' },
+              t('stem.moonmission.deltav_summary', '\uD83D\uDEF0\uFE0F Optional lab: the rocket equation \u2014 why fuel decides everything')),
+            h('div', { className: 'p-3 bg-slate-50 border-t border-indigo-300' },
             h('div', { className: 'text-sm font-black text-indigo-700 mb-1' }, t('stem.moonmission.orbital_delta_v_discovery', '🛰️ Orbital delta-V discovery')),
             h('p', { className: 'text-[11px] text-slate-700 mb-2 leading-relaxed' },
               t('stem.moonmission.tsiolkovsky_rocket_equation_adjust_mas', 'Tsiolkovsky rocket equation. Adjust mass ratio, burn duration, and specific impulse (Isp). Discrete 3-state outcome shows whether your delta-V is insufficient, achieves LEO, or escapes Earth. No score, no reveal.')),
@@ -7022,13 +7174,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
             h('div', { className: 'mt-2 text-[10px] italic text-slate-500' },
               t('stem.moonmission.design_note_discrete_3_state_outcome_n', 'Design note: discrete 3-state outcome; no score; no reveal — by design.'))
+            )
           );
         })(),
 
         // Mission Log (collapsible)
-        missionLog.length > 0 && h('div', { className: 'mt-3 bg-slate-50 rounded-lg p-2 border border-slate-400' },
-          h('p', { className: 'text-[11px] text-slate-600 font-bold mb-1' }, '\uD83D\uDCCB MISSION LOG (' + missionLog.length + ' entries)'),
-          h('div', { className: 'space-y-0.5 max-h-32 overflow-y-auto' },
+        missionLog.length > 0 && h('details', {
+          className: 'mt-3 rounded-lg border border-slate-600 bg-slate-900 overflow-hidden',
+          'data-moonmission-log': 'true'
+        },
+          h('summary', { className: 'px-3 py-2 text-[11px] font-bold text-slate-200 cursor-pointer' },
+            '\uD83D\uDCCB ' + t('stem.moonmission.mission_log_summary', 'Mission log') + ' (' + missionLog.length + ')'),
+          h('div', { className: 'p-2 bg-slate-50 border-t border-slate-400 space-y-0.5 max-h-32 overflow-y-auto' },
             missionLog.slice(-8).reverse().map(function(entry, i) {
               return h('div', { key: i, className: 'flex justify-between text-[11px]' },
                 h('span', { className: 'text-slate-600' }, entry.text),
