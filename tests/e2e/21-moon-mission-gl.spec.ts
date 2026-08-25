@@ -329,4 +329,48 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => !!document.querySelector('canvas[data-eva-canvas="true"]'))).toBe(false);
   });
+
+  test('the header toggle freezes the launch animation and play resumes it', async ({ page }) => {
+    // WCAG 2.2.2 (pause, stop, hide). The passive phases loop on their own; the
+    // toggle is proved at runtime in BOTH directions — a paused canvas must stop
+    // changing, and an unpaused one must change again — so a broken flag cannot
+    // pass by accident (the echolocation reduced-motion lesson).
+    await harness.mount(page, { moonMission: { missionPhase: 1 } }, undefined, { expectCanvas: false });
+    const canvas = page.locator('canvas[data-launch-canvas="true"]');
+    await page.waitForTimeout(600);
+    const shoot = () => canvas.screenshot({ timeout: 60000 });
+
+    const a1 = await shoot(); await page.waitForTimeout(700); const a2 = await shoot();
+    expect(Buffer.compare(a1, a2), 'launch canvas is not animating before the toggle').not.toBe(0);
+
+    const toggle = page.locator('[data-moonmission-anim-toggle="true"]');
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await page.waitForTimeout(400);
+    const b1 = await shoot(); await page.waitForTimeout(700); const b2 = await shoot();
+    expect(Buffer.compare(b1, b2), 'canvas kept animating while paused').toBe(0);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await page.waitForTimeout(400);
+    const c1 = await shoot(); await page.waitForTimeout(700); const c2 = await shoot();
+    expect(Buffer.compare(c1, c2), 'canvas did not resume after play').not.toBe(0);
+  });
+
+  test('lunar orbit narrates LOI, loss of signal, then GO for undocking', async ({ page }) => {
+    // Phase 4 was the one watch-then-click phase with no banner: the loss of signal
+    // behind the Moon — the phase's own teaching moment — happened with nothing
+    // outside the canvas acknowledging it. The banner must step through every state.
+    await harness.mount(page, { moonMission: { missionPhase: 4 } }, undefined, { expectCanvas: false });
+    const status = () => page.evaluate(() =>
+      Array.from(document.querySelectorAll('[role="status"]')).map((n) => String(n.textContent)).join(' | '));
+    expect(await status()).toContain('Lunar orbit insertion');
+    await page.waitForFunction(() =>
+      Array.from(document.querySelectorAll('[role="status"]')).some((n) => /Loss of signal/.test(String(n.textContent))),
+      null, { timeout: 30000 });
+    await page.waitForFunction(() =>
+      Array.from(document.querySelectorAll('[role="status"]')).some((n) => /GO for undocking/.test(String(n.textContent))),
+      null, { timeout: 40000 });
+  });
 });

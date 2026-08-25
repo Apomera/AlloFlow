@@ -262,13 +262,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for molec
 
 exports[`science-sim + studio render goldens > renders + pins a digest for moonMission [ssr] 1`] = `
 {
-  "buttons": 8,
+  "buttons": 9,
   "canvases": 1,
   "inputs": 4,
-  "lengthBucket": 70,
+  "lengthBucket": 116,
   "paths": 0,
   "selects": 0,
-  "sha": "306e2c9824e58edf",
+  "sha": "7a6bf783579311d5",
   "svgs": 0,
 }
 `;
