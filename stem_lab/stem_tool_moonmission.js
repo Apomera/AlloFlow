@@ -46,8 +46,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // AUDIO SYSTEM — Immersive mission sounds
   // ═══════════════════════════════════════════════════════════════
   var _mmAnimPaused = false;   // live pause flag read by every 2D phase loop (see the header toggle)
+  var _mmSoundOff = false;     // live mute flag — see getMMAC below, and the header toggle
   var _mmAC = null;
   function getMMAC() {
+    // The mute gate. Every sound in this tool — mission sfx, the looping ambience, the
+    // radio chirps and the rover's drive sonification — asks for the audio context
+    // here first, so one check silences all of them and none can be forgotten.
+    if (_mmSoundOff) return null;
     if (!_mmAC) { try { _mmAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} }
     if (_mmAC && _mmAC.state === 'suspended') { try { _mmAC.resume(); } catch(e) {} }
     return _mmAC;
@@ -128,6 +133,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
   // Ambient engine loop
   var _mmAmbient = null;
+  function ambientTypeForPhase(p) {
+    if (p === 1) return 'launch';
+    if (p === 5 || p === 7) return 'thrust';
+    if (p === 6) return 'eva';
+    if (p >= 2 && p <= 4) return 'space';
+    if (p === 8) return 'space';
+    return null;                     // re-entry and the debrief are deliberately silent
+  }
   function startMissionAmbient(type) {
     stopMissionAmbient();
     var ac = getMMAC(); if (!ac) return;
@@ -496,6 +509,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       try { _prefersReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
       var animPaused = (d.animPaused != null) ? !!d.animPaused : _prefersReduce;
       _mmAnimPaused = animPaused;
+      // Audio control (WCAG 1.4.2): the phase ambience loops indefinitely once a phase
+      // starts, so it needs a stop. Sound stays ON by default — it carries real content
+      // here (the launch roar, suit breathing, radio chatter) — but one control silences
+      // everything, and the choice persists across phases and replays.
+      var soundOff = !!d.soundOff;
+      _mmSoundOff = soundOff;
       var missionXP = d.missionXP || 0;
       var samples = d.lunarSamples || [];
 
@@ -510,16 +529,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         if (typeof announceToSR === 'function') announceToSR(p >= 10 ? 'Mission complete. Splashdown confirmed. Your debrief is ready.' : ('Mission phase ' + (p + 1) + ' of 10: ' + phaseName + '. ' + (PHASES[p] ? PHASES[p].desc : '')));
         // Phase-specific sounds + ambient audio
         sfxPhaseAdvance();
-        if (p === 1) { sfxLaunch(); startMissionAmbient('launch'); if (window._alloHaptic) window._alloHaptic('launch'); } // Launch
-        else if (p === 2) { sfxStageSeparation(); startMissionAmbient('space'); if (window._alloHaptic) window._alloHaptic('bump'); } // Earth Orbit
-        else if (p === 3) { sfxEngineIgnition(); startMissionAmbient('space'); }  // Trans-Lunar
-        else if (p === 4) { sfxThrust(); startMissionAmbient('space'); }          // Lunar Orbit
-        else if (p === 5) { sfxThrust(); startMissionAmbient('thrust'); if (window._alloHaptic) window._alloHaptic('launch'); } // Powered Descent
-        else if (p === 6) { sfxLanding(); startMissionAmbient('eva'); if (window._alloHaptic) window._alloHaptic('land'); } // Moonwalk EVA
-        else if (p === 7) { sfxEngineIgnition(); startMissionAmbient('thrust'); } // Lunar Ascent
-        else if (p === 8) { sfxStageSeparation(); startMissionAmbient('space'); } // Trans-Earth
-        else if (p === 9) { sfxSplashdown(); stopMissionAmbient(); }              // Re-entry
-        else if (p >= 10) { sfxMissionComplete(); stopMissionAmbient(); }         // Complete
+        if (p === 1) { sfxLaunch(); if (window._alloHaptic) window._alloHaptic('launch'); }
+        else if (p === 2) { sfxStageSeparation(); if (window._alloHaptic) window._alloHaptic('bump'); }
+        else if (p === 3) sfxEngineIgnition();
+        else if (p === 4) sfxThrust();
+        else if (p === 5) { sfxThrust(); if (window._alloHaptic) window._alloHaptic('launch'); }
+        else if (p === 6) { sfxLanding(); if (window._alloHaptic) window._alloHaptic('land'); }
+        else if (p === 7) sfxEngineIgnition();
+        else if (p === 8) sfxStageSeparation();
+        else if (p === 9) sfxSplashdown();
+        else if (p >= 10) sfxMissionComplete();
+        // One mapping for "what does this phase sound like", shared with the mute
+        // control so turning sound back on mid-phase resumes the right bed.
+        var _amb = ambientTypeForPhase(p);
+        if (_amb) startMissionAmbient(_amb); else stopMissionAmbient();
       }
 
       function addXP(amount) {
@@ -1018,7 +1041,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 title: t('stem.moonmission.anim_toggle_hint', 'Freezes the launch, orbit, coast and re-entry animations. The landing game and the moonwalk are not affected.'),
                 onClick: function() { upd('animPaused', !animPaused); },
                 className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' },
-                animPaused ? t('stem.moonmission.play_animation_label', '\u25B6 Play animation') : t('stem.moonmission.pause_animation_label', '\u23F8 Pause animation'))
+                animPaused ? t('stem.moonmission.play_animation_label', '\u25B6 Play animation') : t('stem.moonmission.pause_animation_label', '\u23F8 Pause animation')),
+              h('button', { type: 'button', 'aria-pressed': soundOff ? 'true' : 'false', 'data-moonmission-sound-toggle': 'true',
+                'aria-label': soundOff ? t('stem.moonmission.unmute_mission_audio', 'Turn mission sound back on') : t('stem.moonmission.mute_mission_audio', 'Mute all mission sound'),
+                title: t('stem.moonmission.sound_toggle_hint', 'Silences the engine rumble, radio chatter, suit breathing and every alert tone.'),
+                onClick: function() {
+                  var next = !soundOff;
+                  _mmSoundOff = next;          // the flag the audio path reads, set before we touch it
+                  upd('soundOff', next);
+                  if (next) {
+                    stopMissionAmbient();
+                  } else {
+                    var at = ambientTypeForPhase(phase);
+                    if (at) startMissionAmbient(at); else stopMissionAmbient();
+                  }
+                  if (typeof announceToSR === 'function') announceToSR(next ? 'Mission sound muted.' : 'Mission sound on.');
+                },
+                className: 'text-[10px] font-bold text-indigo-700 underline focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded' },
+                soundOff ? t('stem.moonmission.sound_off_label', '\uD83D\uDD07 Sound off') : t('stem.moonmission.sound_on_label', '\uD83D\uDD0A Sound on'))
             ),
             h('div', { className: 'text-[11px] text-indigo-700 font-bold' }, '\u2B50 ' + missionXP + ' XP')
           )
@@ -2737,6 +2777,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl.addEventListener('keyup', function(e) { keys[e.key] = false; });
                   cvEl.focus();
 
+                  // ── Flight callouts ──
+                  // A caption strip, not a decoration: it is the only altitude and rate
+                  // feedback outside the canvas, so it carries the phase for anyone using
+                  // a screen reader and gives everyone else something readable to fly by.
+                  // Under the flight view, not on it: the canvas corners already carry the
+                  // altitude HUD and the thrust gauge, and on a phone an overlaid caption
+                  // runs straight through both.
+                  var calloutEl = null;
+                  var _dFooter = null;
+                  try {
+                    _dFooter = cvEl.parentElement && cvEl.parentElement.parentElement
+                      ? cvEl.parentElement.parentElement.querySelector('[data-descent-footer]') : null;
+                  } catch (_dfErr) {}
+                  var _calloutHost = _dFooter || cvEl.parentElement;
+                  if (_calloutHost && !_calloutHost.querySelector('[data-descent-callout]')) {
+                    calloutEl = document.createElement('div');
+                    calloutEl.setAttribute('data-descent-callout', 'true');
+                    calloutEl.setAttribute('role', 'status');
+                    calloutEl.setAttribute('aria-live', 'polite');
+                    // flex-basis 100% claims its own line in the footer's wrapping flex row.
+                    calloutEl.style.cssText = 'flex:1 0 100%;order:-1;text-align:center;font:700 12px/1.4 system-ui;' +
+                      'color:#bae6fd;background:rgba(2,6,23,0.6);border:1px solid rgba(56,189,248,0.25);' +
+                      'border-radius:8px;padding:5px 8px;margin-bottom:2px';
+                    _calloutHost.insertBefore(calloutEl, _calloutHost.firstChild);
+                  }
+                  var _lastCallout = '';
+                  function callout(text) {
+                    if (text === _lastCallout) return;
+                    _lastCallout = text;
+                    if (calloutEl) calloutEl.textContent = text;
+                  }
+
                   // ── On-screen flight controls ──
                   // Shown to everyone, not just touch devices: the landing was the one
                   // graded piloting task in the mission and it could only be flown from a
@@ -2790,6 +2862,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       var _dsT = thrust.toFixed(2);
                       if (cvEl.dataset.descentThrust !== _dsT) cvEl.dataset.descentThrust = _dsT;
 
+                      // Band-gated callouts, in the shape Apollo actually used: how high,
+                      // how fast down. Bands rather than a live number, so a screen reader
+                      // hears ten useful lines instead of a thousand.
+                      var band = alt > 10000 ? 10000 : alt > 5000 ? 5000 : alt > 3000 ? 3000
+                        : alt > 2000 ? 2000 : alt > 1000 ? 1000 : alt > 500 ? 500
+                        : alt > 200 ? 200 : alt > 100 ? 100 : alt > 50 ? 50 : alt > 20 ? 20 : 0;
+                      var rate = Math.abs(vVel).toFixed(0);
+                      var lateral = Math.abs(hVel).toFixed(0);
+                      var fuelBand = fuel <= 0 ? 'dry' : fuel < 10 ? 'low10' : fuel < 25 ? 'low25' : 'ok';
+                      if (fuelBand === 'dry') {
+                        callout('\u26A0 FUEL GONE \u2014 no thrust left. ' + Math.round(alt) + ' m up, falling at ' + rate + ' m/s.');
+                      } else if (band <= 100 && band > 0) {
+                        callout(band + ' m \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s. Under 3 and 5 to land.');
+                      } else if (band === 0) {
+                        callout('Contact imminent \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s.');
+                      } else if (fuelBand === 'low10') {
+                        callout('\u26A0 Fuel ' + Math.round(fuel) + '% \u2014 ' + Math.round(alt) + ' m up, down ' + rate + ' m/s.');
+                      } else {
+                        callout(band.toLocaleString() + ' m \u2014 down ' + rate + ' m/s, drifting ' + lateral + ' m/s'
+                          + (fuelBand === 'low25' ? ' \u2022 fuel ' + Math.round(fuel) + '%' : ''));
+                      }
+
                       // Physics
                       var gravity = (diffSettings && diffSettings.gravity) || 1.62; // Moon gravity m/s^2 (difficulty-scaled)
                       var thrustForce = thrust * (fuel > 0 ? 4 : 0);
@@ -2805,10 +2899,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // Landing check
                       if (alt <= 0) {
                         alt = 0;
-                        if (Math.abs(vVel) < 3 && Math.abs(hVel) < 5) {
+                        var _vAbs = Math.abs(vVel), _hAbs = Math.abs(hVel);
+                        if (_vAbs < 3 && _hAbs < 5) {
                           landed = true;
+                          callout('\uD83C\uDF15 CONTACT LIGHT \u2014 touchdown at ' + _vAbs.toFixed(1) + ' m/s, drift '
+                            + _hAbs.toFixed(1) + ' m/s, fuel ' + Math.round(fuel) + '%. The Eagle has landed.');
+                          if (typeof announceToSR === 'function') announceToSR('Touchdown. Vertical speed ' + _vAbs.toFixed(1)
+                            + ' meters per second, lateral drift ' + _hAbs.toFixed(1) + '. The Eagle has landed.');
                         } else {
                           crashed = true;
+                          // Name the limit that was actually broken — "you crashed" teaches
+                          // nothing, "you were coming down at 7, the limit is 3" teaches the
+                          // next attempt.
+                          var _why = _vAbs >= 3 && _hAbs >= 5
+                            ? 'coming down at ' + _vAbs.toFixed(1) + ' m/s and sliding at ' + _hAbs.toFixed(1) + ' m/s (limits are 3 and 5)'
+                            : _vAbs >= 3
+                              ? 'coming down at ' + _vAbs.toFixed(1) + ' m/s \u2014 the limit is 3'
+                              : 'sliding sideways at ' + _hAbs.toFixed(1) + ' m/s \u2014 the limit is 5';
+                          callout('\uD83D\uDCA5 HARD LANDING \u2014 ' + _why + '. Press Retry Landing to fly it again.');
+                          if (typeof announceToSR === 'function') announceToSR('Hard landing. You were ' + _why + '. Press Retry Landing to try again.');
                         }
                       }
                     }
@@ -3060,7 +3169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 }
               })
             ),
-            h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap' },
+            h('div', { className: 'p-3 border-t border-slate-700 flex justify-between items-center gap-2 flex-wrap', 'data-descent-footer': 'true' },
               h('p', { className: 'text-[11px] text-slate-400' }, t('stem.moonmission.w_thrust_ad_lateral_land_gently', '\u2191/W = thrust \u2022 \u2190\u2192/AD = lateral \u2022 Land gently!')),
               // The crash screen has always told students to "try again" \u2014 but nothing
               // offered a retry, and the frozen canvas never resets itself. Dropping
@@ -4855,6 +4964,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     function toggleLrvAudio() {
                       if (!lrvAudioEnabled) {
                         if (!initLrvAudio()) {
+                          if (_mmSoundOff) {
+                            // Not a device problem: the mission is muted from the header.
+                            if (addToast) addToast('\uD83D\uDD07 Mission sound is muted \u2014 turn it back on in the header to hear the rover.', 'info');
+                            if (typeof announceToSR === 'function') announceToSR('Mission sound is muted. Turn mission sound back on in the header to use rover sonification.');
+                            return;
+                          }
                           lrvAudioUnavailable = true;
                           updateLrvSoundControl();
                           if (addToast) addToast('LRV drive sonification is unavailable on this device.', 'info');

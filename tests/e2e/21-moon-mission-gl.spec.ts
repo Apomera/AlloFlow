@@ -536,6 +536,100 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     }
   });
 
+  test('the descent calls out altitude and rate, and names the limit you broke', async ({ page }) => {
+    // The landing is the mission's one graded piloting task and it used to run in
+    // silence: the only feedback was 9px monospace numbers painted inside the canvas,
+    // which a screen-reader user cannot reach at all. Apollo flew this on the LMP's
+    // voice, so callouts are both the historically right answer and the accessible one.
+    await harness.mount(page, { moonMission: { missionPhase: 5, descentStarted: true } }, undefined, { expectCanvas: false });
+    const strip = page.locator('[data-descent-callout]');
+    await expect(strip).toHaveCount(1);
+    await expect(strip).toHaveAttribute('role', 'status');
+    await expect(strip).toHaveAttribute('aria-live', 'polite');
+
+    const first = await page.waitForFunction(() => {
+      const el = document.querySelector('[data-descent-callout]');
+      const t = el ? String(el.textContent) : '';
+      return t.length > 0 ? t : false;
+    }, null, { timeout: 20000 }).then((h) => h.jsonValue());
+    expect(String(first), 'the callout does not report altitude and rate').toMatch(/m\b.*down .*m\/s/);
+
+    // It must actually track the descent, not print one line and stop.
+    const changed = await page.waitForFunction((prev: string) => {
+      const el = document.querySelector('[data-descent-callout]');
+      const t = el ? String(el.textContent) : '';
+      return t && t !== prev ? t : false;
+    }, String(first), { timeout: 30000 }).then((h) => h.jsonValue());
+    expect(String(changed)).not.toBe(String(first));
+
+    // Fly it into the ground by doing nothing: the failure has to say WHY, because
+    // "you crashed" teaches nothing and "you were coming down at 7, the limit is 3"
+    // teaches the next attempt.
+    const crash = await page.waitForFunction(() => {
+      const el = document.querySelector('[data-descent-callout]');
+      const t = el ? String(el.textContent) : '';
+      return /HARD LANDING|CONTACT LIGHT/.test(t) ? t : false;
+    }, null, { timeout: 120000 }).then((h) => h.jsonValue());
+    expect(String(crash), 'the outcome never reached the callout strip').toMatch(/HARD LANDING/);
+    expect(String(crash), 'the crash message does not name the limit that was broken').toMatch(/limit is [35]|limits are 3 and 5/);
+    expect(String(crash), 'the crash message does not say how to try again').toMatch(/Retry Landing/);
+  });
+
+  test('mission sound can be muted, and muting silences every source', async ({ page }) => {
+    // WCAG 1.4.2. Every phase transition starts a LOOPING noise bed plus radio chirps
+    // on a timer, and before this there was no way to stop any of it.
+    //
+    // Counted at the Web Audio factories rather than asserted from state, because the
+    // interesting claim is "nothing reaches the speakers", not "a flag is set". The
+    // sound-ON leg is what stops the muted leg passing vacuously: if the tool made no
+    // sound at all in this browser, both legs would read zero and prove nothing.
+    const instrument = () => page.addInitScript(() => {
+      (window as any).__audio = { nodes: 0 };
+      const OC: any = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!OC) return;
+      for (const fn of ['createOscillator', 'createBufferSource']) {
+        const orig = OC.prototype[fn];
+        OC.prototype[fn] = function (this: any, ...args: any[]) {
+          (window as any).__audio.nodes++;
+          return orig.apply(this, args);
+        };
+      }
+    });
+    const nodes = () => page.evaluate(() => (window as any).__audio.nodes);
+
+    // Leg 1 — sound on: advancing a phase must actually create audio nodes.
+    await instrument();
+    await harness.mount(page, { moonMission: { missionPhase: 1 } }, undefined, { expectCanvas: false });
+    const soundBtn = page.locator('[data-moonmission-sound-toggle="true"]');
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
+    await page.evaluate(() => (window as any).__audio.nodes = 0);
+    await page.getByRole('button', { name: /Proceed to Earth orbit/i }).click();
+    await page.waitForTimeout(1200);
+    const loud = await nodes();
+    expect(loud, 'the tool made no sound at all, so the muted check below would be vacuous').toBeGreaterThan(0);
+
+    // Leg 2 — muted: the same transition must create none.
+    await harness.destroy(page);
+    await instrument();
+    await harness.mount(page, { moonMission: { missionPhase: 1, soundOff: true } }, undefined, { expectCanvas: false });
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'true');
+    await expect(soundBtn).toContainText('Sound off');
+    await page.evaluate(() => (window as any).__audio.nodes = 0);
+    await page.getByRole('button', { name: /Proceed to Earth orbit/i }).click();
+    await page.waitForTimeout(1200);
+    expect(await nodes(), 'muted, but audio nodes were still created').toBe(0);
+
+    // …and the ambience stays silent while the phase runs on (the chirp timer).
+    await page.waitForTimeout(2500);
+    expect(await nodes(), 'muted, but the radio chirp timer still fired').toBe(0);
+
+    // Unmuting from the header brings the current phase's bed back.
+    await soundBtn.click();
+    await expect(soundBtn).toHaveAttribute('aria-pressed', 'false');
+    await page.waitForTimeout(600);
+    expect(await nodes(), 'unmuting did not resume the phase ambience').toBeGreaterThan(0);
+  });
+
   test('lunar orbit narrates LOI, loss of signal, then GO for undocking', async ({ page }) => {
     // Phase 4 was the one watch-then-click phase with no banner: the loss of signal
     // behind the Moon — the phase's own teaching moment — happened with nothing
