@@ -635,7 +635,7 @@ describe('RoadReady rules-of-road content', () => {
       expect(under21Block).toContain('refusal is 18 months for a first refusal');
 
       expect(lookbackBlock).toBeTruthy();
-      expect(lookbackBlock).toContain("a: ['1 year', '5 years', '10 years', 'Forever']");
+      expect(lookbackBlock).toContain("a: ['1 year', '5 years', '10 years', 'For life']");
       expect(lookbackBlock).toContain('correct: 2');
       expect(lookbackBlock).toContain('Maine §2411 escalates penalties for previous OUI offenses within a 10-year period');
       expect(lookbackBlock).toContain('Record retention, insurance, and employment effects can last longer');
@@ -741,7 +741,7 @@ describe('RoadReady rules-of-road content', () => {
       expect(childPassengerQuestion).toBeTruthy();
       // As above: distractors lengthened, §2081 correct option unchanged and still
       // at index 1.
-      expect(childPassengerQuestion).toContain("a: ['Any child under 12, regardless of size or weight', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child weighing under 100 lb, at any age', 'Only children under 2 years old']");
+      expect(childPassengerQuestion).toContain("a: ['Any child under 12, regardless of their size or their weight', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child weighing under 100 lb, at any age', 'Only children under 2 years old']");
       expect(childPassengerQuestion).toContain('correct: 1');
       expect(childPassengerQuestion).toContain('Maine §2081 uses age, weight, and height');
       expect(childPassengerQuestion).toContain('Under 2: rear-facing unless seat limits are exceeded');
