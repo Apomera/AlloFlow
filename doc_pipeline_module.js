@@ -686,8 +686,20 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
     var pageScanFailures = 0;
     var unexaminedStructures = 0;
     var ctx = pdfDoc.context;
+    // Minification-safe ref detection (2026-08-24): the MCP connector's vendored pdf-lib.min.js
+    // renames every class to a single letter, so constructor.name === 'PDFRef' never matched a
+    // real ref there. The un-resolved ref then failed the dict checks and counted as an
+    // unexamined structure, which made EVERY already-tagged PDF (StructTreeRoot present) fail
+    // the tagged-PDF export gate with active_content_scan_unavailable despite zero actual
+    // active content. instanceof survives minification; the name check remains for builds where
+    // instanceof crosses a realm boundary.
+    var _isPdfRef = function (o) {
+      if (!o) return false;
+      try { if (NS.PDFRef && o instanceof NS.PDFRef) return true; } catch (_) {}
+      return !!(o.constructor && o.constructor.name === 'PDFRef');
+    };
     var _resolve = function (o) {
-      try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; }
+      try { return _isPdfRef(o) ? ctx.lookup(o) : o; }
       catch (_) { unexaminedStructures++; return null; }
     };
     var catalog = pdfDoc.catalog;
@@ -758,13 +770,14 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
     };
     var _resolveScoped = function (o, fail) {
       try {
-        var resolved = (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o;
+        var resolved = _isPdfRef(o) ? ctx.lookup(o) : o;
         if (o && !resolved) fail();
         return resolved || null;
       } catch (_) { fail(); return null; }
     };
     var _isArrayObject = function (o) {
       return !!(o && (Array.isArray(o)
+        || (NS.PDFArray && o instanceof NS.PDFArray)
         || (o.constructor && o.constructor.name === 'PDFArray')
         || (typeof o.size === 'function' && typeof o.get === 'function' && typeof o.keys !== 'function')));
     };
@@ -936,6 +949,7 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
       var kid = _resolveStructure(rawKid);
       if (!kid) return;
       if (typeof kid === 'number'
+        || (NS.PDFNumber && kid instanceof NS.PDFNumber)
         || (kid.constructor && kid.constructor.name === 'PDFNumber')) return;
       if (_isArrayObject(kid)) {
         if (!_claimWalkObject(structureState, kid, depth, _structureFail)) return;

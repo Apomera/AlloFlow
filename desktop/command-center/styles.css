@@ -329,6 +329,14 @@ body.app-focus-mode #app-frame {
   min-height: 0;
 }
 
+/* Guided editions (desktop / remediation): the app view IS the product, so the
+   only door back to the console is the Settings gear - a bare "Exit Full
+   Screen" dropped teachers into the advanced console by accident (2026-08-24). */
+body.edition-desktop #exit-app-focus,
+body.edition-remediation #exit-app-focus {
+  display: none !important;
+}
+
 body.app-focus-mode .focus-exit {
   position: fixed;
   top: 50%;

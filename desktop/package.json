@@ -1,6 +1,6 @@
 {
   "name": "alloflow-desktop",
-  "version": "3.0.1",
+  "version": "3.1.2",
   "private": true,
   "main": "electron/main.cjs",
   "description": "Privacy-first desktop tools for accessible and differentiated learning.",
