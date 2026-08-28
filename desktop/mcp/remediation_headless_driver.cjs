@@ -677,7 +677,12 @@ async function withTransportGate(state, signal, operation) {
 }
 
 async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transportState }) {
-  const url = geminiBase() + '/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
+  // Key travels in the x-goog-api-key header, never the URL (2026-08-28): AI Studio now
+  // issues AQ.-prefixed Authentication Keys that Google rejects on the legacy ?key= query
+  // path (400 "API key not valid" / 401 ACCESS_TOKEN_TYPE_UNSUPPORTED), and headers also
+  // keep the credential out of proxy logs and copied diagnostics. Matches gemini_api_module
+  // and the remediation_verify_key probe, which already authenticated this way.
+  const url = geminiBase() + '/' + model + ':generateContent';
   const state = transportState || null;
   if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
   if (state && state.throttled) {
@@ -705,7 +710,7 @@ async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transpo
   try {
     res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({ contents: [{ parts }] }),
       signal,
     });
